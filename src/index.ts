@@ -4,28 +4,22 @@ import {
   setupDatabase,
   getAll_fromProfile,
   getMyFileDownloadConflicts,
-} from '../../app/backend/db';
-import { getWalletBalance } from '../../app/backend/arweave';
-import { sleep } from '../../app/backend/common';
-import {
+  getWalletBalance,
+  sleep,
   checkUploadStatus,
   uploadArDriveFiles,
   getPriceOfNextUploadBatch,
-} from '../../app/backend/upload';
-import {
   getMyArDriveFilesFromPermaWeb,
   downloadMyArDriveFiles,
-} from '../../app/backend/download';
+  watchFolder,
+  resolveFileDownloadConflict,
+} from 'ardrive-core-js'
 import {
   setupAndGetUser,
   userLogin,
   promptForArDriveUpload,
   promptForFileOverwrite,
 } from './prompts';
-import {
-  watchFolder,
-  resolveFileDownloadConflict,
-} from '../../app/backend/files';
 
 async function main() {
   console.log('       ___   _____    _____   _____    _   _     _   _____  ');

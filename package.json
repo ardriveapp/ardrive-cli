@@ -1,14 +1,16 @@
 {
   "name": "ardrive-cli",
   "version": "0.1.0",
-  "description": "ArDrive Core contains the essential back end application features to support the ArDrive CLI and Desktop apps, such as file management, Permaweb upload/download, wallet management and other common functions.",
-  "main": "index.js",
+  "description": "The ArDrive Command Line Interface (CLI) contains all of the needed security, file synchronization and Arweave wallet capabilities via a node.js application.",
+  "main": "index.min.js",
   "types": "ardrive-cli.d.ts",
+  "type": "module",
   "dependencies": {
+    "ardrive-core-js": "^0.1.5",
     "arweave": "^1.9.1",
     "bluebird": "^3.7.2",
     "chokidar": "^3.4.2",
-    "community-js": "^1.0.13",
+    "community-js": "^1.0.14",
     "md5-file": "^5.0.0",
     "mime-types": "^2.1.27",
     "node-fetch": "^2.6.0",
@@ -38,9 +40,18 @@
     "_clear": "rimraf build/compiled/*",
     "_tsc": "tsc",
     "_make-bundle": "node build/make-bundle",
-    "build": "run-s _clear _tsc _make-bundle",
-    "watch": "tsc"
+    "build": "run-s _clear _tsc",
+    "watch": "tsc",
+    "sync": "yarn build && node ./build/compiled/index.js"
   },
-  "author": "Phil Mataras",
-  "license": "GPL-3.0-or-later"
+  "license": "GPL-3.0-or-later",
+  "author": {
+    "name": "Phil Mataras",
+    "email": "info@ardrive.io",
+    "website": "https://ardrive.io"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ardriveapp/ardrive-cli.git"
+  }
 }

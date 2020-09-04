@@ -1,15 +1,17 @@
-import promptSync from 'prompt-sync';
-import passwordPrompt from 'prompts';
 import { sep } from 'path';
 import {
   getLocalWallet,
   createArDriveWallet,
   getAllMyArDriveIds,
-} from '../../app/backend/arweave';
-import { checkOrCreateFolder, backupWallet } from '../../app/backend/common';
-import { setUser, getUser } from '../../app/backend/profile';
+  checkOrCreateFolder,
+  backupWallet,
+  setUser,
+  getUser
+} from 'ardrive-core-js';
+import * as prompts from 'prompts';
 
-const prompt = promptSync({ sigint: true });
+const prompt = require ('prompt-sync')({sigint: true});
+const passwordPrompt = require ('prompts')
 const uuidv4 = require('uuid/v4');
 
 // Get path to local wallet and return that wallet public and private key
@@ -135,7 +137,7 @@ const promptForLoginPassword = async () => {
   return loginPasswordResponse.password;
 };
 
-export const setupAndGetUser = async () => {
+const setupAndGetUser = async () => {
   try {
     // Welcome message and info
     console.log(
@@ -182,19 +184,19 @@ export const setupAndGetUser = async () => {
   }
 };
 
-export const userLogin = async (walletPublicKey, owner) => {
+const userLogin = async (walletPublicKey: string, owner: string) => {
   console.log('An ArDrive Wallet is present for: %s', owner);
   const loginPassword = await promptForLoginPassword();
   const user = await getUser(walletPublicKey, loginPassword);
   return user;
 };
 
-export const promptForArDriveUpload = async (
-  price,
-  size,
-  amountOfFiles,
-  amountOfMetaData,
-  amountOfFolders
+const promptForArDriveUpload = async (
+  price: any,
+  size: any,
+  amountOfFiles: any,
+  amountOfMetaData: any,
+  amountOfFolders: any
 ) => {
   console.log(
     'Uploading %s files, %s folders and %s changes (%s) to the Permaweb, totaling %s AR',
@@ -209,7 +211,7 @@ export const promptForArDriveUpload = async (
 };
 
 // Prompt the user if they want to rename, overwrite or ignore file conflict
-export const promptForFileOverwrite = async (fullPath) => {
+const promptForFileOverwrite = async (fullPath: any) => {
   console.log(
     'A file has been found on the Permaweb with a different hash but the same file name %s',
     fullPath
@@ -219,3 +221,5 @@ export const promptForFileOverwrite = async (fullPath) => {
   );
   return conflict;
 };
+
+export { setupAndGetUser, userLogin, promptForArDriveUpload, promptForFileOverwrite }

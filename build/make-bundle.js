@@ -1,13 +1,15 @@
-const { promisify } = require("util")
-const fs = require("fs")
-const path = require("path")
-const rollup = require("rollup")
-const terser = require("terser")
+import { promisify} from 'util'
+import * as fs from 'fs'
+import * as path from 'path'
+import * as rollup from 'rollup'
+import * as terser from 'terser'
 
 const readFile = promisify(fs.readFile)
 const writeFile = promisify(fs.writeFile)
 
 const bundleName = "ardrive-cli"
+const __dirname = path.resolve(path.dirname('')).concat('\\build');
+
 const srcPath = path.join(__dirname, "..", "src")
 const compiledPath = path.join(__dirname, "compiled")
 const distNpmPath = path.join(__dirname, "..")
@@ -22,7 +24,7 @@ async function build() {
     sourcemap: false,
   })
 
-  const minified = terser.minify({
+  const minified = await terser.minify({
     bundle: output[0].code
   })
   if (minified.error)
