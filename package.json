@@ -1,0 +1,46 @@
+{
+  "name": "ardrive-cli",
+  "version": "0.1.0",
+  "description": "ArDrive Core contains the essential back end application features to support the ArDrive CLI and Desktop apps, such as file management, Permaweb upload/download, wallet management and other common functions.",
+  "main": "index.js",
+  "types": "ardrive-cli.d.ts",
+  "dependencies": {
+    "arweave": "^1.9.1",
+    "bluebird": "^3.7.2",
+    "chokidar": "^3.4.2",
+    "community-js": "^1.0.13",
+    "md5-file": "^5.0.0",
+    "mime-types": "^2.1.27",
+    "node-fetch": "^2.6.0",
+    "npm-run-all": "^4.1.5",
+    "prompt-password": "^1.2.0",
+    "prompt-sync": "^4.2.0",
+    "prompts": "^2.3.2",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.26.9",
+    "sqlite3": "^5.0.0",
+    "terser": "^5.3.0",
+    "tslint": "^6.1.3",
+    "typescript": "^4.0.2",
+    "uglify-es": "^3.3.9",
+    "zlib": "^1.0.5"
+  },
+  "devDependencies": {
+    "@types/bluebird": "^3.5.32",
+    "@types/mime-types": "^2.1.0",
+    "@types/node-fetch": "^2.5.7",
+    "@types/prompt-sync": "^4.1.0",
+    "@types/prompts": "^2.0.8",
+    "@types/sqlite3": "^3.1.6",
+    "jest": "^26.3.0"
+  },
+  "scripts": {
+    "_clear": "rimraf build/compiled/*",
+    "_tsc": "tsc",
+    "_make-bundle": "node build/make-bundle",
+    "build": "run-s _clear _tsc _make-bundle",
+    "watch": "tsc"
+  },
+  "author": "Phil Mataras",
+  "license": "GPL-3.0-or-later"
+}
