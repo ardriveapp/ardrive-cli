@@ -2,7 +2,7 @@
 // index.ts
 import {
   setupDatabase,
-  getAll_fromProfile,
+  getAllFromProfile,
   getMyFileDownloadConflicts,
   getWalletBalance,
   sleep,
@@ -44,7 +44,7 @@ async function main() {
   }
 
   // Check if user exists, if not, create a new one
-  const profile = await getAll_fromProfile();
+  const profile = await getAllFromProfile();
   let user;
   let uploadBatch;
   let readyToUpload;
@@ -54,13 +54,13 @@ async function main() {
     user = await setupAndGetUser();
   } else {
     // Allow the user to login
-    user = await userLogin(profile[0].wallet_public_key, profile[0].owner);
+    user = await userLogin(profile[0].walletPubicKey, profile[0].owner);
   }
-  watchFolder(user.sync_folder_path, user.arDriveId);
+  watchFolder(user.syncFolderPath, user.arDriveId);
   // Run this in a loop
   while (true && user !== 0) {
     await getMyArDriveFilesFromPermaWeb(user);
-    // await queueNewFiles(user, user.sync_folder_path);
+    // await queueNewFiles(user, user.syncFolderPath);
     await checkUploadStatus();
     uploadBatch = await getPriceOfNextUploadBatch();
     if (uploadBatch) {
@@ -94,7 +94,7 @@ async function main() {
     }-${today.getDate()}`;
     const time = `${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}`;
     const dateTime = `${date} ${time}`;
-    const balance = await getWalletBalance(user.wallet_public_key);
+    const balance = await getWalletBalance(user.walletPubicKey);
     console.log(
       '%s Syncronization completed.  Current AR Balance: %s',
       dateTime,

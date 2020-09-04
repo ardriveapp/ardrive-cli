@@ -26,13 +26,10 @@ build/compiled
 # Dependency directory
 # https://www.npmjs.org/doc/misc/npm-faq.html#should-i-check-my-node_modules-folder-into-git
 node_modules
+/lib
 
 # OSX
 .DS_Store
-
-# App packaged
-/ardrive-core-js.d.ts
-/ardrive-core-js.min.js
 
 .idea
 npm-debug.log.*

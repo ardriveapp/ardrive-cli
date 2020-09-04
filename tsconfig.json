@@ -2,15 +2,19 @@
   "compilerOptions": {
     "target": "es5",
     "module": "CommonJS",
-    "moduleResolution": "node",
-    "outDir": "build/compiled",
     "declaration": true,
-    /* Additional Checks */
-    "skipLibCheck": true,
-    "experimentalDecorators": true,
+    "moduleResolution": "node",
+    "outDir": "./lib",
+    "strict": true,
     "esModuleInterop": true,
+    /* Additional Checks */
+    "pretty": true,
+    "sourceMap": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src"],  
+  "exclude": ["node_modules", "**/__tests__/*"]
 }

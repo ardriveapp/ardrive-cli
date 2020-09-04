@@ -2,11 +2,10 @@
   "name": "ardrive-cli",
   "version": "0.1.0",
   "description": "The ArDrive Command Line Interface (CLI) contains all of the needed security, file synchronization and Arweave wallet capabilities via a node.js application.",
-  "main": "index.min.js",
-  "types": "ardrive-cli.d.ts",
-  "type": "module",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "dependencies": {
-    "ardrive-core-js": "^0.1.5",
+    "ardrive-core-js": "^0.1.8",
     "arweave": "^1.9.1",
     "bluebird": "^3.7.2",
     "chokidar": "^3.4.2",
@@ -37,12 +36,13 @@
     "jest": "^26.3.0"
   },
   "scripts": {
-    "_clear": "rimraf build/compiled/*",
-    "_tsc": "tsc",
-    "_make-bundle": "node build/make-bundle",
-    "build": "run-s _clear _tsc",
-    "watch": "tsc",
-    "sync": "yarn build && node ./build/compiled/index.js"
+    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
+    "lint": "tslint -p tsconfig.json",
+    "build": "tsc",
+    "prepare": "yarn run build",
+    "preversion": "yarn run lint",
+    "version": "yarn run format && git add -A src",
+    "postversion": "git push && git push --tags"
   },
   "license": "GPL-3.0-or-later",
   "author": {
@@ -53,5 +53,8 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/ardriveapp/ardrive-cli.git"
-  }
+  },
+  "files": [
+    "lib/**/*"
+  ]
 }
