@@ -9,8 +9,8 @@ import {
 import { ArDriveUser, UploadBatch } from 'ardrive-core-js/lib/types';
 
 const prompt = require ('prompt-sync')({sigint: true});
-const passwordPrompt = require ('prompts')
-import { v4 as uuidv4 } from 'uuid'
+import passwordPrompt from 'prompts';
+const { v4: uuidv4 } = require('uuid');
 
 // Get path to local wallet and return that wallet public and private key
 const promptForLocalWallet = async () => {
@@ -98,7 +98,7 @@ const promptForNewLoginPassword = async () => {
     style: 'password',
     message: 'Please enter a strong ArDrive Login password: ',
   });
-  return newLoginPasswordResponse;
+  return newLoginPasswordResponse.password;
 };
 
 // Setup ArDrive Data Protection Password
@@ -113,7 +113,7 @@ const promptForDataProtectionKey = async () => {
     style: 'password',
     message: 'Please enter a strong ArDrive Encryption password: ',
   });
-  return dataProtectionKeyResponse;
+  return dataProtectionKeyResponse.password;
 };
 
 // Get the users wallet or create a new one
