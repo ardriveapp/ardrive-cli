@@ -29,7 +29,7 @@ export const promptForLogin = async () => {
 };
 
 // Get the ArDrive owner nickname
-const promptForArDriveId = async (uniqueArDriveIds: any) => {
+const promptForArDriveId = async (uniqueArDriveIds: any) : Promise<string> => {
   console.log(
     'Existing ArDrive IDs have been found for this wallet.  Which one would you like to use?'
   );
@@ -41,7 +41,7 @@ const promptForArDriveId = async (uniqueArDriveIds: any) => {
   console.log('%s: Generate a new ArDrive ID', i);
   const choice = prompt('Please select which number: ');
   if (+choice === i) {
-    return uuidv4();
+    return "New";
   }
   return uniqueArDriveIds[choice];
 };

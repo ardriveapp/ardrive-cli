@@ -16,6 +16,7 @@ import {
   getUser,
   addNewUser,
   setupArDriveSyncFolder,
+  passwordCheck,
 } from 'ardrive-core-js'
 import { ArDriveUser, UploadBatch } from 'ardrive-core-js/lib/types';
 import {
@@ -59,22 +60,30 @@ async function main() {
      'We have not detected a profile.  To store your files permanently, you must first setup your ArDrive account.'
     );
     const loginPassword = await promptForNewLoginPassword();
-    const user: ArDriveUser = await promptForNewUserInfo(login);
+    user = await promptForNewUserInfo(login);
     await setupArDriveSyncFolder(user.syncFolderPath);
     await addNewUser(loginPassword, user);
   }
  else {
     // Allow the user to login
-    console.log('An ArDrive Wallet is present for: %s', login);
+    console.log('You already have an existing ArDrive', login);
     const loginPassword = await promptForLoginPassword();
-    const user: ArDriveUser | number = await getUser(loginPassword, userId.id);
-    if (user === 0) {
-      console.log ("You have entered a bad password for this ArDrive... GOodbye");
+    console.log (loginPassword)
+    const passwordResult: boolean = await passwordCheck(loginPassword, userId.id)
+    if (passwordResult) {
+      user = await getUser(loginPassword, userId.id);
+    }
+    else {
+      console.log ("You have entered a bad password for this ArDrive... Goodbye");
       return 0;
     }
   }
+
+  // Initialize Chokidar Folder Watcher by providing the Sync Folder Path, Private and Public ArDrive IDs
+  console.log (user)
   watchFolder(user.syncFolderPath, user.privateArDriveId, user.publicArDriveId);
-  // Run this in a loop
+
+  // Continually check for things to process and actions to notify the user
   while (true) {
     await getMyArDriveFilesFromPermaWeb(user);
     // await queueNewFiles(user, user.syncFolderPath);
