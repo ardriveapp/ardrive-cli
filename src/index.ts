@@ -79,8 +79,8 @@ async function main() {
     await getMyArDriveFilesFromPermaWeb(user);
     // await queueNewFiles(user, user.syncFolderPath);
     await checkUploadStatus();
-    const uploadBatch: UploadBatch | number  = await getPriceOfNextUploadBatch();
-    if (uploadBatch !== 0) {
+    const uploadBatch: UploadBatch = await getPriceOfNextUploadBatch();
+    if (uploadBatch.totalArDrivePrice !== 0) {
       readyToUpload = await promptForArDriveUpload(uploadBatch);
       await uploadArDriveFiles(user, readyToUpload);
     }

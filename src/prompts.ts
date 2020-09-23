@@ -10,7 +10,7 @@ import { ArDriveUser, UploadBatch } from 'ardrive-core-js/lib/types';
 
 const prompt = require ('prompt-sync')({sigint: true});
 const passwordPrompt = require ('prompts')
-const uuidv4 = require('uuid/v4');
+import { v4 as uuidv4 } from 'uuid'
 
 // Get path to local wallet and return that wallet public and private key
 const promptForLocalWallet = async () => {
