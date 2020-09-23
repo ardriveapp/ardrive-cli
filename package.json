@@ -5,7 +5,7 @@
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "dependencies": {
-    "ardrive-core-js": "^0.1.8",
+    "ardrive-core-js": "^0.1.10",
     "arweave": "^1.9.1",
     "bluebird": "^3.7.2",
     "chokidar": "^3.4.2",

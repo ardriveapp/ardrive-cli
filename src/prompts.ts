@@ -5,10 +5,8 @@ import {
   getAllMyArDriveIds,
   checkOrCreateFolder,
   backupWallet,
-  setUser,
-  getUser
 } from 'ardrive-core-js';
-import * as prompts from 'prompts';
+import { ArDriveUser, UploadBatch } from 'ardrive-core-js/lib/types';
 
 const prompt = require ('prompt-sync')({sigint: true});
 const passwordPrompt = require ('prompts')
@@ -24,10 +22,10 @@ const promptForLocalWallet = async () => {
 };
 
 // Get the ArDrive owner nickname
-const promptForNickname = async () => {
-  console.log('What is the nickname you would like to give to this wallet?');
-  const owner = prompt('Please enter your nickname: ');
-  return owner;
+export const promptForLogin = async () => {
+  console.log('Please enter your ArDrive Login Name.  If no name exists, we will create a new ArDrive for you.');
+  const login = prompt('Login Name: ');
+  return login;
 };
 
 // Get the ArDrive owner nickname
@@ -70,6 +68,7 @@ const promptForBackupWalletPath = (): string => {
 };
 
 // Get the ArDrive Sync Folder path
+// Will handle error checking and ensuring it is a valid path
 const promptForSyncFolderPath = (): string => {
   // Setup ArDrive Sync Folder
   console.log(
@@ -127,6 +126,7 @@ const promptForWallet = async () => {
   return existingWallet;
 };
 
+// Prompts the user to enter a login password
 const promptForLoginPassword = async () => {
   const loginPasswordResponse = await passwordPrompt({
     type: 'text',
@@ -137,74 +137,61 @@ const promptForLoginPassword = async () => {
   return loginPasswordResponse.password;
 };
 
-const setupAndGetUser = async () => {
+// Collects all of the information needed to create a new user
+// This includes Wallet, Existing ArDrives and Sync Folder Path
+const promptForNewUserInfo = async (login: string) => {
+  let wallet;
+  let user: ArDriveUser = {
+    login: "",
+    privateArDriveId: "0",
+    privateArDriveTx: "0",
+    publicArDriveId: "0",
+    publicArDriveTx: "0",
+    dataProtectionKey: "",
+    walletPrivateKey: "",
+    walletPublicKey: "",
+    syncFolderPath: "",
+  }
   try {
-    // Welcome message and info
-    console.log(
-      'We have not detected a profile.  To store your files permanently, you must first setup your ArDrive account.'
-    );
-
-    let wallet;
-    const owner = await promptForNickname(); // Must replace with Arweave ID
-
     const existingWallet = await promptForWallet();
     if (existingWallet === 'N') {
       wallet = await createArDriveWallet();
       const backupWalletPath = await promptForBackupWalletPath();
-      await backupWallet(backupWalletPath, wallet, owner);
+      await backupWallet(backupWalletPath, wallet, login);
     } else {
       wallet = await promptForLocalWallet();
     }
 
+    user.walletPrivateKey = wallet.walletPrivateKey;
+    user.walletPublicKey = wallet.walletPublicKey;
+
+    // Load existing ArDrives
     const uniqueArDriveIds = await getAllMyArDriveIds(wallet.walletPublicKey);
-    let arDriveId: string;
     if (uniqueArDriveIds.length > 0) {
-      arDriveId = await promptForArDriveId(uniqueArDriveIds);
+      user.privateArDriveId = await promptForArDriveId(uniqueArDriveIds);
+      user.publicArDriveId = user.privateArDriveId // NEED TO FIX THIS AS THE ABOVE FUNCTION DOES NOT FULLY WORK WITH PUBLIC/PRIVATE DRIVEIDs
     } else {
-      arDriveId = uuidv4();
+      user.privateArDriveId = uuidv4();
+      user.publicArDriveId = uuidv4();
     }
-    const syncFolderPath = await promptForSyncFolderPath();
-    const newLoginPasswordResponse = await promptForNewLoginPassword();
-    const dataProtectionKeyResponse = await promptForDataProtectionKey();
-
-    const user = await setUser(
-      owner,
-      arDriveId,
-      syncFolderPath,
-      wallet.walletPrivateKey,
-      wallet.walletPublicKey,
-      newLoginPasswordResponse.password,
-      dataProtectionKeyResponse.password
-    );
-
+    user.syncFolderPath = await promptForSyncFolderPath();
+    user.dataProtectionKey = await promptForDataProtectionKey();
     return user;
   } catch (err) {
     console.log(err);
-    return null;
+    return user;
   }
 };
 
-const userLogin = async (walletPublicKey: string, owner: string) => {
-  console.log('An ArDrive Wallet is present for: %s', owner);
-  const loginPassword = await promptForLoginPassword();
-  const user = await getUser(walletPublicKey, loginPassword);
-  return user;
-};
-
-const promptForArDriveUpload = async (
-  price: any,
-  size: any,
-  amountOfFiles: any,
-  amountOfMetaData: any,
-  amountOfFolders: any
-) => {
+// Asks the user to approve an upload to Arweave
+const promptForArDriveUpload = async (uploadBatch: UploadBatch) => {
   console.log(
     'Uploading %s files, %s folders and %s changes (%s) to the Permaweb, totaling %s AR',
-    amountOfFiles,
-    amountOfFolders,
-    amountOfMetaData,
-    size,
-    price
+    uploadBatch.totalNumberOfFileUploads,
+    uploadBatch.totalNumberOfFolderUploads,
+    uploadBatch.totalNumberOfMetaDataUploads,
+    uploadBatch.totalSize,
+    uploadBatch.totalArDrivePrice
   );
   const readyToUpload = prompt('Upload all unsynced files? Y/N ');
   return readyToUpload;
@@ -222,4 +209,4 @@ const promptForFileOverwrite = async (fullPath: any) => {
   return conflict;
 };
 
-export { setupAndGetUser, userLogin, promptForArDriveUpload, promptForFileOverwrite }
+export { promptForArDriveUpload, promptForFileOverwrite, promptForNewUserInfo, promptForNewLoginPassword, promptForLoginPassword }

@@ -2,7 +2,7 @@
 // index.ts
 import {
   setupDatabase,
-  getAllFromProfile,
+  getUserIdFromProfile,
   getMyFileDownloadConflicts,
   getWalletBalance,
   sleep,
@@ -13,28 +13,21 @@ import {
   downloadMyArDriveFiles,
   watchFolder,
   resolveFileDownloadConflict,
+  getUser,
+  addNewUser,
+  setupArDriveSyncFolder,
 } from 'ardrive-core-js'
+import { ArDriveUser, UploadBatch } from 'ardrive-core-js/lib/types';
 import {
-  setupAndGetUser,
-  userLogin,
+  promptForLoginPassword,
+  promptForNewLoginPassword,
+  promptForNewUserInfo,
   promptForArDriveUpload,
   promptForFileOverwrite,
+  promptForLogin,
 } from './prompts';
 
 async function main() {
-  console.log('       ___   _____    _____   _____    _   _     _   _____  ');
-  console.log(
-    '      /   | |  _  \\  |  _  \\ |  _  \\  | | | |   / / | ____| '
-  );
-  console.log('     / /| | | |_| |  | | | | | |_| |  | | | |  / /  | |__   ');
-  console.log('    / /_| | |  _  /  | | | | |  _  /  | | | | / /   |  __|  ');
-  console.log(
-    '   / /  | | | | \\ \\  | |_| | | | \\ \\  | | | |/ /    | |___  '
-  );
-  console.log(
-    '  /_/   |_| |_|  \\_\\ |_____/ |_|  \\_\\ |_| |___/     |_____| '
-  );
-  console.log('');
   // Setup database if it doesnt exist
   try {
     await setupDatabase('./.ardrive-cli.db');
@@ -42,35 +35,53 @@ async function main() {
     console.error(err);
     return;
   }
-
-  // Check if user exists, if not, create a new one
-  const profile = await getAllFromProfile();
-  let user;
-  let uploadBatch;
+  let user: ArDriveUser = {
+    login: "",
+    privateArDriveId: "0",
+    privateArDriveTx: "0",
+    publicArDriveId: "0",
+    publicArDriveTx: "0",
+    dataProtectionKey: "",
+    walletPrivateKey: "",
+    walletPublicKey: "",
+    syncFolderPath: "",
+  } 
   let readyToUpload;
   let fileDownloadConflicts;
 
-  if (profile === undefined || profile.length === 0) {
-    user = await setupAndGetUser();
-  } else {
-    // Allow the user to login
-    user = await userLogin(profile[0].walletPubicKey, profile[0].owner);
+  // Check if user exists, if not, create a new one
+  const login = await promptForLogin();
+  const userId = await getUserIdFromProfile(login);
+  if (userId === undefined || userId.length === 0)
+  {
+     // Welcome message and info
+     console.log(
+     'We have not detected a profile.  To store your files permanently, you must first setup your ArDrive account.'
+    );
+    const loginPassword = await promptForNewLoginPassword();
+    const user: ArDriveUser = await promptForNewUserInfo(login);
+    await setupArDriveSyncFolder(user.syncFolderPath);
+    await addNewUser(loginPassword, user);
   }
-  watchFolder(user.syncFolderPath, user.arDriveId);
+ else {
+    // Allow the user to login
+    console.log('An ArDrive Wallet is present for: %s', login);
+    const loginPassword = await promptForLoginPassword();
+    const user: ArDriveUser | number = await getUser(loginPassword, userId.id);
+    if (user === 0) {
+      console.log ("You have entered a bad password for this ArDrive... GOodbye");
+      return 0;
+    }
+  }
+  watchFolder(user.syncFolderPath, user.privateArDriveId, user.publicArDriveId);
   // Run this in a loop
-  while (true && user !== 0) {
+  while (true) {
     await getMyArDriveFilesFromPermaWeb(user);
     // await queueNewFiles(user, user.syncFolderPath);
     await checkUploadStatus();
-    uploadBatch = await getPriceOfNextUploadBatch();
-    if (uploadBatch) {
-      readyToUpload = await promptForArDriveUpload(
-        uploadBatch.totalArDrivePrice,
-        uploadBatch.totalSize,
-        uploadBatch.totalNumberOfFileUploads,
-        uploadBatch.totalNumberOfMetaDataUploads,
-        uploadBatch.totalNumberOfFolderUploads
-      );
+    const uploadBatch: UploadBatch | number  = await getPriceOfNextUploadBatch();
+    if (uploadBatch !== 0) {
+      readyToUpload = await promptForArDriveUpload(uploadBatch);
       await uploadArDriveFiles(user, readyToUpload);
     }
     await downloadMyArDriveFiles(user);
@@ -94,7 +105,7 @@ async function main() {
     }-${today.getDate()}`;
     const time = `${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}`;
     const dateTime = `${date} ${time}`;
-    const balance = await getWalletBalance(user.walletPubicKey);
+    const balance = await getWalletBalance(user.walletPublicKey);
     console.log(
       '%s Syncronization completed.  Current AR Balance: %s',
       dateTime,
@@ -103,4 +114,17 @@ async function main() {
     await sleep(30000);
   }
 }
+console.log('       ___   _____    _____   _____    _   _     _   _____  ');
+console.log(
+  '      /   | |  _  \\  |  _  \\ |  _  \\  | | | |   / / | ____| '
+);
+console.log('     / /| | | |_| |  | | | | | |_| |  | | | |  / /  | |__   ');
+console.log('    / /_| | |  _  /  | | | | |  _  /  | | | | / /   |  __|  ');
+console.log(
+  '   / /  | | | | \\ \\  | |_| | | | \\ \\  | | | |/ /    | |___  '
+);
+console.log(
+  '  /_/   |_| |_|  \\_\\ |_____/ |_|  \\_\\ |_| |___/     |_____| '
+);
+console.log('');
 main();
