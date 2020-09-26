@@ -2,9 +2,11 @@ import { sep } from 'path';
 import {
   getLocalWallet,
   createArDriveWallet,
-  getAllMyArDriveIds,
+  getAllMyPrivateArDriveIds,
+  getAllMyPublicArDriveIds,
   checkOrCreateFolder,
   backupWallet,
+  checkFileExistsSync,
 } from 'ardrive-core-js';
 import { ArDriveUser, UploadBatch } from 'ardrive-core-js/lib/types';
 
@@ -13,12 +15,18 @@ import passwordPrompt from 'prompts';
 const { v4: uuidv4 } = require('uuid');
 
 // Get path to local wallet and return that wallet public and private key
-const promptForLocalWallet = async () => {
+const promptForLocalWalletPath = async () : Promise<string> => {
   console.log(
     'Please enter the path of your existing Arweave Wallet JSON file eg. C:\\Source\\ardrive_test_key.json'
   );
   const existingWalletPath = prompt('Wallet Path: ');
-  return getLocalWallet(existingWalletPath);
+  const validPath = checkFileExistsSync(existingWalletPath);
+  if (validPath) {
+    return existingWalletPath;
+  } else {
+    console.log ("File path is invalid!");
+    return promptForLocalWalletPath();
+  }
 };
 
 // Get the ArDrive owner nickname
@@ -29,9 +37,9 @@ export const promptForLogin = async () => {
 };
 
 // Get the ArDrive owner nickname
-const promptForArDriveId = async (uniqueArDriveIds: any) : Promise<string> => {
+const promptForArDriveId = async (uniqueArDriveIds: any, drivePrivacy: string) : Promise<string> => {
   console.log(
-    'Existing ArDrive IDs have been found for this wallet.  Which one would you like to use?'
+    'Existing %s ArDrive IDs have been found for this wallet.  Which one would you like to use?', drivePrivacy
   );
   let i = 0;
   uniqueArDriveIds.forEach((uniqueArDriveId: any) => {
@@ -41,7 +49,7 @@ const promptForArDriveId = async (uniqueArDriveIds: any) : Promise<string> => {
   console.log('%s: Generate a new ArDrive ID', i);
   const choice = prompt('Please select which number: ');
   if (+choice === i) {
-    return "New";
+    return uuidv4();
   }
   return uniqueArDriveIds[choice];
 };
@@ -142,7 +150,7 @@ const promptForLoginPassword = async () => {
 const promptForNewUserInfo = async (login: string) => {
   let wallet;
   let user: ArDriveUser = {
-    login: "",
+    login: login,
     privateArDriveId: "0",
     privateArDriveTx: "0",
     publicArDriveId: "0",
@@ -159,21 +167,32 @@ const promptForNewUserInfo = async (login: string) => {
       const backupWalletPath = await promptForBackupWalletPath();
       await backupWallet(backupWalletPath, wallet, login);
     } else {
-      wallet = await promptForLocalWallet();
+      const existingWalletPath = await promptForLocalWalletPath();
+      wallet = await getLocalWallet(existingWalletPath);
     }
 
     user.walletPrivateKey = wallet.walletPrivateKey;
     user.walletPublicKey = wallet.walletPublicKey;
 
-    // Load existing ArDrives
-    const uniqueArDriveIds = await getAllMyArDriveIds(wallet.walletPublicKey);
-    if (uniqueArDriveIds.length > 0) {
-      user.privateArDriveId = await promptForArDriveId(uniqueArDriveIds);
-      user.publicArDriveId = user.privateArDriveId // NEED TO FIX THIS AS THE ABOVE FUNCTION DOES NOT FULLY WORK WITH PUBLIC/PRIVATE DRIVEIDs
+    // Load an existing default Private ArDrive
+    const privateArDrives = await getAllMyPrivateArDriveIds(wallet.walletPublicKey);
+    if (privateArDrives.length > 0) {
+      user.privateArDriveId = await promptForArDriveId(privateArDrives, "Private");
     } else {
+      console.log ("No existing Private ArDrives found.  Creating a new one.")
       user.privateArDriveId = uuidv4();
+    }
+
+    // Load an existing default Public ArDrive
+    const publicArDrives = await getAllMyPublicArDriveIds(wallet.walletPublicKey);
+    console.log (publicArDrives)
+    if (publicArDrives.length > 0) {
+      user.publicArDriveId = await promptForArDriveId(publicArDrives, "Public");
+    } else {
+      console.log ("No existing Public ArDrives found.  Creating a new one.")
       user.publicArDriveId = uuidv4();
     }
+
     user.syncFolderPath = await promptForSyncFolderPath();
     user.dataProtectionKey = await promptForDataProtectionKey();
     return user;
@@ -184,7 +203,7 @@ const promptForNewUserInfo = async (login: string) => {
 };
 
 // Asks the user to approve an upload to Arweave
-const promptForArDriveUpload = async (uploadBatch: UploadBatch) => {
+const promptForArDriveUpload = async (uploadBatch: UploadBatch) : Promise<boolean> => {
   console.log(
     'Uploading %s files, %s folders and %s changes (%s) to the Permaweb, totaling %s AR',
     uploadBatch.totalNumberOfFileUploads,
@@ -194,7 +213,11 @@ const promptForArDriveUpload = async (uploadBatch: UploadBatch) => {
     uploadBatch.totalArDrivePrice
   );
   const readyToUpload = prompt('Upload all unsynced files? Y/N ');
-  return readyToUpload;
+  if (readyToUpload == 'Y')
+    return true;
+  else {
+    return false;
+  }
 };
 
 // Prompt the user if they want to rename, overwrite or ignore file conflict

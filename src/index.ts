@@ -47,12 +47,15 @@ async function main() {
     walletPublicKey: "",
     syncFolderPath: "",
   } 
-  let readyToUpload;
   let fileDownloadConflicts;
 
-  // Check if user exists, if not, create a new one
+  // Ask the user for their login name
   const login = await promptForLogin();
+
+  // Check to see if it exists
   const userId = await getUserIdFromProfile(login);
+
+  // If no user is found, prompt the user to create a new one
   if (userId === undefined || userId.length === 0)
   {
      // Welcome message and info
@@ -68,7 +71,6 @@ async function main() {
     // Allow the user to login
     console.log('You already have an existing ArDrive', login);
     const loginPassword = await promptForLoginPassword();
-    console.log (loginPassword)
     const passwordResult: boolean = await passwordCheck(loginPassword, userId.id)
     if (passwordResult) {
       user = await getUser(loginPassword, userId.id);
@@ -80,20 +82,29 @@ async function main() {
   }
 
   // Initialize Chokidar Folder Watcher by providing the Sync Folder Path, Private and Public ArDrive IDs
-  console.log (user)
   watchFolder(user.syncFolderPath, user.privateArDriveId, user.publicArDriveId);
 
   // Continually check for things to process and actions to notify the user
   while (true) {
+
+    // Get all of the public and private files for the user and store in the local database
     await getMyArDriveFilesFromPermaWeb(user);
-    // await queueNewFiles(user, user.syncFolderPath);
+
+    // Check the status of any files that may have been already been uploaded
     await checkUploadStatus();
+
+    // Figure out the cost of the next batch of uploads, and ask the user if they want to approve
     const uploadBatch: UploadBatch = await getPriceOfNextUploadBatch();
     if (uploadBatch.totalArDrivePrice !== 0) {
-      readyToUpload = await promptForArDriveUpload(uploadBatch);
-      await uploadArDriveFiles(user, readyToUpload);
+      if (await promptForArDriveUpload(uploadBatch)) {
+        await uploadArDriveFiles(user);
+      }
     }
+
+    // Download any files from Arweave that need to be synchronized locally
     await downloadMyArDriveFiles(user);
+
+    // Resolve and download conflicts, and process on the next batch
     fileDownloadConflicts = await getMyFileDownloadConflicts();
     if (fileDownloadConflicts) {
       fileDownloadConflicts.forEach(async (fileDownloadConflict: any) => {
@@ -108,12 +119,16 @@ async function main() {
         );
       });
     }
+
+    // Update date
     const today = new Date();
     const date = `${today.getFullYear()}-${
       today.getMonth() + 1
     }-${today.getDate()}`;
     const time = `${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}`;
     const dateTime = `${date} ${time}`;
+
+    // Get the latest balance of the loaded wallet.
     const balance = await getWalletBalance(user.walletPublicKey);
     console.log(
       '%s Syncronization completed.  Current AR Balance: %s',
