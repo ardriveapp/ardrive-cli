@@ -37,13 +37,13 @@ export const promptForLogin = async () => {
 };
 
 // Get the ArDrive owner nickname
-const promptForArDriveId = async (uniqueArDriveIds: any, drivePrivacy: string) : Promise<string> => {
+const promptForArDriveId = async (arDriveMetadata: any, drivePrivacy: string) : Promise<any> => {
   console.log(
     'Existing %s ArDrive IDs have been found for this wallet.  Which one would you like to use?', drivePrivacy
   );
   let i = 0;
-  uniqueArDriveIds.forEach((uniqueArDriveId: any) => {
-    console.log('%s: %s', i, uniqueArDriveId);
+  arDriveMetadata.forEach((arDrive: any) => {
+    console.log('%s: %s | TX %s', i, arDrive.driveId, arDrive.metaDataTx);
     i += 1;
   });
   console.log('%s: Generate a new ArDrive ID', i);
@@ -51,7 +51,7 @@ const promptForArDriveId = async (uniqueArDriveIds: any, drivePrivacy: string) :
   if (+choice === i) {
     return uuidv4();
   }
-  return uniqueArDriveIds[choice];
+  return arDriveMetadata[choice];
 };
 
 // Get the location to backup the new wallet
@@ -176,21 +176,26 @@ const promptForNewUserInfo = async (login: string) => {
 
     // Load an existing default Private ArDrive
     const privateArDrives = await getAllMyPrivateArDriveIds(wallet.walletPublicKey);
-    if (privateArDrives.length > 0) {
-      user.privateArDriveId = await promptForArDriveId(privateArDrives, "Private");
+    if (privateArDrives[0].driveId !== '') {
+      const privateArDriveMetadata = await promptForArDriveId(privateArDrives, "Private");
+      user.privateArDriveId = privateArDriveMetadata.driveId;
+      user.privateArDriveTx = privateArDriveMetadata.metaDataTx;
     } else {
-      console.log ("No existing Private ArDrives found.  Creating a new one.")
       user.privateArDriveId = uuidv4();
+      console.log ("No existing Private ArDrives found.  Creating a new one.")
+      console.log ("   Private Drive-Id: %s", user.privateArDriveId)
     }
 
     // Load an existing default Public ArDrive
     const publicArDrives = await getAllMyPublicArDriveIds(wallet.walletPublicKey);
-    console.log (publicArDrives)
-    if (publicArDrives.length > 0) {
-      user.publicArDriveId = await promptForArDriveId(publicArDrives, "Public");
+    if (publicArDrives[0].driveId !== '') {
+      const publicArDriveMetadata = await promptForArDriveId(publicArDrives, "Public");
+      user.publicArDriveId = publicArDriveMetadata.driveId;
+      user.publicArDriveTx = publicArDriveMetadata.metaDataTx;
     } else {
       console.log ("No existing Public ArDrives found.  Creating a new one.")
       user.publicArDriveId = uuidv4();
+      console.log ("   Public Drive-Id: %s", user.publicArDriveId)
     }
 
     user.syncFolderPath = await promptForSyncFolderPath();

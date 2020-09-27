@@ -81,6 +81,9 @@ async function main() {
     }
   }
 
+  // Get all of the public and private files for the user and store in the local database before starting folder watcher
+  await getMyArDriveFilesFromPermaWeb(user);
+
   // Initialize Chokidar Folder Watcher by providing the Sync Folder Path, Private and Public ArDrive IDs
   watchFolder(user.syncFolderPath, user.privateArDriveId, user.publicArDriveId);
 
