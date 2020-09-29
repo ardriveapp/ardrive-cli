@@ -53,7 +53,7 @@ async function main() {
   const login = await promptForLogin();
 
   // Check to see if it exists
-  const userId = await getUserIdFromProfile(login);
+  let userId = await getUserIdFromProfile(login);
 
   // If no user is found, prompt the user to create a new one
   if (userId === undefined || userId.length === 0)
@@ -66,6 +66,8 @@ async function main() {
     user = await promptForNewUserInfo(login);
     await setupArDriveSyncFolder(user.syncFolderPath);
     await addNewUser(loginPassword, user);
+    userId = await getUserIdFromProfile(login);
+    user = await getUser(loginPassword, userId.id);
   }
  else {
     // Allow the user to login
