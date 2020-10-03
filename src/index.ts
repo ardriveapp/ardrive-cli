@@ -37,10 +37,6 @@ async function main() {
   }
   let user: ArDriveUser = {
     login: "",
-    privateArDriveId: "0",
-    privateArDriveTx: "0",
-    publicArDriveId: "0",
-    publicArDriveTx: "0",
     dataProtectionKey: "",
     walletPrivateKey: "",
     walletPublicKey: "",

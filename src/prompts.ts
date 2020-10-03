@@ -146,10 +146,6 @@ const promptForNewUserInfo = async (login: string) => {
   let wallet;
   let user: ArDriveUser = {
     login: login,
-    privateArDriveId: "0",
-    privateArDriveTx: "0",
-    publicArDriveId: "0",
-    publicArDriveTx: "0",
     dataProtectionKey: "",
     walletPrivateKey: "",
     walletPublicKey: "",
@@ -197,8 +193,11 @@ const promptForNewUserInfo = async (login: string) => {
       await addDriveToDriveTable(newDrive);
     }
 
+    // Get the local root folder that will contain all of the user's drives
     user.syncFolderPath = await promptForSyncFolderPath();
 
+    // Set the data protection key used for all data encryption.
+    // The key is based on the uesr's login
     user.dataProtectionKey = loginPassword;
     return user;
   } catch (err) {
