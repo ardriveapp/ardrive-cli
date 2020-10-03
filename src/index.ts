@@ -86,7 +86,6 @@ async function main() {
   // Get all of the public and private files for the user and store in the local database before starting folder watcher
   await getMyArDriveFilesFromPermaWeb(user);
 
-  await sleep(1000000)
   // Download any files from Arweave that need to be synchronized locally
   await downloadMyArDriveFiles(user);
 
