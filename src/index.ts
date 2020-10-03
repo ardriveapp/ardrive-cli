@@ -2,7 +2,7 @@
 // index.ts
 import {
   setupDatabase,
-  getUserIdFromProfile,
+  getUserFromProfile,
   getMyFileDownloadConflicts,
   getWalletBalance,
   sleep,
@@ -15,13 +15,12 @@ import {
   resolveFileDownloadConflict,
   getUser,
   addNewUser,
-  setupArDriveSyncFolder,
   passwordCheck,
+  setupDrives,
 } from 'ardrive-core-js'
 import { ArDriveUser, UploadBatch } from 'ardrive-core-js/lib/types';
 import {
   promptForLoginPassword,
-  promptForNewLoginPassword,
   promptForNewUserInfo,
   promptForArDriveUpload,
   promptForFileOverwrite,
@@ -53,29 +52,27 @@ async function main() {
   const login = await promptForLogin();
 
   // Check to see if it exists
-  let userId = await getUserIdFromProfile(login);
+  user = await getUserFromProfile(login);
 
   // If no user is found, prompt the user to create a new one
-  if (userId === undefined || userId.length === 0)
+  if (user === undefined)
   {
      // Welcome message and info
      console.log(
      'We have not detected a profile.  To store your files permanently, you must first setup your ArDrive account.'
     );
-    const loginPassword = await promptForNewLoginPassword();
     user = await promptForNewUserInfo(login);
-    await setupArDriveSyncFolder(user.syncFolderPath);
-    await addNewUser(loginPassword, user);
-    userId = await getUserIdFromProfile(login);
-    user = await getUser(loginPassword, userId.id);
+    const loginPassword = user.dataProtectionKey;
+    await addNewUser(user.dataProtectionKey, user);
+    user = await getUser(loginPassword, login);
   }
  else {
     // Allow the user to login
     console.log('You already have an existing ArDrive', login);
     const loginPassword = await promptForLoginPassword();
-    const passwordResult: boolean = await passwordCheck(loginPassword, userId.id)
+    const passwordResult: boolean = await passwordCheck(loginPassword, login)
     if (passwordResult) {
-      user = await getUser(loginPassword, userId.id);
+      user = await getUser(loginPassword, login);
     }
     else {
       console.log ("You have entered a bad password for this ArDrive... Goodbye");
@@ -83,17 +80,27 @@ async function main() {
     }
   }
 
+  // Initialize Drives
+  await setupDrives(user.syncFolderPath)
+
   // Get all of the public and private files for the user and store in the local database before starting folder watcher
   await getMyArDriveFilesFromPermaWeb(user);
 
+  await sleep(1000000)
+  // Download any files from Arweave that need to be synchronized locally
+  await downloadMyArDriveFiles(user);
+
   // Initialize Chokidar Folder Watcher by providing the Sync Folder Path, Private and Public ArDrive IDs
-  watchFolder(user.syncFolderPath, user.privateArDriveId, user.publicArDriveId);
+  watchFolder(user.syncFolderPath);
 
   // Continually check for things to process and actions to notify the user
   while (true) {
 
     // Get all of the public and private files for the user and store in the local database
     await getMyArDriveFilesFromPermaWeb(user);
+
+    // Download any files from Arweave that need to be synchronized locally
+    await downloadMyArDriveFiles(user);
 
     // Check the status of any files that may have been already been uploaded
     await checkUploadStatus();
@@ -105,9 +112,6 @@ async function main() {
         await uploadArDriveFiles(user);
       }
     }
-
-    // Download any files from Arweave that need to be synchronized locally
-    await downloadMyArDriveFiles(user);
 
     // Resolve and download conflicts, and process on the next batch
     fileDownloadConflicts = await getMyFileDownloadConflicts();
@@ -140,7 +144,7 @@ async function main() {
       dateTime,
       balance
     );
-    await sleep(30000);
+    await sleep(10000);
   }
 }
 console.log('       ___   _____    _____   _____    _   _     _   _____  ');

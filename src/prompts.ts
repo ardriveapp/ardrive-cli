@@ -7,12 +7,14 @@ import {
   checkOrCreateFolder,
   backupWallet,
   checkFileExistsSync,
+  addDriveToDriveTable,
+  createNewPublicDrive,
+  createNewPrivateDrive,
 } from 'ardrive-core-js';
-import { ArDriveUser, UploadBatch } from 'ardrive-core-js/lib/types';
+import { ArDriveUser, ArFSDriveMetadata, UploadBatch } from 'ardrive-core-js/lib/types';
 
 const prompt = require ('prompt-sync')({sigint: true});
 import passwordPrompt from 'prompts';
-const { v4: uuidv4 } = require('uuid');
 
 // Get path to local wallet and return that wallet public and private key
 const promptForLocalWalletPath = async () : Promise<string> => {
@@ -37,21 +39,30 @@ export const promptForLogin = async () => {
 };
 
 // Get the ArDrive owner nickname
-const promptForArDriveId = async (arDriveMetadata: any, drivePrivacy: string) : Promise<any> => {
+const promptForArDriveId = async (drives : ArFSDriveMetadata[], drivePrivacy: string) : Promise<ArFSDriveMetadata> => {
   console.log(
-    'Existing %s ArDrive IDs have been found for this wallet.  Which one would you like to use?', drivePrivacy
+    'Existing %s Drive IDs have been found for this ArDrive wallet.  Which one would you like to use?', drivePrivacy
   );
   let i = 0;
-  arDriveMetadata.forEach((arDrive: any) => {
-    console.log('%s: %s | TX %s', i, arDrive.driveId, arDrive.metaDataTx);
+  drives.forEach((drive: ArFSDriveMetadata) => {
+    console.log('%s: %s | TX %s', i, drive.driveId, drive.metaDataTxId);
     i += 1;
   });
-  console.log('%s: Generate a new ArDrive ID', i);
+  console.log('%s: Generate a new %s Drive ID', i, drivePrivacy);
   const choice = prompt('Please select which number: ');
   if (+choice === i) {
-    return uuidv4();
+    const driveName : string = prompt('Please enter in a new name for this drive: ');
+    if (drivePrivacy === 'public') {
+      let newDrive = await createNewPublicDrive(driveName)
+      drives.push (newDrive)
+    }
+    else if (drivePrivacy === 'private') {
+      let newDrive = await createNewPrivateDrive(driveName)
+      drives.push (newDrive)
+    }
+
   }
-  return arDriveMetadata[choice];
+  return drives[choice];
 };
 
 // Get the location to backup the new wallet
@@ -79,9 +90,8 @@ const promptForBackupWalletPath = (): string => {
 // Will handle error checking and ensuring it is a valid path
 const promptForSyncFolderPath = (): string => {
   // Setup ArDrive Sync Folder
-  console.log(
-    'Please enter the path of your local ArDrive folder e.g D:\\ArDriveSync.  A new folder will be created if it does not exist'
-  );
+  console.log('Please enter the path of your local ArDrive folder e.g D:\\ArDriveSync.');
+  console.log('A new folder will be created, with your selected Drives if they do not exist')
   const syncFolderPath = prompt(
     'ArDrive Sync Folder Path: ',
     process.cwd().concat(sep, 'Sync', sep)
@@ -107,21 +117,6 @@ const promptForNewLoginPassword = async () => {
     message: 'Please enter a strong ArDrive Login password: ',
   });
   return newLoginPasswordResponse.password;
-};
-
-// Setup ArDrive Data Protection Password
-// TO DO Modify to check for password strength
-const promptForDataProtectionKey = async () => {
-  console.log(
-    'Your ArDrive Data Protection password will be used to encrypt your data on the Permaweb.  Do NOT lose this!!!'
-  );
-  const dataProtectionKeyResponse = await passwordPrompt({
-    type: 'text',
-    name: 'password',
-    style: 'password',
-    message: 'Please enter a strong ArDrive Encryption password: ',
-  });
-  return dataProtectionKeyResponse.password;
 };
 
 // Get the users wallet or create a new one
@@ -174,32 +169,37 @@ const promptForNewUserInfo = async (login: string) => {
     user.walletPrivateKey = wallet.walletPrivateKey;
     user.walletPublicKey = wallet.walletPublicKey;
 
+    // Get a strong password for login
+    // TO DO - make password strong!!
+    const loginPassword : string = await promptForNewLoginPassword();
+
     // Load an existing default Private ArDrive
-    const privateArDrives = await getAllMyPrivateArDriveIds(wallet.walletPublicKey);
-    if (privateArDrives[0].driveId !== '') {
-      const privateArDriveMetadata = await promptForArDriveId(privateArDrives, "Private");
-      user.privateArDriveId = privateArDriveMetadata.driveId;
-      user.privateArDriveTx = privateArDriveMetadata.metaDataTx;
+    const privateDrives = await getAllMyPrivateArDriveIds(wallet.walletPublicKey);
+    if (privateDrives.length > 0) {
+      const existingPrivateDrive : ArFSDriveMetadata = await promptForArDriveId(privateDrives, "private");
+      await addDriveToDriveTable(existingPrivateDrive);
     } else {
-      user.privateArDriveId = uuidv4();
-      console.log ("No existing Private ArDrives found.  Creating a new one.")
-      console.log ("   Private Drive-Id: %s", user.privateArDriveId)
+      console.log ("No existing Private ArDrives found.  Creating a new, default new one.")
+      const driveName : string = prompt('Please enter in a new name for this Private drive: ');
+      let newDrive = await createNewPrivateDrive(driveName)
+      await addDriveToDriveTable(newDrive);
     }
 
     // Load an existing default Public ArDrive
-    const publicArDrives = await getAllMyPublicArDriveIds(wallet.walletPublicKey);
-    if (publicArDrives[0].driveId !== '') {
-      const publicArDriveMetadata = await promptForArDriveId(publicArDrives, "Public");
-      user.publicArDriveId = publicArDriveMetadata.driveId;
-      user.publicArDriveTx = publicArDriveMetadata.metaDataTx;
+    const publicDrives = await getAllMyPublicArDriveIds(wallet.walletPublicKey);
+    if (publicDrives.length > 0) {
+      const existingPublicDrive : ArFSDriveMetadata = await promptForArDriveId(publicDrives, "public");
+      await addDriveToDriveTable(existingPublicDrive);
     } else {
-      console.log ("No existing Public ArDrives found.  Creating a new one.")
-      user.publicArDriveId = uuidv4();
-      console.log ("   Public Drive-Id: %s", user.publicArDriveId)
+      console.log ("No existing Public ArDrives found.  Creating a new, default new one.")
+      const driveName : string = prompt('Please enter in a new name for this Public drive: ');
+      let newDrive = await createNewPublicDrive(driveName)
+      await addDriveToDriveTable(newDrive);
     }
 
     user.syncFolderPath = await promptForSyncFolderPath();
-    user.dataProtectionKey = await promptForDataProtectionKey();
+
+    user.dataProtectionKey = loginPassword;
     return user;
   } catch (err) {
     console.log(err);
