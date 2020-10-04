@@ -3,5 +3,7 @@ The ArDrive Command Line Interface (CLI) contains all of the needed security, fi
 
 
 $ git clone https://github.com/ardriveapp/ardrive-cli
+
 $ cd ardrive-cli
+
 $ yarn start
