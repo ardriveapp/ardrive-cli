@@ -44,7 +44,9 @@ const promptForArDriveId = async (drives : ArFSDriveMetadata[], drivePrivacy: st
   console.log('Which one would you like to use as your default %s drive?', drivePrivacy)
   let i = 0;
   drives.forEach((drive: ArFSDriveMetadata) => {
-    console.log('%s: %s | TX %s', i, drive.driveId, drive.metaDataTxId);
+    let createdOn = new Date(+drive.unixTime)
+    console.log ('%s: %s', i, drive.driveName)
+    console.log (' Created On: %s | Drive Id: %s', createdOn, drive.driveId);
     i += 1;
   });
   console.log('%s: Generate a new %s Drive ID', i, drivePrivacy);
@@ -166,23 +168,26 @@ const promptForNewUserInfo = async (login: string) => {
   console.log ("                                                                              and PERMANENT hard drive! ");
   console.log ("--------------------------------------------------------------------------------------------------------");
   console.log ("");
-  console.log ("But how does it work?...");
-  console.log ("- ArDrive is a simple, yet robust app that protects and syncs your data to and from the cloud.");
-  console.log ("- No subscription needed!  Pay once to store your files, photos, videos and apps, PERMANENTLY.");
-  console.log ("- Your Private Drives are encrypted, meaning noone including the ArDrive community will ever be able to read your content.  ONLY YOU!");
-  console.log ("- Your Public Drives are open for anyone on the internet to view or download, forever.  POST CAREFULLY!!!");
-  console.log ("- Any data you upload is stored and secured on an immutable and decentralized blockchain network, powered by Arweave.  DELETING IS NOT AN OPTION!!!!!");
+  console.log ("ArDrive is a simple, yet robust app that protects and syncs your data to and from the decentralized cloud.");
+  console.log ("- No subscription needed!  Pay once to store your personal files, photos, videos and apps.");
+  console.log ("        PERMANENTLY!")
+  console.log ("- Your Private Drives are encrypted, so noone including the ArDrive community will ever be able to read your content.");
+  console.log ("        ONLY YOU!")
+  console.log ("- Your Public Drives are open for anyone on the internet to view or download, forever.");
+  console.log ("        POST CAREFULLY!")
+  console.log ("- Any data you upload is stored and secured on an immutable and decentralized blockchain network, powered by Arweave.");
+  console.log ("        DELETING IS NOT AN OPTION!")
   console.log ("");
 
   try {
 
     // Get a strong password for login
     // TO DO - make password strong!!
-    console.log('Your ArDrive Login password and Arweave Wallet will be used combined to encrypt all your private data');
+    console.log('Your ArDrive Login password and Arweave Wallet will be combined to encrypt all your private data');
     console.log('        Do NOT share them!');
     console.log('        Do NOT lose them!');
     console.log('        Do NOT save them in public places!');
-    console.log('        KEEP THEM SECRET, KEEP THEM SAFE!!!')
+    console.log('        So please KEEP THEM SECRET and KEEP THEM SAFE!!!')
     const loginPassword : string = await promptForNewLoginPassword();
     console.log ("");
 
