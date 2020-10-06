@@ -52,11 +52,11 @@ const promptForArDriveId = async (drives : ArFSDriveMetadata[], drivePrivacy: st
   if (+choice === i) {
     const driveName : string = prompt('   Please enter in a new name for this drive: ');
     if (drivePrivacy === 'public') {
-      let newDrive = await createNewPublicDrive(driveName)
+      const newDrive = await createNewPublicDrive(driveName)
       drives.push (newDrive)
     }
     else if (drivePrivacy === 'private') {
-      let newDrive = await createNewPrivateDrive(driveName)
+      const newDrive = await createNewPrivateDrive(driveName)
       drives.push (newDrive)
     }
   }
@@ -149,8 +149,8 @@ const promptForLoginPassword = async () => {
 // This includes Wallet, Existing ArDrives and Sync Folder Path
 const promptForNewUserInfo = async (login: string) => {
   let wallet;
-  let user: ArDriveUser = {
-    login: login,
+  const user: ArDriveUser = {
+    login,
     dataProtectionKey: "",
     walletPrivateKey: "",
     walletPublicKey: "",
@@ -178,7 +178,7 @@ const promptForNewUserInfo = async (login: string) => {
 
     // Get a strong password for login
     // TO DO - make password strong!!
-    console.log('Your ArDrive Login password and Arweave Wallet will be used combined to encrypt all your private data'); 
+    console.log('Your ArDrive Login password and Arweave Wallet will be used combined to encrypt all your private data');
     console.log('        Do NOT share them!');
     console.log('        Do NOT lose them!');
     console.log('        Do NOT save them in public places!');
@@ -223,7 +223,7 @@ const promptForNewUserInfo = async (login: string) => {
       await addDriveToDriveTable(existingPrivateDrive);
     } else {
       const driveName : string = prompt('   Please enter a name for your new Private drive: ');
-      let newDrive = await createNewPrivateDrive(driveName)
+      const newDrive = await createNewPrivateDrive(driveName)
       await addDriveToDriveTable(newDrive);
     }
 
@@ -239,7 +239,7 @@ const promptForNewUserInfo = async (login: string) => {
       await addDriveToDriveTable(existingPublicDrive);
     } else {
       const driveName : string = prompt('   Please enter a name for your new Public drive: ');
-      let newDrive = await createNewPublicDrive(driveName)
+      const newDrive = await createNewPublicDrive(driveName)
       await addDriveToDriveTable(newDrive);
     }
 
@@ -264,7 +264,7 @@ const promptForArDriveUpload = async (uploadBatch: UploadBatch) : Promise<boolea
     uploadBatch.totalArDrivePrice
   );
   const readyToUpload = prompt('Upload all unsynced files? Y/N ');
-  if (readyToUpload == 'Y')
+  if (readyToUpload === 'Y')
     return true;
   else {
     return false;
