@@ -54,9 +54,7 @@ async function main() {
   if (user === undefined)
   {
      // Welcome message and info
-     console.log(
-     'We have not detected a profile.  To store your files permanently, you must first setup your ArDrive account.'
-    );
+     console.log('We have not detected a profile for your login!  Let\'s get one set up.');
     user = await promptForNewUserInfo(login);
     const loginPassword = user.dataProtectionKey;
     await addNewUser(user.dataProtectionKey, user);
@@ -142,17 +140,17 @@ async function main() {
     await sleep(10000);
   }
 }
-console.log('       ___   _____    _____   _____    _   _     _   _____  ');
+console.log('          ___   _____    _____   _____    _   _     _   _____  ');
 console.log(
-  '      /   | |  _  \\  |  _  \\ |  _  \\  | | | |   / / | ____| '
+  '         /   | |  _  \\  |  _  \\ |  _  \\  | | | |   / / | ____| '
 );
-console.log('     / /| | | |_| |  | | | | | |_| |  | | | |  / /  | |__   ');
-console.log('    / /_| | |  _  /  | | | | |  _  /  | | | | / /   |  __|  ');
+console.log('        / /| | | |_| |  | | | | | |_| |  | | | |  / /  | |__   ');
+console.log('       / /_| | |  _  /  | | | | |  _  /  | | | | / /   |  __|  ');
 console.log(
-  '   / /  | | | | \\ \\  | |_| | | | \\ \\  | | | |/ /    | |___  '
+  '      / /  | | | | \\ \\  | |_| | | | \\ \\  | | | |/ /    | |___  '
 );
 console.log(
-  '  /_/   |_| |_|  \\_\\ |_____/ |_|  \\_\\ |_| |___/     |_____| '
+  '     /_/   |_| |_|  \\_\\ |_____/ |_|  \\_\\ |_| |___/     |_____| '
 );
 console.log('');
 main();

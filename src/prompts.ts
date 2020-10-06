@@ -21,7 +21,7 @@ const promptForLocalWalletPath = async () : Promise<string> => {
   console.log(
     'Please enter the path of your existing Arweave Wallet JSON file eg. C:\\Source\\ardrive_test_key.json'
   );
-  const existingWalletPath = prompt('Wallet Path: ');
+  const existingWalletPath = prompt('   Wallet Path: ');
   const validPath = checkFileExistsSync(existingWalletPath);
   if (validPath) {
     return existingWalletPath;
@@ -34,24 +34,23 @@ const promptForLocalWalletPath = async () : Promise<string> => {
 // Get the ArDrive owner nickname
 export const promptForLogin = async () => {
   console.log('Please enter your ArDrive Login Name.  If no name exists, we will begin to setup a ArDrive Profile for you.');
-  const login = prompt('Login Name: ');
+  const login = prompt('  Login Name: ');
   return login;
 };
 
 // Get the ArDrive owner nickname
 const promptForArDriveId = async (drives : ArFSDriveMetadata[], drivePrivacy: string) : Promise<ArFSDriveMetadata> => {
-  console.log(
-    'Existing %s Drive IDs have been found for this ArDrive wallet.  Which one would you like to use as your default?', drivePrivacy
-  );
+  console.log('Existing %s Drive IDs have been found for this ArDrive wallet.', drivePrivacy);
+  console.log('Which one would you like to use as your default %s drive?', drivePrivacy)
   let i = 0;
   drives.forEach((drive: ArFSDriveMetadata) => {
     console.log('%s: %s | TX %s', i, drive.driveId, drive.metaDataTxId);
     i += 1;
   });
   console.log('%s: Generate a new %s Drive ID', i, drivePrivacy);
-  const choice = prompt('Please select which number: ');
+  const choice = prompt('   Please select which number: ');
   if (+choice === i) {
-    const driveName : string = prompt('Please enter in a new name for this drive: ');
+    const driveName : string = prompt('   Please enter in a new name for this drive: ');
     if (drivePrivacy === 'public') {
       let newDrive = await createNewPublicDrive(driveName)
       drives.push (newDrive)
@@ -60,8 +59,8 @@ const promptForArDriveId = async (drives : ArFSDriveMetadata[], drivePrivacy: st
       let newDrive = await createNewPrivateDrive(driveName)
       drives.push (newDrive)
     }
-
   }
+  // NEED TO VALIDATE THIS RESPONSE, like if the user just hits enter
   return drives[choice];
 };
 
@@ -70,13 +69,8 @@ const promptForBackupWalletPath = (): string => {
   console.log(
     'Please enter the path to backup your new ArDrive Wallet e.g C:\\My_Safe_Location'
   );
-  console.log('Your ArDrive Wallet is the key to open any data stored on your Private drives.');
-  console.log('        Do NOT share it!');
-  console.log('        Do NOT lose it!');
-  console.log('        Do NOT save it on cloud storage.');
-  console.log('        Do NOT save it on your ArDrive');
   const backupFolderPath = prompt(
-    'ArDrive Wallet Backup Folder Path (hit enter for current directory): ',
+    '   ArDrive Wallet Backup Folder Path (hit enter for current directory): ',
     process.cwd().concat(sep, 'Backup', sep)
   );
   const validPath = checkOrCreateFolder(backupFolderPath);
@@ -90,11 +84,9 @@ const promptForBackupWalletPath = (): string => {
 // Will handle error checking and ensuring it is a valid path
 const promptForSyncFolderPath = (): string => {
   // Setup ArDrive Sync Folder
-  console.log('Your ArDrive Sync Folder is the root directory for any Public, Private or Shared Drives you add.');
-  console.log('Please enter the path of your local ArDrive folder e.g D:\\ArDriveSync.');
-  console.log('A new folder will be created, with your selected Drives if they do not exist')
+  console.log('Please enter the path of your local root ArDrive folder e.g D:\\ArDriveSync.');
   const syncFolderPath = prompt(
-    'ArDrive Sync Folder Path (hit enter for current directory): ',
+    '   ArDrive Sync Folder Path (hit enter for current directory): ',
     process.cwd().concat(sep, 'Sync', sep)
   );
 
@@ -107,36 +99,37 @@ const promptForSyncFolderPath = (): string => {
 
 // Setup ArDrive Login Password
 // Modify to check for password strength
-const promptForNewLoginPassword = async () => {
-  console.log(
-    'Your ArDrive Login password will be used to decrypt your Arweave wallet, and start syncing your Public, Private and Shared drives.'
-  );
+const promptForNewLoginPassword = async () : Promise<string> => {
+  let password = '';
   const newLoginPasswordResponse = await passwordPrompt({
     type: 'text',
     name: 'password',
     style: 'password',
-    message: 'Please enter a strong ArDrive Login password: ',
+    message: '  Please enter a strong ArDrive Login password: ',
   });
-
   const checkLoginPasswordResponse = await passwordPrompt({
     type: 'text',
     name: 'password',
     style: 'password',
-    message: 'Please re-enter your strong ArDrive Login password: ',
+    message: '  Please re-enter your strong ArDrive Login password: ',
   });
 
-  (if)
-
-  return newLoginPasswordResponse.password;
+  // Lets check to ensure the passwords match
+  if (newLoginPasswordResponse.password !== checkLoginPasswordResponse.password) {
+    console.log("The passwords you have entered do not match!")
+    password = await promptForNewLoginPassword()
+  }
+  else {
+    password = newLoginPasswordResponse.password
+  }
+  return password;
 };
 
 // Get the users wallet or create a new one
-const promptForWallet = async () => {
+const promptForWallet = async () : Promise<string> => {
   // Create new or import Arweave wallet
-  console.log('All files uploaded are paid for with the Arweave token, and you only pay for what you upload.');
-  console.log('To use ArDrive, you must have a funded Arweave Wallet.');
-  const existingWallet = prompt(
-    'Do you have an existing Arweave Wallet (.json file) Y/N '
+  const existingWallet: string = prompt(
+    '   Do you have an existing Arweave Wallet .json file? (default is Yes) Y/N '
   );
   return existingWallet;
 };
@@ -147,7 +140,7 @@ const promptForLoginPassword = async () => {
     type: 'text',
     name: 'password',
     style: 'password',
-    message: 'Please enter your ArDrive Login password: ',
+    message: '  Please enter your ArDrive Login password: ',
   });
   return loginPasswordResponse.password;
 };
@@ -163,9 +156,41 @@ const promptForNewUserInfo = async (login: string) => {
     walletPublicKey: "",
     syncFolderPath: "",
   }
+  console.log ("");
+  console.log ("                                          Welcome to ArDrive                                            ");
+  console.log ("--------------------------------------------------------------------------------------------------------");
+  console.log ("Your secure and private...                                                                              ");
+  console.log ("                          censorship-resistant...                                                       ");
+  console.log ("                                              pay-as-you-go...                                          ");
+  console.log ("                                                              decentralized...                          ");
+  console.log ("                                                                              and PERMANENT hard drive! ");
+  console.log ("--------------------------------------------------------------------------------------------------------");
+  console.log ("");
+  console.log ("But how does it work?...");
+  console.log ("- ArDrive is a simple, yet robust app that protects and syncs your data to and from the cloud.");
+  console.log ("- No subscription needed!  Pay once to store your files, photos, videos and apps, PERMANENTLY.");
+  console.log ("- Your Private Drives are encrypted, meaning noone including the ArDrive community will ever be able to read your content.  ONLY YOU!");
+  console.log ("- Your Public Drives are open for anyone on the internet to view or download, forever.  POST CAREFULLY!!!");
+  console.log ("- Any data you upload is stored and secured on an immutable and decentralized blockchain network, powered by Arweave.  DELETING IS NOT AN OPTION!!!!!");
+  console.log ("");
+
   try {
+
+    // Get a strong password for login
+    // TO DO - make password strong!!
+    console.log('Your ArDrive Login password and Arweave Wallet will be used combined to encrypt all your private data'); 
+    console.log('        Do NOT share them!');
+    console.log('        Do NOT lose them!');
+    console.log('        Do NOT save them in public places!');
+    console.log('        KEEP THEM SECRET, KEEP THEM SAFE!!!')
+    const loginPassword : string = await promptForNewLoginPassword();
+    console.log ("");
+
+    // Get the user's wallet information
+    console.log ('Your Arweave wallet is used to pay for all data you upload through ArDrive.');
+    console.log ('Want to learn more?  Head to https://arweave.org');
     const existingWallet = await promptForWallet();
-    if (existingWallet === 'N') {
+    if (existingWallet.toLowerCase() === 'n') {
       wallet = await createArDriveWallet();
       const backupWalletPath = await promptForBackupWalletPath();
       await backupWallet(backupWalletPath, wallet, login);
@@ -173,40 +198,50 @@ const promptForNewUserInfo = async (login: string) => {
       const existingWalletPath = await promptForLocalWalletPath();
       wallet = await getLocalWallet(existingWalletPath);
     }
-
+    // Set the wallet in the users profile
     user.walletPrivateKey = wallet.walletPrivateKey;
     user.walletPublicKey = wallet.walletPublicKey;
+    console.log ("");
 
-    // Get a strong password for login
-    // TO DO - make password strong!!
-    const loginPassword : string = await promptForNewLoginPassword();
+    // Get the local root folder that will contain all of the user's drives
+    console.log ('Your ArDrive Sync Folder is the root directory for any of your Public, Private or Shared Drives.');
+    user.syncFolderPath = await promptForSyncFolderPath();
+    console.log ('Using %s', user.syncFolderPath);
 
     // Load an existing default Private ArDrive
+    console.log ("");
+    console.log ("Let\'s get you ready to start syncing by setting up some Drives.");
+    console.log ("Each Drive will be created under your ArDrive Sync Folder using its specified name.")
+    console.log ("A new folder will be created if it doesn't exist e.g D:\\ArDriveSync\\MyDrive_Name");
+    console.log ("");
+    console.log ("Let's add a default Private Drive.")
+    console.log ("Private Drives encrypt and protect all of your personal data, ensuring only you can access it.");
+
     const privateDrives = await getAllMyPrivateArDriveIds(wallet.walletPublicKey);
     if (privateDrives.length > 0) {
       const existingPrivateDrive : ArFSDriveMetadata = await promptForArDriveId(privateDrives, "private");
       await addDriveToDriveTable(existingPrivateDrive);
     } else {
-      console.log ("No existing Private ArDrives found.  Creating a new, default new one.")
-      const driveName : string = prompt('Please enter in a new name for this Private drive: ');
+      const driveName : string = prompt('   Please enter a name for your new Private drive: ');
       let newDrive = await createNewPrivateDrive(driveName)
       await addDriveToDriveTable(newDrive);
     }
 
+    console.log ("");
+    console.log ("Great!!");
+    console.log ("");
+    console.log ("Now let's add a default Public Drive");
+    console.log ("Public Drives are open and read-only to the entire internet.  Anything uploaded here is accessable forever on the PermaWeb!")
     // Load an existing default Public ArDrive
     const publicDrives = await getAllMyPublicArDriveIds(wallet.walletPublicKey);
     if (publicDrives.length > 0) {
       const existingPublicDrive : ArFSDriveMetadata = await promptForArDriveId(publicDrives, "public");
       await addDriveToDriveTable(existingPublicDrive);
     } else {
-      console.log ("No existing Public ArDrives found.  Creating a new, default new one.")
-      const driveName : string = prompt('Please enter in a new name for this Public drive: ');
+      const driveName : string = prompt('   Please enter a name for your new Public drive: ');
       let newDrive = await createNewPublicDrive(driveName)
       await addDriveToDriveTable(newDrive);
     }
-
-    // Get the local root folder that will contain all of the user's drives
-    user.syncFolderPath = await promptForSyncFolderPath();
 
     // Set the data protection key used for all data encryption.
     // The key is based on the uesr's login
