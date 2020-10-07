@@ -237,6 +237,7 @@ const promptForNewUserInfo = async (login: string) => {
     console.log ("");
     console.log ("Now let's add a default Public Drive");
     console.log ("Public Drives are open and read-only to the entire internet.  Anything uploaded here is accessable forever on the PermaWeb!")
+    
     // Load an existing default Public ArDrive
     const publicDrives = await getAllMyPublicArDriveIds(wallet.walletPublicKey);
     if (publicDrives.length > 0) {
