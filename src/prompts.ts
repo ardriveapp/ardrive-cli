@@ -1,4 +1,3 @@
-import { sep } from 'path';
 import {
   getLocalWallet,
   createArDriveWallet,
@@ -15,13 +14,23 @@ import { ArDriveUser, ArFSDriveMetadata, UploadBatch } from 'ardrive-core-js/lib
 
 const prompt = require ('prompt-sync')({sigint: true});
 import passwordPrompt from 'prompts';
+import { Path } from 'typescript';
+
+// Get the users wallet or create a new one
+const promptForWallet = () : String => {
+  // Create new or import Arweave wallet
+  const existingWallet: string = prompt(
+    '   Do you have an existing Arweave Wallet .json file? (default is Yes) Y/N '
+  );
+  return existingWallet;
+};
 
 // Get path to local wallet and return that wallet public and private key
-const promptForLocalWalletPath = async () : Promise<string> => {
-  console.log(
-    'Please enter the path of your existing Arweave Wallet JSON file eg. C:\\Source\\ardrive_test_key.json'
-  );
-  const existingWalletPath = prompt('   Wallet Path: ');
+const promptForLocalWalletPath = () : Path => {
+  console.log('Please enter the path of your existing Arweave Wallet JSON file eg. C:\\Source\\ardrive_test_key.json');
+  const existingWalletPath : Path = prompt('   Wallet Path: ');
+
+  // This should be updated to check if valid .json file
   const validPath = checkFileExistsSync(existingWalletPath);
   if (validPath) {
     return existingWalletPath;
@@ -29,6 +38,19 @@ const promptForLocalWalletPath = async () : Promise<string> => {
     console.log ("File path is invalid!");
     return promptForLocalWalletPath();
   }
+};
+
+// Get the location to backup the new wallet
+const promptForBackupWalletPath = (): Path => {
+  console.log(
+    'Please enter the path to backup your new ArDrive Wallet e.g C:\\My_Safe_Location'
+  );
+  const backupFolderPath : Path = prompt('   ArDrive Wallet Backup Folder Path (hit enter for current directory): ');
+  const validPath : Path | String = checkOrCreateFolder(backupFolderPath);
+  if (validPath === '0') {
+    return promptForBackupWalletPath();
+  }
+  return backupFolderPath;
 };
 
 // Get the ArDrive owner nickname
@@ -66,32 +88,12 @@ const promptForArDriveId = async (drives : ArFSDriveMetadata[], drivePrivacy: st
   return drives[choice];
 };
 
-// Get the location to backup the new wallet
-const promptForBackupWalletPath = (): string => {
-  console.log(
-    'Please enter the path to backup your new ArDrive Wallet e.g C:\\My_Safe_Location'
-  );
-  const backupFolderPath = prompt(
-    '   ArDrive Wallet Backup Folder Path (hit enter for current directory): ',
-    process.cwd().concat(sep, 'Backup', sep)
-  );
-  const validPath = checkOrCreateFolder(backupFolderPath);
-  if (validPath === '0') {
-    return promptForBackupWalletPath();
-  }
-  return backupFolderPath;
-};
-
 // Get the ArDrive Sync Folder path
 // Will handle error checking and ensuring it is a valid path
 const promptForSyncFolderPath = (): string => {
   // Setup ArDrive Sync Folder
   console.log('Please enter the path of your local root ArDrive folder e.g D:\\ArDriveSync.');
-  const syncFolderPath = prompt(
-    '   ArDrive Sync Folder Path (hit enter for current directory): ',
-    process.cwd().concat(sep, 'Sync', sep)
-  );
-
+  const syncFolderPath : Path = prompt('   ArDrive Sync Folder Path (hit enter for current directory): ');
   const validPath = checkOrCreateFolder(syncFolderPath);
   if (validPath === '0') {
     return promptForSyncFolderPath();
@@ -125,15 +127,6 @@ const promptForNewLoginPassword = async () : Promise<string> => {
     password = newLoginPasswordResponse.password
   }
   return password;
-};
-
-// Get the users wallet or create a new one
-const promptForWallet = async () : Promise<string> => {
-  // Create new or import Arweave wallet
-  const existingWallet: string = prompt(
-    '   Do you have an existing Arweave Wallet .json file? (default is Yes) Y/N '
-  );
-  return existingWallet;
 };
 
 // Prompts the user to enter a login password
@@ -194,13 +187,13 @@ const promptForNewUserInfo = async (login: string) => {
     // Get the user's wallet information
     console.log ('Your Arweave wallet is used to pay for all data you upload through ArDrive.');
     console.log ('Want to learn more?  Head to https://arweave.org');
-    const existingWallet = await promptForWallet();
+    const existingWallet = promptForWallet();
     if (existingWallet.toLowerCase() === 'n') {
       wallet = await createArDriveWallet();
-      const backupWalletPath = await promptForBackupWalletPath();
+      const backupWalletPath : Path = promptForBackupWalletPath();
       await backupWallet(backupWalletPath, wallet, login);
     } else {
-      const existingWalletPath = await promptForLocalWalletPath();
+      const existingWalletPath : Path = promptForLocalWalletPath();
       wallet = await getLocalWallet(existingWalletPath);
     }
     // Set the wallet in the users profile
@@ -210,7 +203,7 @@ const promptForNewUserInfo = async (login: string) => {
 
     // Get the local root folder that will contain all of the user's drives
     console.log ('Your ArDrive Sync Folder is the root directory for any of your Public, Private or Shared Drives.');
-    user.syncFolderPath = await promptForSyncFolderPath();
+    user.syncFolderPath = promptForSyncFolderPath();
     console.log ('Using %s', user.syncFolderPath);
 
     // Load an existing default Private ArDrive
@@ -237,7 +230,7 @@ const promptForNewUserInfo = async (login: string) => {
     console.log ("");
     console.log ("Now let's add a default Public Drive");
     console.log ("Public Drives are open and read-only to the entire internet.  Anything uploaded here is accessable forever on the PermaWeb!")
-    
+
     // Load an existing default Public ArDrive
     const publicDrives = await getAllMyPublicArDriveIds(wallet.walletPublicKey);
     if (publicDrives.length > 0) {
