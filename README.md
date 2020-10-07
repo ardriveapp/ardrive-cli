@@ -5,6 +5,8 @@ This app is currently in beta testing, and as such may have bugs and does not of
 
 To use the ArDrive CLI, install it with your favorite package manager, and run "ardrive-cli"
 
+```
 $ npm i ardrive-cli -g
-
 $ ardrive-cli
+```
+
