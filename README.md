@@ -1,10 +1,12 @@
 # ardrive-cli
-The ArDrive Command Line Interface (CLI) contains all of the needed security, file synchronization and Arweave wallet capabilities via a node.js application.  To get it working, you must have GIT and NODE.JS installed.
+The ArDrive Command Line Interface (CLI) Beta contains all of the needed public file synchronization and Arweave wallet capabilities via a Node.js application.  This works in unison with the ArDrive Web App.
 
-$ git clone https://github.com/ardriveapp/ardrive-cli
+This app is currently in beta testing, and as such may have bugs and does not offer Private/Encrypted Drives.
 
-$ cd ardrive-cli
+To use the ArDrive CLI, install it with your favorite package manager, and run "ardrive-cli"
 
-$ yarn
+```
+$ npm i ardrive-cli -g
+$ ardrive-cli
+```
 
-$ yarn start
