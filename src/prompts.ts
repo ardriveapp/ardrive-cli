@@ -17,7 +17,7 @@ import passwordPrompt from 'prompts';
 import { Path } from 'typescript';
 
 // Get the users wallet or create a new one
-const promptForWallet = () : String => {
+const promptForWallet = () : string => {
   // Create new or import Arweave wallet
   const existingWallet: string = prompt(
     '   Do you have an existing Arweave Wallet .json file? (default is Yes) Y/N '
@@ -26,9 +26,9 @@ const promptForWallet = () : String => {
 };
 
 // Get path to local wallet and return that wallet public and private key
-const promptForLocalWalletPath = () : Path => {
+const promptForLocalWalletPath = () : string => {
   console.log('Please enter the path of your existing Arweave Wallet JSON file eg. C:\\Source\\ardrive_test_key.json');
-  const existingWalletPath : Path = prompt('   Wallet Path: ');
+  const existingWalletPath : string = prompt('   Wallet Path: ');
 
   // This should be updated to check if valid .json file
   const validPath = checkFileExistsSync(existingWalletPath);
@@ -41,12 +41,12 @@ const promptForLocalWalletPath = () : Path => {
 };
 
 // Get the location to backup the new wallet
-const promptForBackupWalletPath = (): Path => {
+const promptForBackupWalletPath = (): string => {
   console.log(
     'Please enter the path to backup your new ArDrive Wallet e.g C:\\My_Safe_Location'
   );
-  const backupFolderPath : Path = prompt('   ArDrive Wallet Backup Folder Path (hit enter for current directory): ');
-  const validPath : Path | String = checkOrCreateFolder(backupFolderPath);
+  const backupFolderPath : string = prompt('   ArDrive Wallet Backup Folder Path (hit enter for current directory): ');
+  const validPath : string = checkOrCreateFolder(backupFolderPath);
   if (validPath === '0') {
     return promptForBackupWalletPath();
   }
@@ -181,6 +181,7 @@ const promptForNewUserInfo = async (login: string) => {
     console.log('        Do NOT lose them!');
     console.log('        Do NOT save them in public places!');
     console.log('        So please KEEP THEM SECRET and KEEP THEM SAFE!!!')
+    console.log ("")
     const loginPassword : string = await promptForNewLoginPassword();
     console.log ("");
 
@@ -190,14 +191,14 @@ const promptForNewUserInfo = async (login: string) => {
     const existingWallet = promptForWallet();
     if (existingWallet.toLowerCase() === 'n') {
       wallet = await createArDriveWallet();
-      const backupWalletPath : Path = promptForBackupWalletPath();
+      const backupWalletPath : string = promptForBackupWalletPath();
       await backupWallet(backupWalletPath, wallet, login);
     } else {
-      const existingWalletPath : Path = promptForLocalWalletPath();
+      const existingWalletPath : string = promptForLocalWalletPath();
       wallet = await getLocalWallet(existingWalletPath);
     }
     // Set the wallet in the users profile
-    user.walletPrivateKey = wallet.walletPrivateKey;
+    user.walletPrivateKey = JSON.stringify(wallet.walletPrivateKey);
     user.walletPublicKey = wallet.walletPublicKey;
     console.log ("");
 
@@ -215,7 +216,11 @@ const promptForNewUserInfo = async (login: string) => {
     console.log ("Let's add a default Private Drive.")
     console.log ("Private Drives encrypt and protect all of your personal data, ensuring only you can access it.");
 
-    const privateDrives = await getAllMyPrivateArDriveIds(wallet.walletPublicKey);
+    // Set the data protection key used for all data encryption.
+    // The key is based on the uesr's login
+    user.dataProtectionKey = loginPassword;
+
+    const privateDrives = await getAllMyPrivateArDriveIds(user);
     if (privateDrives.length > 0) {
       const existingPrivateDrive : ArFSDriveMetadata = await promptForArDriveId(privateDrives, "private");
       await addDriveToDriveTable(existingPrivateDrive);
@@ -242,9 +247,6 @@ const promptForNewUserInfo = async (login: string) => {
       await addDriveToDriveTable(newDrive);
     }
 
-    // Set the data protection key used for all data encryption.
-    // The key is based on the uesr's login
-    user.dataProtectionKey = loginPassword;
     return user;
   } catch (err) {
     console.log(err);

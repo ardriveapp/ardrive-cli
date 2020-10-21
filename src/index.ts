@@ -54,8 +54,8 @@ async function main() {
   // If no user is found, prompt the user to create a new one
   if (user === undefined)
   {
-     // Welcome message and info
-     console.log('We have not detected a profile for your login!  Let\'s get one set up.');
+    // Welcome message and info
+    console.log('We have not detected a profile for your login!  Let\'s get one set up.');
     user = await promptForNewUserInfo(login);
     const loginPassword = user.dataProtectionKey;
     await addNewUser(user.dataProtectionKey, user);
