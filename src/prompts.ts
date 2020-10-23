@@ -61,7 +61,7 @@ export const promptForLogin = async () => {
 };
 
 // Get the ArDrive owner nickname
-const promptForArDriveId = async (drives : ArFSDriveMetadata[], drivePrivacy: string) : Promise<ArFSDriveMetadata> => {
+const promptForArDriveId = async (login: string, drives : ArFSDriveMetadata[], drivePrivacy: string) : Promise<ArFSDriveMetadata> => {
   console.log('Existing %s Drive IDs have been found for this ArDrive wallet.', drivePrivacy);
   console.log('Which one would you like to use as your default %s drive?', drivePrivacy)
   let i = 0;
@@ -76,15 +76,16 @@ const promptForArDriveId = async (drives : ArFSDriveMetadata[], drivePrivacy: st
   if (+choice === i) {
     const driveName : string = prompt('   Please enter in a new name for this drive: ');
     if (drivePrivacy === 'public') {
-      const newDrive = await createNewPublicDrive(driveName)
+      const newDrive = await createNewPublicDrive(login, driveName)
       drives.push (newDrive)
     }
     else if (drivePrivacy === 'private') {
-      const newDrive = await createNewPrivateDrive(driveName)
+      const newDrive = await createNewPrivateDrive(login, driveName)
       drives.push (newDrive)
     }
   }
   // NEED TO VALIDATE THIS RESPONSE, like if the user just hits enter
+  drives[choice].login = login;
   return drives[choice];
 };
 
@@ -109,7 +110,7 @@ const promptForNewLoginPassword = async () : Promise<string> => {
     type: 'text',
     name: 'password',
     style: 'password',
-    message: '  Please enter a strong ArDrive Login password: ',
+    message: '  Please enter your strong ArDrive Login password:',
   });
   const checkLoginPasswordResponse = await passwordPrompt({
     type: 'text',
@@ -181,7 +182,8 @@ const promptForNewUserInfo = async (login: string) => {
     console.log('        Do NOT lose them!');
     console.log('        Do NOT save them in public places!');
     console.log('        So please KEEP THEM SECRET and KEEP THEM SAFE!!!')
-    console.log ("")
+    console.log("")
+    console.log("Already set up some Private Drives?  Please reuse that password here to unlock them.")
     const loginPassword : string = await promptForNewLoginPassword();
     console.log ("");
 
@@ -222,11 +224,11 @@ const promptForNewUserInfo = async (login: string) => {
 
     const privateDrives = await getAllMyPrivateArDriveIds(user);
     if (privateDrives.length > 0) {
-      const existingPrivateDrive : ArFSDriveMetadata = await promptForArDriveId(privateDrives, "private");
+      const existingPrivateDrive : ArFSDriveMetadata = await promptForArDriveId(user.login, privateDrives, "private");
       await addDriveToDriveTable(existingPrivateDrive);
     } else {
       const driveName : string = prompt('   Please enter a name for your new Private drive: ');
-      const newDrive = await createNewPrivateDrive(driveName)
+      const newDrive = await createNewPrivateDrive(user.login, driveName)
       await addDriveToDriveTable(newDrive);
     }
 
@@ -239,11 +241,11 @@ const promptForNewUserInfo = async (login: string) => {
     // Load an existing default Public ArDrive
     const publicDrives = await getAllMyPublicArDriveIds(wallet.walletPublicKey);
     if (publicDrives.length > 0) {
-      const existingPublicDrive : ArFSDriveMetadata = await promptForArDriveId(publicDrives, "public");
+      const existingPublicDrive : ArFSDriveMetadata = await promptForArDriveId(user.login, publicDrives, "public");
       await addDriveToDriveTable(existingPublicDrive);
     } else {
       const driveName : string = prompt('   Please enter a name for your new Public drive: ');
-      const newDrive = await createNewPublicDrive(driveName)
+      const newDrive = await createNewPublicDrive(user.login, driveName)
       await addDriveToDriveTable(newDrive);
     }
 
