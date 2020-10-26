@@ -18,6 +18,7 @@ import {
   addNewUser,
   passwordCheck,
   setupDrives,
+  // deleteUserAndDrives,
 } from 'ardrive-core-js'
 import { ArDriveUser, UploadBatch } from 'ardrive-core-js/lib/types';
 import {
@@ -48,6 +49,9 @@ async function main() {
   // Ask the user for their login name
   const login = await promptForLogin();
 
+  // console.log ("DELETING ", login)
+  // await deleteUserAndDrives(login);
+  // await sleep(500000)
   // Check to see if it exists
   user = await getUserFromProfile(login);
 

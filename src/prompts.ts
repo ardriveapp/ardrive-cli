@@ -10,7 +10,7 @@ import {
   createNewPublicDrive,
   createNewPrivateDrive,
 } from 'ardrive-core-js';
-import { ArDriveUser, ArFSDriveMetadata, UploadBatch } from 'ardrive-core-js/lib/types';
+import { ArDriveUser, ArFSDriveMetaData, UploadBatch } from 'ardrive-core-js/lib/types';
 
 const prompt = require ('prompt-sync')({sigint: true});
 import passwordPrompt from 'prompts';
@@ -61,12 +61,12 @@ export const promptForLogin = async () => {
 };
 
 // Get the ArDrive owner nickname
-const promptForArDriveId = async (login: string, drives : ArFSDriveMetadata[], drivePrivacy: string) : Promise<ArFSDriveMetadata> => {
+const promptForArDriveId = async (login: string, drives : ArFSDriveMetaData[], drivePrivacy: string) : Promise<ArFSDriveMetaData> => {
   console.log('Existing %s Drive IDs have been found for this ArDrive wallet.', drivePrivacy);
   console.log('Which one would you like to use as your default %s drive?', drivePrivacy)
   let i = 0;
-  drives.forEach((drive: ArFSDriveMetadata) => {
-    let createdOn = new Date(+drive.unixTime)
+  drives.forEach((drive: ArFSDriveMetaData) => {
+    let createdOn = new Date(+drive.unixTime * 1000)
     console.log ('%s: %s', i, drive.driveName)
     console.log (' Created On: %s | Drive Id: %s', createdOn, drive.driveId);
     i += 1;
@@ -224,7 +224,7 @@ const promptForNewUserInfo = async (login: string) => {
 
     const privateDrives = await getAllMyPrivateArDriveIds(user);
     if (privateDrives.length > 0) {
-      const existingPrivateDrive : ArFSDriveMetadata = await promptForArDriveId(user.login, privateDrives, "private");
+      const existingPrivateDrive : ArFSDriveMetaData = await promptForArDriveId(user.login, privateDrives, "private");
       await addDriveToDriveTable(existingPrivateDrive);
     } else {
       const driveName : string = prompt('   Please enter a name for your new Private drive: ');
@@ -241,7 +241,7 @@ const promptForNewUserInfo = async (login: string) => {
     // Load an existing default Public ArDrive
     const publicDrives = await getAllMyPublicArDriveIds(wallet.walletPublicKey);
     if (publicDrives.length > 0) {
-      const existingPublicDrive : ArFSDriveMetadata = await promptForArDriveId(user.login, publicDrives, "public");
+      const existingPublicDrive : ArFSDriveMetaData = await promptForArDriveId(user.login, publicDrives, "public");
       await addDriveToDriveTable(existingPublicDrive);
     } else {
       const driveName : string = prompt('   Please enter a name for your new Public drive: ');
