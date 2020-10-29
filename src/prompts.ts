@@ -106,6 +106,7 @@ const promptForSyncFolderPath = (): string => {
 // Modify to check for password strength
 const promptForNewLoginPassword = async () : Promise<string> => {
   let password = '';
+  console.log('Strong passwords should have at least 15 characters, with upper/lower case letters, numbers and symbols.')
   const newLoginPasswordResponse = await passwordPrompt({
     type: 'text',
     name: 'password',
@@ -163,6 +164,7 @@ const promptForNewUserInfo = async (login: string) => {
   console.log ("--------------------------------------------------------------------------------------------------------");
   console.log ("");
   console.log ("ArDrive is a simple, yet robust app that protects and syncs your data to and from the decentralized cloud.");
+  console.log ("");
   console.log ("- No subscription needed!  Pay once to store your personal files, photos, videos and apps.");
   console.log ("        PERMANENTLY!")
   console.log ("- Your Private Drives are encrypted, so noone including the ArDrive community will ever be able to read your content.");
@@ -177,19 +179,16 @@ const promptForNewUserInfo = async (login: string) => {
 
     // Get a strong password for login
     // TO DO - make password strong!!
-    console.log('Your ArDrive Login password and Arweave Wallet will be combined to encrypt all your private data');
+    console.log('Your Arweave Wallet and ArDrive Login password will be combined to encrypt all your private data');
     console.log('        Do NOT share them!');
     console.log('        Do NOT lose them!');
     console.log('        Do NOT save them in public places!');
     console.log('        So please KEEP THEM SECRET and KEEP THEM SAFE!!!')
     console.log("")
-    console.log("Already set up some Private Drives?  Please reuse that password here to unlock them.")
-    const loginPassword : string = await promptForNewLoginPassword();
-    console.log ("");
 
     // Get the user's wallet information
     console.log ('Your Arweave wallet is used to pay for all data you upload through ArDrive.');
-    console.log ('Want to learn more?  Head to https://arweave.org');
+    console.log ('   Want to learn more?  Head to https://arweave.org');
     const existingWallet = promptForWallet();
     if (existingWallet.toLowerCase() === 'n') {
       wallet = await createArDriveWallet();
@@ -203,6 +202,13 @@ const promptForNewUserInfo = async (login: string) => {
     user.walletPrivateKey = JSON.stringify(wallet.walletPrivateKey);
     user.walletPublicKey = wallet.walletPublicKey;
     console.log ("");
+
+    // Get strong login password
+    console.log("Already set up some Private Drives with this wallet??  Please reuse that password here to unlock them.")
+    const loginPassword : string = await promptForNewLoginPassword();
+    console.log ("");
+
+
 
     // Get the local root folder that will contain all of the user's drives
     console.log ('Your ArDrive Sync Folder is the root directory for any of your Public, Private or Shared Drives.');

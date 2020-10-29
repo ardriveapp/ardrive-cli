@@ -80,7 +80,7 @@ async function main() {
   }
 
   // Initialize Drives
-  await setupDrives(user.walletPublicKey, user.syncFolderPath)
+  await setupDrives(user.login, user.walletPublicKey, user.syncFolderPath);
 
   // Get all of the public and private files for the user and store in the local database before starting folder watcher
   await getMyArDriveFilesFromPermaWeb(user);
@@ -145,17 +145,24 @@ async function main() {
     await sleep(10000);
   }
 }
-console.log('                 ___   _____    _____   _____    _   _     _   _____  ');
-console.log(
-  '                /   | |  _  \\  |  _  \\ |  _  \\  | | | |   / / | ____| '
-);
-console.log('               / /| | | |_| |  | | | | | |_| |  | | | |  / /  | |__   ');
-console.log('              / /_| | |  _  /  | | | | |  _  /  | | | | / /   |  __|  ');
-console.log(
-  '             / /  | | | | \\ \\  | |_| | | | \\ \\  | | | |/ /    | |___  '
-);
-console.log(
-  '            /_/   |_| |_|  \\_\\ |_____/ |_|  \\_\\ |_| |___/     |_____| '
-);
-console.log('');
+
+function displayBanner() {
+  
+console.log("                          █████╗ ██████╗ ██████╗ ██████╗ ██╗██╗   ██╗███████╗");
+console.log("                         ██╔══██╗██╔══██╗██╔══██╗██╔══██╗██║██║   ██║██╔════╝");
+console.log("                         ███████║██████╔╝██║  ██║██████╔╝██║██║   ██║█████╗  ");
+console.log("                         ██╔══██║██╔══██╗██║  ██║██╔══██╗██║╚██╗ ██╔╝██╔══╝  ");
+console.log("                         ██║  ██║██║  ██║██████╔╝██║  ██║██║ ╚████╔╝ ███████╗");
+console.log("                         ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝  ╚══════╝");
+console.log("                                                                             ");
+console.log("                                 ██████╗ ███████╗████████╗ █████╗            ");
+console.log("                                 ██╔══██╗██╔════╝╚══██╔══╝██╔══██╗           ");
+console.log("                                 ██████╔╝█████╗     ██║   ███████║           ");
+console.log("                                 ██╔══██╗██╔══╝     ██║   ██╔══██║           ");
+console.log("                                 ██████╔╝███████╗   ██║   ██║  ██║           ");
+console.log("                                 ╚═════╝ ╚══════╝   ╚═╝   ╚═╝  ╚═╝           ");
+console.log("");                                                   
+
+}
+displayBanner();
 main();
