@@ -12,7 +12,7 @@ import {
   getPriceOfNextUploadBatch,
   getMyArDriveFilesFromPermaWeb,
   downloadMyArDriveFiles,
-  watchFolder,
+  startWatchingFolders,
   resolveFileDownloadConflict,
   getUser,
   addNewUser,
@@ -89,7 +89,9 @@ async function main() {
   await downloadMyArDriveFiles(user);
 
   // Initialize Chokidar Folder Watcher by providing the Sync Folder Path, Private and Public ArDrive IDs
-  watchFolder(user.syncFolderPath);
+  startWatchingFolders(user)
+  
+  // watchFolder(user.syncFolderPath);
 
   // Continually check for things to process and actions to notify the user
   while (true) {
@@ -101,10 +103,10 @@ async function main() {
     await downloadMyArDriveFiles(user);
 
     // Check the status of any files that may have been already been uploaded
-    await checkUploadStatus();
+    await checkUploadStatus(user.login);
 
     // Figure out the cost of the next batch of uploads, and ask the user if they want to approve
-    const uploadBatch: UploadBatch = await getPriceOfNextUploadBatch();
+    const uploadBatch: UploadBatch = await getPriceOfNextUploadBatch(user.login);
     if (uploadBatch.totalArDrivePrice !== 0) {
       if (await promptForArDriveUpload(uploadBatch)) {
         await uploadArDriveFiles(user);
@@ -112,7 +114,7 @@ async function main() {
     }
 
     // Resolve and download conflicts, and process on the next batch
-    fileDownloadConflicts = await getMyFileDownloadConflicts();
+    fileDownloadConflicts = await getMyFileDownloadConflicts(user.login);
     if (fileDownloadConflicts) {
       fileDownloadConflicts.forEach(async (fileDownloadConflict: any) => {
         const response = await promptForFileOverwrite(
