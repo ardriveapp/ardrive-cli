@@ -12,7 +12,7 @@
     "@types/uuid": "^8.3.0",
     "ardrive-core-js": "^0.2.14",
     "arweave": "^1.9.1",
-    "community-js": "^1.0.15",
+    "community-js": "^1.1.4",
     "prompt-password": "^1.2.0",
     "prompt-sync": "^4.2.0",
     "prompts": "^2.3.2",
