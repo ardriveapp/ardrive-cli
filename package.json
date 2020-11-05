@@ -1,6 +1,6 @@
 {
   "name": "ardrive-cli",
-  "version": "0.1.14",
+  "version": "0.2.0",
   "description": "The ArDrive Command Line Interface (CLI) contains all of the needed security, file synchronization and Arweave wallet capabilities via a node.js application.",
   "main": "./lib/index.js",
   "bin": {
@@ -10,7 +10,7 @@
   "dependencies": {
     "@types/node": "^14.11.2",
     "@types/uuid": "^8.3.0",
-    "ardrive-core-js": "^0.2.12",
+    "ardrive-core-js": "^0.2.14",
     "arweave": "^1.9.1",
     "community-js": "^1.0.15",
     "prompt-password": "^1.2.0",
