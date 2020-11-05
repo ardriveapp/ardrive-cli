@@ -61,6 +61,12 @@ export const promptForLogin = async () => {
   return login;
 };
 
+// Asks the user to delete a Drive.  If the drive ID is invalid the user will get prompted again
+//export const promptToRemoveDrive = async (user: ArDriveUser) : Promise<string> => {
+//
+//}
+
+// Asks the user to add a Public Drive ID.  If the drive ID is invalid, the user will get prompted again
 export const promptToAddSharedPublicDrive = async (user: ArDriveUser) : Promise<string> => {
   const newDrive : string = prompt ('  Would you like to add a Public Shared Drive? (default is No) Y/N ');
   if (newDrive.toUpperCase() === 'Y') {
