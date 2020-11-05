@@ -9,6 +9,7 @@ import {
   addDriveToDriveTable,
   createNewPublicDrive,
   createNewPrivateDrive,
+  addSharedPublicDrive,
 } from 'ardrive-core-js';
 import { ArDriveUser, ArFSDriveMetaData, UploadBatch } from 'ardrive-core-js/lib/types';
 
@@ -60,7 +61,34 @@ export const promptForLogin = async () => {
   return login;
 };
 
-// Get the ArDrive owner nickname
+// Asks the user to delete a Drive.  If the drive ID is invalid the user will get prompted again
+//export const promptToRemoveDrive = async (user: ArDriveUser) : Promise<string> => {
+//
+//}
+
+// Asks the user to add a Public Drive ID.  If the drive ID is invalid, the user will get prompted again
+export const promptToAddSharedPublicDrive = async (user: ArDriveUser) : Promise<string> => {
+  const newDrive : string = prompt ('  Would you like to add a Public Shared Drive? (default is No) Y/N ');
+  if (newDrive.toUpperCase() === 'Y') {
+    console.log ('  Please enter the Drive Id you would like to add eg. jfj70d03-2353-4bb4-8606-d9db1c40772z')
+    const driveId : string = prompt ('  Drive Id: ')
+    const result : string = await addSharedPublicDrive(user, driveId)
+    // If it is an invalid drive id, we will reprompt
+    if (result === 'Invalid') {
+      console.log ("The Drive Id, %s,  cannot be found", driveId);
+      return await promptToAddSharedPublicDrive(user);
+    } else {
+      console.log ("Added Drive %s!", result)
+      return 'Added'
+    }
+  }
+  else {
+    console.log ("You can add a drive later on the next start up.")
+    return 'Skipped'
+  }
+}
+
+// Ask the user which public or private drive they should use.
 const promptForArDriveId = async (login: string, drives : ArFSDriveMetaData[], drivePrivacy: string) : Promise<ArFSDriveMetaData> => {
   console.log('Existing %s Drive IDs have been found for this ArDrive wallet.', drivePrivacy);
   console.log('Which one would you like to use as your default %s drive?', drivePrivacy)
@@ -188,7 +216,7 @@ const promptForNewUserInfo = async (login: string) => {
 
     // Get the user's wallet information
     console.log ('Your Arweave wallet is used to pay for all data you upload through ArDrive.');
-    console.log ('   Want to learn more?  Head to https://arweave.org');
+    console.log ('Want to learn more?  Head to https://arweave.org');
     const existingWallet = promptForWallet();
     if (existingWallet.toLowerCase() === 'n') {
       wallet = await createArDriveWallet();
@@ -254,6 +282,10 @@ const promptForNewUserInfo = async (login: string) => {
       const newDrive = await createNewPublicDrive(user.login, driveName)
       await addDriveToDriveTable(newDrive);
     }
+
+    console.log ("")
+    console.log ("Almost done!!")
+    await promptToAddSharedPublicDrive(user);
 
     return user;
   } catch (err) {

@@ -18,7 +18,7 @@ import {
   addNewUser,
   passwordCheck,
   setupDrives,
-  // deleteUserAndDrives,
+  //addSharedPublicDrive,
 } from 'ardrive-core-js'
 import { ArDriveUser, UploadBatch } from 'ardrive-core-js/lib/types';
 import {
@@ -27,6 +27,7 @@ import {
   promptForArDriveUpload,
   promptForFileOverwrite,
   promptForLogin,
+  promptToAddSharedPublicDrive,
 } from './prompts';
 
 async function main() {
@@ -49,9 +50,6 @@ async function main() {
   // Ask the user for their login name
   const login = await promptForLogin();
 
-  // console.log ("DELETING ", login)
-  // await deleteUserAndDrives(login);
-  // await sleep(500000)
   // Check to see if it exists
   user = await getUserFromProfile(login);
 
@@ -72,6 +70,9 @@ async function main() {
     const passwordResult: boolean = await passwordCheck(loginPassword, login)
     if (passwordResult) {
       user = await getUser(loginPassword, login);
+      console.log ("Before we get syncing...")
+      await promptToAddSharedPublicDrive(user);
+      //await promptToRemoveDrive(user);
     }
     else {
       console.log ("You have entered a bad password for this ArDrive... Goodbye");
@@ -80,7 +81,7 @@ async function main() {
   }
 
   // Initialize Drives
-  await setupDrives(user.login, user.walletPublicKey, user.syncFolderPath);
+  await setupDrives(user.login, user.syncFolderPath);
 
   // Get all of the public and private files for the user and store in the local database before starting folder watcher
   await getMyArDriveFilesFromPermaWeb(user);
