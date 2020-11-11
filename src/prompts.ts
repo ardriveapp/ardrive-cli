@@ -135,6 +135,7 @@ const promptForSyncFolderPath = (): string => {
 const promptForNewLoginPassword = async () : Promise<string> => {
   let password = '';
   console.log('Strong passwords should have at least 15 characters, with upper/lower case letters, numbers and symbols.')
+  console.log('This password can NOT be changed, so choose it wisely and store it carefully.')
   const newLoginPasswordResponse = await passwordPrompt({
     type: 'text',
     name: 'password',
@@ -305,7 +306,7 @@ const promptForArDriveUpload = async (uploadBatch: UploadBatch) : Promise<boolea
     uploadBatch.totalArDrivePrice
   );
   const readyToUpload = prompt('Upload all unsynced files? Y/N ');
-  if (readyToUpload === 'Y')
+  if (readyToUpload.toUpperCase === 'Y')
     return true;
   else {
     return false;
