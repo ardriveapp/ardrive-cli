@@ -42,7 +42,7 @@ const promptForLocalWalletPath = () : string => {
 };
 
 // Get the location to backup the new wallet
-const promptForBackupWalletPath = (): string => {
+const promptForBackupWalletPath = () : string => {
   console.log(
     'Please enter the path to backup your new ArDrive Wallet e.g C:\\My_Safe_Location'
   );
@@ -60,6 +60,17 @@ export const promptForLogin = async () => {
   const login = prompt('  Login Name: ');
   return login;
 };
+
+export const promptForAutoSyncApproval = async () : Promise<number> => {
+  const autoSyncApproval : string = prompt ('  Would you like to automatically approve the fees for all uploads to Arweave? (Default is No) Y/N ');
+  if (autoSyncApproval.toUpperCase() === 'Y') {
+    console.log ("  Data will be uploaded without fee approval.")
+    return 1; // enable autoSyncApproval
+  }
+  else {
+    return 0; // disable autoSyncApproval
+  }
+}
 
 // Asks the user to delete a Drive.  If the drive ID is invalid the user will get prompted again
 //export const promptToRemoveDrive = async (user: ArDriveUser) : Promise<string> => {
@@ -219,6 +230,7 @@ const promptForNewUserInfo = async (login: string) => {
     walletPrivateKey: "",
     walletPublicKey: "",
     syncFolderPath: "",
+    autoSyncApproval: 0,
   }
   console.log ("");
   console.log ("                                          Welcome to ArDrive                                            ");
@@ -303,6 +315,10 @@ const promptForNewUserInfo = async (login: string) => {
     console.log ("Shared Public Drives can also be added, allowing you to download (but not upload) someone else's Public Drive")
     await promptToAddSharedPublicDrive(user);
 
+    console.log ("")
+    console.log ("All data uploads are paid with the native Arweave token (AR)")
+    user.autoSyncApproval = await promptForAutoSyncApproval()
+
     return user;
   } catch (err) {
     console.log(err);
@@ -311,7 +327,7 @@ const promptForNewUserInfo = async (login: string) => {
 };
 
 // Asks the user to approve an upload to Arweave
-const promptForArDriveUpload = async (uploadBatch: UploadBatch) : Promise<boolean> => {
+const promptForArDriveUpload = async (uploadBatch: UploadBatch, autoSyncApproval: number) : Promise<boolean> => {
   console.log(
     'Uploading %s files, %s folders and %s changes (%s) to the Permaweb, totaling %s AR',
     uploadBatch.totalNumberOfFileUploads,
@@ -320,6 +336,9 @@ const promptForArDriveUpload = async (uploadBatch: UploadBatch) : Promise<boolea
     uploadBatch.totalSize,
     uploadBatch.totalArDrivePrice
   );
+  if (autoSyncApproval) {
+    return true;
+  }
   const readyToUpload = prompt('Upload all unsynced files? Y/N ');
   if (readyToUpload.toUpperCase() === 'Y')
     return true;

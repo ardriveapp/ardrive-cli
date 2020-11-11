@@ -18,6 +18,7 @@ import {
   addNewUser,
   passwordCheck,
   setupDrives,
+  setProfileAutoSyncApproval,
   //addSharedPublicDrive,
 } from 'ardrive-core-js'
 import { ArDriveUser, UploadBatch } from 'ardrive-core-js/lib/types';
@@ -30,6 +31,7 @@ import {
   promptToAddSharedPublicDrive,
   promptToAddOrCreatePersonalPrivateDrive,
   promptToAddOrCreatePersonalPublicDrive,
+  promptForAutoSyncApproval,
 } from './prompts';
 
 async function main() {
@@ -46,6 +48,7 @@ async function main() {
     walletPrivateKey: "",
     walletPublicKey: "",
     syncFolderPath: "",
+    autoSyncApproval: 0,
   } 
   let fileDownloadConflicts;
 
@@ -73,10 +76,18 @@ async function main() {
     if (passwordResult) {
       user = await getUser(loginPassword, login);
       console.log ("Before we get syncing...")
+
+      // Allow the user to add other drives
       await promptToAddSharedPublicDrive(user);
       await promptToAddOrCreatePersonalPrivateDrive(user);
       await promptToAddOrCreatePersonalPublicDrive(user);
+
+      // Allow the user to remove a shared, public or private drive
       //await promptToRemoveDrive(user);
+      
+      // Allow the user to change the auto approve setting
+      user.autoSyncApproval = await promptForAutoSyncApproval()
+      await setProfileAutoSyncApproval(user.autoSyncApproval, user.login)
     }
     else {
       console.log ("You have entered a bad password for this ArDrive... Goodbye");
@@ -113,7 +124,7 @@ async function main() {
     // Figure out the cost of the next batch of uploads, and ask the user if they want to approve
     const uploadBatch: UploadBatch = await getPriceOfNextUploadBatch(user.login);
     if (uploadBatch.totalArDrivePrice !== 0) {
-      if (await promptForArDriveUpload(uploadBatch)) {
+      if (await promptForArDriveUpload(uploadBatch, user.autoSyncApproval)) {
         await uploadArDriveFiles(user);
       }
     }
