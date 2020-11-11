@@ -10,7 +10,9 @@ import {
   createNewPublicDrive,
   createNewPrivateDrive,
   addSharedPublicDrive,
+  deleteDrive,
 } from 'ardrive-core-js';
+import { getAllDrivesByLoginFromDriveTable } from 'ardrive-core-js/lib/db';
 import { ArDriveUser, ArFSDriveMetaData, UploadBatch } from 'ardrive-core-js/lib/types';
 
 const prompt = require ('prompt-sync')({sigint: true});
@@ -73,9 +75,30 @@ export const promptForAutoSyncApproval = async () : Promise<number> => {
 }
 
 // Asks the user to delete a Drive.  If the drive ID is invalid the user will get prompted again
-//export const promptToRemoveDrive = async (user: ArDriveUser) : Promise<string> => {
-//
-//}
+export const promptToRemoveDrive = async (login: string) : Promise<string> => {
+  const driveRemoval : string = prompt ('  Would you like to remove an locally synced Public, Private or Shared Drive? (Default is No) Y/N ');
+  if (driveRemoval.toUpperCase() === 'Y') {
+    console.log ("  Please select the local drive you would like to stop synchronizing and remove.");
+    let i = 0;
+    const drives : ArFSDriveMetaData[] = await getAllDrivesByLoginFromDriveTable(login);
+    drives.forEach((drive: ArFSDriveMetaData) => {
+      let createdOn = new Date(+drive.unixTime * 1000);
+      console.log ('%s: %s %s %s', i, drive.driveName)
+      console.log (' %s | %s | Created On: %s | Drive Id: %s', drive.driveSharing, drive.drivePrivacy, createdOn, drive.driveId);
+      i += 1;
+    })
+    const choice = prompt('   Please select which number: ');
+    if (+choice <= i) {
+      console.log ("Deleting drive %s", drives[choice].driveName);
+      await deleteDrive(drives[choice].driveId);
+      return "Deleted";
+    } else {
+      console.log ("Invalid Drive selection");
+      return "Invalid";
+    }
+  }
+  return "Skipped";
+}
 
 // Asks the user to add a Public Drive ID.  If the drive ID is invalid, the user will get prompted again
 export const promptToAddSharedPublicDrive = async (user: ArDriveUser) : Promise<string> => {
@@ -139,7 +162,7 @@ export const promptToAddOrCreatePersonalPublicDrive = async (user: ArDriveUser) 
 
 // Ask the user which public or private drive they should use.
 const promptForArDriveId = async (login: string, drives : ArFSDriveMetaData[], drivePrivacy: string) : Promise<ArFSDriveMetaData> => {
-  console.log('Existing %s Drive IDs have been found for this ArDrive wallet.', drivePrivacy);
+  console.log('Existing %s Drive IDs have been found for your Arweave wallet.', drivePrivacy);
   console.log('Either pick an existing %s Drive or create a new one', drivePrivacy)
   let i = 0;
   drives.forEach((drive: ArFSDriveMetaData) => {
@@ -148,7 +171,7 @@ const promptForArDriveId = async (login: string, drives : ArFSDriveMetaData[], d
     console.log (' Created On: %s | Drive Id: %s', createdOn, drive.driveId);
     i += 1;
   })
-  console.log('%s: Generate a new %s Drive ID', i, drivePrivacy);
+  console.log('%s: Create a new %s Drive', i, drivePrivacy);
   const choice = prompt('   Please select which number: ');
   if (+choice === i) {
     const driveName : string = prompt('   Please enter in a new name for this drive: ');

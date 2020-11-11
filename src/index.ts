@@ -32,6 +32,7 @@ import {
   promptToAddOrCreatePersonalPrivateDrive,
   promptToAddOrCreatePersonalPublicDrive,
   promptForAutoSyncApproval,
+  promptToRemoveDrive,
 } from './prompts';
 
 async function main() {
@@ -78,12 +79,12 @@ async function main() {
       console.log ("Before we get syncing...")
 
       // Allow the user to add other drives
-      await promptToAddSharedPublicDrive(user);
       await promptToAddOrCreatePersonalPrivateDrive(user);
       await promptToAddOrCreatePersonalPublicDrive(user);
+      await promptToAddSharedPublicDrive(user);
 
       // Allow the user to remove a shared, public or private drive
-      //await promptToRemoveDrive(user);
+      await promptToRemoveDrive(user.login);
       
       // Allow the user to change the auto approve setting
       user.autoSyncApproval = await promptForAutoSyncApproval()
