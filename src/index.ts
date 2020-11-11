@@ -28,6 +28,8 @@ import {
   promptForFileOverwrite,
   promptForLogin,
   promptToAddSharedPublicDrive,
+  promptToAddOrCreatePersonalPrivateDrive,
+  promptToAddOrCreatePersonalPublicDrive,
 } from './prompts';
 
 async function main() {
@@ -72,6 +74,8 @@ async function main() {
       user = await getUser(loginPassword, login);
       console.log ("Before we get syncing...")
       await promptToAddSharedPublicDrive(user);
+      await promptToAddOrCreatePersonalPrivateDrive(user);
+      await promptToAddOrCreatePersonalPublicDrive(user);
       //await promptToRemoveDrive(user);
     }
     else {

@@ -83,22 +83,60 @@ export const promptToAddSharedPublicDrive = async (user: ArDriveUser) : Promise<
     }
   }
   else {
-    console.log ("You can add a drive later on the next start up.")
     return 'Skipped'
   }
+}
+
+// Asks the user if they want to add or create a new personal private drive
+export const promptToAddOrCreatePersonalPrivateDrive = async (user: ArDriveUser) : Promise<string> => {
+  const newDrive : string = prompt ('  Would you like to add a Private Personal Drive? (default is No) Y/N ');
+  if (newDrive.toUpperCase() === 'Y') {
+  const privateDrives = await getAllMyPrivateArDriveIds(user);
+    if (privateDrives.length > 0) {
+      const existingPrivateDrive : ArFSDriveMetaData = await promptForArDriveId(user.login, privateDrives, "private");
+      await addDriveToDriveTable(existingPrivateDrive);
+      return 'Added Drive'
+    } else {
+      const driveName : string = prompt('   Please enter a name for your new Private drive: ');
+      const newDrive = await createNewPrivateDrive(user.login, driveName)
+      await addDriveToDriveTable(newDrive);
+      return 'Created Drive'
+    }
+  }
+  return 'None Added'
+}
+
+// Asks the user if they want to add or create a new personal private drive
+export const promptToAddOrCreatePersonalPublicDrive = async (user: ArDriveUser) : Promise<string> => {
+  const newDrive : string = prompt ('  Would you like to add a Public Personal Drive? (default is No) Y/N ');
+  if (newDrive.toUpperCase() === 'Y') {
+      // Load an existing default Public ArDrive
+      const publicDrives = await getAllMyPublicArDriveIds(user.walletPublicKey);
+      if (publicDrives.length > 0) {
+        const existingPublicDrive : ArFSDriveMetaData = await promptForArDriveId(user.login, publicDrives, "public");
+        await addDriveToDriveTable(existingPublicDrive);
+        return 'Added Drive'
+      } else {
+        const driveName : string = prompt('   Please enter a name for your new Public drive: ');
+        const newDrive = await createNewPublicDrive(user.login, driveName)
+        await addDriveToDriveTable(newDrive);
+        return 'Created Drive'
+      }
+  }
+  return 'None Added'
 }
 
 // Ask the user which public or private drive they should use.
 const promptForArDriveId = async (login: string, drives : ArFSDriveMetaData[], drivePrivacy: string) : Promise<ArFSDriveMetaData> => {
   console.log('Existing %s Drive IDs have been found for this ArDrive wallet.', drivePrivacy);
-  console.log('Which one would you like to use as your default %s drive?', drivePrivacy)
+  console.log('Either pick an existing %s Drive or create a new one', drivePrivacy)
   let i = 0;
   drives.forEach((drive: ArFSDriveMetaData) => {
     let createdOn = new Date(+drive.unixTime * 1000)
     console.log ('%s: %s', i, drive.driveName)
     console.log (' Created On: %s | Drive Id: %s', createdOn, drive.driveId);
     i += 1;
-  });
+  })
   console.log('%s: Generate a new %s Drive ID', i, drivePrivacy);
   const choice = prompt('   Please select which number: ');
   if (+choice === i) {
@@ -237,8 +275,6 @@ const promptForNewUserInfo = async (login: string) => {
     const loginPassword : string = await promptForNewLoginPassword();
     console.log ("");
 
-
-
     // Get the local root folder that will contain all of the user's drives
     console.log ('Your ArDrive Sync Folder is the root directory for any of your Public, Private or Shared Drives.');
     user.syncFolderPath = promptForSyncFolderPath();
@@ -250,42 +286,21 @@ const promptForNewUserInfo = async (login: string) => {
     console.log ("Each Drive will be created under your ArDrive Sync Folder using its specified name.")
     console.log ("A new folder will be created if it doesn't exist e.g D:\\ArDriveSync\\MyDrive_Name");
     console.log ("");
-    console.log ("Let's add a default Private Drive.")
-    console.log ("Private Drives encrypt and protect all of your personal data, ensuring only you can access it.");
+    console.log ("Private Drives encrypt and protect all of your personal data, ensuring only you can read and write to it.");
 
     // Set the data protection key used for all data encryption.
     // The key is based on the uesr's login
     user.dataProtectionKey = loginPassword;
 
-    const privateDrives = await getAllMyPrivateArDriveIds(user);
-    if (privateDrives.length > 0) {
-      const existingPrivateDrive : ArFSDriveMetaData = await promptForArDriveId(user.login, privateDrives, "private");
-      await addDriveToDriveTable(existingPrivateDrive);
-    } else {
-      const driveName : string = prompt('   Please enter a name for your new Private drive: ');
-      const newDrive = await createNewPrivateDrive(user.login, driveName)
-      await addDriveToDriveTable(newDrive);
-    }
+    await promptToAddOrCreatePersonalPrivateDrive(user);
 
     console.log ("");
-    console.log ("Great!!");
-    console.log ("");
-    console.log ("Now let's add a default Public Drive");
     console.log ("Public Drives are open and read-only to the entire internet.  Anything uploaded here is accessable forever on the PermaWeb!")
 
-    // Load an existing default Public ArDrive
-    const publicDrives = await getAllMyPublicArDriveIds(wallet.walletPublicKey);
-    if (publicDrives.length > 0) {
-      const existingPublicDrive : ArFSDriveMetaData = await promptForArDriveId(user.login, publicDrives, "public");
-      await addDriveToDriveTable(existingPublicDrive);
-    } else {
-      const driveName : string = prompt('   Please enter a name for your new Public drive: ');
-      const newDrive = await createNewPublicDrive(user.login, driveName)
-      await addDriveToDriveTable(newDrive);
-    }
+    await promptToAddOrCreatePersonalPublicDrive(user);
 
     console.log ("")
-    console.log ("Almost done!!")
+    console.log ("Shared Public Drives can also be added, allowing you to download (but not upload) someone else's Public Drive")
     await promptToAddSharedPublicDrive(user);
 
     return user;
@@ -306,7 +321,7 @@ const promptForArDriveUpload = async (uploadBatch: UploadBatch) : Promise<boolea
     uploadBatch.totalArDrivePrice
   );
   const readyToUpload = prompt('Upload all unsynced files? Y/N ');
-  if (readyToUpload.toUpperCase === 'Y')
+  if (readyToUpload.toUpperCase() === 'Y')
     return true;
   else {
     return false;
