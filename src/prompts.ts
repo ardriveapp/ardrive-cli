@@ -76,15 +76,15 @@ export const promptForAutoSyncApproval = async () : Promise<number> => {
 
 // Asks the user to delete a Drive.  If the drive ID is invalid the user will get prompted again
 export const promptToRemoveDrive = async (login: string) : Promise<string> => {
-  const driveRemoval : string = prompt ('  Would you like to remove an locally synced Public, Private or Shared Drive? (Default is No) Y/N ');
+  const driveRemoval : string = prompt ('  Would you like to remove a locally synced Public, Private or Shared Drive? (Default is No) Y/N ');
   if (driveRemoval.toUpperCase() === 'Y') {
     console.log ("  Please select the local drive you would like to stop synchronizing and remove.");
     let i = 0;
     const drives : ArFSDriveMetaData[] = await getAllDrivesByLoginFromDriveTable(login);
     drives.forEach((drive: ArFSDriveMetaData) => {
       let createdOn = new Date(+drive.unixTime * 1000);
-      console.log ('%s: %s %s %s', i, drive.driveName)
-      console.log (' %s | %s | Created On: %s | Drive Id: %s', drive.driveSharing, drive.drivePrivacy, createdOn, drive.driveId);
+      console.log ('%s: %s', i, drive.driveName)
+      console.log ('   %s | %s | Created On: %s | Drive Id: %s', drive.driveSharing, drive.drivePrivacy, createdOn, drive.driveId);
       i += 1;
     })
     const choice = prompt('   Please select which number: ');
