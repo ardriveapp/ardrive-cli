@@ -161,7 +161,7 @@ async function main() {
       dateTime,
       balance
     );
-    await sleep(10000);
+    await sleep(30000);
   }
 }
 
