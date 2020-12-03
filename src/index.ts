@@ -21,6 +21,7 @@ import {
   setProfileAutoSyncApproval,
   //addSharedPublicDrive,
 } from 'ardrive-core-js'
+import { setProfileWalletBalance } from 'ardrive-core-js/lib/db';
 import { ArDriveUser, UploadBatch } from 'ardrive-core-js/lib/types';
 import {
   promptForLoginPassword,
@@ -123,12 +124,13 @@ async function main() {
     await checkUploadStatus(user.login);
 
     // Figure out the cost of the next batch of uploads, and ask the user if they want to approve
+    // If the size is -1, then the user does not have enough funds and the upload is skipped
     const uploadBatch: UploadBatch = await getPriceOfNextUploadBatch(user.login);
-    if (uploadBatch.totalArDrivePrice !== 0) {
-      if (await promptForArDriveUpload(uploadBatch, user.autoSyncApproval)) {
+    if (uploadBatch.totalArDrivePrice > 0) {
+      if (await promptForArDriveUpload(login, uploadBatch, user.autoSyncApproval)) {
         await uploadArDriveFiles(user);
       }
-    }
+    } 
 
     // Resolve and download conflicts, and process on the next batch
     fileDownloadConflicts = await getMyFileDownloadConflicts(user.login);
@@ -156,6 +158,7 @@ async function main() {
 
     // Get the latest balance of the loaded wallet.
     const balance = await getWalletBalance(user.walletPublicKey);
+    await setProfileWalletBalance(+balance, login)
     console.log(
       '%s Syncronization completed.  Current AR Balance: %s',
       dateTime,

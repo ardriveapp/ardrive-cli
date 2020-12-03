@@ -12,7 +12,7 @@ import {
   addSharedPublicDrive,
   deleteDrive,
 } from 'ardrive-core-js';
-import { getAllDrivesByLoginFromDriveTable } from 'ardrive-core-js/lib/db';
+import { getAllDrivesByLoginFromDriveTable, getProfileWalletBalance } from 'ardrive-core-js/lib/db';
 import { ArDriveUser, ArFSDriveMetaData, UploadBatch } from 'ardrive-core-js/lib/types';
 
 const prompt = require ('prompt-sync')({sigint: true});
@@ -350,7 +350,7 @@ const promptForNewUserInfo = async (login: string) => {
 };
 
 // Asks the user to approve an upload to Arweave
-const promptForArDriveUpload = async (uploadBatch: UploadBatch, autoSyncApproval: number) : Promise<boolean> => {
+const promptForArDriveUpload = async (login: string, uploadBatch: UploadBatch, autoSyncApproval: number) : Promise<boolean> => {
   console.log(
     'Uploading %s files, %s folders and %s changes (%s) to the Permaweb, totaling %s AR',
     uploadBatch.totalNumberOfFileUploads,
@@ -359,13 +359,23 @@ const promptForArDriveUpload = async (uploadBatch: UploadBatch, autoSyncApproval
     uploadBatch.totalSize,
     uploadBatch.totalArDrivePrice
   );
-  if (autoSyncApproval) {
-    return true;
-  }
-  const readyToUpload = prompt('Upload all unsynced files? Y/N ');
-  if (readyToUpload.toUpperCase() === 'Y')
-    return true;
-  else {
+  // Ensure the user has enough AR to pay for this upload.  If not, do not proceed.
+  const profile = await getProfileWalletBalance(login);
+  if (profile.walletBalance >= uploadBatch.totalArDrivePrice) {
+    if (autoSyncApproval) {
+      return true;
+    }
+    const readyToUpload = prompt('Upload all unsynced files? Y/N ');
+    if (readyToUpload.toUpperCase() === 'Y') {
+      return true;
+    } else {
+      // User selects NO so we do not upload
+      return false;
+    }
+  } else {
+    // Not enough AR to upload
+    console.log ("Oops!  You do not have enough AR to upload! Your balance is %s AR.", profile.walletBalance);
+    console.log ("Please remove your recent files, or add more AR to your wallet and try again.")
     return false;
   }
 };
