@@ -106,10 +106,12 @@ async function main() {
   // Download any files from Arweave that need to be synchronized locally
   await downloadMyArDriveFiles(user);
 
+  // Get latest wallet balance
+  let balance = await getWalletBalance(user.walletPublicKey);
+  await setProfileWalletBalance(+balance, login)
+
   // Initialize Chokidar Folder Watcher by providing the Sync Folder Path, Private and Public ArDrive IDs
   startWatchingFolders(user)
-  
-  // watchFolder(user.syncFolderPath);
 
   // Continually check for things to process and actions to notify the user
   while (true) {
