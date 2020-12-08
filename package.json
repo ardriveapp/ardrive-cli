@@ -10,7 +10,7 @@
   "dependencies": {
     "@types/node": "^14.11.2",
     "@types/uuid": "^8.3.0",
-    "ardrive-core-js": "^0.2.21",
+    "ardrive-core-js": "^0.2.22",
     "arweave": "^1.9.1",
     "community-js": "^1.1.4",
     "progress": "^2.0.3",
