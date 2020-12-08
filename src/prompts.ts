@@ -138,7 +138,6 @@ export const promptToAddOrCreatePersonalPrivateDrive = async (user: ArDriveUser)
     } else {
       let driveName : string = prompt('   Please enter a name for your new private drive: ');
       driveName = await sanitizePath(driveName)
-      console.log ("Drive name is ", driveName)
       if (driveName !== '') {
         const newDrive = await createNewPrivateDrive(user.login, driveName)
         await addDriveToDriveTable(newDrive);
@@ -211,8 +210,14 @@ const promptForArDriveId = async (login: string, drives : ArFSDriveMetaData[], d
     return drives[choice];
   }
   else if ((+choice < i) && (+choice >= 0) && (choice !== '')) {
-    drives[choice].login = login;
-    return drives[choice];
+    try {
+      drives[choice].login = login;
+      return drives[choice];
+    }
+    catch (err) {
+      console.log ("    Invalid selection!")
+      return await promptForArDriveId(login, drives, drivePrivacy)
+    }
   }
   else {
     console.log ("    Invalid selection!")
