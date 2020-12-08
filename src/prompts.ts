@@ -11,6 +11,7 @@ import {
   createNewPrivateDrive,
   addSharedPublicDrive,
   deleteDrive,
+  sanitizePath,
 } from 'ardrive-core-js';
 import { getAllDrivesByLoginFromDriveTable, getProfileWalletBalance } from 'ardrive-core-js/lib/db';
 import { ArDriveUser, ArFSDriveMetaData, UploadBatch } from 'ardrive-core-js/lib/types';
@@ -57,9 +58,13 @@ const promptForBackupWalletPath = () : string => {
 };
 
 // Get the ArDrive owner nickname
-export const promptForLogin = async () => {
+export const promptForLogin = async () : Promise<string> => {
   console.log('Please enter your ArDrive Login Name.  If no name exists, we will begin to setup a ArDrive Profile for you.');
   const login = prompt('  Login Name: ');
+  if (login === '') {
+    console.log ('    Invalid entry!')
+    return await promptForLogin()
+  }
   return login;
 };
 
@@ -109,7 +114,7 @@ export const promptToAddSharedPublicDrive = async (user: ArDriveUser) : Promise<
     const result : string = await addSharedPublicDrive(user, driveId)
     // If it is an invalid drive id, we will reprompt
     if (result === 'Invalid') {
-      console.log ("The Drive Id, %s,  cannot be found", driveId);
+      console.log ("    The Drive Id, %s, cannot be found", driveId);
       return await promptToAddSharedPublicDrive(user);
     } else {
       console.log ("Added Drive %s!", result)
@@ -131,10 +136,17 @@ export const promptToAddOrCreatePersonalPrivateDrive = async (user: ArDriveUser)
       await addDriveToDriveTable(existingPrivateDrive);
       return 'Added Drive'
     } else {
-      const driveName : string = prompt('   Please enter a name for your new Private drive: ');
-      const newDrive = await createNewPrivateDrive(user.login, driveName)
-      await addDriveToDriveTable(newDrive);
-      return 'Created Drive'
+      let driveName : string = prompt('   Please enter a name for your new private drive: ');
+      driveName = await sanitizePath(driveName)
+      console.log ("Drive name is ", driveName)
+      if (driveName !== '') {
+        const newDrive = await createNewPrivateDrive(user.login, driveName)
+        await addDriveToDriveTable(newDrive);
+        return 'Created Drive'
+      } else {
+        console.log ("    Invalid drive name!")
+        return await promptToAddOrCreatePersonalPrivateDrive(user);
+      }
     }
   }
   return 'None Added'
@@ -151,10 +163,16 @@ export const promptToAddOrCreatePersonalPublicDrive = async (user: ArDriveUser) 
         await addDriveToDriveTable(existingPublicDrive);
         return 'Added Drive'
       } else {
-        const driveName : string = prompt('   Please enter a name for your new Public drive: ');
-        const newDrive = await createNewPublicDrive(user.login, driveName)
-        await addDriveToDriveTable(newDrive);
-        return 'Created Drive'
+        let driveName : string = prompt('   Please enter a name for your new public drive: ');
+        driveName = await sanitizePath(driveName);
+        if (driveName !== '') {
+          const newDrive = await createNewPublicDrive(user.login, driveName)
+          await addDriveToDriveTable(newDrive);
+          return 'Created Drive'
+        } else {
+          console.log ("    Invalid drive name!")
+          return await promptToAddOrCreatePersonalPrivateDrive(user);
+        }
       }
   }
   return 'None Added'
@@ -174,7 +192,13 @@ const promptForArDriveId = async (login: string, drives : ArFSDriveMetaData[], d
   console.log('%s: Create a new %s Drive', i, drivePrivacy);
   const choice = prompt('   Please select which number: ');
   if (+choice === i) {
-    const driveName : string = prompt('   Please enter in a new name for this drive: ');
+    let driveName : string = prompt('   Please enter in a new name for your new drive: ');
+    driveName = await sanitizePath(driveName);
+    console.log ("Drive name is ", driveName)
+    if (driveName === '') {
+      console.log ("    Invalid drive name!")
+      return await promptForArDriveId(login, drives, drivePrivacy)
+    }
     if (drivePrivacy === 'public') {
       const newDrive = await createNewPublicDrive(login, driveName)
       drives.push (newDrive)
@@ -183,10 +207,17 @@ const promptForArDriveId = async (login: string, drives : ArFSDriveMetaData[], d
       const newDrive = await createNewPrivateDrive(login, driveName)
       drives.push (newDrive)
     }
+    drives[choice].login = login;
+    return drives[choice];
   }
-  // NEED TO VALIDATE THIS RESPONSE, like if the user just hits enter
-  drives[choice].login = login;
-  return drives[choice];
+  else if ((+choice < i) && (+choice >= 0) && (choice !== '')) {
+    drives[choice].login = login;
+    return drives[choice];
+  }
+  else {
+    console.log ("    Invalid selection!")
+    return await promptForArDriveId(login, drives, drivePrivacy)
+  }
 };
 
 // Get the ArDrive Sync Folder path
@@ -233,13 +264,17 @@ const promptForNewLoginPassword = async () : Promise<string> => {
 };
 
 // Prompts the user to enter a login password
-const promptForLoginPassword = async () => {
+const promptForLoginPassword = async () : Promise<string> => {
   const loginPasswordResponse = await passwordPrompt({
     type: 'text',
     name: 'password',
     style: 'password',
     message: '  Please enter your ArDrive Login password: ',
   });
+  if (loginPasswordResponse.password === '') {
+    console.log ("    Invalid password entered!");
+    return await promptForLoginPassword();
+  }
   return loginPasswordResponse.password;
 };
 
