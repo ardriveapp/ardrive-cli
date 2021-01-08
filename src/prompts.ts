@@ -1,8 +1,6 @@
 import {
   getLocalWallet,
   createArDriveWallet,
-  getAllMyPrivateArDriveIds,
-  getAllMyPublicArDriveIds,
   checkOrCreateFolder,
   backupWallet,
   checkFileExistsSync,
@@ -13,7 +11,8 @@ import {
   deleteDrive,
   sanitizePath,
 } from 'ardrive-core-js';
-import { getAllDrivesByLoginFromDriveTable, getProfileWalletBalance } from 'ardrive-core-js/lib/db';
+import { getAllDrivesByLoginFromDriveTable, getAllUnSyncedPersonalDrivesByLoginFromDriveTable, getProfileWalletBalance, setDriveToSync } from 'ardrive-core-js/lib/db';
+import { getAllMyPersonalDrives } from 'ardrive-core-js/lib/download';
 import { ArDriveUser, ArFSDriveMetaData, UploadBatch } from 'ardrive-core-js/lib/types';
 
 const prompt = require ('prompt-sync')({sigint: true});
@@ -130,10 +129,10 @@ export const promptToAddSharedPublicDrive = async (user: ArDriveUser) : Promise<
 export const promptToAddOrCreatePersonalPrivateDrive = async (user: ArDriveUser) : Promise<string> => {
   const newDrive : string = prompt ('  Would you like to add a Private Personal Drive? (default is No) Y/N ');
   if (newDrive.toUpperCase() === 'Y') {
-  const privateDrives = await getAllMyPrivateArDriveIds(user);
+  const privateDrives = await getAllUnSyncedPersonalDrivesByLoginFromDriveTable(user.login, "private");
     if (privateDrives.length > 0) {
       const existingPrivateDrive : ArFSDriveMetaData = await promptForArDriveId(user.login, privateDrives, "private");
-      await addDriveToDriveTable(existingPrivateDrive);
+      await setDriveToSync(existingPrivateDrive.driveId);
       return 'Added Drive'
     } else {
       let driveName : string = prompt('   Please enter a name for your new private drive: ');
@@ -156,10 +155,11 @@ export const promptToAddOrCreatePersonalPublicDrive = async (user: ArDriveUser) 
   const newDrive : string = prompt ('  Would you like to add a Public Personal Drive? (default is No) Y/N ');
   if (newDrive.toUpperCase() === 'Y') {
       // Load an existing default Public ArDrive
-      const publicDrives = await getAllMyPublicArDriveIds(user.walletPublicKey);
+      const publicDrives = await getAllUnSyncedPersonalDrivesByLoginFromDriveTable(user.login, "public");
       if (publicDrives.length > 0) {
         const existingPublicDrive : ArFSDriveMetaData = await promptForArDriveId(user.login, publicDrives, "public");
         await addDriveToDriveTable(existingPublicDrive);
+        await setDriveToSync(existingPublicDrive.driveId);
         return 'Added Drive'
       } else {
         let driveName : string = prompt('   Please enter a name for your new public drive: ');
@@ -366,6 +366,9 @@ const promptForNewUserInfo = async (login: string) => {
     // Set the data protection key used for all data encryption.
     // The key is based on the uesr's login
     user.dataProtectionKey = loginPassword;
+
+    // Sync all of the Drives that a user has created
+    await getAllMyPersonalDrives(user)
 
     await promptToAddOrCreatePersonalPrivateDrive(user);
 

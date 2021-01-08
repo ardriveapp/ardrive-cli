@@ -22,6 +22,7 @@ import {
   //addSharedPublicDrive,
 } from 'ardrive-core-js'
 import { setProfileWalletBalance } from 'ardrive-core-js/lib/db';
+import { getAllMyPersonalDrives } from 'ardrive-core-js/lib/download';
 import { ArDriveUser, UploadBatch } from 'ardrive-core-js/lib/types';
 import {
   promptForLoginPassword,
@@ -116,6 +117,9 @@ async function main() {
   // Continually check for things to process and actions to notify the user
   while (true) {
 
+    // Get all of the latest personal public and private drives for the user, and store in the local database
+    await getAllMyPersonalDrives(user)
+    
     // Get all of the public and private files for the user and store in the local database
     await getMyArDriveFilesFromPermaWeb(user);
 
