@@ -8,7 +8,6 @@ import {
   getWalletBalance,
   sleep,
   checkUploadStatus,
-  uploadArDriveFiles,
   getPriceOfNextUploadBatch,
   getMyArDriveFilesFromPermaWeb,
   downloadMyArDriveFiles,
@@ -19,6 +18,7 @@ import {
   passwordCheck,
   setupDrives,
   setProfileAutoSyncApproval,
+  uploadArDriveFilesAndBundles,
   //addSharedPublicDrive,
 } from 'ardrive-core-js'
 import { setProfileWalletBalance } from 'ardrive-core-js/lib/db';
@@ -134,7 +134,7 @@ async function main() {
     const uploadBatch: UploadBatch = await getPriceOfNextUploadBatch(user.login);
     if (uploadBatch.totalArDrivePrice > 0) {
       if (await promptForArDriveUpload(login, uploadBatch, user.autoSyncApproval)) {
-        await uploadArDriveFiles(user);
+        await uploadArDriveFilesAndBundles(user);
       }
     } 
 

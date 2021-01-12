@@ -127,19 +127,20 @@ export const promptToAddSharedPublicDrive = async (user: ArDriveUser) : Promise<
 
 // Asks the user if they want to add or create a new personal private drive
 export const promptToAddOrCreatePersonalPrivateDrive = async (user: ArDriveUser) : Promise<string> => {
-  const newDrive : string = prompt ('  Would you like to add a Private Personal Drive? (default is No) Y/N ');
-  if (newDrive.toUpperCase() === 'Y') {
-  const privateDrives = await getAllUnSyncedPersonalDrivesByLoginFromDriveTable(user.login, "private");
+  const addDrive : string = prompt ('  Would you like to add a Private Personal Drive? (default is No) Y/N ');
+  if (addDrive.toUpperCase() === 'Y') {
+    const privateDrives = await getAllUnSyncedPersonalDrivesByLoginFromDriveTable(user.login, "private");
     if (privateDrives.length > 0) {
-      const existingPrivateDrive : ArFSDriveMetaData = await promptForArDriveId(user.login, privateDrives, "private");
-      await setDriveToSync(existingPrivateDrive.driveId);
+      const privateDrive : ArFSDriveMetaData = await promptForArDriveId(user.login, privateDrives, "private");
+      await addDriveToDriveTable(privateDrive);
+      await setDriveToSync(privateDrive.driveId);
       return 'Added Drive'
     } else {
       let driveName : string = prompt('   Please enter a name for your new private drive: ');
       driveName = await sanitizePath(driveName)
       if (driveName !== '') {
-        const newDrive = await createNewPrivateDrive(user.login, driveName)
-        await addDriveToDriveTable(newDrive);
+        const privateDrive = await createNewPrivateDrive(user.login, driveName)
+        await addDriveToDriveTable(privateDrive);
         return 'Created Drive'
       } else {
         console.log ("    Invalid drive name!")
@@ -152,27 +153,27 @@ export const promptToAddOrCreatePersonalPrivateDrive = async (user: ArDriveUser)
 
 // Asks the user if they want to add or create a new personal private drive
 export const promptToAddOrCreatePersonalPublicDrive = async (user: ArDriveUser) : Promise<string> => {
-  const newDrive : string = prompt ('  Would you like to add a Public Personal Drive? (default is No) Y/N ');
-  if (newDrive.toUpperCase() === 'Y') {
-      // Load an existing default Public ArDrive
-      const publicDrives = await getAllUnSyncedPersonalDrivesByLoginFromDriveTable(user.login, "public");
-      if (publicDrives.length > 0) {
-        const existingPublicDrive : ArFSDriveMetaData = await promptForArDriveId(user.login, publicDrives, "public");
-        await addDriveToDriveTable(existingPublicDrive);
-        await setDriveToSync(existingPublicDrive.driveId);
-        return 'Added Drive'
+  const addDrive : string = prompt ('  Would you like to add a Public Personal Drive? (default is No) Y/N ');
+  if (addDrive.toUpperCase() === 'Y') {
+    // Load an existing default Public ArDrive
+    const publicDrives = await getAllUnSyncedPersonalDrivesByLoginFromDriveTable(user.login, "public");
+    if (publicDrives.length > 0) {
+      const publicDrive : ArFSDriveMetaData = await promptForArDriveId(user.login, publicDrives, "public");
+      await addDriveToDriveTable(publicDrive);
+      await setDriveToSync(publicDrive.driveId);
+      return 'Added Drive'
+    } else {
+      let driveName : string = prompt('   Please enter a name for your new public drive: ');
+      driveName = await sanitizePath(driveName);
+      if (driveName !== '') {
+        const publicDrive = await createNewPublicDrive(user.login, driveName)
+        await addDriveToDriveTable(publicDrive);
+        return 'Created Drive'
       } else {
-        let driveName : string = prompt('   Please enter a name for your new public drive: ');
-        driveName = await sanitizePath(driveName);
-        if (driveName !== '') {
-          const newDrive = await createNewPublicDrive(user.login, driveName)
-          await addDriveToDriveTable(newDrive);
-          return 'Created Drive'
-        } else {
-          console.log ("    Invalid drive name!")
-          return await promptToAddOrCreatePersonalPrivateDrive(user);
-        }
+        console.log ("    Invalid drive name!")
+        return await promptToAddOrCreatePersonalPublicDrive(user);
       }
+    }
   }
   return 'None Added'
 }
@@ -193,7 +194,7 @@ const promptForArDriveId = async (login: string, drives : ArFSDriveMetaData[], d
   if (+choice === i) {
     let driveName : string = prompt('   Please enter in a new name for your new drive: ');
     driveName = await sanitizePath(driveName);
-    console.log ("Drive name is ", driveName)
+    console.log ("Drive name is %s", driveName)
     if (driveName === '') {
       console.log ("    Invalid drive name!")
       return await promptForArDriveId(login, drives, drivePrivacy)
@@ -360,8 +361,6 @@ const promptForNewUserInfo = async (login: string) => {
     console.log ("Let\'s get you ready to start syncing by setting up some Drives.");
     console.log ("Each Drive will be created under your ArDrive Sync Folder using its specified name.")
     console.log ("A new folder will be created if it doesn't exist e.g D:\\ArDriveSync\\MyDrive_Name");
-    console.log ("");
-    console.log ("Private Drives encrypt and protect all of your personal data, ensuring only you can read and write to it.");
 
     // Set the data protection key used for all data encryption.
     // The key is based on the uesr's login
@@ -370,11 +369,12 @@ const promptForNewUserInfo = async (login: string) => {
     // Sync all of the Drives that a user has created
     await getAllMyPersonalDrives(user)
 
+    console.log ("");
+    console.log ("Private Drives encrypt and protect all of your personal data, ensuring only you can read and write to it.");
     await promptToAddOrCreatePersonalPrivateDrive(user);
 
     console.log ("");
     console.log ("Public Drives are open and read-only to the entire internet.  Anything uploaded here is accessable forever on the PermaWeb!")
-
     await promptToAddOrCreatePersonalPublicDrive(user);
 
     console.log ("")
@@ -395,12 +395,13 @@ const promptForNewUserInfo = async (login: string) => {
 // Asks the user to approve an upload to Arweave
 const promptForArDriveUpload = async (login: string, uploadBatch: UploadBatch, autoSyncApproval: number) : Promise<boolean> => {
   console.log(
-    'Uploading %s files, %s folders and %s changes (%s) to the Permaweb, totaling %s AR',
+    'Uploading %s files, %s folders and %s changes (%s) to the Permaweb, totalling %s AR / %s USD',
     uploadBatch.totalNumberOfFileUploads,
     uploadBatch.totalNumberOfFolderUploads,
     uploadBatch.totalNumberOfMetaDataUploads,
     uploadBatch.totalSize,
-    uploadBatch.totalArDrivePrice
+    uploadBatch.totalArDrivePrice,
+    uploadBatch.totalUSDPrice,
   );
   // Ensure the user has enough AR to pay for this upload.  If not, do not proceed.
   const profile = await getProfileWalletBalance(login);
