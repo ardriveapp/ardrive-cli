@@ -365,6 +365,7 @@ const promptForNewUserInfo = async (login: string) => {
     // Set the data protection key used for all data encryption.
     // The key is based on the uesr's login
     user.dataProtectionKey = loginPassword;
+    user.walletPrivateKey = JSON.stringify(wallet.walletPrivateKey);
 
     // Sync all of the Drives that a user has created
     await getAllMyPersonalDrives(user)
