@@ -19,6 +19,7 @@ import {
   setupDrives,
   setProfileAutoSyncApproval,
   uploadArDriveFilesAndBundles,
+  updateUserSyncFolderPath,
   //addSharedPublicDrive,
 } from 'ardrive-core-js'
 import { setProfileWalletBalance } from 'ardrive-core-js/lib/db';
@@ -35,6 +36,7 @@ import {
   promptToAddOrCreatePersonalPublicDrive,
   promptForAutoSyncApproval,
   promptToRemoveDrive,
+  promptToChangeSyncFolderPath,
 } from './prompts';
 
 async function main() {
@@ -84,6 +86,22 @@ async function main() {
       await promptToAddOrCreatePersonalPrivateDrive(user);
       await promptToAddOrCreatePersonalPublicDrive(user);
       await promptToAddSharedPublicDrive(user);
+
+      // Allow the user to change sync location
+      const newSyncFolderPath : string = await promptToChangeSyncFolderPath(user.syncFolderPath);
+      if (newSyncFolderPath != "Skipped") {
+        console.log ("Updating to new sync folder path ", newSyncFolderPath)
+        const result = await updateUserSyncFolderPath(user.login, newSyncFolderPath)
+        if (result === "Success")
+        {
+          console.log ("Successfully moved Sync folder path to %s", newSyncFolderPath)
+
+          // Update current user object
+          user.syncFolderPath = newSyncFolderPath;
+        } else {
+          console.log ("Error moving Sync folder path.  Continuing to use %s", user.syncFolderPath)
+        }
+      }
 
       // Allow the user to remove a shared, public or private drive
       await promptToRemoveDrive(user.login);

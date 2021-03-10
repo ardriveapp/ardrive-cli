@@ -48,7 +48,7 @@ const promptForBackupWalletPath = () : string => {
   console.log(
     'Please enter the path to backup your new ArDrive Wallet e.g C:\\My_Safe_Location'
   );
-  const backupFolderPath : string = prompt('   ArDrive Wallet Backup Folder Path (hit enter for current directory): ');
+  const backupFolderPath : Path = prompt('   ArDrive Wallet Backup Folder Path (hit enter for current directory): ');
   const validPath : string = checkOrCreateFolder(backupFolderPath);
   if (validPath === '0') {
     return promptForBackupWalletPath();
@@ -76,6 +76,21 @@ export const promptForAutoSyncApproval = async () : Promise<number> => {
   else {
     return 0; // disable autoSyncApproval
   }
+}
+
+// Prompts the user to change their sync folder path and move all drives, folders and files.
+export const promptToChangeSyncFolderPath = async (currentSyncFolderPath: string) : Promise<string> => {
+  const changeSyncFolderPathApproval : string = prompt ('  Would you like to change your local sync folder and move all files? (Default is No) Y/N ');
+  if (changeSyncFolderPathApproval.toUpperCase() === 'Y') {
+    const newSyncFolderPath : Path = prompt('   Enter your new ArDrive Sync Folder Path (hit enter for current directory): ');
+    if (newSyncFolderPath ===  currentSyncFolderPath) {
+      console.log ("  Please enter in a new path.")
+      return promptToChangeSyncFolderPath(currentSyncFolderPath);
+    } else {
+      return newSyncFolderPath;
+    }
+  }
+  return "Skipped"
 }
 
 // Asks the user to delete a Drive.  If the drive ID is invalid the user will get prompted again
