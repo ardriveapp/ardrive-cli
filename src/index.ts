@@ -20,11 +20,12 @@ import {
   setProfileAutoSyncApproval,
   uploadArDriveFilesAndBundles,
   updateUserSyncFolderPath,
+  setProfileWalletBalance,
+  getAllMyPersonalDrives,
+  ArDriveUser,
+  UploadBatch,
   //addSharedPublicDrive,
 } from 'ardrive-core-js'
-import { setProfileWalletBalance } from 'ardrive-core-js/lib/db';
-import { getAllMyPersonalDrives } from 'ardrive-core-js/lib/download';
-import { ArDriveUser, UploadBatch } from 'ardrive-core-js/lib/types';
 import {
   promptForLoginPassword,
   promptForNewUserInfo,
