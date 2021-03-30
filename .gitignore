@@ -1,6 +1,7 @@
 # Logs
 logs
 *.log
+npm-debug.log.*
 
 # Runtime data
 pids
@@ -20,20 +21,50 @@ coverage
 .lock-wscript
 
 # Compiled binary addons (http://nodejs.org/api/addons.html)
-build/compiled
+build/Release
 .eslintcache
 
 # Dependency directory
 # https://www.npmjs.org/doc/misc/npm-faq.html#should-i-check-my-node_modules-folder-into-git
 node_modules
-/lib
 
 # OSX
 .DS_Store
 
-.idea
-npm-debug.log.*
+# App packaged
+release
+app/main.prod.js
+app/main.prod.js.map
+app/renderer.prod.js
+app/renderer.prod.js.map
+app/style.css
+app/style.css.map
+build
+dist
+dll
+main.js
+main.js.map
+
+# defaults for CLI app
+Backup
+Sync
+
+#Compiled CSS
 *.css.d.ts
 *.sass.d.ts
 *.scss.d.ts
+
+#Yarn
+#https://yarnpkg.com/getting-started/qa#which-files-should-be-gitignored
+#zero installs
+.yarn/*
+!.yarn/cache
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# Misc
+.idea
 *.db
