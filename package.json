@@ -35,6 +35,7 @@
 	"scripts": {
 		"format": "prettier --write \"src/**/*.ts\"",
 		"lint": "eslint . --ext .ts",
+		"lintfix": "eslint . --ext .ts --fix",
 		"build": "tsc",
 		"prepare": "yarn run build",
 		"preversion": "yarn run lint",
