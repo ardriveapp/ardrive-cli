@@ -23,7 +23,8 @@ import {
 	setProfileWalletBalance,
 	getAllMyPersonalDrives,
 	ArDriveUser,
-	UploadBatch
+	UploadBatch,
+	ArFSFileMetaData
 	//addSharedPublicDrive,
 } from 'ardrive-core-js';
 import {
@@ -56,7 +57,7 @@ async function main() {
 		syncFolderPath: '',
 		autoSyncApproval: 0
 	};
-	let fileDownloadConflicts;
+	let fileDownloadConflicts: ArFSFileMetaData[] = [];
 
 	// Ask the user for their login name
 	const login = await promptForLogin();
@@ -130,54 +131,61 @@ async function main() {
 	startWatchingFolders(user);
 
 	// Continually check for things to process and actions to notify the user
-	while (true) {
-		// Get all of the latest personal public and private drives for the user, and store in the local database
-		await getAllMyPersonalDrives(user);
+	let loop = true;
+	while (loop === true) {
+		try {
+			// Get all of the latest personal public and private drives for the user, and store in the local database
+			await getAllMyPersonalDrives(user);
 
-		// Get all of the public and private files for the user and store in the local database
-		await getMyArDriveFilesFromPermaWeb(user);
+			// Get all of the public and private files for the user and store in the local database
+			await getMyArDriveFilesFromPermaWeb(user);
 
-		// Download any files from Arweave that need to be synchronized locally
-		await downloadMyArDriveFiles(user);
+			// Download any files from Arweave that need to be synchronized locally
+			await downloadMyArDriveFiles(user);
 
-		// Check the status of any files that may have been already been uploaded
-		await checkUploadStatus(user.login);
+			// Check the status of any files that may have been already been uploaded
+			await checkUploadStatus(user.login);
 
-		// Figure out the cost of the next batch of uploads, and ask the user if they want to approve
-		// If the size is -1, then the user does not have enough funds and the upload is skipped
-		const uploadBatch: UploadBatch = await getPriceOfNextUploadBatch(user.login);
-		if (uploadBatch.totalArDrivePrice > 0) {
-			if (await promptForArDriveUpload(login, uploadBatch, user.autoSyncApproval)) {
-				await uploadArDriveFilesAndBundles(user);
+			// Figure out the cost of the next batch of uploads, and ask the user if they want to approve
+			// If the size is -1, then the user does not have enough funds and the upload is skipped
+			const uploadBatch: UploadBatch = await getPriceOfNextUploadBatch(user.login);
+			if (uploadBatch.totalArDrivePrice > 0) {
+				if (await promptForArDriveUpload(login, uploadBatch, user.autoSyncApproval)) {
+					await uploadArDriveFilesAndBundles(user);
+				}
 			}
+
+			// Resolve and download conflicts, and process on the next batch
+			fileDownloadConflicts = await getMyFileDownloadConflicts(user.login);
+			if (fileDownloadConflicts) {
+				fileDownloadConflicts.forEach(async (fileDownloadConflict: ArFSFileMetaData) => {
+					const response = await promptForFileOverwrite(fileDownloadConflict.filePath);
+					await resolveFileDownloadConflict(
+						response,
+						fileDownloadConflict.fileName,
+						fileDownloadConflict.filePath,
+						fileDownloadConflict.id.toString()
+					);
+				});
+			}
+
+			// Update date
+			const today = new Date();
+			const date = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+			const time = `${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}`;
+			const dateTime = `${date} ${time}`;
+
+			// Get the latest balance of the loaded wallet.
+			const balance = await getWalletBalance(user.walletPublicKey);
+			await setProfileWalletBalance(+balance, login);
+			console.log('%s Syncronization completed.  Current AR Balance: %s', dateTime, balance);
+			await sleep(30000);
+		} catch (err) {
+			console.log(err);
+			loop = false;
 		}
-
-		// Resolve and download conflicts, and process on the next batch
-		fileDownloadConflicts = await getMyFileDownloadConflicts(user.login);
-		if (fileDownloadConflicts) {
-			fileDownloadConflicts.forEach(async (fileDownloadConflict: any) => {
-				const response = await promptForFileOverwrite(fileDownloadConflict.fullPath);
-				await resolveFileDownloadConflict(
-					response,
-					fileDownloadConflict.fileName,
-					fileDownloadConflict.filePath,
-					fileDownloadConflict.id
-				);
-			});
-		}
-
-		// Update date
-		const today = new Date();
-		const date = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
-		const time = `${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}`;
-		const dateTime = `${date} ${time}`;
-
-		// Get the latest balance of the loaded wallet.
-		const balance = await getWalletBalance(user.walletPublicKey);
-		await setProfileWalletBalance(+balance, login);
-		console.log('%s Syncronization completed.  Current AR Balance: %s', dateTime, balance);
-		await sleep(30000);
 	}
+	return 0;
 }
 
 function displayBanner() {

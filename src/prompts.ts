@@ -20,9 +20,10 @@ import {
 	getAllMyPersonalDrives
 } from 'ardrive-core-js';
 
-const prompt = require('prompt-sync')({ sigint: true });
+import promptSync from 'prompt-sync';
+const prompt = promptSync({ sigint: true });
+
 import passwordPrompt from 'prompts';
-import { Path } from 'typescript';
 
 // Get the users wallet or create a new one
 const promptForWallet = (): string => {
@@ -53,7 +54,7 @@ const promptForLocalWalletPath = (): string => {
 // Get the location to backup the new wallet
 const promptForBackupWalletPath = (): string => {
 	console.log('Please enter the path to backup your new ArDrive Wallet e.g C:\\My_Safe_Location');
-	const backupFolderPath: Path = prompt('   ArDrive Wallet Backup Folder Path (hit enter for current directory): ');
+	const backupFolderPath: string = prompt('   ArDrive Wallet Backup Folder Path (hit enter for current directory): ');
 	const validPath: string = checkOrCreateFolder(backupFolderPath);
 	if (validPath === '0') {
 		return promptForBackupWalletPath();
@@ -92,7 +93,7 @@ export const promptToChangeSyncFolderPath = async (currentSyncFolderPath: string
 		'  Would you like to change your local sync folder and move all files? (Default is No) Y/N '
 	);
 	if (changeSyncFolderPathApproval.toUpperCase() === 'Y') {
-		const newSyncFolderPath: Path = prompt(
+		const newSyncFolderPath: string = prompt(
 			'   Enter your new ArDrive Sync Folder Path (hit enter for current directory): '
 		);
 		if (newSyncFolderPath === currentSyncFolderPath) {
@@ -126,10 +127,10 @@ export const promptToRemoveDrive = async (login: string): Promise<string> => {
 			);
 			i += 1;
 		});
-		const choice = prompt('   Please select which number: ');
+		const choice: string = prompt('   Please select which number: ');
 		if (+choice <= i) {
-			console.log('Deleting drive %s', drives[choice].driveName);
-			await deleteDrive(drives[choice].driveId);
+			console.log('Deleting drive %s', drives[+choice].driveName);
+			await deleteDrive(drives[+choice].driveId);
 			return 'Deleted';
 		} else {
 			console.log('Invalid Drive selection');
@@ -228,7 +229,7 @@ const promptForArDriveId = async (
 		i += 1;
 	});
 	console.log('%s: Create a new %s Drive', i, drivePrivacy);
-	const choice = prompt('   Please select which number: ');
+	const choice: string = prompt('   Please select which number: ');
 	if (+choice === i) {
 		let driveName: string = prompt('   Please enter in a new name for your new drive: ');
 		driveName = await sanitizePath(driveName);
@@ -244,12 +245,12 @@ const promptForArDriveId = async (
 			const newDrive = await createNewPrivateDrive(login, driveName);
 			drives.push(newDrive);
 		}
-		drives[choice].login = login;
-		return drives[choice];
-	} else if (+choice < i && +choice >= 0 && choice !== '') {
+		drives[+choice].login = login;
+		return drives[+choice];
+	} else if (+choice < i && +choice >= 0 && choice !== null) {
 		try {
-			drives[choice].login = login;
-			return drives[choice];
+			drives[+choice].login = login;
+			return drives[+choice];
 		} catch (err) {
 			console.log('    Invalid selection!');
 			return await promptForArDriveId(login, drives, drivePrivacy);
@@ -265,7 +266,7 @@ const promptForArDriveId = async (
 const promptForSyncFolderPath = (): string => {
 	// Setup ArDrive Sync Folder
 	console.log('Please enter the path of your local root ArDrive folder e.g D:\\ArDriveSync.');
-	const syncFolderPath: Path = prompt('   ArDrive Sync Folder Path (hit enter for current directory): ');
+	const syncFolderPath: string = prompt('   ArDrive Sync Folder Path (hit enter for current directory): ');
 	const validPath = checkOrCreateFolder(syncFolderPath);
 	if (validPath === '0') {
 		return promptForSyncFolderPath();
@@ -321,7 +322,7 @@ const promptForLoginPassword = async (): Promise<string> => {
 
 // Collects all of the information needed to create a new user
 // This includes Wallet, Existing ArDrives and Sync Folder Path
-const promptForNewUserInfo = async (login: string) => {
+const promptForNewUserInfo = async (login: string): Promise<ArDriveUser> => {
 	let wallet;
 	const user: ArDriveUser = {
 		login,
@@ -494,8 +495,8 @@ const promptForArDriveUpload = async (
 };
 
 // Prompt the user if they want to rename, overwrite or ignore file conflict
-const promptForFileOverwrite = async (fullPath: any) => {
-	console.log('A file has been found on the Permaweb with a different hash but the same file name %s', fullPath);
+const promptForFileOverwrite = async (filePath: string): Promise<string> => {
+	console.log('A file has been found on the Permaweb with a different hash but the same file name %s', filePath);
 	const conflict = prompt('Would you like to Overwrite (O) Rename (R) or Ignore (I): ');
 	return conflict;
 };
