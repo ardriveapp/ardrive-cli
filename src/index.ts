@@ -122,7 +122,7 @@ async function main() {
 	await downloadMyArDriveFiles(user);
 
 	// Get latest wallet balance
-	let balance = await getWalletBalance(user.walletPublicKey);
+	const balance = await getWalletBalance(user.walletPublicKey);
 	await setProfileWalletBalance(+balance, login);
 
 	// Initialize Chokidar Folder Watcher by providing the Sync Folder Path, Private and Public ArDrive IDs

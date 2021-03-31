@@ -115,7 +115,7 @@ export const promptToRemoveDrive = async (login: string): Promise<string> => {
 		let i = 0;
 		const drives: ArFSDriveMetaData[] = await getAllDrivesByLoginFromDriveTable(login);
 		drives.forEach((drive: ArFSDriveMetaData) => {
-			let createdOn = new Date(+drive.unixTime * 1000);
+			const createdOn = new Date(+drive.unixTime * 1000);
 			console.log('%s: %s', i, drive.driveName);
 			console.log(
 				'   %s | %s | Created On: %s | Drive Id: %s',
@@ -222,7 +222,7 @@ const promptForArDriveId = async (
 	console.log('Either pick an existing %s Drive or create a new one', drivePrivacy);
 	let i = 0;
 	drives.forEach((drive: ArFSDriveMetaData) => {
-		let createdOn = new Date(+drive.unixTime * 1000);
+		const createdOn = new Date(+drive.unixTime * 1000);
 		console.log('%s: %s', i, drive.driveName);
 		console.log(' Created On: %s | Drive Id: %s', createdOn, drive.driveId);
 		i += 1;
