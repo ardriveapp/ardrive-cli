@@ -2,29 +2,30 @@
 /* eslint-disable no-await-in-loop */
 // index.ts
 import {
-	setupDatabase,
-	getUserFromProfile,
-	getMyFileDownloadConflicts,
-	getWalletBalance,
-	sleep,
-	checkUploadStatus,
-	getPriceOfNextUploadBatch,
-	getMyArDriveFilesFromPermaWeb,
-	downloadMyArDriveFiles,
-	startWatchingFolders,
-	resolveFileDownloadConflict,
-	getUser,
-	addNewUser,
-	passwordCheck,
-	setupDrives,
-	setProfileAutoSyncApproval,
-	uploadArDriveFilesAndBundles,
-	updateUserSyncFolderPath
-	//addSharedPublicDrive,
-} from 'ardrive-core-js';
-import { setProfileWalletBalance } from 'ardrive-core-js/lib/db';
-import { getAllMyPersonalDrives } from 'ardrive-core-js/lib/download';
-import { ArDriveUser, UploadBatch } from 'ardrive-core-js/lib/types';
+  setupDatabase,
+  getUserFromProfile,
+  getMyFileDownloadConflicts,
+  getWalletBalance,
+  sleep,
+  checkUploadStatus,
+  getPriceOfNextUploadBatch,
+  getMyArDriveFilesFromPermaWeb,
+  downloadMyArDriveFiles,
+  startWatchingFolders,
+  resolveFileDownloadConflict,
+  getUser,
+  addNewUser,
+  passwordCheck,
+  setupDrives,
+  setProfileAutoSyncApproval,
+  uploadArDriveFilesAndBundles,
+  updateUserSyncFolderPath,
+  setProfileWalletBalance,
+  getAllMyPersonalDrives,
+  ArDriveUser,
+  UploadBatch,
+  //addSharedPublicDrive,
+} from 'ardrive-core-js'
 import {
 	promptForLoginPassword,
 	promptForNewUserInfo,

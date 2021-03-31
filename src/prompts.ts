@@ -1,24 +1,24 @@
 import {
-	getLocalWallet,
-	createArDriveWallet,
-	checkOrCreateFolder,
-	backupWallet,
-	checkFileExistsSync,
-	addDriveToDriveTable,
-	createNewPublicDrive,
-	createNewPrivateDrive,
-	addSharedPublicDrive,
-	deleteDrive,
-	sanitizePath
+  getLocalWallet,
+  createArDriveWallet,
+  checkOrCreateFolder,
+  backupWallet,
+  checkFileExistsSync,
+  addDriveToDriveTable,
+  createNewPublicDrive,
+  createNewPrivateDrive,
+  addSharedPublicDrive,
+  deleteDrive,
+  sanitizePath,
+  getAllDrivesByLoginFromDriveTable,
+  getAllUnSyncedPersonalDrivesByLoginFromDriveTable,
+  getProfileWalletBalance,
+  setDriveToSync,
+  ArDriveUser,
+  ArFSDriveMetaData,
+  UploadBatch,
+  getAllMyPersonalDrives,
 } from 'ardrive-core-js';
-import {
-	getAllDrivesByLoginFromDriveTable,
-	getAllUnSyncedPersonalDrivesByLoginFromDriveTable,
-	getProfileWalletBalance,
-	setDriveToSync
-} from 'ardrive-core-js/lib/db';
-import { getAllMyPersonalDrives } from 'ardrive-core-js/lib/download';
-import { ArDriveUser, ArFSDriveMetaData, UploadBatch } from 'ardrive-core-js/lib/types';
 
 const prompt = require('prompt-sync')({ sigint: true });
 import passwordPrompt from 'prompts';
