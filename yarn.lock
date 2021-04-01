@@ -153,6 +153,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/folder-hash@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "@types/folder-hash@npm:4.0.0"
+  checksum: 73699eb5ca78eef667e5c87693f7d50ba4a36ee3a9a114eea461713bc9cd8deff8e5b14537abb207f4905c60301eba0c450d434a7ceed3b0157359f9c1ec08a3
+  languageName: node
+  linkType: hard
+
 "@types/inquirer@npm:^7.3.1":
   version: 7.3.1
   resolution: "@types/inquirer@npm:7.3.1"
@@ -244,6 +251,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/progress@npm:^2.0.3":
+  version: 2.0.3
+  resolution: "@types/progress@npm:2.0.3"
+  dependencies:
+    "@types/node": "*"
+  checksum: b221d95b40f8fade9a512b04a064571b2b35b3d4928e4d583f10bacf083d55c1400f87b5e260bd40abb74ed6b9cd4b7cea21cc8227bc219ef3f98490e511089f
+  languageName: node
+  linkType: hard
+
 "@types/prompt-sync@npm:^4.1.0":
   version: 4.1.0
   resolution: "@types/prompt-sync@npm:4.1.0"
@@ -264,6 +280,13 @@ __metadata:
   dependencies:
     "@types/node": "*"
   checksum: 67bae5cefe5c2604a522d98e6227bd5fccf0fa73fd878dddaf54af495c5b89c8a768d62c84efac3cb28e2ce241ffdcd74b3cd0246a7d9723624b5f13d822d09a
+  languageName: node
+  linkType: hard
+
+"@types/utf8@npm:^2.1.6":
+  version: 2.1.6
+  resolution: "@types/utf8@npm:2.1.6"
+  checksum: aa03477b681e9afda291b43994dac81d134383ac189496355507bf8bb8641402661a820ae65bedff982623e0d5d7569845a03a81cfa8a02e5b214c10ae5acc41
   languageName: node
   linkType: hard
 
@@ -852,7 +875,7 @@ __metadata:
     "@types/uuid": ^8.3.0
     "@typescript-eslint/eslint-plugin": ^4.18.0
     "@typescript-eslint/parser": ^4.18.0
-    ardrive-core-js: ^0.2.32
+    ardrive-core-js: beta
     arweave: 1.10.11
     arweave-bundles: ^1.0.3
     community-js: ^1.1.36
@@ -874,12 +897,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"ardrive-core-js@npm:^0.2.32":
-  version: 0.2.32
-  resolution: "ardrive-core-js@npm:0.2.32"
+"ardrive-core-js@npm:beta":
+  version: 0.3.0
+  resolution: "ardrive-core-js@npm:0.3.0"
   dependencies:
+    "@types/folder-hash": ^4.0.0
     "@types/node": ^14.14.32
     "@types/node-fetch": ^2.5.8
+    "@types/progress": ^2.0.3
+    "@types/utf8": ^2.1.6
     "@types/uuid": ^8.3.0
     arweave: ^1.10.11
     arweave-bundles: ^1.0.3
@@ -901,7 +927,7 @@ __metadata:
     typescript: ^4.2.3
     utf8: ^3.0.0
     uuid: ^8.3.2
-  checksum: b965ce935e21c6aa877f425bc5d8b3bdb70a3c2e541679b94ff7aa10e20bc626a184362a5a27d1e82c88ecbfdbe38e1d7386206746bf96989ae68687b3739d5b
+  checksum: 5f9f627f328e5c0beecce96390e3575e661c5de220878b234e966242ceda5978afeb2ce5b44842413c461ec729a46ad41bfdd90e77378421d70bde776d1cd056
   languageName: node
   linkType: hard
 

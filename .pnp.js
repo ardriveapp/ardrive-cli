@@ -43,7 +43,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/uuid", "npm:8.3.0"],
             ["@typescript-eslint/eslint-plugin", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
             ["@typescript-eslint/parser", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
-            ["ardrive-core-js", "npm:0.2.32"],
+            ["ardrive-core-js", "npm:0.3.0"],
             ["arweave", "npm:1.10.11"],
             ["arweave-bundles", "npm:1.0.3"],
             ["community-js", "npm:1.1.36"],
@@ -228,6 +228,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD",
         }]
       ]],
+      ["@types/folder-hash", [
+        ["npm:4.0.0", {
+          "packageLocation": "./.yarn/cache/@types-folder-hash-npm-4.0.0-fe341be583-73699eb5ca.zip/node_modules/@types/folder-hash/",
+          "packageDependencies": [
+            ["@types/folder-hash", "npm:4.0.0"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
       ["@types/inquirer", [
         ["npm:7.3.1", {
           "packageLocation": "./.yarn/cache/@types-inquirer-npm-7.3.1-63b5231eee-2db996acf8.zip/node_modules/@types/inquirer/",
@@ -334,6 +343,16 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD",
         }]
       ]],
+      ["@types/progress", [
+        ["npm:2.0.3", {
+          "packageLocation": "./.yarn/cache/@types-progress-npm-2.0.3-8223f090c8-b221d95b40.zip/node_modules/@types/progress/",
+          "packageDependencies": [
+            ["@types/progress", "npm:2.0.3"],
+            ["@types/node", "npm:14.6.4"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
       ["@types/prompt-sync", [
         ["npm:4.1.0", {
           "packageLocation": "./.yarn/cache/@types-prompt-sync-npm-4.1.0-5d6d03c0bb-21bc6832fb.zip/node_modules/@types/prompt-sync/",
@@ -358,6 +377,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [
             ["@types/through", "npm:0.0.30"],
             ["@types/node", "npm:14.6.4"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["@types/utf8", [
+        ["npm:2.1.6", {
+          "packageLocation": "./.yarn/cache/@types-utf8-npm-2.1.6-f775dc749e-aa03477b68.zip/node_modules/@types/utf8/",
+          "packageDependencies": [
+            ["@types/utf8", "npm:2.1.6"]
           ],
           "linkType": "HARD",
         }]
@@ -1073,7 +1101,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/uuid", "npm:8.3.0"],
             ["@typescript-eslint/eslint-plugin", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
             ["@typescript-eslint/parser", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
-            ["ardrive-core-js", "npm:0.2.32"],
+            ["ardrive-core-js", "npm:0.3.0"],
             ["arweave", "npm:1.10.11"],
             ["arweave-bundles", "npm:1.0.3"],
             ["community-js", "npm:1.1.36"],
@@ -1095,12 +1123,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["ardrive-core-js", [
-        ["npm:0.2.32", {
-          "packageLocation": "./.yarn/cache/ardrive-core-js-npm-0.2.32-8af9a8919e-b965ce935e.zip/node_modules/ardrive-core-js/",
+        ["npm:0.3.0", {
+          "packageLocation": "./.yarn/cache/ardrive-core-js-npm-0.3.0-a813a82706-5f9f627f32.zip/node_modules/ardrive-core-js/",
           "packageDependencies": [
-            ["ardrive-core-js", "npm:0.2.32"],
+            ["ardrive-core-js", "npm:0.3.0"],
+            ["@types/folder-hash", "npm:4.0.0"],
             ["@types/node", "npm:14.14.37"],
             ["@types/node-fetch", "npm:2.5.8"],
+            ["@types/progress", "npm:2.0.3"],
+            ["@types/utf8", "npm:2.1.6"],
             ["@types/uuid", "npm:8.3.0"],
             ["arweave", "npm:1.10.13"],
             ["arweave-bundles", "npm:1.0.3"],
@@ -1118,7 +1149,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["prompt-sync", "npm:4.2.0"],
             ["prompts", "npm:2.4.0"],
             ["smartweave", "npm:0.4.27"],
-            ["sqlite3", "virtual:8af9a8919ee7b82ad49e001c034ac165ed58c5b62fff8b13062bc5a7e47343ecd4f2ae80c0d4a5d65b3d618778a3f44c24bccc650bbae1b75a2218021e2059b3#npm:5.0.2"],
+            ["sqlite3", "virtual:a813a82706c5a1226a1d3de8e773b1fe44f48ca9da0164eec7076a45afbea971922fbc9b9b2617d9cfbbe6e3498533c0f1213b921329e2a4ab56c909b19e9743#npm:5.0.2"],
             ["typescript", "patch:typescript@npm%3A4.2.3#builtin<compat/typescript>::version=4.2.3&hash=a45b0e"],
             ["utf8", "npm:3.0.0"],
             ["uuid", "npm:8.3.2"]
@@ -5374,16 +5405,16 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       ]],
       ["sqlite3", [
         ["npm:5.0.2", {
-          "packageLocation": "./.yarn/unplugged/sqlite3-virtual-e7762a9f40/node_modules/sqlite3/",
+          "packageLocation": "./.yarn/unplugged/sqlite3-virtual-16b91c76d9/node_modules/sqlite3/",
           "packageDependencies": [
             ["sqlite3", "npm:5.0.2"]
           ],
           "linkType": "SOFT",
         }],
-        ["virtual:8af9a8919ee7b82ad49e001c034ac165ed58c5b62fff8b13062bc5a7e47343ecd4f2ae80c0d4a5d65b3d618778a3f44c24bccc650bbae1b75a2218021e2059b3#npm:5.0.2", {
-          "packageLocation": "./.yarn/unplugged/sqlite3-virtual-e7762a9f40/node_modules/sqlite3/",
+        ["virtual:a813a82706c5a1226a1d3de8e773b1fe44f48ca9da0164eec7076a45afbea971922fbc9b9b2617d9cfbbe6e3498533c0f1213b921329e2a4ab56c909b19e9743#npm:5.0.2", {
+          "packageLocation": "./.yarn/unplugged/sqlite3-virtual-16b91c76d9/node_modules/sqlite3/",
           "packageDependencies": [
-            ["sqlite3", "virtual:8af9a8919ee7b82ad49e001c034ac165ed58c5b62fff8b13062bc5a7e47343ecd4f2ae80c0d4a5d65b3d618778a3f44c24bccc650bbae1b75a2218021e2059b3#npm:5.0.2"],
+            ["sqlite3", "virtual:a813a82706c5a1226a1d3de8e773b1fe44f48ca9da0164eec7076a45afbea971922fbc9b9b2617d9cfbbe6e3498533c0f1213b921329e2a4ab56c909b19e9743#npm:5.0.2"],
             ["@types/node-gyp", null],
             ["node-addon-api", "npm:3.1.0"],
             ["node-gyp", "npm:3.8.0"],
