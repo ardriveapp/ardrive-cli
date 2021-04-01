@@ -3,9 +3,7 @@
 	"version": "0.2.12",
 	"description": "The ArDrive Command Line Interface (CLI) contains all of the needed security, file synchronization and Arweave wallet capabilities via a node.js application.",
 	"main": "./lib/index.js",
-	"bin": {
-		"ardrive-cli": "./lib/index.js"
-	},
+	"bin": "./lib/index.js",
 	"types": "./lib/index.d.ts",
 	"dependencies": {
 		"@types/node": "^14.14.32",
@@ -22,10 +20,10 @@
 		"uuid": "^8.3.2"
 	},
 	"devDependencies": {
-		"@typescript-eslint/eslint-plugin": "^4.18.0",
-		"@typescript-eslint/parser": "^4.18.0",
 		"@types/prompt-sync": "^4.1.0",
 		"@types/prompts": "^2.0.9",
+		"@typescript-eslint/eslint-plugin": "^4.18.0",
+		"@typescript-eslint/parser": "^4.18.0",
 		"eslint": "^7.23.0",
 		"eslint-config-prettier": "^8.1.0",
 		"eslint-plugin-prettier": "latest",
@@ -35,8 +33,9 @@
 		"ts-node": "^9.1.1"
 	},
 	"scripts": {
-		"format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
+		"format": "prettier --write \"src/**/*.ts\"",
 		"lint": "eslint . --ext .ts",
+		"lintfix": "eslint . --ext .ts --fix",
 		"build": "tsc",
 		"prepare": "yarn run build",
 		"preversion": "yarn run lint",
@@ -46,7 +45,7 @@
 	},
 	"license": "AGPL-3.0-or-later",
 	"author": {
-		"name": "Phil Mataras",
+		"name": "Permanent Data Solutions Inc",
 		"email": "info@ardrive.io",
 		"website": "https://ardrive.io"
 	},
