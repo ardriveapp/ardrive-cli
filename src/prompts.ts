@@ -3,7 +3,6 @@ import {
 	createArDriveWallet,
 	checkOrCreateFolder,
 	backupWallet,
-	checkFileExistsSync,
 	addDriveToDriveTable,
 	createNewPublicDrive,
 	createNewPrivateDrive,
@@ -17,7 +16,8 @@ import {
 	ArDriveUser,
 	ArFSDriveMetaData,
 	UploadBatch,
-	getAllMyPersonalDrives
+	getAllMyPersonalDrives,
+	checkFileExistsSync
 } from 'ardrive-core-js';
 
 import promptSync from 'prompt-sync';
@@ -55,11 +55,15 @@ const promptForLocalWalletPath = (): string => {
 const promptForBackupWalletPath = (): string => {
 	console.log('Please enter the path to backup your new ArDrive Wallet e.g C:\\My_Safe_Location');
 	const backupFolderPath: string = prompt('   ArDrive Wallet Backup Folder Path (hit enter for current directory): ');
-	const validPath: string = checkOrCreateFolder(backupFolderPath);
-	if (validPath === '0') {
-		return promptForBackupWalletPath();
+	if (backupFolderPath === '') {
+		return backupFolderPath;
+	} else {
+		const validPath: string = checkOrCreateFolder(backupFolderPath)
+		if (validPath === '0') {
+			return promptForBackupWalletPath();
+		}
+		return backupFolderPath;
 	}
-	return backupFolderPath;
 };
 
 // Get the ArDrive owner nickname
@@ -266,12 +270,17 @@ const promptForArDriveId = async (
 const promptForSyncFolderPath = (): string => {
 	// Setup ArDrive Sync Folder
 	console.log('Please enter the path of your local root ArDrive folder e.g D:\\ArDriveSync.');
-	const syncFolderPath: string = prompt('   ArDrive Sync Folder Path (hit enter for current directory): ');
-	const validPath = checkOrCreateFolder(syncFolderPath);
-	if (validPath === '0') {
-		return promptForSyncFolderPath();
+	let syncFolderPath: string = prompt('   ArDrive Sync Folder Path (hit enter for current directory): ');
+	if (syncFolderPath === '') {
+		syncFolderPath = process.cwd();
+		return syncFolderPath;
+	} else {
+		const validPath = checkOrCreateFolder(syncFolderPath);
+		if (validPath === '0') {
+			return promptForSyncFolderPath();
+		}
+		return syncFolderPath;
 	}
-	return syncFolderPath;
 };
 
 // Setup ArDrive Login Password
