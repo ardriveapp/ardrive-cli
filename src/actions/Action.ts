@@ -89,6 +89,13 @@ export abstract class Action implements Fireable<Object> {
 	}
 	protected _parseResponse?(results: Result<any>[]): any;
 
+	static getIdentifier(action: Action) {
+		const tag = action.tag;
+		const name = action.name;
+		const identifier = name ? `${tag}.${name}` : tag;
+		return identifier;
+	}
+
 	get results(): Result<any>[] {
 		const result: Result<any>[] = [];
 		for (let script of this.script as Fireable<any>[]) {

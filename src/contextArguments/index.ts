@@ -3,6 +3,8 @@ import { hideBin } from 'yargs/helpers';
 import { Prompter, Choices } from '../prompts/prompters';
 import { PromptObject } from 'prompts';
 
+const POSITIONAL_ARGUMENT_REGEX = /^\$(\d+)$/;
+const UNDERSCORE = '_';
 export interface ArgumentConfig {
 	name: string;
 	type: string;
@@ -33,23 +35,14 @@ class ContextArguments {
 
 	public async get(argumentName: string): Promise<any> {
 		const argument = this.ALL_ARGS.find((a) => a.name === argumentName);
-		debugger;
+		const positionalArgument = argumentName.match(POSITIONAL_ARGUMENT_REGEX);
+		let value;
 		if (argument) {
 			// search for the value in yargs, else prompt for it
-			let value;
 			value = this.getArgumentValue(argument);
 			const valid = argument.validate && argument.validate(value);
 			if (typeof value === 'undefined' || !(valid === true || valid === undefined)) {
-				const prompter = new Prompter({
-					message: argument.humanReadableMessage,
-					type: argument.type,
-					name: argument.name,
-					validate: argument.validate,
-					choices: argument.choices
-				} as PromptObject);
-				const v = await prompter.run();
-				value = v[argument.name];
-				debugger;
+				value = await this.promptArgumentValue(argument);
 			}
 			if (argument.cacheable) {
 				argument.cache = value;
@@ -57,14 +50,23 @@ class ContextArguments {
 			if (argument.type === 'number') {
 				value = Number(value);
 			} else if (argument.type === 'boolean') {
-				value == !!value;
+				value = !!value;
 			}
 			return value;
+		} else if (positionalArgument) {
+			const index = Number.parseInt(positionalArgument[1]);
+			value = this.getPositionalArgument(index);
 		} else {
 			const error = new Error(`Invalid argument ${argumentName}`);
 			console.error(error.message);
 			throw error;
 		}
+		return value;
+	}
+
+	private getPositionalArgument(argumentIndex: number) {
+		const value = this.yargsInstance.argv[UNDERSCORE][argumentIndex - 1];
+		return value;
 	}
 
 	private getArgumentValue(argument: ArgumentConfig): string {
@@ -73,6 +75,19 @@ class ContextArguments {
 				(accumulator: string, flag: string): string => accumulator || (this.yargsInstance.argv[flag] as string),
 				''
 			) || argument.cache;
+		return value;
+	}
+
+	private async promptArgumentValue(argument: ArgumentConfig): Promise<string> {
+		const prompter = new Prompter({
+			message: argument.humanReadableMessage,
+			type: argument.type,
+			name: argument.name,
+			validate: argument.validate,
+			choices: argument.choices
+		} as PromptObject);
+		const v = await prompter.run();
+		const value = v[argument.name];
 		return value;
 	}
 }

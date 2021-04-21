@@ -9,10 +9,8 @@ class pingScript extends ScriptItem<string> {
 	name = 'ping';
 
 	async _scriptHandler(): Promise<string> {
-		debugger;
 		const pingText = await ContextArguments.get(PING_TEXT_ARG);
 		const response = await ClientService.run<string>(this.name, pingText);
-		debugger;
 		return response;
 	}
 }
