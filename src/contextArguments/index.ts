@@ -1,7 +1,12 @@
 import yargs from 'yargs/yargs';
 import { hideBin } from 'yargs/helpers';
-import { Prompter, Choices } from '../prompts/prompters';
+import { Prompter, Choices, promptPath } from '../prompts/prompters';
 import { PromptObject } from 'prompts';
+
+export const WALLET_TAG = 'wallet';
+export const USER_TAG = 'user';
+export const ECHO_TAG = 'echo';
+export const ALL_TAGS = [USER_TAG, ECHO_TAG, WALLET_TAG];
 
 const POSITIONAL_ARGUMENT_REGEX = /^\$(\d+)$/;
 const UNDERSCORE = '_';
@@ -23,20 +28,24 @@ class ContextArguments {
 	private ALL_ARGS: ArgumentConfig[] = [];
 	private yargsInstance = yargs(hideBin(process.argv));
 
-	public setArguments = (args: ArgumentConfig[]) => {
+	public setArguments = (args: ArgumentConfig[]): void => {
 		args.forEach((a) => {
 			this.setArgument(a);
 		});
 	};
 
-	public setArgument = (arg: ArgumentConfig) => {
+	public setArgument = (arg: ArgumentConfig): void => {
 		this.ALL_ARGS.push(arg);
 	};
 
 	public async get(argumentName: string): Promise<any> {
-		const argument = this.ALL_ARGS.find((a) => a.name === argumentName);
+		const argument: false | ArgumentConfig = await this.findArgument(argumentName).catch(() => {
+			// console.log(e);
+			return false;
+		});
 		const positionalArgument = argumentName.match(POSITIONAL_ARGUMENT_REGEX);
-		let value;
+		let value: any;
+		let err: false | Error = false;
 		if (argument) {
 			// search for the value in yargs, else prompt for it
 			value = this.getArgumentValue(argument);
@@ -52,17 +61,30 @@ class ContextArguments {
 			} else if (argument.type === 'boolean') {
 				value = !!value;
 			}
-			return value;
 		} else if (positionalArgument) {
-			const index = Number.parseInt(positionalArgument[1]);
-			value = this.getPositionalArgument(index);
+			// search for positional argument
+			try {
+				const index = Number.parseInt(positionalArgument[1]);
+				value = this.getPositionalArgument(index);
+			} catch (e) {
+				err = new Error(
+					`Expected positional argument index to be an integer, but got "${positionalArgument[1]}"`
+				);
+			}
 		} else {
-			const error = new Error(`Invalid argument ${argumentName}`);
-			console.error(error.message);
-			throw error;
+			err = new Error(`Invalid argument ${argumentName}`);
+		}
+		if (err instanceof Error) {
+			throw err;
 		}
 		return value;
 	}
+
+	public setArgumentCache = (argumentName: string, value: any) => {
+		return this.findArgument(argumentName).then((argument) => {
+			argument.cache = value;
+		});
+	};
 
 	private getPositionalArgument(argumentIndex: number) {
 		const value = this.yargsInstance.argv[UNDERSCORE][argumentIndex - 1];
@@ -78,10 +100,22 @@ class ContextArguments {
 		return value;
 	}
 
+	private async findArgument(name: string): Promise<ArgumentConfig> {
+		const argument = this.ALL_ARGS.find((a) => a.name === name);
+		if (!argument) {
+			throw new Error(`No such argument ${name}`);
+		}
+		return argument;
+	}
+
 	private async promptArgumentValue(argument: ArgumentConfig): Promise<string> {
+		if (argument.type === 'path') {
+			return await promptPath(argument.name);
+		}
 		const prompter = new Prompter({
 			message: argument.humanReadableMessage,
 			type: argument.type,
+			style: argument.style,
 			name: argument.name,
 			validate: argument.validate,
 			choices: argument.choices
@@ -92,7 +126,5 @@ class ContextArguments {
 	}
 }
 
-const argumentsInstance = new ContextArguments();
-
-export default argumentsInstance;
+export default new ContextArguments();
 export { PASSWORD_ARG, PASSWORD_REPEAT_ARG, USERNAME_ARG } from './arguments';

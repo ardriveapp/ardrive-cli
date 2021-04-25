@@ -1,11 +1,6 @@
-#!/usr/bin/env node
-import ClientService from './daemon-connection';
+import { clientInstance } from './daemon-connection';
 import { Action } from './actions';
-import './actions/ping';
-import ContextArguments from './contextArguments';
-// import yargs from 'yargs';
-
-// function getAction() {}
+import ContextArguments, { ALL_TAGS } from './contextArguments';
 
 class CLI {
 	async run() {
@@ -15,7 +10,13 @@ class CLI {
 		if (action) {
 			await fireAction(action);
 		} else {
-			throw new Error('Action not found');
+			const actionNames = Action.getAllActionNamesForTag(tag);
+			const wrongTag = actionNames.length === 0;
+			if (wrongTag) {
+				help();
+			} else {
+				helpForTag(tag);
+			}
 		}
 	}
 }
@@ -23,11 +24,27 @@ class CLI {
 async function fireAction(action: Action): Promise<any> {
 	return await action
 		.fire()
-		.then(() => {
-			ClientService.disconnect();
-		})
+		.then(console.log)
 		.catch((e) => {
 			console.log(`Error on action ${Action.getIdentifier(action)}. ${e}`);
+		})
+		.finally(() => {
+			clientInstance.disconnect();
+		});
+}
+
+function help(): void {
+	const help = `All possible command tags are:\n\t>${ALL_TAGS.join('\t>')}`;
+	console.log(help);
+}
+
+function helpForTag(tag: string): void {
+	const actionNames = Action.getAllActionNamesForTag(tag);
+	const help = ``;
+	Promise.all(actionNames.map(async (name) => await Action.resolve(tag, name)))
+		.then((/*actions: Action[]*/) => {})
+		.then(() => {
+			[console.log(help)];
 		});
 }
 

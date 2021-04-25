@@ -2,6 +2,8 @@ const READY_STATE = 'ready';
 const FIRED_STATE = 'fired';
 const FAILED_STATE = 'failed';
 
+const DEFAULT_NAME_PLACEHOLDER = '::default::';
+
 type StateType = 'ready' | 'fired' | 'failed';
 
 export class Result<T> {
@@ -27,6 +29,7 @@ export class Result<T> {
 }
 
 export interface Fireable<T> {
+	tag?: string;
 	name: string;
 	state: StateType;
 	_scriptHandler?(context: ActionContext): T | Promise<T>;
@@ -37,16 +40,16 @@ export interface Fireable<T> {
 
 export abstract class ScriptItem<T> implements Fireable<T> {
 	abstract name: string;
-	abstract _scriptHandler(context: Object): Promise<T>;
+	abstract _scriptHandler(context: ActionContext): Promise<T>;
 	public state: StateType;
 	public result?: T;
-	public failOnError: boolean = false;
+	public failOnError = false;
 
 	constructor() {
 		this.state = READY_STATE;
 	}
 
-	public async fire(context: ActionContext) {
+	public async fire(context: ActionContext): Promise<T> {
 		const result = await this._scriptHandler(context).catch((e) => {
 			this.state = FAILED_STATE;
 			throw e;
@@ -76,12 +79,12 @@ export class ActionContext {
 	}
 }
 
-export abstract class Action implements Fireable<Object> {
+export abstract class Action implements Fireable<any> {
 	abstract name: string;
 	abstract tag: string;
-	abstract script: Fireable<Object>[] = [];
+	abstract script: Fireable<any>[] = [];
 	public userAccesible = false;
-	public failOnError: boolean = false;
+	public failOnError = false;
 	state: StateType = READY_STATE;
 	private _dummyParse(a: Result<any>[]) {
 		console.warn(`Action ${this.name} has no parser, returning the raw unparsed value...`);
@@ -98,12 +101,21 @@ export abstract class Action implements Fireable<Object> {
 
 	get results(): Result<any>[] {
 		const result: Result<any>[] = [];
-		for (let script of this.script as Fireable<any>[]) {
+		for (const script of this.script as Fireable<any>[]) {
 			if (script.state === FIRED_STATE) {
 				if (Array.isArray(script.result)) {
 					result.push(...script.result);
+				} else {
+					const tmp = [];
+					if (script.tag) {
+						tmp.push(script.tag);
+					}
+					if (script.name) {
+						tmp.push(script.name);
+					}
+					const resultName = `${tmp.join('.')}`;
+					result.push(new Result(resultName, script.result));
 				}
-				result.push(new Result(script.name, script.result));
 			}
 		}
 		return result;
@@ -113,8 +125,8 @@ export abstract class Action implements Fireable<Object> {
 		return (this._parseResponse && this._parseResponse(this.results)) || this._dummyParse(this.results);
 	}
 
-	public fire = async (context?: ActionContext) => {
-		for (let script of this.script) {
+	public fire = async (context?: ActionContext): Promise<void> => {
+		for (const script of this.script) {
 			await script.fire(context || new ActionContext(this.results)).catch((e: Error) => {
 				console.error(`Script ${script.name} just failed: ${e}`);
 				if (script.failOnError) {
@@ -123,18 +135,17 @@ export abstract class Action implements Fireable<Object> {
 				}
 			});
 		}
-		debugger;
 		this.state = FIRED_STATE;
 	};
 
 	private static registeredActions: Action[] = [];
 
-	static registerAction(action: Action) {
+	static registerAction(action: Action): void {
 		Action.registeredActions.push(action);
 	}
 
-	static resolve = async (tag: string, name: string = ''): Promise<Action> => {
-		for (let action of Action.registeredActions) {
+	static resolve = async (tag: string, name = ''): Promise<Action> => {
+		for (const action of Action.registeredActions) {
 			if (action.tag === tag && action.name === name) {
 				if (action.userAccesible) {
 					return action;
@@ -142,6 +153,16 @@ export abstract class Action implements Fireable<Object> {
 				throw new Error('Action is not user-accesible');
 			}
 		}
-		throw new Error('No such action');
+		throw new Error(`No such action. tag: ${tag}, name: ${name}`);
 	};
+
+	static getAllActionNamesForTag(tag: string): string[] {
+		const names: string[] = [];
+		for (const action of Action.registeredActions) {
+			if (action.tag === tag) {
+				names.push(action.name || DEFAULT_NAME_PLACEHOLDER);
+			}
+		}
+		return names;
+	}
 }

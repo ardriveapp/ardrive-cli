@@ -1,21 +1,27 @@
-import { Action, ScriptItem } from './index';
-import { createArDriveWallet } from 'ardrive-core-js';
-import { Wallet } from 'ardrive-core-js/lib/types';
+import { clientInstance } from '../daemon-connection';
+import { Action, ScriptItem, Result } from './Action';
 
 const WALLET_TAG = 'wallet';
 
-class createWalletScript extends ScriptItem<Wallet> {
-	name = 'create-wallet';
+class createWalletScript extends ScriptItem<any> {
+	public name = 'create-wallet';
 
-	_scriptHandler = async (): Promise<Wallet> => {
-		const wallet = createArDriveWallet();
+	public _scriptHandler = async (): Promise<any> => {
+		const wallet = await clientInstance.createArDriveWallet();
 		return wallet;
 	};
 }
 
 export class CreateWalletAction extends Action {
-	tag = WALLET_TAG;
-	name = 'create';
-	userAccesible = true;
-	script: ScriptItem<any>[] = [new createWalletScript()];
+	public tag = WALLET_TAG;
+	public name = 'create';
+	public userAccesible = true;
+	public script: ScriptItem<any>[] = [new createWalletScript()];
+
+	public _parseResponse(results: Result<any>[]): any {
+		const result_1 = results[0];
+		return result_1?.getValue();
+	}
 }
+
+Action.registerAction(new CreateWalletAction());

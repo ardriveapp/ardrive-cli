@@ -46,7 +46,7 @@ const ARGUMENTS: ArgumentConfig[] = [
 		name: PASSWORD_REPEAT_ARG,
 		type: 'text',
 		style: 'password',
-		humanReadableMessage: '',
+		humanReadableMessage: 'Password repeat',
 		commandLineFlags: [],
 		cacheable: false,
 		help: ''

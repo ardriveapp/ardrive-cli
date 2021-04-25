@@ -1,6 +1,6 @@
 import { ClientService } from 'ardrive-daemon';
 
-const instance = new ClientService();
+const instance: ClientService = new ClientService();
 instance.clientConnect();
 
-export default instance;
+export const clientInstance: ClientService = instance;
