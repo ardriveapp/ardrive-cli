@@ -2,11 +2,13 @@ import yargs from 'yargs/yargs';
 import { hideBin } from 'yargs/helpers';
 import { Prompter, Choices, promptPath } from '../prompts/prompters';
 import { PromptObject } from 'prompts';
+import { DRIVE_ID_ARG } from './arguments';
 
 export const WALLET_TAG = 'wallet';
 export const USER_TAG = 'user';
+export const DRIVE_TAG = 'drive';
 export const ECHO_TAG = 'echo';
-export const ALL_TAGS = [USER_TAG, ECHO_TAG, WALLET_TAG];
+export const ALL_TAGS = [WALLET_TAG, USER_TAG, DRIVE_TAG, ECHO_TAG];
 
 const POSITIONAL_ARGUMENT_REGEX = /^\$(\d+)$/;
 const UNDERSCORE = '_';
@@ -16,11 +18,12 @@ export interface ArgumentConfig {
 	choices?: Choices;
 	style?: 'password';
 	commandLineFlags: string[];
-	humanReadableMessage: string;
+	humanReadableMessage?: string;
 	humanReadableRetryMessage?: string;
 	validate?(v: any): boolean | string;
 	cacheable: boolean;
 	cache?: any;
+	default?: any;
 	help: string;
 }
 
@@ -38,7 +41,7 @@ class ContextArguments {
 		this.ALL_ARGS.push(arg);
 	};
 
-	public async get(argumentName: string): Promise<any> {
+	public async get(argumentName: string, noDefault = false, noCache = false): Promise<any> {
 		const argument: false | ArgumentConfig = await this.findArgument(argumentName).catch(() => {
 			// console.log(e);
 			return false;
@@ -50,7 +53,7 @@ class ContextArguments {
 			// search for the value in yargs, else prompt for it
 			value = this.getArgumentValue(argument);
 			const valid = argument.validate && argument.validate(value);
-			if (typeof value === 'undefined' || !(valid === true || valid === undefined)) {
+			if (value === undefined || !(valid === true || valid === undefined)) {
 				value = await this.promptArgumentValue(argument);
 			}
 			if (argument.cacheable) {
@@ -77,6 +80,13 @@ class ContextArguments {
 		if (err instanceof Error) {
 			throw err;
 		}
+		if (value === undefined && argument) {
+			if (!noCache) {
+				value = argument.cache;
+			} else if (!noDefault) {
+				value = argument.default;
+			}
+		}
 		return value;
 	}
 
@@ -92,11 +102,10 @@ class ContextArguments {
 	}
 
 	private getArgumentValue(argument: ArgumentConfig): string {
-		const value =
-			argument.commandLineFlags.reduce(
-				(accumulator: string, flag: string): string => accumulator || (this.yargsInstance.argv[flag] as string),
-				''
-			) || argument.cache;
+		const value = argument.commandLineFlags.reduce(
+			(accumulator: string, flag: string): string => accumulator || (this.yargsInstance.argv[flag] as string),
+			''
+		);
 		return value;
 	}
 
@@ -108,7 +117,15 @@ class ContextArguments {
 		return argument;
 	}
 
-	private async promptArgumentValue(argument: ArgumentConfig): Promise<string> {
+	public async promptDriveId(driveIds: Choices): Promise<string> {
+		const argument = await this.findArgument(DRIVE_ID_ARG);
+		if (argument) {
+			return await this.promptArgumentValue(argument, driveIds);
+		}
+		throw 'Errr';
+	}
+
+	private async promptArgumentValue(argument: ArgumentConfig, customChoices?: Choices): Promise<string> {
 		if (argument.type === 'path') {
 			return await promptPath(argument.name);
 		}
@@ -118,7 +135,7 @@ class ContextArguments {
 			style: argument.style,
 			name: argument.name,
 			validate: argument.validate,
-			choices: argument.choices
+			choices: customChoices || argument.choices
 		} as PromptObject);
 		const v = await prompter.run();
 		const value = v[argument.name];

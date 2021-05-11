@@ -1,12 +1,15 @@
+import { help } from 'yargs';
 import ContextArguments, { ArgumentConfig } from './index';
 
 export const PING_TEXT_ARG = 'ping-text';
 export const USERNAME_ARG = 'username';
 export const PASSWORD_ARG = 'password';
 export const PASSWORD_REPEAT_ARG = 'password-repeat';
-export const AUTO_SYNC_FOLDER = 'auto-sync-folder';
-export const AUTO_SYNC_FOLDER_APPROVAL = 'auto-sync-folder-approval';
-export const CONFIRM_USER_CREATION = 'confirm-user-creation';
+export const AUTO_SYNC_FOLDER_ARG = 'auto-sync-folder';
+export const AUTO_SYNC_FOLDER_APPROVAL_ARG = 'auto-sync-folder-approval';
+export const CONFIRM_USER_CREATION_ARG = 'confirm-user-creation';
+export const PUBLIC_ARG = 'public';
+export const DRIVE_ID_ARG = 'drive-id';
 
 const YES_NO_CHOICES = [
 	{ title: 'Yes', value: true },
@@ -52,7 +55,7 @@ const ARGUMENTS: ArgumentConfig[] = [
 		help: ''
 	},
 	{
-		name: AUTO_SYNC_FOLDER,
+		name: AUTO_SYNC_FOLDER_ARG,
 		type: 'path',
 		humanReadableMessage: 'Auto-sync path:',
 		cacheable: false,
@@ -60,21 +63,37 @@ const ARGUMENTS: ArgumentConfig[] = [
 		help: ''
 	},
 	{
-		name: AUTO_SYNC_FOLDER_APPROVAL,
+		name: AUTO_SYNC_FOLDER_APPROVAL_ARG,
 		type: 'select',
 		choices: YES_NO_CHOICES,
-		humanReadableMessage: 'Would you like to enable auto-syncing?:',
+		humanReadableMessage: 'Would you like to enable auto-syncing?',
 		cacheable: false,
 		commandLineFlags: ['a', 'auto'],
 		help: ''
 	},
 	{
-		name: CONFIRM_USER_CREATION,
+		name: CONFIRM_USER_CREATION_ARG,
 		type: 'select',
 		choices: YES_NO_CHOICES,
 		humanReadableMessage: 'Do you confirm the user creation?',
 		cacheable: false,
 		commandLineFlags: [],
+		help: ''
+	},
+	{
+		name: PUBLIC_ARG,
+		type: 'boolean',
+		cacheable: false,
+		default: false,
+		commandLineFlags: ['public'],
+		help: ''
+	},
+	{
+		name: DRIVE_ID_ARG,
+		type: 'select',
+		cacheable: false,
+		humanReadableMessage: 'Choose a drive id:',
+		commandLineFlags: ['i', 'id'],
 		help: ''
 	}
 ];

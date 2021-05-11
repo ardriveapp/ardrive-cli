@@ -1,6 +1,10 @@
-import { Action, ActionContext, ScriptItem } from './Action';
+import { Action, ActionContext, ScriptItem, Result } from './Action';
 import ContextArguments, { PASSWORD_ARG, USERNAME_ARG, USER_TAG } from '../contextArguments';
-import { AUTO_SYNC_FOLDER, AUTO_SYNC_FOLDER_APPROVAL, CONFIRM_USER_CREATION } from '../contextArguments/arguments';
+import {
+	AUTO_SYNC_FOLDER_ARG,
+	AUTO_SYNC_FOLDER_APPROVAL_ARG,
+	CONFIRM_USER_CREATION_ARG
+} from '../contextArguments/arguments';
 import { CreateWalletAction } from './wallet';
 import { clientInstance } from '../daemon-connection';
 
@@ -21,8 +25,8 @@ class promptUserCredentialsScript extends ScriptItem<UserData> {
 		if (wallet) {
 			const login = await ContextArguments.get(USERNAME_ARG);
 			const password = await ContextArguments.get(PASSWORD_ARG);
-			const syncFolderPath: string = await ContextArguments.get(AUTO_SYNC_FOLDER);
-			const autoSyncApproval: boolean = await ContextArguments.get(AUTO_SYNC_FOLDER_APPROVAL);
+			const syncFolderPath: string = await ContextArguments.get(AUTO_SYNC_FOLDER_ARG);
+			const autoSyncApproval: boolean = await ContextArguments.get(AUTO_SYNC_FOLDER_APPROVAL_ARG);
 			const user: UserData = {
 				login,
 				password,
@@ -40,7 +44,7 @@ class confirmUserCreation extends ScriptItem<boolean> {
 	public name = 'confirm';
 
 	public _scriptHandler = async (context: ActionContext) => {
-		const confirmation: boolean = await ContextArguments.get(CONFIRM_USER_CREATION);
+		const confirmation: boolean = await ContextArguments.get(CONFIRM_USER_CREATION_ARG);
 		const user = context.get<UserData>('create-user');
 		if (confirmation && user) {
 			await clientInstance.createArDriveUser(
@@ -55,6 +59,16 @@ class confirmUserCreation extends ScriptItem<boolean> {
 	};
 }
 
+class authenticateUser extends ScriptItem<boolean> {
+	public name = 'authenticate';
+
+	public _scriptHandler = async () => {
+		const login = await ContextArguments.get(USERNAME_ARG);
+		const password = await ContextArguments.get(PASSWORD_ARG);
+		return await clientInstance.authenticateArDriveUser(login, password);
+	};
+}
+
 export class CreateUserAction extends Action {
 	public tag = USER_TAG;
 	public name = 'create';
@@ -62,4 +76,17 @@ export class CreateUserAction extends Action {
 	public script = [new CreateWalletAction(), new promptUserCredentialsScript(), new confirmUserCreation()];
 }
 
+export class AuthenticateUserAction extends Action {
+	public tag = USER_TAG;
+	public name = 'authenticate';
+	public userAccesible = true;
+	public script = [new authenticateUser()];
+
+	_parseResponse(results: Result<boolean>[]): string {
+		const result = results[0].getValue();
+		return result ? 'Authenticateed' : 'Not authenticated';
+	}
+}
+
 Action.registerAction(new CreateUserAction());
+Action.registerAction(new AuthenticateUserAction());

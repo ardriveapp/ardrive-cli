@@ -4,6 +4,14 @@ import ContextArguments, { ALL_TAGS } from './contextArguments';
 
 class CLI {
 	async run() {
+		await clientInstance.clientConnect().catch((e) => {
+			const message = e && e.message;
+			throw new Error(
+				`Could not connect to the daemon service. Please ensure the ArDriveDaemon service is running${
+					(message && `\n\n${message}`) || ''
+				}`
+			);
+		});
 		const tag = await ContextArguments.get('$1');
 		const name = await ContextArguments.get('$2');
 		const action = await Action.resolve(tag, name);
@@ -19,17 +27,29 @@ class CLI {
 			}
 		}
 	}
+
+	async ping(): Promise<boolean> {
+		return await clientInstance.isOnline();
+	}
 }
 
 async function fireAction(action: Action): Promise<any> {
 	return await action
 		.fire()
-		.then(console.log)
-		.catch((e) => {
-			console.log(`Error on action ${Action.getIdentifier(action)}. ${e}`);
+		.then(() => {
+			return action.result;
 		})
-		.finally(() => {
-			clientInstance.disconnect();
+		.then(console.log)
+		.catch(async (e) => {
+			switch (e.type) {
+				case 'AuthenticationError': {
+					const authenticateAction = await Action.resolve('user', 'authenticate');
+					if (authenticateAction) {
+						return fireAction(authenticateAction).then(() => fireAction(action));
+					}
+				}
+			}
+			console.log(`Error on action ${Action.getIdentifier(action)}. ${e}`);
 		});
 }
 
@@ -50,5 +70,10 @@ function helpForTag(tag: string): void {
 
 if (require.main === module) {
 	const cliInstance = new CLI();
-	cliInstance.run();
+	cliInstance
+		.run()
+		.catch(({ message }) => console.error(message))
+		.finally(() => {
+			clientInstance.disconnect();
+		});
 }

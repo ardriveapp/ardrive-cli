@@ -9,10 +9,12 @@ type StateType = 'ready' | 'fired' | 'failed';
 export class Result<T> {
 	private value: T;
 	private key: string;
+	private alias?: string;
 
-	constructor(key: string, v: T) {
+	constructor(key: string, v: T, alias?: string) {
 		this.value = v;
 		this.key = key;
+		this.alias = alias;
 	}
 
 	getMyType(): string {
@@ -23,6 +25,10 @@ export class Result<T> {
 		return this.key;
 	}
 
+	getAlias(): string {
+		return this.alias || '';
+	}
+
 	getValue(): T {
 		return this.value;
 	}
@@ -31,6 +37,7 @@ export class Result<T> {
 export interface Fireable<T> {
 	tag?: string;
 	name: string;
+	alias?: string;
 	state: StateType;
 	_scriptHandler?(context: ActionContext): T | Promise<T>;
 	fire(context: ActionContext): Promise<any>;
@@ -86,13 +93,14 @@ export abstract class Action implements Fireable<any> {
 	public userAccesible = false;
 	public failOnError = false;
 	state: StateType = READY_STATE;
+	protected requiresAuthentication = false;
 	private _dummyParse(a: Result<any>[]) {
 		console.warn(`Action ${this.name} has no parser, returning the raw unparsed value...`);
 		return a;
 	}
 	protected _parseResponse?(results: Result<any>[]): any;
 
-	static getIdentifier(action: Action) {
+	static getIdentifier(action: Action): string {
 		const tag = action.tag;
 		const name = action.name;
 		const identifier = name ? `${tag}.${name}` : tag;
@@ -114,14 +122,14 @@ export abstract class Action implements Fireable<any> {
 						tmp.push(script.name);
 					}
 					const resultName = `${tmp.join('.')}`;
-					result.push(new Result(resultName, script.result));
+					result.push(new Result(resultName, script.result, script.alias));
 				}
 			}
 		}
 		return result;
 	}
 
-	get result() {
+	get result(): any {
 		return (this._parseResponse && this._parseResponse(this.results)) || this._dummyParse(this.results);
 	}
 
