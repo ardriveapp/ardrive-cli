@@ -1,5 +1,5 @@
 import {
-	getLocalWallet,
+	getCachedWallet,
 	createArDriveWallet,
 	checkOrCreateFolder,
 	backupWallet,
@@ -405,7 +405,7 @@ const promptForNewUserInfo = async (login: string): Promise<ArDriveUser> => {
 			await backupWallet(backupWalletPath, wallet, login);
 		} else {
 			const existingWalletPath: string = promptForLocalWalletPath();
-			wallet = await getLocalWallet(existingWalletPath);
+			wallet = await getCachedWallet(existingWalletPath);
 		}
 		// Set the wallet in the users profile
 		user.walletPrivateKey = JSON.stringify(wallet.walletPrivateKey);
