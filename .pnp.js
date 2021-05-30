@@ -44,7 +44,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/uuid", "npm:8.3.0"],
             ["@typescript-eslint/eslint-plugin", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
             ["@typescript-eslint/parser", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
-            ["ardrive-core-js", "file:../ardrive-core-js/#../ardrive-core-js/::hash=ee71bd&locator=ardrive-cli%40workspace%3A."],
+            ["ardrive-core-js", "file:../ardrive-core-js/#../ardrive-core-js/::hash=314459&locator=ardrive-cli%40workspace%3A."],
             ["arweave", "npm:1.10.11"],
             ["arweave-bundles", "npm:1.0.3"],
             ["community-js", "npm:1.1.36"],
@@ -58,6 +58,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["prompt-password", "npm:1.2.0"],
             ["prompt-sync", "npm:4.2.0"],
             ["prompts", "npm:2.4.0"],
+            ["rimraf", "npm:3.0.2"],
             ["ts-node", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:9.1.1"],
             ["tsc-files", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:1.1.2"],
             ["typescript", "patch:typescript@npm%3A4.2.3#builtin<compat/typescript>::version=4.2.3&hash=a45b0e"],
@@ -1074,7 +1075,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/uuid", "npm:8.3.0"],
             ["@typescript-eslint/eslint-plugin", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
             ["@typescript-eslint/parser", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
-            ["ardrive-core-js", "file:../ardrive-core-js/#../ardrive-core-js/::hash=ee71bd&locator=ardrive-cli%40workspace%3A."],
+            ["ardrive-core-js", "file:../ardrive-core-js/#../ardrive-core-js/::hash=314459&locator=ardrive-cli%40workspace%3A."],
             ["arweave", "npm:1.10.11"],
             ["arweave-bundles", "npm:1.0.3"],
             ["community-js", "npm:1.1.36"],
@@ -1088,6 +1089,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["prompt-password", "npm:1.2.0"],
             ["prompt-sync", "npm:4.2.0"],
             ["prompts", "npm:2.4.0"],
+            ["rimraf", "npm:3.0.2"],
             ["ts-node", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:9.1.1"],
             ["tsc-files", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:1.1.2"],
             ["typescript", "patch:typescript@npm%3A4.2.3#builtin<compat/typescript>::version=4.2.3&hash=a45b0e"],
@@ -1097,10 +1099,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["ardrive-core-js", [
-        ["file:../ardrive-core-js/#../ardrive-core-js/::hash=ee71bd&locator=ardrive-cli%40workspace%3A.", {
-          "packageLocation": "./.yarn/unplugged/ardrive-core-js-file-4baf343fc3/node_modules/ardrive-core-js/",
+        ["file:../ardrive-core-js/#../ardrive-core-js/::hash=314459&locator=ardrive-cli%40workspace%3A.", {
+          "packageLocation": "./.yarn/unplugged/ardrive-core-js-file-0ec9ae14c2/node_modules/ardrive-core-js/",
           "packageDependencies": [
-            ["ardrive-core-js", "file:../ardrive-core-js/#../ardrive-core-js/::hash=ee71bd&locator=ardrive-cli%40workspace%3A."],
+            ["ardrive-core-js", "file:../ardrive-core-js/#../ardrive-core-js/::hash=314459&locator=ardrive-cli%40workspace%3A."],
             ["arweave", "npm:1.10.13"],
             ["arweave-bundles", "npm:1.0.3"],
             ["axios", "npm:0.21.1"],
@@ -1110,7 +1112,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["folder-hash", "npm:4.0.1"],
             ["futoin-hkdf", "npm:1.3.3"],
             ["jwk-to-pem", "npm:2.0.4"],
-            ["lokijs", "npm:1.5.12"],
             ["md5-file", "npm:5.0.0"],
             ["mime-types", "npm:2.1.29"],
             ["node-fetch", "npm:2.6.1"],
@@ -3893,15 +3894,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/loglevel-npm-1.7.1-46e39bd115-abee97e346.zip/node_modules/loglevel/",
           "packageDependencies": [
             ["loglevel", "npm:1.7.1"]
-          ],
-          "linkType": "HARD",
-        }]
-      ]],
-      ["lokijs", [
-        ["npm:1.5.12", {
-          "packageLocation": "./.yarn/cache/lokijs-npm-1.5.12-739e26e476-460bf1d36f.zip/node_modules/lokijs/",
-          "packageDependencies": [
-            ["lokijs", "npm:1.5.12"]
           ],
           "linkType": "HARD",
         }]

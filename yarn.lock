@@ -864,6 +864,7 @@ __metadata:
     prompt-password: ^1.2.0
     prompt-sync: ^4.2.0
     prompts: ^2.4.0
+    rimraf: ^3.0.2
     ts-node: ^9.1.1
     tsc-files: ^1.1.2
     typescript: ^4.2.3
@@ -875,7 +876,7 @@ __metadata:
 
 "ardrive-core-js@file:../ardrive-core-js/::locator=ardrive-cli%40workspace%3A.":
   version: 0.3.0
-  resolution: "ardrive-core-js@file:../ardrive-core-js/#../ardrive-core-js/::hash=ee71bd&locator=ardrive-cli%40workspace%3A."
+  resolution: "ardrive-core-js@file:../ardrive-core-js/#../ardrive-core-js/::hash=314459&locator=ardrive-cli%40workspace%3A."
   dependencies:
     arweave: ^1.10.11
     arweave-bundles: ^1.0.3
@@ -886,7 +887,6 @@ __metadata:
     folder-hash: ^4.0.0
     futoin-hkdf: ^1.3.3
     jwk-to-pem: ^2.0.4
-    lokijs: ^1.5.12
     md5-file: ^5.0.0
     mime-types: ^2.1.29
     node-fetch: ^2.6.1
@@ -898,7 +898,7 @@ __metadata:
     typescript: ^4.2.3
     utf8: ^3.0.0
     uuid: ^8.3.2
-  checksum: ce9e45716998d3f9f840b5227cd244376f0859cad01a36f563c77f95a436f06390ca0ac14d3792917362457973a0f0fb03845ab370b8f96704c868d21e896272
+  checksum: 2354653f80aca41f160b9bff4b45e48e7a53fdca0797c1a157008addabe9a0f82546d14258151143b4d42e667ec7399d84880304084889a5d5a594ee3355c957
   languageName: node
   linkType: hard
 
@@ -3286,13 +3286,6 @@ fsevents@~2.3.1:
   version: 1.7.1
   resolution: "loglevel@npm:1.7.1"
   checksum: abee97e346afb3c7e4130eff3025b4e8da1450cf92495bd12f3cc5faff46d6f658f73529c21e7d75634677f48ab1e14ceb5167d1952f53e8aceba5cb795029c2
-  languageName: node
-  linkType: hard
-
-"lokijs@npm:^1.5.12":
-  version: 1.5.12
-  resolution: "lokijs@npm:1.5.12"
-  checksum: 460bf1d36fd95782977af7fe80fe68bac5536ff393a021ea404d2c770d70877b5ca5949a976212d13f52240eefd01c4748a6cc6a7b7a0f3778d776c53dae075f
   languageName: node
   linkType: hard
 
