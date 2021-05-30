@@ -31,10 +31,12 @@
 		"husky": "^=6",
 		"lint-staged": "^11.0.0",
 		"prettier": "^2.2.1",
+		"rimraf": "^3.0.2",
 		"ts-node": "^9.1.1",
 		"tsc-files": "^1.1.2"
 	},
 	"scripts": {
+		"clean": "rimraf lib",
 		"format": "prettier --write \"src/**/*.ts\"",
 		"lint": "eslint . --ext .ts",
 		"lintfix": "eslint . --ext .ts --fix",
