@@ -8,7 +8,7 @@ To use the ArDrive CLI, install it with your favorite package manager, and run "
 
 ## Setup
 
-We use Yarn 2
+### We use Yarn 2
 
 ```
 $ yarn install
@@ -17,6 +17,12 @@ $ ardrive-cli
 
 For more info please check: https://yarnpkg.com/cli/install
 
-We use husky >6.
+### We use husky >6.
 
-You will need to run yarn husky install to enable hooks locally on your repo
+You will need to run 
+
+```
+yarn husky install
+``` 
+
+to enable hooks locally on your repo
