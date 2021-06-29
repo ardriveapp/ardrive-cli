@@ -17,7 +17,10 @@ import {
 	ArFSDriveMetaData,
 	UploadBatch,
 	getAllMyPersonalDrives,
-	checkFileExistsSync
+	checkFileExistsSync,
+	IDriveMetaData,
+	YesNoInteger,
+	yesNoIntegerValues
 } from 'ardrive-core-js';
 
 import promptSync from 'prompt-sync';
@@ -58,7 +61,7 @@ const promptForBackupWalletPath = (): string => {
 	if (backupFolderPath === '') {
 		return backupFolderPath;
 	} else {
-		const validPath: string = checkOrCreateFolder(backupFolderPath)
+		const validPath: string = checkOrCreateFolder(backupFolderPath);
 		if (validPath === '0') {
 			return promptForBackupWalletPath();
 		}
@@ -79,15 +82,15 @@ export const promptForLogin = async (): Promise<string> => {
 	return login;
 };
 
-export const promptForAutoSyncApproval = async (): Promise<number> => {
+export const promptForAutoSyncApproval = async (): Promise<YesNoInteger> => {
 	const autoSyncApproval: string = prompt(
 		'  Would you like to automatically approve the fees for all uploads to Arweave? (Default is No) Y/N '
 	);
 	if (autoSyncApproval.toUpperCase() === 'Y') {
 		console.log('  Data will be uploaded without fee approval.');
-		return 1; // enable autoSyncApproval
+		return yesNoIntegerValues.YES; // enable autoSyncApproval
 	} else {
-		return 0; // disable autoSyncApproval
+		return yesNoIntegerValues.NO; // disable autoSyncApproval
 	}
 };
 
@@ -118,7 +121,8 @@ export const promptToRemoveDrive = async (login: string): Promise<string> => {
 	if (driveRemoval.toUpperCase() === 'Y') {
 		console.log('  Please select the local drive you would like to stop synchronizing and remove.');
 		let i = 0;
-		const drives: ArFSDriveMetaData[] = await getAllDrivesByLoginFromDriveTable(login);
+		const drivesData: IDriveMetaData[] = await getAllDrivesByLoginFromDriveTable(login);
+		const drives: ArFSDriveMetaData[] = drivesData.map((d) => new ArFSDriveMetaData(d));
 		drives.forEach((drive: ArFSDriveMetaData) => {
 			const createdOn = new Date(+drive.unixTime * 1000);
 			console.log('%s: %s', i, drive.driveName);
@@ -333,14 +337,7 @@ const promptForLoginPassword = async (): Promise<string> => {
 // This includes Wallet, Existing ArDrives and Sync Folder Path
 const promptForNewUserInfo = async (login: string): Promise<ArDriveUser> => {
 	let wallet;
-	const user: ArDriveUser = {
-		login,
-		dataProtectionKey: '',
-		walletPrivateKey: '',
-		walletPublicKey: '',
-		syncFolderPath: '',
-		autoSyncApproval: 0
-	};
+	const user: ArDriveUser = new ArDriveUser();
 	console.log('');
 	console.log(
 		'                                          Welcome to ArDrive                                            '

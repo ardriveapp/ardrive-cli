@@ -2,6 +2,7 @@
 /* eslint-disable no-await-in-loop */
 // index.ts
 import * as ardrive from 'ardrive-core-js';
+import { ArDriveUser, IDriveUser } from 'ardrive-core-js';
 import * as cli from './prompts';
 
 async function main() {
@@ -12,27 +13,21 @@ async function main() {
 		console.error(err);
 		return;
 	}
-	let user: ardrive.ArDriveUser = {
-		login: '',
-		dataProtectionKey: '',
-		walletPrivateKey: '',
-		walletPublicKey: '',
-		syncFolderPath: '',
-		autoSyncApproval: 0
-	};
 	let fileDownloadConflicts: ardrive.ArFSFileMetaData[] = [];
 
 	// Ask the user for their login name
 	const login = await cli.promptForLogin();
 
 	// Check to see if it exists
-	user = await ardrive.getUserFromProfile(login);
+	let userData: IDriveUser = await ardrive.getUserFromProfile(login);
+	let user: ArDriveUser;
 
 	// If no user is found, prompt the user to create a new one
-	if (user === undefined) {
+	if (userData === undefined) {
 		// Welcome message and info
 		console.log("We have not detected a profile for your login!  Let's get one set up.");
-		user = await cli.promptForNewUserInfo(login);
+		userData = await cli.promptForNewUserInfo(login);
+		user = new ardrive.ArDriveUser(userData);
 		const loginPassword = user.dataProtectionKey;
 		await ardrive.addNewUser(user.dataProtectionKey, user);
 		user = await ardrive.getUser(loginPassword, login);
@@ -121,7 +116,8 @@ async function main() {
 			// Resolve and download conflicts, and process on the next batch
 			fileDownloadConflicts = await ardrive.getMyFileDownloadConflicts(user.login);
 			if (fileDownloadConflicts) {
-				fileDownloadConflicts.forEach(async (fileDownloadConflict: ardrive.ArFSFileMetaData) => {
+				fileDownloadConflicts.forEach(async (conflict: ardrive.IFileMetaData) => {
+					const fileDownloadConflict = new ardrive.ArFSFileMetaData(conflict);
 					const response = await cli.promptForFileOverwrite(fileDownloadConflict.filePath);
 					await ardrive.resolveFileDownloadConflict(
 						response,
