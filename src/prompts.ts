@@ -474,7 +474,7 @@ const promptForArDriveUpload = async (
 	autoSyncApproval: number
 ): Promise<boolean> => {
 	console.log(
-		'Uploading %s files, %s folders and %s changes (%s) to the Permaweb, totalling %s AR / %s USD',
+		'Uploading %s files, %s folders and %s changes (%s) to the Permaweb, estimated cost: %s AR / %s USD',
 		uploadBatch.totalNumberOfFileUploads,
 		uploadBatch.totalNumberOfFolderUploads,
 		uploadBatch.totalNumberOfMetaDataUploads,
