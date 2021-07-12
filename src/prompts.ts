@@ -58,7 +58,7 @@ const promptForBackupWalletPath = (): string => {
 	if (backupFolderPath === '') {
 		return backupFolderPath;
 	} else {
-		const validPath: string = checkOrCreateFolder(backupFolderPath)
+		const validPath: string = checkOrCreateFolder(backupFolderPath);
 		if (validPath === '0') {
 			return promptForBackupWalletPath();
 		}
