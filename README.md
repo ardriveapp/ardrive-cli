@@ -13,7 +13,7 @@ To use the ArDrive CLI, install it with your favorite package manager, and run "
 This repo uses NVM and an `.nvmrc` file to lock the Node version to the current version used by `ardrive-core-js`. Follow these steps to get NVM up and running on your system:
 
 1. Install NVM using [these installation instructions][nvm-install].
-2. Navigate to this project's root directory (`ardrive-cli`)
+2. Navigate to this project's root directory
 3. Ensure that the correct version of Node is installed by performing: `nvm install`
 4. Use the correct version of Node, by using: `nvm use`
 
