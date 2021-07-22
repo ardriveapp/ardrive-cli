@@ -2,7 +2,7 @@
 /* eslint-disable no-await-in-loop */
 // index.ts
 import * as ardrive from 'ardrive-core-js';
-import { ArDriveCommunityOracle } from 'ardrive-core-js';
+import { arDriveCommunityOracle } from 'ardrive-core-js';
 import * as cli from './prompts';
 
 async function main() {
@@ -24,7 +24,7 @@ async function main() {
 	let fileDownloadConflicts: ardrive.ArFSFileMetaData[] = [];
 
 	// Start background task to fetch ArDrive community tip setting
-	new ArDriveCommunityOracle().setExactTipSettingInBackground();
+	arDriveCommunityOracle.setExactTipSettingInBackground();
 
 	// Ask the user for their login name
 	const login = await cli.promptForLogin();
