@@ -8,6 +8,15 @@ To use the ArDrive CLI, install it with your favorite package manager, and run "
 
 ## Setup
 
+### NVM
+
+This repo uses NVM and an `.nvmrc` file to lock the Node version to the current version used by `ardrive-core-js`. Follow these steps to get NVM up and running on your system:
+
+1. Install NVM using [these installation instructions][nvm-install].
+2. Navigate to this project's root directory
+3. Ensure that the correct version of Node is installed by performing: `nvm install`
+4. Use the correct version of Node, by using: `nvm use`
+
 ### We use Yarn 2
 
 ```
@@ -19,10 +28,12 @@ For more info please check: https://yarnpkg.com/cli/install
 
 ### We use husky >6.
 
-You will need to run 
+You will need to run
 
 ```
 yarn husky install
-``` 
+```
 
 to enable hooks locally on your repo
+
+[nvm-install]: https://github.com/nvm-sh/nvm#installing-and-updating
