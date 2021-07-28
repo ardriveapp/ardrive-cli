@@ -43,8 +43,12 @@ Follow these steps to get NVM up and running on your system:
 
 ### Using a custom ArDrive-Core-JS
 
-To test a with a custom version of the `ardrive-core-js` library on your local system, change
-the `"ardrive-core-js"` line in `package.json` to the root of your local `ardrive-core-js` repo.
+To test a with a custom version of the `ardrive-core-js` library on your local system, change the `"ardrive-core-js"` line in `package.json` to the root of your local `ardrive-core-js` repo:
+
+```diff
+- "ardrive-core-js": "1.0.0"
++ "ardrive-core-js": "../ardrive-core-js/"
+```
 
 ### Installing and Starting the CLI
 
