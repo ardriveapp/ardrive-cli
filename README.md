@@ -30,7 +30,11 @@ yarn husky install
 
 ### NVM
 
-This repository uses NVM and an `.nvmrc` file to lock the Node version to the current version used by `ardrive-core-js`. Follow these steps to get NVM up and running on your system:
+This repository uses NVM and an `.nvmrc` file to lock the Node version to the current version used by `ardrive-core-js`.
+
+**Note for Windows: We recommend using WSL for setting up NVM on Windows using the [instructions described here][wsl-install]**
+
+Follow these steps to get NVM up and running on your system:
 
 1. Install NVM using [these installation instructions][nvm-install].
 2. Navigate to this project's root directory
@@ -51,7 +55,7 @@ Next, change the line below in `package.json` to the root of your local `ardrive
 If both repositories are located in the same directory, add this line:
 
 ```diff
--	"ardrive-core-js": "REPLACE WITH you local ardrive-core",
+- "ardrive-core-js": "REPLACE WITH you local ardrive-core",
 + "ardrive-core-js": "../ardrive-core-js",
 ```
 
@@ -71,3 +75,4 @@ yarn start
 
 [yarn-install]: https://yarnpkg.com/getting-started/install
 [nvm-install]: https://github.com/nvm-sh/nvm#installing-and-updating
+[wsl-install]: https://code.visualstudio.com/docs/remote/wsl
