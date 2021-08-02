@@ -64,6 +64,19 @@ And then start the CLI:
 yarn start
 ```
 
+### Recommended Visual Studio Code extensions
+
+To ensure your environment is compatible, we also recommend the following VSCode extensions:
+
+-   [ES-Lint][eslint-vscode]
+-   [Editor-Config][editor-config-vscode]
+-   [Prettier][prettier-vscode]
+-   [ZipFS][zipfs-vscode]
+
 [yarn-install]: https://yarnpkg.com/getting-started/install
 [nvm-install]: https://github.com/nvm-sh/nvm#installing-and-updating
 [wsl-install]: https://code.visualstudio.com/docs/remote/wsl
+[editor-config-vscode]: https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig
+[prettier-vscode]: https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode
+[zipfs-vscode]: https://marketplace.visualstudio.com/items?itemName=arcanis.vscode-zipfs
+[eslint-vscode]: https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint
