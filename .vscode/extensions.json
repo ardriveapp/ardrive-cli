@@ -1,7 +1,7 @@
 {
   "recommendations": [
     "arcanis.vscode-zipfs",
-		"editorconfig.editorconfig",
+    "editorconfig.editorconfig",
     "esbenp.prettier-vscode",
     "dbaeumer.vscode-eslint"
   ]
