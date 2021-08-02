@@ -58,7 +58,7 @@ const promptForBackupWalletPath = (): string => {
 	if (backupFolderPath === '') {
 		return backupFolderPath;
 	} else {
-		const validPath: string = checkOrCreateFolder(backupFolderPath)
+		const validPath: string = checkOrCreateFolder(backupFolderPath);
 		if (validPath === '0') {
 			return promptForBackupWalletPath();
 		}
@@ -474,7 +474,7 @@ const promptForArDriveUpload = async (
 	autoSyncApproval: number
 ): Promise<boolean> => {
 	console.log(
-		'Uploading %s files, %s folders and %s changes (%s) to the Permaweb, totalling %s AR / %s USD',
+		'Uploading %s files, %s folders and %s changes (%s) to the Permaweb with estimated cost: %s AR / %s USD',
 		uploadBatch.totalNumberOfFileUploads,
 		uploadBatch.totalNumberOfFolderUploads,
 		uploadBatch.totalNumberOfMetaDataUploads,
