@@ -1,6 +1,6 @@
 {
 	"name": "ardrive-cli",
-	"version": "0.2.12",
+	"version": "0.3.0",
 	"description": "The ArDrive Command Line Interface (CLI) contains all of the needed security, file synchronization and Arweave wallet capabilities via a node.js application.",
 	"main": "./lib/index.js",
 	"bin": "./lib/index.js",
@@ -8,7 +8,7 @@
 	"dependencies": {
 		"@types/node": "^14.14.32",
 		"@types/uuid": "^8.3.0",
-		"ardrive-core-js": "beta",
+		"ardrive-core-js": "0.5.0",
 		"arweave": "1.10.11",
 		"arweave-bundles": "^1.0.3",
 		"community-js": "^1.1.36",
@@ -20,6 +20,7 @@
 		"uuid": "^8.3.2"
 	},
 	"devDependencies": {
+		"@types/jwk-to-pem": "^2.0.0",
 		"@types/prompt-sync": "^4.1.0",
 		"@types/prompts": "^2.0.9",
 		"@typescript-eslint/eslint-plugin": "^4.18.0",
@@ -27,21 +28,28 @@
 		"eslint": "^7.23.0",
 		"eslint-config-prettier": "^8.1.0",
 		"eslint-plugin-prettier": "latest",
-		"husky": "=4",
-		"lint-staged": ">=10",
+		"husky": "^=6",
+		"lint-staged": "^11.0.0",
 		"prettier": "^2.2.1",
-		"ts-node": "^9.1.1"
+		"rimraf": "^3.0.2",
+		"ts-node": "^9.1.1",
+		"tsc-files": "^1.1.2"
 	},
 	"scripts": {
+		"clean": "rimraf lib",
 		"format": "prettier --write \"src/**/*.ts\"",
 		"lint": "eslint . --ext .ts",
 		"lintfix": "eslint . --ext .ts --fix",
-		"build": "tsc",
-		"prepare": "yarn run build",
-		"preversion": "yarn run lint",
+		"typecheck": "tsc --noemit",
+		"build": "yarn clean && tsc",
 		"version": "yarn run format && git add -A src",
 		"postversion": "git push && git push --tags",
 		"start": "yarn run build && node ./lib/index.js"
+	},
+	"husky": {
+		"hooks": {
+			"pre-commit": "lint-staged"
+		}
 	},
 	"license": "AGPL-3.0-or-later",
 	"author": {

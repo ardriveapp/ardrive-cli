@@ -28,6 +28,7 @@ build/Release
 # https://www.npmjs.org/doc/misc/npm-faq.html#should-i-check-my-node_modules-folder-into-git
 node_modules
 /lib
+.husky/_
 
 # OSX
 .DS_Store
@@ -49,11 +50,6 @@ main.js.map
 # defaults for CLI app
 Backup
 Sync
-
-#Compiled CSS
-*.css.d.ts
-*.sass.d.ts
-*.scss.d.ts
 
 #Yarn
 #https://yarnpkg.com/getting-started/qa#which-files-should-be-gitignored
