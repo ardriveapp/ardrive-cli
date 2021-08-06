@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es6",
     "module": "CommonJS",
     "declaration": true,
     "moduleResolution": "node",
@@ -15,6 +15,6 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
   },
-  "include": ["src"],  
+  "include": ["src"],
   "exclude": ["node_modules", "**/__tests__/*"]
 }
