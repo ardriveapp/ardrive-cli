@@ -231,15 +231,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD",
         }]
       ]],
-      ["@types/folder-hash", [
-        ["npm:4.0.0", {
-          "packageLocation": "./.yarn/cache/@types-folder-hash-npm-4.0.0-fe341be583-73699eb5ca.zip/node_modules/@types/folder-hash/",
-          "packageDependencies": [
-            ["@types/folder-hash", "npm:4.0.0"]
-          ],
-          "linkType": "HARD",
-        }]
-      ]],
       ["@types/inquirer", [
         ["npm:7.3.1", {
           "packageLocation": "./.yarn/cache/@types-inquirer-npm-7.3.1-63b5231eee-2db996acf8.zip/node_modules/@types/inquirer/",
@@ -344,16 +335,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD",
         }]
       ]],
-      ["@types/progress", [
-        ["npm:2.0.3", {
-          "packageLocation": "./.yarn/cache/@types-progress-npm-2.0.3-8223f090c8-b221d95b40.zip/node_modules/@types/progress/",
-          "packageDependencies": [
-            ["@types/progress", "npm:2.0.3"],
-            ["@types/node", "npm:14.6.4"]
-          ],
-          "linkType": "HARD",
-        }]
-      ]],
       ["@types/prompt-sync", [
         ["npm:4.1.0", {
           "packageLocation": "./.yarn/cache/@types-prompt-sync-npm-4.1.0-5d6d03c0bb-21bc6832fb.zip/node_modules/@types/prompt-sync/",
@@ -378,15 +359,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [
             ["@types/through", "npm:0.0.30"],
             ["@types/node", "npm:14.6.4"]
-          ],
-          "linkType": "HARD",
-        }]
-      ]],
-      ["@types/utf8", [
-        ["npm:2.1.6", {
-          "packageLocation": "./.yarn/cache/@types-utf8-npm-2.1.6-f775dc749e-aa03477b68.zip/node_modules/@types/utf8/",
-          "packageDependencies": [
-            ["@types/utf8", "npm:2.1.6"]
           ],
           "linkType": "HARD",
         }]
