@@ -853,6 +853,7 @@ __metadata:
     ardrive-core-js: 0.5.0
     arweave: 1.10.11
     arweave-bundles: ^1.0.3
+    commander: ^8.1.0
     community-js: ^1.1.36
     eslint: ^7.23.0
     eslint-config-prettier: ^8.1.0
@@ -1455,6 +1456,13 @@ __metadata:
   version: 7.2.0
   resolution: "commander@npm:7.2.0"
   checksum: bdc0eca5e25cd24af8440163d3c9a996785bbac4b49a590365699cdc1ed08cefbac8f268153208ab2bc5dc3cb1d3fb573fd1590c681e36e371342186bd331a4c
+  languageName: node
+  linkType: hard
+
+"commander@npm:^8.1.0":
+  version: 8.1.0
+  resolution: "commander@npm:8.1.0"
+  checksum: 315b17337b32c1e918ffd029edbbe4bec07800f022f2b4a504e2a40791f7405cea68e3b025c99a954e3b8f9518f2f2052e3fdc9b1b7c2d817fd843765f45156c
   languageName: node
   linkType: hard
 

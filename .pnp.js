@@ -47,6 +47,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["ardrive-core-js", "npm:0.5.0"],
             ["arweave", "npm:1.10.11"],
             ["arweave-bundles", "npm:1.0.3"],
+            ["commander", "npm:8.1.0"],
             ["community-js", "npm:1.1.36"],
             ["eslint", "npm:7.23.0"],
             ["eslint-config-prettier", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:8.1.0"],
@@ -1078,6 +1079,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["ardrive-core-js", "npm:0.5.0"],
             ["arweave", "npm:1.10.11"],
             ["arweave-bundles", "npm:1.0.3"],
+            ["commander", "npm:8.1.0"],
             ["community-js", "npm:1.1.36"],
             ["eslint", "npm:7.23.0"],
             ["eslint-config-prettier", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:8.1.0"],
@@ -1750,6 +1752,13 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/commander-npm-7.2.0-19178180f8-bdc0eca5e2.zip/node_modules/commander/",
           "packageDependencies": [
             ["commander", "npm:7.2.0"]
+          ],
+          "linkType": "HARD",
+        }],
+        ["npm:8.1.0", {
+          "packageLocation": "./.yarn/cache/commander-npm-8.1.0-443b867d63-315b17337b.zip/node_modules/commander/",
+          "packageDependencies": [
+            ["commander", "npm:8.1.0"]
           ],
           "linkType": "HARD",
         }]
