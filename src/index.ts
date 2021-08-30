@@ -2,14 +2,82 @@
 
 //import * as ardrive from 'ardrive-core-js';
 import { Command } from 'commander';
+import * as fs from 'fs';
 
+/* eslint-disable no-console */
+
+// Utility for parsing command line options
 const program = new Command();
+
+// Set up command line option parsing
+//const validActions = ['create-drive', 'rename-drive', 'upload-file'];
 program.option('-h, --help', 'Get help');
+program.option('create-drive', 'action to create a new drive (and its corresponding root folder)');
 program.addHelpCommand(false);
+
+program
+	.command('create-drive')
+	.option(
+		'-w, --wallet-file [path_to_jwk_file]',
+		`the path to a JWK file on the file system
+	• Can't be used with --seed-phrase`
+	)
+	.option(
+		'-s, --seed-phrase [12-word seed phrase]',
+		`a 12-word seed phrase representing a JWK
+		• Can't be used with --wallet-file`
+	)
+	.action((options) => {
+		// Enforce -w OR -s but not both
+		if (
+			(options.walletFile != null && options.seedPhrase != null) ||
+			(options.walletFile == null && options.seedPhrase == null)
+		) {
+			console.log('Choose --wallet-file OR --seed-phrase, but not both.');
+			process.exit(1);
+		}
+
+		// TODO: REMOVE
+		if (options.walletFile != null) {
+			console.log(`Wallet file lives at ${options.walletFile}`);
+		}
+
+		if (options.seedPhrase != null) {
+			console.log(`Seed phrase is ${options.seedPhrase}`);
+		}
+
+		// TODO: Export convert seed phrase to wallet
+
+		// TODO: GET WALLET DATA
+		/*try {
+  if (fs.existsSync(path)) {
+    //file exists
+  }
+} catch(err) {
+  console.error(err)
+}*/
+
+		process.exit(0);
+	});
 
 program.parse(process.argv);
 
-if (program.opts().help) {
+// Process command line inputs
+const opts = program.opts();
+console.log(`opts: ${Object.getOwnPropertyNames(opts)}`);
+console.log(`commands: ${program.commands}`);
+if (Object.getOwnPropertyNames(opts).length === 0 && Object.getOwnPropertyNames(program.arguments).length === 0) {
+	console.log('TODO: Show help');
+	//showHelp();
+	process.exit(0);
+}
+
+if (opts.help) {
+	showHelp();
+	process.exit(0);
+}
+
+function showHelp() {
 	console.log(`
 Usage: <this script> <action> <options>
 
@@ -174,7 +242,6 @@ General Options:
 	• debug - firehose of info
 	• quiet - just return json and status code
 	• silent - just return status code
-`);
+	`);
 }
 
-//console.log('Hello PHIL');
