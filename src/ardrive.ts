@@ -34,11 +34,34 @@ export class ArDrive {
 	constructor(private readonly arFsDao: ArFSDAO) {}
 
 	createPublicDrive(driveName: string): Promise<CreateDriveResult> {
+
+		// Generate a new drive ID
 		const driveTx = this.arFsDao.createDrive(driveName);
+
+		// Generate a root folder ID for the new drive
 		const rootFolderId = uuidv4();
+
+		// Get the current time so the app can display the "created" data later on
 		const unixTime = Math.round(Date.now() / 1000);
+
 		// eslint-disable-next-line no-console
 		console.log(driveTx, rootFolderId, unixTime);
+
+		/* CORE DOES THE FOLLOWING:
+			• addDriveToDriveTable
+				- runs some SQL to add to the local DB (we'll omit this)
+			• "sets up drive"
+				- figures out what the root folder data should be and prepares that for syncing
+			• Prepares an arweave-js transaction for upload of the drive metadata
+				- prepare drive data JSON as the "body" of the transaction
+				- add GQL tags
+				- sign the whole transaction
+			• Creates a chunked uploader
+			• Executes a chunked upload
+		*/
+
+		// Assemble metadata and transaction outcomes and produce output relevant to the CLI spec
+
 
 		// GET TXID from DAO
 
