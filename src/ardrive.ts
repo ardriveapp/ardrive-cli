@@ -52,8 +52,14 @@ export class ArDrive {
 				- runs some SQL to add to the local DB (we'll omit this)
 			• "sets up drive"
 				- figures out what the root folder data should be and prepares that for syncing
-			• Prepares an arweave-js transaction for upload of the drive metadata
+			• Prepares an arweave-js transaction for upload of the drive metadata (uploadArFSDriveMetaData(user, newDrive: ArFSDriveMetaData))
 				- prepare drive data JSON as the "body" of the transaction
+				- add GQL tags
+				- sign the whole transaction
+			• Creates a chunked uploader
+			• Executes a chunked upload
+			• Prepares an arweave-js transaction for upload of the root folder metadata (uploadArFSFileMetaData(user, driveRootFolder: ArFSFileMetaData))
+				- prepare folder data JSON as the "body" of the transaction
 				- add GQL tags
 				- sign the whole transaction
 			• Creates a chunked uploader
