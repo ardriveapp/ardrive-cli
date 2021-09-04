@@ -3,6 +3,8 @@
 //import * as ardrive from 'ardrive-core-js';
 import { Command } from 'commander';
 import * as fs from 'fs';
+import { ArDrive } from './ardrive';
+import { ArFSDAO } from './arfsdao';
 
 /* eslint-disable no-console */
 
@@ -12,7 +14,7 @@ const program = new Command();
 // Set up command line option parsing
 //const validActions = ['create-drive', 'rename-drive', 'upload-file'];
 program.option('-h, --help', 'Get help');
-program.option('create-drive', 'action to create a new drive (and its corresponding root folder)');
+//program.option('create-drive', 'action to create a new drive (and its corresponding root folder)');
 program.addHelpCommand(false);
 
 program
@@ -27,6 +29,7 @@ program
 		`a 12-word seed phrase representing a JWK
 		• Can't be used with --wallet-file`
 	)
+	.option('-n, --drive-name [name]', `the name for the new drive`)
 	.action((options) => {
 		// Enforce -w OR -s but not both
 		if (
@@ -46,9 +49,19 @@ program
 			console.log(`Seed phrase is ${options.seedPhrase}`);
 		}
 
+		// TODO: GET WALLET DATA
 		// TODO: Export convert seed phrase to wallet
 
-		// TODO: GET WALLET DATA
+		const ardrive = new ArDrive(new ArFSDAO());
+		ardrive.createPublicDrive(options.driveName);
+
+		/* STEPS:
+			• Generate a drive ID (auto gen)
+			• Create a drive key (drive ID + wallet privkey)
+			• Create a drive metadata TX
+			• Create a root folder metadata TX
+			• EVENTUALLY - Create community tip TX
+		*/
 		/*try {
   if (fs.existsSync(path)) {
     //file exists

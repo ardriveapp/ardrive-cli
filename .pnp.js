@@ -47,6 +47,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["ardrive-core-js", "npm:0.5.0"],
             ["arweave", "npm:1.10.11"],
             ["arweave-bundles", "npm:1.0.3"],
+            ["base64-js", "npm:1.5.1"],
             ["commander", "npm:8.1.0"],
             ["community-js", "npm:1.1.36"],
             ["eslint", "npm:7.23.0"],
@@ -1079,6 +1080,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["ardrive-core-js", "npm:0.5.0"],
             ["arweave", "npm:1.10.11"],
             ["arweave-bundles", "npm:1.0.3"],
+            ["base64-js", "npm:1.5.1"],
             ["commander", "npm:8.1.0"],
             ["community-js", "npm:1.1.36"],
             ["eslint", "npm:7.23.0"],
@@ -1322,6 +1324,13 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/base64-js-npm-1.3.1-8625be908e-8a0cc69d7c.zip/node_modules/base64-js/",
           "packageDependencies": [
             ["base64-js", "npm:1.3.1"]
+          ],
+          "linkType": "HARD",
+        }],
+        ["npm:1.5.1", {
+          "packageLocation": "./.yarn/cache/base64-js-npm-1.5.1-b2f7275641-c1b41a26dd.zip/node_modules/base64-js/",
+          "packageDependencies": [
+            ["base64-js", "npm:1.5.1"]
           ],
           "linkType": "HARD",
         }]
