@@ -16,6 +16,7 @@
 		"base64-js": "^1.5.1",
 		"commander": "^8.1.0",
 		"community-js": "^1.1.36",
+		"jwk-to-pem": "^2.0.4",
 		"progress": "^2.0.3",
 		"prompt-password": "^1.2.0",
 		"prompt-sync": "^4.2.0",

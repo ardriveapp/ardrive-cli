@@ -1,4 +1,4 @@
-import { JWKInterface } from "ardrive-core-js";
+import { JWKInterface } from 'ardrive-core-js';
 import * as B64js from 'base64-js';
 import * as crypto from 'crypto';
 import jwkToPem, { JWK } from 'jwk-to-pem';
@@ -49,6 +49,8 @@ export class WalletDAO {
 
 	generateJWKWallet(seedPhrase: SeedPhrase): Promise<JWKWallet> {
 		// TODO: Implement
+		// eslint-disable-next-line no-console
+		console.log(seedPhrase);
 		return Promise.resolve(
 			new JWKWallet({
 				kty: '',

@@ -5,6 +5,9 @@ import { Command } from 'commander';
 import * as fs from 'fs';
 import { ArDrive } from './ardrive';
 import { ArFSDAO } from './arfsdao';
+import { JWKInterface } from 'ardrive-core-js';
+import { Wallet, JWKWallet } from './wallet_new';
+import Arweave from 'arweave';
 
 /* eslint-disable no-console */
 
@@ -52,7 +55,18 @@ program
 		// TODO: GET WALLET DATA
 		// TODO: Export convert seed phrase to wallet
 
-		const ardrive = new ArDrive(new ArFSDAO());
+		const walletFileData = fs.readFileSync(options.walletFile, { encoding: 'utf8', flag: 'r' });
+		const walletJSON = JSON.parse(walletFileData);
+		const walletJWK = walletJSON as JWKInterface;
+		const wallet: Wallet = new JWKWallet(walletJWK);
+		const arweave = Arweave.init({
+			host: 'arweave.net', // Arweave Gateway
+			//host: 'arweave.dev', // Arweave Dev Gateway
+			port: 443,
+			protocol: 'https',
+			timeout: 600000
+		});
+		const ardrive = new ArDrive(new ArFSDAO(wallet, arweave));
 		ardrive.createPublicDrive(options.driveName);
 
 		/* STEPS:
@@ -70,6 +84,29 @@ program
   console.error(err)
 }*/
 
+		process.exit(0);
+	});
+
+program
+	.command('get-balance')
+	.option(
+		'-w, --wallet-file [path_to_jwk_file]',
+		`the path to a JWK file on the file system
+			• Can't be used with --seed-phrase`
+	)
+	.action(async (options) => {
+		if (options.walletFile != null) {
+			console.log(`Wallet file lives at ${options.walletFile}`);
+		} else {
+			console.log('MISSING WALLET FILE!');
+			process.exit(1);
+		}
+
+		const walletFileData = fs.readFileSync(options.walletFile, { encoding: 'utf8', flag: 'r' });
+		const walletJSON = JSON.parse(walletFileData);
+		const walletJWK = walletJSON as JWKInterface;
+		const wallet = new JWKWallet(walletJWK);
+		console.log(await wallet.getAddress());
 		process.exit(0);
 	});
 

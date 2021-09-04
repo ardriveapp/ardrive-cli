@@ -1,10 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
 import type { ArFSDAO } from './arfsdao';
 
-enum ArFSDrivePrivacy {
+/*enum ArFSDrivePrivacy {
 	Public = 'public',
 	Private = 'private'
-}
+}*/
 
 export type ArFSEntityDataType = 'drive' | 'folder';
 export type ArFSTipType = 'drive' | 'folder';
@@ -36,16 +36,10 @@ export class ArDrive {
 	createPublicDrive(driveName: string): Promise<CreateDriveResult> {
 
 		// Generate a new drive ID
-		const driveTx = this.arFsDao.createDrive(driveName);
-
-		// Generate a root folder ID for the new drive
-		const rootFolderId = uuidv4();
-
-		// Get the current time so the app can display the "created" data later on
-		const unixTime = Math.round(Date.now() / 1000);
+		const driveTxs = this.arFsDao.createDrive(driveName);
 
 		// eslint-disable-next-line no-console
-		console.log(driveTx, rootFolderId, unixTime);
+		console.log(driveTxs);
 
 		/* CORE DOES THE FOLLOWING:
 			• addDriveToDriveTable

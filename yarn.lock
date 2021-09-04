@@ -860,6 +860,7 @@ __metadata:
     eslint-config-prettier: ^8.1.0
     eslint-plugin-prettier: latest
     husky: ^=6
+    jwk-to-pem: ^2.0.4
     lint-staged: ^11.0.0
     prettier: ^2.2.1
     progress: ^2.0.3
