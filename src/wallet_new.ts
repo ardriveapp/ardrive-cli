@@ -10,7 +10,7 @@ type SeedPhrase = string;
 export interface Wallet {
 	getPublicKey(): Promise<PublicKey>;
 	getAddress(): Promise<ArweaveAddress>;
-	sign(data: Uint8Array): Promise<Uint8Array>
+	sign(data: Uint8Array): Promise<Uint8Array>;
 }
 
 export class JWKWallet implements Wallet {
