@@ -2,6 +2,7 @@ import { JWKInterface } from 'ardrive-core-js';
 import * as B64js from 'base64-js';
 import * as crypto from 'crypto';
 import jwkToPem, { JWK } from 'jwk-to-pem';
+import Arweave from 'arweave';
 
 type PublicKey = string;
 type ArweaveAddress = string;
@@ -43,6 +44,8 @@ export class JWKWallet implements Wallet {
 }
 
 export class WalletDAO {
+	constructor(private readonly arweave: Arweave) {}
+
 	generateSeedPhrase(): Promise<SeedPhrase> {
 		return Promise.resolve('TODO');
 	}
@@ -64,6 +67,13 @@ export class WalletDAO {
 				qi: ''
 			})
 		);
+	}
+
+	getWalletBalance(wallet: Wallet): Promise<number> {
+		// TODO: implement!
+		// eslint-disable-next-line no-console
+		console.log(this.arweave);
+		return Promise.resolve(0);
 	}
 
 	/*public static async jwkToAddress(jwk: JWKInterface): Promise<string> {
