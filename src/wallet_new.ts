@@ -3,6 +3,7 @@ import * as B64js from 'base64-js';
 import * as crypto from 'crypto';
 import jwkToPem, { JWK } from 'jwk-to-pem';
 import Arweave from 'arweave';
+import * as mnemonicKeys from 'arweave-mnemonic-keys';
 
 type PublicKey = string;
 type ArweaveAddress = string;
@@ -59,27 +60,14 @@ export class JWKWallet implements Wallet {
 export class WalletDAO {
 	constructor(private readonly arweave: Arweave) {}
 
-	generateSeedPhrase(): Promise<SeedPhrase> {
-		return Promise.resolve('TODO');
+	async generateSeedPhrase(): Promise<SeedPhrase> {
+		const seedPhrase: SeedPhrase = await mnemonicKeys.generateMnemonic();
+		return Promise.resolve(seedPhrase);
 	}
 
-	generateJWKWallet(seedPhrase: SeedPhrase): Promise<JWKWallet> {
-		// TODO: Implement
-		// eslint-disable-next-line no-console
-		console.log(seedPhrase);
-		return Promise.resolve(
-			new JWKWallet({
-				kty: '',
-				e: '',
-				n: '',
-				d: '',
-				p: '',
-				q: '',
-				dp: '',
-				dq: '',
-				qi: ''
-			})
-		);
+	async generateJWKWallet(seedPhrase: SeedPhrase): Promise<JWKWallet> {
+		const jwkWallet: JWKInterface = await mnemonicKeys.getKeyFromMnemonic(seedPhrase);
+		return Promise.resolve(new JWKWallet(jwkWallet));
 	}
 
 	async getWalletWinstonBalance(wallet: Wallet): Promise<number> {

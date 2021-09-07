@@ -53,7 +53,7 @@ export class ArFSDAO {
 
 	async prepareArFSDriveTransaction(
 		driveJSON: string,
-		driveMetaData: ArFSDriveMetaData,
+		driveMetaData: ArFSDriveMetaDataPrototype,
 		appName = 'ArDrive-Core',
 		appVersion = '1.0',
 		arFSVersion = ArFS_O_11,
