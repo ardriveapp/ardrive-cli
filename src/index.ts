@@ -160,15 +160,12 @@ program
 		console.log(await walletDao.getAddressWinstonBalance(options.destAddress));
 		console.log(
 			JSON.stringify(
-				await walletDao.sendARToAddress(
-					+options.arAmount,
-					wallet,
-					options.destAddress,
-					'ArDrive-CLI',
-					'2.0',
-					'transfer',
-					[{ name: 'foo', value: 'bar' }]
-				),
+				await walletDao.sendARToAddress(+options.arAmount, wallet, options.destAddress, [
+					{ name: 'appName', value: 'ArDrive-CLI' },
+					{ name: 'appVersion', value: '2.0' },
+					{ name: 'trxType', value: 'transfer' },
+					{ name: 'foo', value: 'bar' }
+				]),
 				null,
 				4
 			)
