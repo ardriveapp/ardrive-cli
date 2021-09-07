@@ -49,7 +49,7 @@
 		"build": "yarn clean && tsc",
 		"version": "yarn run format && git add -A src",
 		"postversion": "git push && git push --tags",
-		"start": "yarn run build && node ./lib/index.js"
+		"start": "yarn clean && tsc -w"
 	},
 	"husky": {
 		"hooks": {
