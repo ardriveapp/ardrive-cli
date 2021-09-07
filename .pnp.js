@@ -38,6 +38,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./",
           "packageDependencies": [
             ["@types/jwk-to-pem", "npm:2.0.0"],
+            ["@types/lodash", "npm:4.14.172"],
             ["@types/node", "npm:14.14.37"],
             ["@types/prompt-sync", "npm:4.1.0"],
             ["@types/prompts", "npm:2.4.0"],
@@ -57,6 +58,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["husky", "npm:6.0.0"],
             ["jwk-to-pem", "npm:2.0.4"],
             ["lint-staged", "npm:11.0.0"],
+            ["lodash", "npm:4.17.21"],
             ["prettier", "npm:2.2.1"],
             ["progress", "npm:2.0.3"],
             ["prompt-password", "npm:1.2.0"],
@@ -414,6 +416,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/@types-jwk-to-pem-npm-2.0.0-85a9aabd67-647e62d347.zip/node_modules/@types/jwk-to-pem/",
           "packageDependencies": [
             ["@types/jwk-to-pem", "npm:2.0.0"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["@types/lodash", [
+        ["npm:4.14.172", {
+          "packageLocation": "./.yarn/cache/@types-lodash-npm-4.14.172-e52063c461-d4b9c66aa1.zip/node_modules/@types/lodash/",
+          "packageDependencies": [
+            ["@types/lodash", "npm:4.14.172"]
           ],
           "linkType": "HARD",
         }]
@@ -1200,6 +1211,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [
             ["ardrive-cli", "workspace:."],
             ["@types/jwk-to-pem", "npm:2.0.0"],
+            ["@types/lodash", "npm:4.14.172"],
             ["@types/node", "npm:14.14.37"],
             ["@types/prompt-sync", "npm:4.1.0"],
             ["@types/prompts", "npm:2.4.0"],
@@ -1219,6 +1231,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["husky", "npm:6.0.0"],
             ["jwk-to-pem", "npm:2.0.4"],
             ["lint-staged", "npm:11.0.0"],
+            ["lodash", "npm:4.17.21"],
             ["prettier", "npm:2.2.1"],
             ["progress", "npm:2.0.3"],
             ["prompt-password", "npm:1.2.0"],

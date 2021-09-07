@@ -304,6 +304,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/lodash@npm:^4":
+  version: 4.14.172
+  resolution: "@types/lodash@npm:4.14.172"
+  checksum: d4b9c66aa1775ca9105f95fdaf92b8c7ee646fcb75fa8c0617020456470b140f9204335a66e152f269f9cd531634ac3d0caa3f85ce3acdad9bc6951aa6e89aae
+  languageName: node
+  linkType: hard
+
 "@types/long@npm:^4.0.1":
   version: 4.0.1
   resolution: "@types/long@npm:4.0.1"
@@ -949,6 +956,7 @@ __metadata:
   resolution: "ardrive-cli@workspace:."
   dependencies:
     "@types/jwk-to-pem": ^2.0.0
+    "@types/lodash": ^4
     "@types/node": ^14.14.32
     "@types/prompt-sync": ^4.1.0
     "@types/prompts": ^2.0.9
@@ -968,6 +976,7 @@ __metadata:
     husky: ^=6
     jwk-to-pem: ^2.0.4
     lint-staged: ^11.0.0
+    lodash: ^4.17.21
     prettier: ^2.2.1
     progress: ^2.0.3
     prompt-password: ^1.2.0
