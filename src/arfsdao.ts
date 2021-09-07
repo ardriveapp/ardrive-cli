@@ -10,7 +10,8 @@ export class ArFSDAO {
 	}
 
 	// TODO: RETURN ALL TRANSACTION DATA
-	createDrive(driveName: string): Promise<Transaction[]> {
+	//createDrive(driveName: string): Promise<Transaction[]> {
+	createDrive(driveName: string): Promise<void> {
 		// Generate a new drive ID  for the new drive
 		const driveId = uuidv4();
 
@@ -21,6 +22,10 @@ export class ArFSDAO {
 		const unixTime = Math.round(Date.now() / 1000);
 
 		// eslint-disable-next-line no-console
+		console.log(rootFolderId, unixTime);
+
+		// eslint-disable-next-line no-console
 		console.log(driveName, driveId);
+		return Promise.resolve();
 	}
 }

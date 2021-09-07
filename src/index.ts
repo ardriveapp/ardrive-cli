@@ -6,7 +6,7 @@ import * as fs from 'fs';
 import { ArDrive } from './ardrive';
 import { ArFSDAO } from './arfsdao';
 import { JWKInterface } from 'ardrive-core-js';
-import { Wallet, JWKWallet } from './wallet_new';
+import { Wallet, JWKWallet, WalletDAO } from './wallet_new';
 import Arweave from 'arweave';
 
 /* eslint-disable no-console */
@@ -106,7 +106,17 @@ program
 		const walletJSON = JSON.parse(walletFileData);
 		const walletJWK = walletJSON as JWKInterface;
 		const wallet = new JWKWallet(walletJWK);
-		console.log(await wallet.getAddress());
+		const walletAddress = await wallet.getAddress();
+		console.log(walletAddress);
+		const arweave = Arweave.init({
+			host: 'arweave.net', // Arweave Gateway
+			//host: 'arweave.dev', // Arweave Dev Gateway
+			port: 443,
+			protocol: 'https',
+			timeout: 600000
+		});
+		const walletDao = new WalletDAO(arweave);
+		console.log(await walletDao.getWalletWinstonBalance(wallet));
 		process.exit(0);
 	});
 

@@ -69,12 +69,13 @@ export class WalletDAO {
 		);
 	}
 
-	getWalletBalance(wallet: Wallet): Promise<number> {
-		// TODO: implement!
-		// eslint-disable-next-line no-console
-		console.log(this.arweave);
-		return Promise.resolve(0);
+	async getWalletWinstonBalance(wallet: Wallet): Promise<number> {
+		return Promise.resolve(+(await this.arweave.wallets.getBalance(await wallet.getAddress())));
 	}
+
+	/*sendARToAddress(arAmount: number, fromWallet: Wallet, toAddress: ArweaveAddress): Promise<boolean> {
+
+	}*/
 
 	/*public static async jwkToAddress(jwk: JWKInterface): Promise<string> {
 		if (!jwk || jwk === "use_wallet") {
