@@ -182,7 +182,7 @@ program.command('generate-seedphrase').action(async () => {
 		timeout: 600000
 	});
 	const walletDao = new WalletDAO(arweave);
-	const seedPhrase = walletDao.generateSeedPhrase();
+	const seedPhrase = await walletDao.generateSeedPhrase();
 	console.log(JSON.stringify(seedPhrase));
 	process.exit(0);
 });

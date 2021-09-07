@@ -3,7 +3,7 @@ import * as B64js from 'base64-js';
 import * as crypto from 'crypto';
 import jwkToPem, { JWK } from 'jwk-to-pem';
 import Arweave from 'arweave';
-import mnemonicKeys from 'arweave-mnemonic-keys';
+import * as mnemonicKeys from 'arweave-mnemonic-keys';
 
 type PublicKey = string;
 type ArweaveAddress = string;
