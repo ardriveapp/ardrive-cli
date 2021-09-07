@@ -94,6 +94,45 @@ program
 		`the path to a JWK file on the file system
 			• Can't be used with --seed-phrase`
 	)
+	.option('-a, --address <Arweave wallet address>', 'get the balance of this Arweave wallet address')
+	.action(async (options) => {
+		const arweave = Arweave.init({
+			host: 'arweave.net', // Arweave Gateway
+			//host: 'arweave.dev', // Arweave Dev Gateway
+			port: 443,
+			protocol: 'https',
+			timeout: 600000
+		});
+		const walletDao = new WalletDAO(arweave);
+
+		if (options.walletFile != null) {
+			console.log(`Wallet file lives at ${options.walletFile}`);
+			const walletFileData = fs.readFileSync(options.walletFile, { encoding: 'utf8', flag: 'r' });
+			const walletJSON = JSON.parse(walletFileData);
+			const walletJWK = walletJSON as JWKInterface;
+			const wallet = new JWKWallet(walletJWK);
+			const walletAddress = await wallet.getAddress();
+			console.log(walletAddress);
+			console.log(await walletDao.getWalletWinstonBalance(wallet));
+			process.exit(0);
+		} else if (options.address != null) {
+			console.log(await walletDao.getAddressWinstonBalance(options.address));
+			process.exit(0);
+		} else {
+			console.log('MISSING WALLET FILE OR DESTINATION ADDRESS!');
+			process.exit(1);
+		}
+	});
+
+program
+	.command('send-ar')
+	.requiredOption('-a, --ar-amount <ar amount>', 'required: amount of AR to send')
+	.requiredOption('-d, --dest-address <destination wallet address>', 'required: destination wallet address')
+	.option(
+		'-w, --wallet-file [path_to_jwk_file]',
+		`the path to a JWK file on the file system
+			• Can't be used with --seed-phrase`
+	)
 	.action(async (options) => {
 		if (options.walletFile != null) {
 			console.log(`Wallet file lives at ${options.walletFile}`);
@@ -115,8 +154,25 @@ program
 			protocol: 'https',
 			timeout: 600000
 		});
+		console.log(`arAmount: ${options.arAmount}`);
+		console.log(`destAddress: ${options.destAddress}`);
 		const walletDao = new WalletDAO(arweave);
-		console.log(await walletDao.getWalletWinstonBalance(wallet));
+		console.log(await walletDao.getAddressWinstonBalance(options.destAddress));
+		console.log(
+			JSON.stringify(
+				await walletDao.sendARToAddress(
+					+options.arAmount,
+					wallet,
+					options.destAddress,
+					'ArDrive-CLI',
+					'2.0',
+					'transfer',
+					[{ name: 'foo', value: 'bar' }]
+				),
+				null,
+				4
+			)
+		);
 		process.exit(0);
 	});
 
@@ -304,4 +360,3 @@ General Options:
 	• silent - just return status code
 	`);
 }
-

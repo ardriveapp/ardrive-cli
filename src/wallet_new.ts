@@ -1,4 +1,4 @@
-import { JWKInterface } from 'ardrive-core-js';
+import { GQLTagInterface, JWKInterface } from 'ardrive-core-js';
 import * as B64js from 'base64-js';
 import * as crypto from 'crypto';
 import jwkToPem, { JWK } from 'jwk-to-pem';
@@ -7,6 +7,15 @@ import Arweave from 'arweave';
 type PublicKey = string;
 type ArweaveAddress = string;
 type SeedPhrase = string;
+type TransactionID = string;
+type Winston = string;
+type NetworkReward = Winston;
+
+export type ARTransferResult = {
+	trxID: TransactionID;
+	winston: Winston;
+	reward: NetworkReward;
+};
 
 export interface Wallet {
 	getPublicKey(): Promise<PublicKey>;
@@ -19,6 +28,10 @@ export class JWKWallet implements Wallet {
 
 	getPublicKey(): Promise<PublicKey> {
 		return Promise.resolve(this.jwk.n);
+	}
+
+	getPrivateKey(): JWKInterface {
+		return this.jwk;
 	}
 
 	async getAddress(): Promise<ArweaveAddress> {
@@ -70,20 +83,58 @@ export class WalletDAO {
 	}
 
 	async getWalletWinstonBalance(wallet: Wallet): Promise<number> {
-		return Promise.resolve(+(await this.arweave.wallets.getBalance(await wallet.getAddress())));
+		return this.getAddressWinstonBalance(await wallet.getAddress());
 	}
 
-	/*sendARToAddress(arAmount: number, fromWallet: Wallet, toAddress: ArweaveAddress): Promise<boolean> {
+	async getAddressWinstonBalance(address: ArweaveAddress): Promise<number> {
+		return Promise.resolve(+(await this.arweave.wallets.getBalance(address)));
+	}
 
-	}*/
+	async sendARToAddress(
+		arAmount: number,
+		fromWallet: Wallet,
+		toAddress: ArweaveAddress,
+		appName = 'ArDrive-Core',
+		appVersion = '1.0',
+		trxType = 'transfer',
+		otherTags?: GQLTagInterface[]
+	): Promise<ARTransferResult> {
+		// TODO: Figure out how this works for other wallet types
+		const jwkWallet = fromWallet as JWKWallet;
+		const winston: Winston = this.arweave.ar.arToWinston(arAmount.toString());
 
-	/*public static async jwkToAddress(jwk: JWKInterface): Promise<string> {
-		if (!jwk || jwk === "use_wallet") {
-		  return this.getAddress();
+		const transaction = await this.arweave.createTransaction(
+			{ target: toAddress, quantity: winston },
+			jwkWallet.getPrivateKey()
+		);
+
+		// Tag file with data upload Tipping metadata
+		transaction.addTag('App-Name', appName);
+		transaction.addTag('App-Version', appVersion);
+		transaction.addTag('Type', trxType);
+		otherTags?.forEach((tag) => {
+			transaction.addTag(tag.name, tag.value);
+		});
+
+		// TODO: CHECK TAG LIMITS - i.e. upper limit of 2048bytes for all names and values
+
+		// Sign file
+		await this.arweave.transactions.sign(transaction, jwkWallet.getPrivateKey());
+
+		const ret = {
+			trxID: transaction.id,
+			winston: winston,
+			reward: transaction.reward
+		};
+
+		// Submit the transaction
+		const response = await this.arweave.transactions.post(transaction);
+		if (response.status === 200 || response.status === 202) {
+			return Promise.resolve(ret);
 		} else {
-		  return this.getAddress(jwk);
+			throw new Error(`Transaction failed. Response: ${response}`);
 		}
-	  }*/
+	}
 }
 
 export function bufferTob64Url(buffer: Uint8Array): string {
