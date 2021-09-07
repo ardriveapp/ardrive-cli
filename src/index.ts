@@ -173,6 +173,40 @@ program
 		process.exit(0);
 	});
 
+program.command('generate-seedphrase').action(async () => {
+	const arweave = Arweave.init({
+		host: 'arweave.net', // Arweave Gateway
+		//host: 'arweave.dev', // Arweave Dev Gateway
+		port: 443,
+		protocol: 'https',
+		timeout: 600000
+	});
+	const walletDao = new WalletDAO(arweave);
+	const seedPhrase = walletDao.generateSeedPhrase();
+	console.log(JSON.stringify(seedPhrase));
+	process.exit(0);
+});
+
+program
+	.command('generate-wallet')
+	.requiredOption('-s, --seed <seed>', 'The previously generated mnemonic seed phrase')
+	.action(async (options) => {
+		if (!options.seed) {
+			throw new Error('Missing required seed phrase');
+		}
+		const arweave = Arweave.init({
+			host: 'arweave.net', // Arweave Gateway
+			//host: 'arweave.dev', // Arweave Dev Gateway
+			port: 443,
+			protocol: 'https',
+			timeout: 600000
+		});
+		const walletDao = new WalletDAO(arweave);
+		const wallet = await walletDao.generateJWKWallet(options.seed);
+		console.log(JSON.stringify(wallet));
+		process.exit(0);
+	});
+
 program.parse(process.argv);
 
 // Process command line inputs
