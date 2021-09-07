@@ -97,7 +97,7 @@ export class WalletDAO {
 		[
 			{ value: appName = 'ArDrive-Core' },
 			{ value: appVersion = '1.0' },
-			{ value: trxType = '1.0' },
+			{ value: trxType = 'transfer' },
 			...otherTags
 		]: GQLTagInterface[]
 	): Promise<ARTransferResult> {
