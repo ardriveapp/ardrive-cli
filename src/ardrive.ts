@@ -34,7 +34,6 @@ export class ArDrive {
 	constructor(private readonly arFsDao: ArFSDAO) {}
 
 	createPublicDrive(driveName: string): Promise<CreateDriveResult> {
-
 		// Generate a new drive ID
 		const driveTxs = this.arFsDao.createDrive(driveName);
 
@@ -42,7 +41,7 @@ export class ArDrive {
 		console.log(driveTxs);
 
 		/* CORE DOES THE FOLLOWING:
-			• addDriveToDriveTable
+			• addDriveToDriveTable (NOT RELEVANT TO US RIGHT NOW)
 				- runs some SQL to add to the local DB (we'll omit this)
 			• "sets up drive"
 				- figures out what the root folder data should be and prepares that for syncing
@@ -61,7 +60,6 @@ export class ArDrive {
 		*/
 
 		// Assemble metadata and transaction outcomes and produce output relevant to the CLI spec
-
 
 		// GET TXID from DAO
 
