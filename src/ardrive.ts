@@ -32,29 +32,7 @@ export class ArDrive {
 		// Generate a new drive ID
 		const { driveTrx, rootFolderTrx, driveId, rootFolderId } = await this.arFsDao.createPublicDrive(driveName);
 
-		/* CORE DOES THE FOLLOWING:
-			• addDriveToDriveTable (NOT RELEVANT TO US RIGHT NOW)
-				- runs some SQL to add to the local DB (we'll omit this)
-			• "sets up drive"
-				- figures out what the root folder data should be and prepares that for syncing
-			• Prepares an arweave-js transaction for upload of the drive metadata (uploadArFSDriveMetaData(user, newDrive: ArFSDriveMetaData))
-				- prepare drive data JSON as the "body" of the transaction
-				- add GQL tags
-				- sign the whole transaction
-			• Creates a chunked uploader
-			• Executes a chunked upload
-			• Prepares an arweave-js transaction for upload of the root folder metadata (uploadArFSFileMetaData(user, driveRootFolder: ArFSFileMetaData))
-				- prepare folder data JSON as the "body" of the transaction
-				- add GQL tags
-				- sign the whole transaction
-			• Creates a chunked uploader
-			• Executes a chunked upload
-		*/
-
-		// Assemble metadata and transaction outcomes and produce output relevant to the CLI spec
-
-		// GET TXID from DAO
-
+		// IN THE FUTURE WE'LL SEND A COMMUNITY TIP HERE
 		return Promise.resolve(
 			JSON.parse(`
 		created: [
@@ -71,17 +49,10 @@ export class ArDrive {
 			  key: ""
 			}
 		  ],
-		  tips: [
-			{
-			  type: "drive",
-			  txId: "qGr1BIVWQwdPMuQxJ9MmwMM8CBmZTIj9powGxJSZyi0",
-			  winston: 100000000
-			}
-		  ],
+		  tips: [],
 		  fees: {
 			"${driveTrx.id}": ${driveTrx.reward},
-			"${rootFolderTrx.id}": ${rootFolderTrx.reward},
-			"qGr1BIVWQwdPMuQxJ9MmwMM8CBmZTIj9powGxJSZyi0": 344523
+			"${rootFolderTrx.id}": ${rootFolderTrx.reward}
 		  }
 		`)
 		);
