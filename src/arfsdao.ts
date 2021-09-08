@@ -2,61 +2,106 @@ import type { JWKWallet, Wallet } from './wallet_new';
 import Arweave from 'arweave';
 import { v4 as uuidv4 } from 'uuid';
 import Transaction from 'arweave/node/lib/transaction';
-import { CipherType, DriveAuthMode, DrivePrivacy, GQLTagInterface } from 'ardrive-core-js';
+import {
+	ArFSEncryptedData,
+	CipherType,
+	deriveDriveKey,
+	DriveAuthMode,
+	driveEncrypt,
+	DrivePrivacy,
+	GQLTagInterface,
+	JWKInterface
+} from 'ardrive-core-js';
 
 export const ArFS_O_11 = '0.11';
 
 export type CipherIV = string;
+export type FolderID = string;
+export type DriveID = string;
 
-export type ArFSPrivateObjectData = {
-	cipher: CipherType;
-	cipherIV: CipherIV;
-	driveAuthMode: DriveAuthMode;
-};
-export abstract class ArFSDriveSigner {
-	abstract getPrivacyType(): DrivePrivacy;
+export interface ArFSDriveData {
+	asTransactionData(): string | Buffer;
 }
 
-export class ArFSPublicDriveSigner extends ArFSDriveSigner {
-	getPrivacyType(): DrivePrivacy {
-		return 'public';
+export class ArFSPublicDriveData implements ArFSDriveData {
+	constructor(readonly name: string, readonly rootFolderId: FolderID) {}
+	asTransactionData(): string | Buffer {
+		return JSON.stringify({
+			name: this.name,
+			rootFolderId: this.rootFolderId
+		});
 	}
 }
 
-export class ArFSPrivateDriveSigner extends ArFSDriveSigner {
-	constructor(readonly privacyData: ArFSPrivateObjectData) {
-		super();
+export class ArFSPrivateDriveData implements ArFSDriveData {
+	driveAuthMode: DriveAuthMode = 'password';
+
+	private constructor(
+		readonly name: string,
+		readonly rootFolderId: FolderID,
+		readonly drivePassword: string,
+		readonly cipher: CipherType,
+		readonly cipherIV: CipherIV
+	) {}
+
+	static async createArFSPrivateDriveData(
+		name: string,
+		rootFolderId: FolderID,
+		driveId: DriveID,
+		drivePassword: string,
+		privateKey: JWKInterface
+	): Promise<ArFSPrivateDriveData> {
+		const driveKey: Buffer = await deriveDriveKey(drivePassword, driveId, JSON.stringify(privateKey));
+		const encryptedDriveMetaData: ArFSEncryptedData = await driveEncrypt(
+			driveKey,
+			Buffer.from(
+				JSON.stringify({
+					name: this.name,
+					rootFolderId: rootFolderId
+				})
+			)
+		);
+		const cipher = encryptedDriveMetaData.cipher;
+		const cipherIV = encryptedDriveMetaData.cipherIV;
+		return new ArFSPrivateDriveData(name, rootFolderId, drivePassword, cipher, cipherIV);
 	}
 
-	getPrivacyType(): DrivePrivacy {
-		return 'private';
+	asTransactionData(): string | Buffer {
+		return JSON.stringify({
+			name: this.name,
+			rootFolderId: this.rootFolderId
+		});
 	}
 }
-
 export abstract class ArFSDriveMetaDataPrototype {
 	abstract driveName: string;
 	abstract rootFolderId: string;
 	abstract unixTime: number;
 	abstract driveId: string;
-	abstract signer: ArFSDriveSigner;
+	abstract driveData: ArFSDriveData;
+	abstract readonly privacy: DrivePrivacy;
 
 	addTagsToTransaction(transaction: Transaction): void {
 		transaction.addTag('Entity-Type', 'drive');
 		transaction.addTag('Unix-Time', this.unixTime.toString());
 		transaction.addTag('Drive-Id', this.driveId);
-		transaction.addTag('Drive-Privacy', this.signer.getPrivacyType());
+		transaction.addTag('Drive-Privacy', this.privacy);
 	}
 }
 
 export class ArFSPublicDriveMetaDataPrototype extends ArFSDriveMetaDataPrototype {
-	constructor(
-		readonly driveName: string,
-		readonly rootFolderId: string,
-		readonly unixTime: number,
-		readonly driveId: string,
-		readonly signer: ArFSDriveSigner
-	) {
+	readonly privacy: DrivePrivacy = 'public';
+
+	constructor(readonly driveData: ArFSPublicDriveData, readonly unixTime: number, readonly driveId: string) {
 		super();
+	}
+
+	get driveName(): string {
+		return this.driveData.name;
+	}
+
+	get rootFolderId(): FolderID {
+		return this.driveData.rootFolderId;
 	}
 
 	addTagsToTransaction(transaction: Transaction): void {
@@ -66,24 +111,24 @@ export class ArFSPublicDriveMetaDataPrototype extends ArFSDriveMetaDataPrototype
 }
 
 export class ArFSPrivateDriveMetaDataPrototype extends ArFSDriveMetaDataPrototype {
+	readonly privacy: DrivePrivacy = 'private';
+
 	constructor(
 		readonly driveName: string,
 		readonly rootFolderId: string,
 		readonly unixTime: number,
 		readonly driveId: string,
-		readonly signer: ArFSDriveSigner
+		readonly driveData: ArFSPrivateDriveData
 	) {
 		super();
 	}
 
 	addTagsToTransaction(transaction: Transaction): void {
 		super.addTagsToTransaction(transaction);
-		// TODO: Do we even need the signer class?
-		const signer = this.signer as ArFSPrivateDriveSigner;
 		transaction.addTag('Content-Type', 'application/octet-stream');
-		transaction.addTag('Cipher', signer.privacyData.cipher);
-		transaction.addTag('Cipher-IV', signer.privacyData.cipherIV);
-		transaction.addTag('Drive-Auth-Mode', signer.privacyData.driveAuthMode);
+		transaction.addTag('Cipher', this.driveData.cipher);
+		transaction.addTag('Cipher-IV', this.driveData.cipherIV);
+		transaction.addTag('Drive-Auth-Mode', this.driveData.driveAuthMode);
 	}
 }
 
@@ -118,13 +163,11 @@ export class ArFSDAO {
 
 		// Create a drive metadata transaction
 		const driveMetaData = new ArFSPublicDriveMetaDataPrototype(
-			driveName,
-			'FIXME',
+			new ArFSPublicDriveData(driveName, rootFolderId),
 			unixTime,
-			driveId,
-			new ArFSPublicDriveSigner()
+			driveId
 		);
-		const driveTrx = this.prepareArFSDriveTransaction('FIXMEJSON', driveMetaData);
+		const driveTrx = this.prepareArFSDriveTransaction(driveMetaData);
 
 		// eslint-disable-next-line no-console
 		console.log(rootFolderId, unixTime);
@@ -135,7 +178,6 @@ export class ArFSDAO {
 	}
 
 	async prepareArFSDriveTransaction(
-		driveJSON: string,
 		driveMetaData: ArFSDriveMetaDataPrototype,
 		appName = 'ArDrive-Core',
 		appVersion = '1.0',
@@ -145,7 +187,10 @@ export class ArFSDAO {
 		const wallet = this.wallet as JWKWallet;
 
 		// Create transaction
-		const transaction = await this.arweave.createTransaction({ data: driveJSON }, wallet.getPrivateKey());
+		const transaction = await this.arweave.createTransaction(
+			{ data: driveMetaData.driveData.asTransactionData() },
+			wallet.getPrivateKey()
+		);
 
 		// Add baseline ArFS Tags
 		transaction.addTag('App-Name', appName);
