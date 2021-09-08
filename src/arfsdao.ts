@@ -1,9 +1,11 @@
+// import * as fs from 'fs';
 import type { JWKWallet, Wallet } from './wallet_new';
 import Arweave from 'arweave';
 import { v4 as uuidv4 } from 'uuid';
 import Transaction from 'arweave/node/lib/transaction';
 import {
 	ArFSEncryptedData,
+	// ArFSFileData,
 	CipherType,
 	deriveDriveKey,
 	DriveAuthMode,
@@ -18,6 +20,7 @@ export const ArFS_O_11 = '0.11';
 
 export type CipherIV = string;
 export type FolderID = string;
+export type FileID = string;
 export type DriveID = string;
 export type DriveKey = Buffer;
 
@@ -144,6 +147,15 @@ export class ArFSPublicFolderData implements ArFSObjectTransactionData {
 	}
 }
 
+// export class ArFSPublicFileData implements ArFSObjectTransactionData {
+// 	constructor(readonly name: string) {}
+// 	asTransactionData(): string | Buffer {
+// 		return JSON.stringify({
+// 			name: this.name
+// 		});
+// 	}
+// }
+
 export class ArFSPrivateFolderData implements ArFSObjectTransactionData {
 	private constructor(
 		readonly name: string,
@@ -248,6 +260,51 @@ export class ArFSPrivateFolderMetaDataPrototype extends ArFSFolderMetaDataProtot
 	}
 }
 
+// export abstract class ArFSFileMetaDataPrototype extends ArFSObjectMetadataPrototype {
+// 	abstract unixTime: number;
+// 	abstract driveId: DriveID;
+// 	abstract fileId: FileID;
+// 	abstract objectData: ArFSObjectTransactionData;
+// 	abstract parentFolderId: FolderID;
+// 	abstract readonly privacy: DrivePrivacy;
+
+// 	get protectedTags(): string[] {
+// 		return ['Entity-Type', 'Unix-Time', 'Drive-Id', 'File-Id', 'Drive-Privacy', 'Parent-Folder-Id'];
+// 	}
+
+// 	addTagsToTransaction(transaction: Transaction): void {
+// 		transaction.addTag('Entity-Type', 'file');
+// 		transaction.addTag('Unix-Time', this.unixTime.toString());
+// 		transaction.addTag('Drive-Id', this.driveId);
+// 		transaction.addTag('File-Id', this.fileId);
+// 		transaction.addTag('Drive-Privacy', this.privacy);
+// 		transaction.addTag('Parent-Folder-Id', this.parentFolderId);
+// 	}
+// }
+
+// export class ArFSPublicFileMetaDataPrototype extends ArFSFileMetaDataPrototype {
+// 	readonly privacy: DrivePrivacy = 'public';
+
+// 	constructor(
+// 		readonly objectData: ArFSPublicFileData,
+// 		readonly unixTime: number,
+// 		readonly driveId: DriveID,
+// 		readonly fileId: FileID,
+// 		readonly parentFolderId: FolderID
+// 	) {
+// 		super();
+// 	}
+
+// 	get protectedTags(): string[] {
+// 		return ['Content-Type', ...super.protectedTags];
+// 	}
+
+// 	addTagsToTransaction(transaction: Transaction): void {
+// 		super.addTagsToTransaction(transaction);
+// 		transaction.addTag('Content-Type', 'application/json');
+// 	}
+// }
+
 // TODO: Extend rather than union type?
 export type ArFSDriveMetaData =
 	| ArFSDriveMetaDataPrototype
@@ -263,6 +320,16 @@ export interface ArFSCreateDriveResult {
 	rootFolderId: FolderID;
 }
 
+export interface ArFSCreateFolderResult {
+	folderTrx: Transaction;
+	folderId: FolderID;
+}
+
+export interface ArFSUploadFileResult {
+	fileTrx: Transaction;
+	fileId: FileID;
+}
+
 export interface ArFSCreatePrivateDriveResult extends ArFSCreateDriveResult {
 	driveKey: DriveKey;
 }
@@ -271,13 +338,45 @@ export class ArFSDAO {
 	// TODO: Can we abstract Arweave type(s)?
 	constructor(private readonly wallet: Wallet, private readonly arweave: Arweave) {}
 
+	async createPublicFolder(
+		folderName: string,
+		driveId: DriveID,
+		parentFolderId?: FolderID
+	): Promise<ArFSCreateFolderResult> {
+		// Generate a new folder ID
+		const folderId = uuidv4();
+
+		// Get the current time so the app can display the "created" data later on
+		const unixTime = Math.round(Date.now() / 1000);
+
+		// Create a root folder metadata transaction
+		const folderMetadata = new ArFSPublicFolderMetaDataPrototype(
+			new ArFSPublicFolderData(folderName),
+			unixTime,
+			driveId,
+			folderId,
+			parentFolderId
+		);
+		const folderTrx = await this.prepareArFSObjectTransaction(folderMetadata);
+
+		// Create the Folder Uploader objects
+		const folderUploader = await this.arweave.transactions.getUploader(folderTrx);
+
+		// Execute the uploads
+		while (!folderUploader.isComplete) {
+			await folderUploader.uploadChunk();
+		}
+
+		return { folderTrx, folderId };
+	}
+
 	// TODO: RETURN ALL TRANSACTION DATA
 	async createPublicDrive(driveName: string): Promise<ArFSCreateDriveResult> {
 		// Generate a new drive ID  for the new drive
 		const driveId = uuidv4();
 
-		// Generate a folder ID for the new drive's root folder
-		const rootFolderId = uuidv4();
+		// Create root folder
+		const { folderTrx: rootFolderTrx, folderId: rootFolderId } = await this.createPublicFolder(driveName, driveId);
 
 		// Get the current time so the app can display the "created" data later on
 		const unixTime = Math.round(Date.now() / 1000);
@@ -290,25 +389,12 @@ export class ArFSDAO {
 		);
 		const driveTrx = await this.prepareArFSObjectTransaction(driveMetaData);
 
-		// Create a root folder metadata transaction
-		const rootFolderMetadata = new ArFSPublicFolderMetaDataPrototype(
-			new ArFSPublicFolderData(driveName),
-			unixTime,
-			driveId,
-			rootFolderId
-		);
-		const rootFolderTrx = await this.prepareArFSObjectTransaction(rootFolderMetadata);
-
 		// Create the Drive and Folder Uploader objects
 		const driveUploader = await this.arweave.transactions.getUploader(driveTrx);
-		const folderUploader = await this.arweave.transactions.getUploader(rootFolderTrx);
 
 		// Execute the uploads
 		while (!driveUploader.isComplete) {
 			await driveUploader.uploadChunk();
-		}
-		while (!folderUploader.isComplete) {
-			await folderUploader.uploadChunk();
 		}
 
 		return { driveTrx, rootFolderTrx, driveId, rootFolderId };
@@ -368,6 +454,25 @@ export class ArFSDAO {
 
 		return { driveTrx, rootFolderTrx, driveId, rootFolderId, driveKey };
 	}
+	// async uploadPublicFile(
+	// 	parentFolderId: string,
+	// 	filePath: string,
+	// 	destFileName: string
+	// ): Promise<ArFSUploadFileResult> {
+	// 	const fileData = fs.readFileSync(filePath);
+
+	// 	const fileId = uuidv4();
+
+	// 	const unixTime = Math.round(Date.now() / 1000);
+
+	// 	// const rootFileMetadata = new ArFSPublicFileMetaDataPrototype(
+	// 	// 	new ArFSPublicFileData(driveName),
+	// 	// 	unixTime,
+	// 	// 	driveId,
+	// 	// 	rootFolderId
+	// 	// );
+	// 	// const rootFolderTrx = await this.prepareArFSObjectTransaction(rootFolderMetadata);
+	// }
 
 	async prepareArFSObjectTransaction(
 		objectMetaData: ArFSObjectMetadataPrototype,

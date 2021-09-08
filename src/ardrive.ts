@@ -1,7 +1,7 @@
 //import { v4 as uuidv4 } from 'uuid';
-import { ArFSDAO } from './arfsdao';
+import { ArFSDAO, FolderID } from './arfsdao';
 
-export type ArFSEntityDataType = 'drive' | 'folder';
+export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 export type ArFSTipType = 'drive' | 'folder';
 
 export interface ArFSEntityData {
@@ -25,8 +25,47 @@ export interface CreateDriveResult {
 	fees: ArFSFees;
 }
 
+// export interface UploadFileResult {
+// 	created: ArFSEntityData[]
+// 	tips: ArFSTipData[];
+// 	fees: ArFSFees;
+// }
+
 export class ArDrive {
 	constructor(private readonly arFsDao: ArFSDAO) {}
+
+	// async uploadFile(parentFolderId: string, filePath: string): Promise<CreateDriveResult> {
+	// 	this.arFsDao.uploadFile(parentFolderId, filePath);
+
+	// 	return Promise.resolve();
+	// }
+
+	async createPublicFolder(
+		folderName: string,
+		driveId: string,
+		parentFolderId: FolderID
+	): Promise<CreateDriveResult> {
+		// TODO: Fetch drive ID for parent folder ID
+
+		// Generate a new drive ID
+		const { folderTrx, folderId } = await this.arFsDao.createPublicFolder(folderName, driveId, parentFolderId);
+
+		// IN THE FUTURE WE'LL SEND A COMMUNITY TIP HERE
+		return Promise.resolve({
+			created: [
+				{
+					type: 'folder',
+					metadataTxId: folderTrx.id,
+					entityId: folderId,
+					key: ''
+				}
+			],
+			tips: [],
+			fees: {
+				[folderTrx.id]: +folderTrx.reward
+			}
+		});
+	}
 
 	async createPublicDrive(driveName: string): Promise<CreateDriveResult> {
 		// Generate a new drive ID
