@@ -1,5 +1,5 @@
 //import { v4 as uuidv4 } from 'uuid';
-import type { ArFSDAO } from './arfsdao';
+import { ArFSDAO, ArFSPublicDriveMetaDataPrototype } from './arfsdao';
 
 export type ArFSEntityDataType = 'drive' | 'folder';
 export type ArFSTipType = 'drive' | 'folder';
@@ -28,12 +28,9 @@ export interface CreateDriveResult {
 export class ArDrive {
 	constructor(private readonly arFsDao: ArFSDAO) {}
 
-	createPublicDrive(driveName: string): Promise<CreateDriveResult> {
+	async createPublicDrive(driveName: string): Promise<CreateDriveResult> {
 		// Generate a new drive ID
-		const driveTxs = this.arFsDao.createDrive(driveName);
-
-		// eslint-disable-next-line no-console
-		console.log(driveTxs);
+		const { driveTrx, rootFolderTrx, driveId, rootFolderId } = await this.arFsDao.createPublicDrive(driveName);
 
 		/* CORE DOES THE FOLLOWING:
 			• addDriveToDriveTable (NOT RELEVANT TO US RIGHT NOW)
@@ -63,14 +60,14 @@ export class ArDrive {
 		created: [
 			{
 			  type: "drive",
-			  metadataTxId: "slC4ypBTJyzBipxBbEesUCXNdr-xcOItC6W90NGD6xE",
-			  entityId: "8752daa4-7958-40b5-8bd5-0b198a953f96",
+			  metadataTxId: "${driveTrx.id}",
+			  entityId: "${driveId}",
 			  key: ""
 			},
 			{
 			  type: "folder",
-			  metadataTxId: "6HGYgxS_me4HBGGZfMo6Hpl-ZBjtJ3HiGExQCpxbXnA",
-			  entityId: "35ccc18b-81c0-491e-b6e3-c06045a4f8ce",
+			  metadataTxId: "${rootFolderTrx.id}",
+			  entityId: "${rootFolderId}",
 			  key: ""
 			}
 		  ],
@@ -82,8 +79,8 @@ export class ArDrive {
 			}
 		  ],
 		  fees: {
-			"slC4ypBTJyzBipxBbEesUCXNdr-xcOItC6W90NGD6xE": 498234,
-			"6HGYgxS_me4HBGGZfMo6Hpl-ZBjtJ3HiGExQCpxbXnA": 234234,
+			"${driveTrx.id}": ${driveTrx.reward},
+			"${rootFolderTrx.id}": ${rootFolderTrx.reward},
 			"qGr1BIVWQwdPMuQxJ9MmwMM8CBmZTIj9powGxJSZyi0": 344523
 		  }
 		`)

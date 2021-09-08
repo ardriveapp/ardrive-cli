@@ -5,6 +5,7 @@ import Transaction from 'arweave/node/lib/transaction';
 import {
 	ArFSEncryptedData,
 	CipherType,
+	createDataUploader,
 	deriveDriveKey,
 	DriveAuthMode,
 	driveEncrypt,
@@ -283,6 +284,13 @@ export type ArFSDriveMetaData =
 			appVersion: string;
 	  };
 
+export type ArFSCreateDriveResult = {
+	driveTrx: Transaction;
+	rootFolderTrx: Transaction;
+	driveId: DriveID;
+	rootFolderId: FolderID;
+};
+
 export class ArFSDAO {
 	// TODO: Can we abstract Arweave type(s)?
 	constructor(private readonly wallet: Wallet, private readonly arweave: Arweave) {
@@ -291,8 +299,7 @@ export class ArFSDAO {
 	}
 
 	// TODO: RETURN ALL TRANSACTION DATA
-	//createDrive(driveName: string): Promise<Transaction[]> {
-	createPublicDrive(driveName: string): Promise<void> {
+	async createPublicDrive(driveName: string): Promise<ArFSCreateDriveResult> {
 		// Generate a new drive ID  for the new drive
 		const driveId = uuidv4();
 
@@ -302,22 +309,42 @@ export class ArFSDAO {
 		// Get the current time so the app can display the "created" data later on
 		const unixTime = Math.round(Date.now() / 1000);
 
-		// TODO: CREATE A ROOT FOLDER METADATA TRANSACTION AND USE ROOT FOLDER ID IN FIXMEJSON BELOW!
-
 		// Create a drive metadata transaction
 		const driveMetaData = new ArFSPublicDriveMetaDataPrototype(
 			new ArFSPublicDriveData(driveName, rootFolderId),
 			unixTime,
 			driveId
 		);
-		const driveTrx = this.prepareArFSObjectTransaction(driveMetaData);
+		const driveTrx = await this.prepareArFSObjectTransaction(driveMetaData);
+
+		// Create a root folder metadata transaction
+		const rootFolderMetadata = new ArFSPublicFolderMetaDataPrototype(
+			new ArFSPublicFolderData(driveName),
+			unixTime,
+			driveId,
+			rootFolderId
+		);
+		const rootFolderTrx = await this.prepareArFSObjectTransaction(rootFolderMetadata);
 
 		// eslint-disable-next-line no-console
 		console.log(rootFolderId, unixTime);
 
 		// eslint-disable-next-line no-console
 		console.log(driveName, driveId);
-		return Promise.resolve();
+
+		// Create the File Uploader object
+		const driveUploader = await createDataUploader(driveTrx);
+		const folderUploader = await createDataUploader(rootFolderTrx);
+
+		// Execute the uploads
+		while (!driveUploader.isComplete) {
+			await driveUploader.uploadChunk();
+		}
+		while (!folderUploader.isComplete) {
+			await folderUploader.uploadChunk();
+		}
+
+		return { driveTrx, rootFolderTrx, driveId, rootFolderId };
 	}
 
 	async prepareArFSObjectTransaction(
