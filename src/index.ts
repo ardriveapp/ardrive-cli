@@ -19,6 +19,8 @@ const arweave = Arweave.init({
 	timeout: 600000
 });
 
+const walletDao = new WalletDAO(arweave);
+
 // Utility for parsing command line options
 const program = new Command();
 
@@ -73,8 +75,6 @@ program
 	)
 	.option('-a, --address <Arweave wallet address>', 'get the balance of this Arweave wallet address')
 	.action(async (options) => {
-		const walletDao = new WalletDAO(arweave);
-
 		if (options.walletFile != null) {
 			const walletFileData = fs.readFileSync(options.walletFile, { encoding: 'utf8', flag: 'r' });
 			const walletJSON = JSON.parse(walletFileData);
@@ -138,7 +138,6 @@ program
 		console.log(walletAddress);
 		console.log(`arAmount: ${options.arAmount}`);
 		console.log(`destAddress: ${options.destAddress}`);
-		const walletDao = new WalletDAO(arweave);
 		console.log(await walletDao.getAddressWinstonBalance(options.destAddress));
 		console.log(
 			JSON.stringify(
@@ -156,7 +155,6 @@ program
 	});
 
 program.command('generate-seedphrase').action(async () => {
-	const walletDao = new WalletDAO(arweave);
 	const seedPhrase = await walletDao.generateSeedPhrase();
 	console.log(JSON.stringify(seedPhrase));
 	process.exit(0);
@@ -169,7 +167,6 @@ program
 		if (!options.seed) {
 			throw new Error('Missing required seed phrase');
 		}
-		const walletDao = new WalletDAO(arweave);
 		const wallet = await walletDao.generateJWKWallet(options.seed);
 		console.log(JSON.stringify(wallet));
 		process.exit(0);
