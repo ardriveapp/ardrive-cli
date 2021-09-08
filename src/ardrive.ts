@@ -55,4 +55,35 @@ export class ArDrive {
 			}
 		});
 	}
+
+	async createPrivateDrive(driveName: string, password: string): Promise<CreateDriveResult> {
+		// Generate a new drive ID
+		const { driveTrx, rootFolderTrx, driveId, rootFolderId, driveKey } = await this.arFsDao.createPrivateDrive(
+			driveName,
+			password
+		);
+
+		// IN THE FUTURE WE'LL SEND A COMMUNITY TIP HERE
+		return Promise.resolve({
+			created: [
+				{
+					type: 'drive',
+					metadataTxId: driveTrx.id,
+					entityId: driveId,
+					key: driveKey.toString('hex')
+				},
+				{
+					type: 'folder',
+					metadataTxId: rootFolderTrx.id,
+					entityId: rootFolderId,
+					key: driveKey.toString('hex')
+				}
+			],
+			tips: [],
+			fees: {
+				[driveTrx.id]: +driveTrx.reward,
+				[rootFolderTrx.id]: +rootFolderTrx.reward
+			}
+		});
+	}
 }

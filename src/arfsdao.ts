@@ -19,6 +19,7 @@ export const ArFS_O_11 = '0.11';
 export type CipherIV = string;
 export type FolderID = string;
 export type DriveID = string;
+export type DriveKey = Buffer;
 
 export interface ArFSObjectTransactionData {
 	asTransactionData(): string | Buffer;
@@ -39,6 +40,7 @@ export class ArFSPrivateDriveData implements ArFSObjectTransactionData {
 		readonly cipher: CipherType,
 		readonly cipherIV: CipherIV,
 		readonly encryptedDriveData: Buffer,
+		readonly driveKey: DriveKey,
 		readonly driveAuthMode: DriveAuthMode = 'password'
 	) {}
 
@@ -59,7 +61,7 @@ export class ArFSPrivateDriveData implements ArFSObjectTransactionData {
 				})
 			)
 		);
-		return new ArFSPrivateDriveData(cipher, cipherIV, data);
+		return new ArFSPrivateDriveData(cipher, cipherIV, data, driveKey);
 	}
 
 	asTransactionData(): string | Buffer {
@@ -254,12 +256,16 @@ export type ArFSDriveMetaData =
 			appVersion: string;
 	  };
 
-export type ArFSCreateDriveResult = {
+export interface ArFSCreateDriveResult {
 	driveTrx: Transaction;
 	rootFolderTrx: Transaction;
 	driveId: DriveID;
 	rootFolderId: FolderID;
-};
+}
+
+export interface ArFSCreatePrivateDriveResult extends ArFSCreateDriveResult {
+	driveKey: DriveKey;
+}
 
 export class ArFSDAO {
 	// TODO: Can we abstract Arweave type(s)?
@@ -306,6 +312,61 @@ export class ArFSDAO {
 		}
 
 		return { driveTrx, rootFolderTrx, driveId, rootFolderId };
+	}
+
+	async createPrivateDrive(driveName: string, password: string): Promise<ArFSCreatePrivateDriveResult> {
+		// Generate a new drive ID  for the new drive
+		const driveId = uuidv4();
+
+		// Generate a folder ID for the new drive's root folder
+		const rootFolderId = uuidv4();
+
+		// Get the current time so the app can display the "created" data later on
+		const unixTime = Math.round(Date.now() / 1000);
+
+		const wallet = this.wallet as JWKWallet;
+
+		const privateDriveData = await ArFSPrivateDriveData.createArFSPrivateDriveData(
+			driveName,
+			rootFolderId,
+			driveId,
+			password,
+			wallet.getPrivateKey()
+		);
+
+		// Create a drive metadata transaction
+		const driveMetaData = new ArFSPrivateDriveMetaDataPrototype(unixTime, driveId, privateDriveData);
+		const driveTrx = await this.prepareArFSObjectTransaction(driveMetaData);
+
+		// Create a root folder metadata transaction
+		const rootFolderMetadata = new ArFSPrivateFolderMetaDataPrototype(
+			unixTime,
+			driveId,
+			rootFolderId,
+			await ArFSPrivateFolderData.createArFSPrivateFolderData(
+				driveName,
+				driveId,
+				password,
+				wallet.getPrivateKey()
+			)
+		);
+		const rootFolderTrx = await this.prepareArFSObjectTransaction(rootFolderMetadata);
+
+		// Create the Drive and Folder Uploader objects
+		const driveUploader = await this.arweave.transactions.getUploader(driveTrx);
+		const folderUploader = await this.arweave.transactions.getUploader(rootFolderTrx);
+
+		// Execute the uploads
+		while (!driveUploader.isComplete) {
+			await driveUploader.uploadChunk();
+		}
+		while (!folderUploader.isComplete) {
+			await folderUploader.uploadChunk();
+		}
+
+		const driveKey = privateDriveData.driveKey;
+
+		return { driveTrx, rootFolderTrx, driveId, rootFolderId, driveKey };
 	}
 
 	async prepareArFSObjectTransaction(

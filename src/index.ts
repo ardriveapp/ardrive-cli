@@ -42,6 +42,11 @@ program
 		`a 12-word seed phrase representing a JWK
 		• Can't be used with --wallet-file`
 	)
+	.option(
+		'-p, --drive-password <drive password>',
+		`the encryption password for the private drive (OPTIONAL)
+		• When provided, creates the drive as a private drive. Public drive otherwise.`
+	)
 	.option('-n, --drive-name [name]', `the name for the new drive`)
 	.action(async (options) => {
 		const wallet: Wallet = await (async function () {
@@ -65,7 +70,13 @@ program
 		// TODO: Export convert seed phrase to wallet
 
 		const ardrive = new ArDrive(new ArFSDAO(wallet, arweave));
-		const createDriveResult = await ardrive.createPublicDrive(options.driveName);
+		const createDriveResult = await (async function () {
+			if (options.drivePassword) {
+				return ardrive.createPrivateDrive(options.driveName, options.drivePassword);
+			} else {
+				return ardrive.createPublicDrive(options.driveName);
+			}
+		})();
 		console.log(JSON.stringify(createDriveResult, null, 4));
 
 		process.exit(0);
