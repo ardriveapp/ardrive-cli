@@ -8,53 +8,35 @@ export const ArFS_O_11 = '0.11';
 
 export type CipherIV = string;
 
-export type ArFSPrivateObjectData = {
-	cipher: CipherType;
-	cipherIV: CipherIV;
-	driveAuthMode: DriveAuthMode;
-};
-export abstract class ArFSDriveSigner {
-	abstract getPrivacyType(): DrivePrivacy;
-}
-
-export class ArFSPublicDriveSigner extends ArFSDriveSigner {
-	getPrivacyType(): DrivePrivacy {
-		return 'public';
-	}
-}
-
-export class ArFSPrivateDriveSigner extends ArFSDriveSigner {
-	constructor(readonly privacyData: ArFSPrivateObjectData) {
-		super();
-	}
-
-	getPrivacyType(): DrivePrivacy {
-		return 'private';
-	}
-}
-
 export abstract class ArFSDriveMetaDataPrototype {
 	abstract driveName: string;
 	abstract rootFolderId: string;
 	abstract unixTime: number;
 	abstract driveId: string;
-	abstract signer: ArFSDriveSigner;
+	abstract privacy: DrivePrivacy;
+	abstract cipher: CipherType;
+	abstract cipherIV: CipherIV;
+	abstract driveAuthMode: DriveAuthMode;
 
 	addTagsToTransaction(transaction: Transaction): void {
 		transaction.addTag('Entity-Type', 'drive');
 		transaction.addTag('Unix-Time', this.unixTime.toString());
 		transaction.addTag('Drive-Id', this.driveId);
-		transaction.addTag('Drive-Privacy', this.signer.getPrivacyType());
+		transaction.addTag('Drive-Privacy', this.privacy);
 	}
 }
 
 export class ArFSPublicDriveMetaDataPrototype extends ArFSDriveMetaDataPrototype {
+	readonly cipher: never;
+	readonly cipherIV: never;
+	readonly driveAuthMode: never;
+	readonly privacy = 'public' as const;
+
 	constructor(
 		readonly driveName: string,
 		readonly rootFolderId: string,
 		readonly unixTime: number,
-		readonly driveId: string,
-		readonly signer: ArFSDriveSigner
+		readonly driveId: string
 	) {
 		super();
 	}
@@ -66,24 +48,26 @@ export class ArFSPublicDriveMetaDataPrototype extends ArFSDriveMetaDataPrototype
 }
 
 export class ArFSPrivateDriveMetaDataPrototype extends ArFSDriveMetaDataPrototype {
+	readonly driveAuthMode: DriveAuthMode = 'password';
+	readonly privacy = 'private' as const;
+
 	constructor(
 		readonly driveName: string,
 		readonly rootFolderId: string,
 		readonly unixTime: number,
 		readonly driveId: string,
-		readonly signer: ArFSDriveSigner
+		readonly cipher: CipherType,
+		readonly cipherIV: CipherIV
 	) {
 		super();
 	}
 
 	addTagsToTransaction(transaction: Transaction): void {
 		super.addTagsToTransaction(transaction);
-		// TODO: Do we even need the signer class?
-		const signer = this.signer as ArFSPrivateDriveSigner;
 		transaction.addTag('Content-Type', 'application/octet-stream');
-		transaction.addTag('Cipher', signer.privacyData.cipher);
-		transaction.addTag('Cipher-IV', signer.privacyData.cipherIV);
-		transaction.addTag('Drive-Auth-Mode', signer.privacyData.driveAuthMode);
+		transaction.addTag('Cipher', this.cipher);
+		transaction.addTag('Cipher-IV', this.cipherIV);
+		transaction.addTag('Drive-Auth-Mode', this.driveAuthMode);
 	}
 }
 
@@ -117,13 +101,7 @@ export class ArFSDAO {
 		// TODO: CREATE A ROOT FOLDER METADATA TRANSACTION AND USE ROOT FOLDER ID IN FIXMEJSON BELOW!
 
 		// Create a drive metadata transaction
-		const driveMetaData = new ArFSPublicDriveMetaDataPrototype(
-			driveName,
-			'FIXME',
-			unixTime,
-			driveId,
-			new ArFSPublicDriveSigner()
-		);
+		const driveMetaData = new ArFSPublicDriveMetaDataPrototype(driveName, 'FIXME', unixTime, driveId);
 		const driveTrx = this.prepareArFSDriveTransaction('FIXMEJSON', driveMetaData);
 
 		// eslint-disable-next-line no-console
