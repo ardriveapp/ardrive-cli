@@ -1,5 +1,5 @@
 //import { v4 as uuidv4 } from 'uuid';
-import { ArFSDAO, ArFSPublicDriveMetaDataPrototype } from './arfsdao';
+import { ArFSDAO } from './arfsdao';
 
 export type ArFSEntityDataType = 'drive' | 'folder';
 export type ArFSTipType = 'drive' | 'folder';
@@ -17,7 +17,7 @@ export interface ArFSTipData {
 	winston: number; // TODO: make a type that checks validity
 }
 
-export type ArFSFees = [string: number][];
+export type ArFSFees = { [key: string]: number };
 
 export interface CreateDriveResult {
 	created: ArFSEntityData[];
@@ -33,28 +33,26 @@ export class ArDrive {
 		const { driveTrx, rootFolderTrx, driveId, rootFolderId } = await this.arFsDao.createPublicDrive(driveName);
 
 		// IN THE FUTURE WE'LL SEND A COMMUNITY TIP HERE
-		return Promise.resolve(
-			JSON.parse(`
-		created: [
-			{
-			  type: "drive",
-			  metadataTxId: "${driveTrx.id}",
-			  entityId: "${driveId}",
-			  key: ""
-			},
-			{
-			  type: "folder",
-			  metadataTxId: "${rootFolderTrx.id}",
-			  entityId: "${rootFolderId}",
-			  key: ""
+		return Promise.resolve({
+			created: [
+				{
+					type: 'drive',
+					metadataTxId: driveTrx.id,
+					entityId: driveId,
+					key: ''
+				},
+				{
+					type: 'folder',
+					metadataTxId: rootFolderTrx.id,
+					entityId: rootFolderId,
+					key: ''
+				}
+			],
+			tips: [],
+			fees: {
+				[driveTrx.id]: +driveTrx.reward,
+				[rootFolderTrx.id]: +rootFolderTrx.reward
 			}
-		  ],
-		  tips: [],
-		  fees: {
-			"${driveTrx.id}": ${driveTrx.reward},
-			"${rootFolderTrx.id}": ${rootFolderTrx.reward}
-		  }
-		`)
-		);
+		});
 	}
 }

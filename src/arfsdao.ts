@@ -5,12 +5,10 @@ import Transaction from 'arweave/node/lib/transaction';
 import {
 	ArFSEncryptedData,
 	CipherType,
-	createDataUploader,
 	deriveDriveKey,
 	DriveAuthMode,
 	driveEncrypt,
 	DrivePrivacy,
-	encryptFileOrFolderData,
 	fileEncrypt,
 	GQLTagInterface,
 	JWKInterface
@@ -38,8 +36,6 @@ export class ArFSPublicDriveData implements ArFSObjectTransactionData {
 
 export class ArFSPrivateDriveData implements ArFSObjectTransactionData {
 	private constructor(
-		//readonly name: string,
-		//readonly rootFolderId: FolderID,
 		readonly cipher: CipherType,
 		readonly cipherIV: CipherIV,
 		readonly encryptedDriveData: Buffer,
@@ -63,7 +59,7 @@ export class ArFSPrivateDriveData implements ArFSObjectTransactionData {
 				})
 			)
 		);
-		return new ArFSPrivateDriveData(/*name, rootFolderId,*/ cipher, cipherIV, data);
+		return new ArFSPrivateDriveData(cipher, cipherIV, data);
 	}
 
 	asTransactionData(): string | Buffer {
@@ -87,8 +83,6 @@ export abstract class ArFSObjectMetadataPrototype {
 }
 
 export abstract class ArFSDriveMetaDataPrototype extends ArFSObjectMetadataPrototype {
-	//abstract driveName: string;
-	//abstract rootFolderId: string;
 	abstract unixTime: number;
 	abstract driveId: string;
 	abstract objectData: ArFSObjectTransactionData;
@@ -117,14 +111,6 @@ export class ArFSPublicDriveMetaDataPrototype extends ArFSDriveMetaDataPrototype
 		super();
 	}
 
-	/*get driveName(): string {
-		return this.driveData.name;
-	}
-
-	get rootFolderId(): FolderID {
-		return this.driveData.rootFolderId;
-	}*/
-
 	addTagsToTransaction(transaction: Transaction): void {
 		super.addTagsToTransaction(transaction);
 		transaction.addTag('Content-Type', 'application/json');
@@ -134,13 +120,7 @@ export class ArFSPublicDriveMetaDataPrototype extends ArFSDriveMetaDataPrototype
 export class ArFSPrivateDriveMetaDataPrototype extends ArFSDriveMetaDataPrototype {
 	readonly privacy: DrivePrivacy = 'private';
 
-	constructor(
-		//readonly driveName: string,
-		//readonly rootFolderId: string,
-		readonly unixTime: number,
-		readonly driveId: string,
-		readonly objectData: ArFSPrivateDriveData
-	) {
+	constructor(readonly unixTime: number, readonly driveId: string, readonly objectData: ArFSPrivateDriveData) {
 		super();
 	}
 
@@ -195,8 +175,6 @@ export class ArFSPrivateFolderData implements ArFSObjectTransactionData {
 }
 
 export abstract class ArFSFolderMetaDataPrototype extends ArFSObjectMetadataPrototype {
-	//abstract folderName: string;
-	//abstract rootFolderId: string;
 	abstract unixTime: number;
 	abstract driveId: DriveID;
 	abstract folderId: FolderID;
@@ -237,14 +215,6 @@ export class ArFSPublicFolderMetaDataPrototype extends ArFSFolderMetaDataPrototy
 	get protectedTags(): string[] {
 		return ['Content-Type', ...super.protectedTags];
 	}
-
-	/*get folderName(): string {
-		return this.folderData.name;
-	}
-
-	get rootFolderId(): FolderID {
-		return this.folderData.rootFolderId;
-	}*/
 
 	addTagsToTransaction(transaction: Transaction): void {
 		super.addTagsToTransaction(transaction);
@@ -293,17 +263,14 @@ export type ArFSCreateDriveResult = {
 
 export class ArFSDAO {
 	// TODO: Can we abstract Arweave type(s)?
-	constructor(private readonly wallet: Wallet, private readonly arweave: Arweave) {
-		// eslint-disable-next-line no-console
-		console.log(this.wallet, arweave);
-	}
+	constructor(private readonly wallet: Wallet, private readonly arweave: Arweave) {}
 
 	// TODO: RETURN ALL TRANSACTION DATA
 	async createPublicDrive(driveName: string): Promise<ArFSCreateDriveResult> {
 		// Generate a new drive ID  for the new drive
 		const driveId = uuidv4();
 
-		// Generate a root folder ID for the new drive
+		// Generate a folder ID for the new drive's root folder
 		const rootFolderId = uuidv4();
 
 		// Get the current time so the app can display the "created" data later on
@@ -326,15 +293,9 @@ export class ArFSDAO {
 		);
 		const rootFolderTrx = await this.prepareArFSObjectTransaction(rootFolderMetadata);
 
-		// eslint-disable-next-line no-console
-		console.log(rootFolderId, unixTime);
-
-		// eslint-disable-next-line no-console
-		console.log(driveName, driveId);
-
-		// Create the File Uploader object
-		const driveUploader = await createDataUploader(driveTrx);
-		const folderUploader = await createDataUploader(rootFolderTrx);
+		// Create the Drive and Folder Uploader objects
+		const driveUploader = await this.arweave.transactions.getUploader(driveTrx);
+		const folderUploader = await this.arweave.transactions.getUploader(rootFolderTrx);
 
 		// Execute the uploads
 		while (!driveUploader.isComplete) {

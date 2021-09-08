@@ -33,7 +33,7 @@ program
 		• Can't be used with --wallet-file`
 	)
 	.option('-n, --drive-name [name]', `the name for the new drive`)
-	.action((options) => {
+	.action(async (options) => {
 		// Enforce -w OR -s but not both
 		if (
 			(options.walletFile != null && options.seedPhrase != null) ||
@@ -43,16 +43,6 @@ program
 			process.exit(1);
 		}
 
-		// TODO: REMOVE
-		if (options.walletFile != null) {
-			console.log(`Wallet file lives at ${options.walletFile}`);
-		}
-
-		if (options.seedPhrase != null) {
-			console.log(`Seed phrase is ${options.seedPhrase}`);
-		}
-
-		// TODO: GET WALLET DATA
 		// TODO: Export convert seed phrase to wallet
 
 		const walletFileData = fs.readFileSync(options.walletFile, { encoding: 'utf8', flag: 'r' });
@@ -67,22 +57,8 @@ program
 			timeout: 600000
 		});
 		const ardrive = new ArDrive(new ArFSDAO(wallet, arweave));
-		ardrive.createPublicDrive(options.driveName);
-
-		/* STEPS:
-			• Generate a drive ID (auto gen)
-			• Create a drive key (drive ID + wallet privkey)
-			• Create a drive metadata TX
-			• Create a root folder metadata TX
-			• EVENTUALLY - Create community tip TX
-		*/
-		/*try {
-  if (fs.existsSync(path)) {
-    //file exists
-  }
-} catch(err) {
-  console.error(err)
-}*/
+		const createDriveResult = await ardrive.createPublicDrive(options.driveName);
+		console.log(JSON.stringify(createDriveResult, null, 4));
 
 		process.exit(0);
 	});
@@ -106,7 +82,6 @@ program
 		const walletDao = new WalletDAO(arweave);
 
 		if (options.walletFile != null) {
-			console.log(`Wallet file lives at ${options.walletFile}`);
 			const walletFileData = fs.readFileSync(options.walletFile, { encoding: 'utf8', flag: 'r' });
 			const walletJSON = JSON.parse(walletFileData);
 			const walletJWK = walletJSON as JWKInterface;
@@ -125,6 +100,28 @@ program
 	});
 
 program
+	.command('get-address')
+	.option(
+		'-w, --wallet-file [path_to_jwk_file]',
+		`the path to a JWK file on the file system
+			• Can't be used with --seed-phrase`
+	)
+	.action(async (options) => {
+		if (options.walletFile != null) {
+			const walletFileData = fs.readFileSync(options.walletFile, { encoding: 'utf8', flag: 'r' });
+			const walletJSON = JSON.parse(walletFileData);
+			const walletJWK = walletJSON as JWKInterface;
+			const wallet = new JWKWallet(walletJWK);
+			const walletAddress = await wallet.getAddress();
+			console.log(walletAddress);
+			process.exit(0);
+		} else {
+			console.log('MISSING WALLET FILE!');
+			process.exit(1);
+		}
+	});
+
+program
 	.command('send-ar')
 	.requiredOption('-a, --ar-amount <ar amount>', 'required: amount of AR to send')
 	.requiredOption('-d, --dest-address <destination wallet address>', 'required: destination wallet address')
@@ -134,9 +131,7 @@ program
 			• Can't be used with --seed-phrase`
 	)
 	.action(async (options) => {
-		if (options.walletFile != null) {
-			console.log(`Wallet file lives at ${options.walletFile}`);
-		} else {
+		if (!options.walletFile) {
 			console.log('MISSING WALLET FILE!');
 			process.exit(1);
 		}
@@ -211,8 +206,8 @@ program.parse(process.argv);
 
 // Process command line inputs
 const opts = program.opts();
-console.log(`opts: ${Object.getOwnPropertyNames(opts)}`);
-console.log(`commands: ${program.commands}`);
+//console.log(`opts: ${Object.getOwnPropertyNames(opts)}`);
+//console.log(`commands: ${program.commands}`);
 if (Object.getOwnPropertyNames(opts).length === 0 && Object.getOwnPropertyNames(program.arguments).length === 0) {
 	console.log('TODO: Show help');
 	//showHelp();
