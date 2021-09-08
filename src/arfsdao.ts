@@ -9,6 +9,8 @@ import {
 	DriveAuthMode,
 	driveEncrypt,
 	DrivePrivacy,
+	encryptFileOrFolderData,
+	fileEncrypt,
 	GQLTagInterface,
 	JWKInterface
 } from 'ardrive-core-js';
@@ -175,7 +177,7 @@ export class ArFSPrivateFolderData implements ArFSObjectTransactionData {
 		privateKey: JWKInterface
 	): Promise<ArFSPrivateFolderData> {
 		const driveKey: Buffer = await deriveDriveKey(drivePassword, driveId, JSON.stringify(privateKey));
-		const { cipher, cipherIV, data }: ArFSEncryptedData = await driveEncrypt(
+		const { cipher, cipherIV, data }: ArFSEncryptedData = await fileEncrypt(
 			driveKey,
 			Buffer.from(
 				JSON.stringify({
