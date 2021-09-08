@@ -11,6 +11,16 @@ import Arweave from 'arweave';
 
 /* eslint-disable no-console */
 
+const arweave = Arweave.init({
+	host: 'arweave.net', // Arweave Gateway
+	//host: 'arweave.dev', // Arweave Dev Gateway
+	port: 443,
+	protocol: 'https',
+	timeout: 600000
+});
+
+const walletDao = new WalletDAO(arweave);
+
 // Utility for parsing command line options
 const program = new Command();
 
@@ -34,28 +44,26 @@ program
 	)
 	.option('-n, --drive-name [name]', `the name for the new drive`)
 	.action(async (options) => {
-		// Enforce -w OR -s but not both
-		if (
-			(options.walletFile != null && options.seedPhrase != null) ||
-			(options.walletFile == null && options.seedPhrase == null)
-		) {
-			console.log('Choose --wallet-file OR --seed-phrase, but not both.');
-			process.exit(1);
-		}
+		const wallet: Wallet = await (async function () {
+			// Enforce -w OR -s but not both
+			if (!!options.walletFile === !!options.seedPhrase) {
+				// Enters this condition if none or both has data
+				console.log('Choose --wallet-file OR --seed-phrase, but not both.');
+				process.exit(1);
+			}
+
+			if (options.walletFile) {
+				const walletFileData = fs.readFileSync(options.walletFile, { encoding: 'utf8', flag: 'r' });
+				const walletJSON = JSON.parse(walletFileData);
+				const walletJWK: JWKInterface = walletJSON as JWKInterface;
+				return new JWKWallet(walletJWK);
+			} else {
+				return await walletDao.generateJWKWallet(options.seed);
+			}
+		})();
 
 		// TODO: Export convert seed phrase to wallet
 
-		const walletFileData = fs.readFileSync(options.walletFile, { encoding: 'utf8', flag: 'r' });
-		const walletJSON = JSON.parse(walletFileData);
-		const walletJWK = walletJSON as JWKInterface;
-		const wallet: Wallet = new JWKWallet(walletJWK);
-		const arweave = Arweave.init({
-			host: 'arweave.net', // Arweave Gateway
-			//host: 'arweave.dev', // Arweave Dev Gateway
-			port: 443,
-			protocol: 'https',
-			timeout: 600000
-		});
 		const ardrive = new ArDrive(new ArFSDAO(wallet, arweave));
 		const createDriveResult = await ardrive.createPublicDrive(options.driveName);
 		console.log(JSON.stringify(createDriveResult, null, 4));
@@ -72,15 +80,6 @@ program
 	)
 	.option('-a, --address <Arweave wallet address>', 'get the balance of this Arweave wallet address')
 	.action(async (options) => {
-		const arweave = Arweave.init({
-			host: 'arweave.net', // Arweave Gateway
-			//host: 'arweave.dev', // Arweave Dev Gateway
-			port: 443,
-			protocol: 'https',
-			timeout: 600000
-		});
-		const walletDao = new WalletDAO(arweave);
-
 		if (options.walletFile != null) {
 			const walletFileData = fs.readFileSync(options.walletFile, { encoding: 'utf8', flag: 'r' });
 			const walletJSON = JSON.parse(walletFileData);
@@ -142,16 +141,8 @@ program
 		const wallet = new JWKWallet(walletJWK);
 		const walletAddress = await wallet.getAddress();
 		console.log(walletAddress);
-		const arweave = Arweave.init({
-			host: 'arweave.net', // Arweave Gateway
-			//host: 'arweave.dev', // Arweave Dev Gateway
-			port: 443,
-			protocol: 'https',
-			timeout: 600000
-		});
 		console.log(`arAmount: ${options.arAmount}`);
 		console.log(`destAddress: ${options.destAddress}`);
-		const walletDao = new WalletDAO(arweave);
 		console.log(await walletDao.getAddressWinstonBalance(options.destAddress));
 		console.log(
 			JSON.stringify(
@@ -169,14 +160,6 @@ program
 	});
 
 program.command('generate-seedphrase').action(async () => {
-	const arweave = Arweave.init({
-		host: 'arweave.net', // Arweave Gateway
-		//host: 'arweave.dev', // Arweave Dev Gateway
-		port: 443,
-		protocol: 'https',
-		timeout: 600000
-	});
-	const walletDao = new WalletDAO(arweave);
 	const seedPhrase = await walletDao.generateSeedPhrase();
 	console.log(JSON.stringify(seedPhrase));
 	process.exit(0);
@@ -189,14 +172,6 @@ program
 		if (!options.seed) {
 			throw new Error('Missing required seed phrase');
 		}
-		const arweave = Arweave.init({
-			host: 'arweave.net', // Arweave Gateway
-			//host: 'arweave.dev', // Arweave Dev Gateway
-			port: 443,
-			protocol: 'https',
-			timeout: 600000
-		});
-		const walletDao = new WalletDAO(arweave);
 		const wallet = await walletDao.generateJWKWallet(options.seed);
 		console.log(JSON.stringify(wallet));
 		process.exit(0);

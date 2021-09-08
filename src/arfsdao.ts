@@ -75,7 +75,7 @@ export abstract class ArFSObjectMetadataPrototype {
 	// Implementation should throw if any protected tags are identified
 	assertProtectedTags(tags: GQLTagInterface[]): void {
 		tags.forEach((tag) => {
-			if (this.protectedTags.indexOf(tag.name) != -1) {
+			if (this.protectedTags.includes(tag.name)) {
 				throw new Error(`Tag ${tag.name} is protected and cannot be used in this context!`);
 			}
 		});
