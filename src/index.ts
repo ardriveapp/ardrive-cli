@@ -44,22 +44,23 @@ program
 	)
 	.option('-n, --drive-name [name]', `the name for the new drive`)
 	.action(async (options) => {
-		let wallet: Wallet;
-		// Enforce -w OR -s but not both
-		if (!!options.walletFile === !!options.seedPhrase) {
-			// Enters this condition if none or both has data
-			console.log('Choose --wallet-file OR --seed-phrase, but not both.');
-			process.exit(1);
-		} else {
+		const wallet: Wallet = await (async function () {
+			// Enforce -w OR -s but not both
+			if (!!options.walletFile === !!options.seedPhrase) {
+				// Enters this condition if none or both has data
+				console.log('Choose --wallet-file OR --seed-phrase, but not both.');
+				process.exit(1);
+			}
+
 			if (options.walletFile) {
 				const walletFileData = fs.readFileSync(options.walletFile, { encoding: 'utf8', flag: 'r' });
 				const walletJSON = JSON.parse(walletFileData);
 				const walletJWK: JWKInterface = walletJSON as JWKInterface;
-				wallet = new JWKWallet(walletJWK);
+				return new JWKWallet(walletJWK);
 			} else {
-				wallet = await walletDao.generateJWKWallet(options.seed);
+				return await walletDao.generateJWKWallet(options.seed);
 			}
-		}
+		})();
 
 		// TODO: Export convert seed phrase to wallet
 
