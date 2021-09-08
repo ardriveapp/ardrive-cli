@@ -45,10 +45,8 @@ program
 	.option('-n, --drive-name [name]', `the name for the new drive`)
 	.action(async (options) => {
 		// Enforce -w OR -s but not both
-		if (
-			(options.walletFile != null && options.seedPhrase != null) ||
-			(options.walletFile == null && options.seedPhrase == null)
-		) {
+		if (!!options.walletFile === !!options.seedPhrase) {
+			// Enters this condition if none or both has data
 			console.log('Choose --wallet-file OR --seed-phrase, but not both.');
 			process.exit(1);
 		}
