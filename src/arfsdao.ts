@@ -610,7 +610,7 @@ export class ArFSDAO {
 			tags: [
 			  { name: "Drive-Id", values: "${driveId}" }
 			  { name: "Entity-Type", values: "drive" }
-			  { name: "Drive-Privacy", values: "public" }])
+			  { name: "Drive-Privacy", values: "public" }
 			]
 		  ) {
 			edges {
@@ -625,6 +625,7 @@ export class ArFSDAO {
 		  }
 		}`
 		};
+
 		const response = await this.arweave.api.post(graphQLURL, query);
 		const { data } = response.data;
 		const { transactions } = data;
