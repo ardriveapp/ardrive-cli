@@ -14,7 +14,8 @@ import {
 	fileEncrypt,
 	GQLEdgeInterface,
 	GQLTagInterface,
-	JWKInterface
+	JWKInterface,
+	Utf8ArrayToStr
 } from 'ardrive-core-js';
 
 export const ArFS_O_11 = '0.11';
@@ -151,9 +152,13 @@ export class ArFSPublicFolderData implements ArFSObjectTransactionData {
 }
 
 export class ArFSPublicFileData implements ArFSObjectTransactionData {
-	constructor(readonly data: Buffer) {}
-	asTransactionData(): Buffer {
-		return this.data;
+	constructor(readonly data: Buffer, readonly name: string) {}
+
+	asTransactionData(): string | Buffer {
+		return JSON.stringify({
+			name: this.name,
+			data: this.data
+		});
 	}
 }
 
@@ -344,8 +349,6 @@ export class ArFSDAO {
 		driveId: DriveID,
 		parentFolderId?: FolderID
 	): Promise<ArFSCreateFolderResult> {
-		// TODO: If no parent folder ID make sure no root folder ID already exists
-
 		// Generate a new folder ID
 		const folderId = uuidv4();
 
@@ -489,7 +492,7 @@ export class ArFSDAO {
 		const unixTime = Math.round(Date.now() / 1000);
 
 		const fileMetadata = new ArFSPublicFileMetaDataPrototype(
-			new ArFSPublicFileData(fileData),
+			new ArFSPublicFileData(fileData, 'FIXME'),
 			unixTime,
 			driveId,
 			fileId,
@@ -667,6 +670,15 @@ export class ArFSDAO {
 			// Get the drives transaction ID
 			drive.txId = node.id;
 		});
+
+		const txData = await this.arweave.transactions.getData(drive.txId, { decode: true });
+		const dataString = await Utf8ArrayToStr(txData);
+		const dataJSON = await JSON.parse(dataString);
+
+		// Get the drive name and root folder id
+		drive.name = dataJSON.name;
+		drive.rootFolderId = dataJSON.rootFolderId;
+
 		return drive;
 	}
 }
