@@ -185,6 +185,7 @@ program.command('generate-seedphrase').action(async () => {
 program
 	.command('generate-wallet')
 	.requiredOption('-s, --seed <seed>', 'The previously generated mnemonic seed phrase')
+	// TODO: Add --out flag for wallet destination output
 	.action(async (options) => {
 		if (!options.seed) {
 			throw new Error('Missing required seed phrase');
