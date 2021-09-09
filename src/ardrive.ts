@@ -56,7 +56,7 @@ export class ArDrive {
 	async createPublicFolder(
 		folderName: string,
 		driveId: string,
-		parentFolderId: FolderID
+		parentFolderId?: FolderID
 	): Promise<CreateDriveResult> {
 		// TODO: Fetch drive ID for parent folder ID
 

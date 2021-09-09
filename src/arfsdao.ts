@@ -340,8 +340,24 @@ export class ArFSDAO {
 		driveId: DriveID,
 		parentFolderId?: FolderID
 	): Promise<ArFSCreateFolderResult> {
+		// TODO: If no parent folder ID make sure no root folder ID already exists
+
 		// Generate a new folder ID
 		const folderId = uuidv4();
+
+		// if (!parentFolderId) {
+
+		// 	// Check if drive has root folder
+
+		// 	// If not create it
+
+		// 	// otherwise its a new folder on the root level
+
+		// 	// TODO:
+
+		// } else {
+
+		// }
 
 		// Get the current time so the app can display the "created" data later on
 		const unixTime = Math.round(Date.now() / 1000);
@@ -451,6 +467,7 @@ export class ArFSDAO {
 
 		return { driveTrx, rootFolderTrx, driveId, rootFolderId, driveKey };
 	}
+
 	async uploadPublicFile(
 		parentFolderId: string,
 		filePath: string,
