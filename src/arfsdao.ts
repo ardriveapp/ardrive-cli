@@ -482,7 +482,6 @@ export class ArFSDAO {
 	async uploadPublicFile(
 		parentFolderId: string,
 		filePath: string,
-		driveId: DriveID,
 		destFileName?: string
 	): Promise<ArFSUploadFileResult> {
 		const fileData = fs.readFileSync(filePath);
@@ -490,6 +489,8 @@ export class ArFSDAO {
 		const fileId = uuidv4();
 
 		const unixTime = Math.round(Date.now() / 1000);
+
+		const driveId = await this.getDriveIdForFolderId(parentFolderId);
 
 		const fileMetadata = new ArFSPublicFileMetaDataPrototype(
 			new ArFSPublicFileData(fileData, 'FIXME'),

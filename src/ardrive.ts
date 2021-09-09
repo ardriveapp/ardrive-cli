@@ -33,8 +33,12 @@ export interface CreateDriveResult {
 export class ArDrive {
 	constructor(private readonly arFsDao: ArFSDAO) {}
 
-	async uploadFile(parentFolderId: string, filePath: string, driveId: string): Promise<CreateDriveResult> {
-		const { fileId, fileTrx } = await this.arFsDao.uploadPublicFile(parentFolderId, filePath, driveId);
+	async uploadPublicFile(
+		parentFolderId: string,
+		filePath: string,
+		destinationFileName: string
+	): Promise<CreateDriveResult> {
+		const { fileId, fileTrx } = await this.arFsDao.uploadPublicFile(parentFolderId, filePath, destinationFileName);
 
 		return Promise.resolve({
 			created: [
