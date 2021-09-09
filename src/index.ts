@@ -32,6 +32,70 @@ program.option('-h, --help', 'Get help');
 program.addHelpCommand(false);
 
 program
+	.command('create-folder')
+	.requiredOption('-n, --folder-name [name]', `a destination folder name to use when uploaded to ArDrive`)
+	.requiredOption('-d, --drive-id [drive id]', `a destination drive id to create folder within`)
+	.option(
+		'-p, --parent-folder-id <parent folder id>',
+		`the ArFS folder ID for the folder in which
+		this folder will reside (i.e. its parent folder)
+		• If no parent folder is supplied, the folder will become a subfolder of the root folder`
+	)
+	.option(
+		'-w, --wallet-file [path_to_jwk_file]',
+		`the path to a JWK file on the file system
+	• Can't be used with --seed-phrase`
+	)
+	.option(
+		'-s, --seed-phrase [12-word seed phrase]',
+		`a 12-word seed phrase representing a JWK
+		• Can't be used with --wallet-file`
+	)
+	.option(
+		'-p, --drive-password <drive password>',
+		`the encryption password for the private drive (OPTIONAL)
+		• When provided, creates the drive as a private drive. Public drive otherwise.`
+	)
+	.option(
+		'-k, --drive-key <drive key>',
+		`the drive key for the parent drive of the folder identified by --parent-folder-id
+		• Required only for files residing in private drives
+		• Can NOT be used in conjunction with --drive-password`
+	)
+	.action(async (options) => {
+		const wallet: Wallet = await (async function () {
+			// Enforce -w OR -s but not both
+			if (!!options.walletFile === !!options.seedPhrase) {
+				// Enters this condition if none or both has data
+				console.log('Choose --wallet-file OR --seed-phrase, but not both.');
+				process.exit(1);
+			}
+
+			if (options.walletFile) {
+				const walletFileData = fs.readFileSync(options.walletFile, { encoding: 'utf8', flag: 'r' });
+				const walletJSON = JSON.parse(walletFileData);
+				const walletJWK: JWKInterface = walletJSON as JWKInterface;
+				return new JWKWallet(walletJWK);
+			} else {
+				return await walletDao.generateJWKWallet(options.seed);
+			}
+		})();
+
+		const { folderName, driveId, parentFolderId } = options;
+
+		// TODO: Export convert seed phrase to wallet
+
+		const ardrive = new ArDrive(new ArFSDAO(wallet, arweave));
+		const createFolderResult = await (async function () {
+			return ardrive.createPublicFolder(folderName, driveId, parentFolderId);
+		})();
+
+		console.log(JSON.stringify(createFolderResult, null, 4));
+
+		process.exit(0);
+	});
+
+program
 	.command('create-drive')
 	.option(
 		'-w, --wallet-file [path_to_jwk_file]',
@@ -426,7 +490,7 @@ rename-file:
 create-folder:
 	--parent-folder-id: the ArFS folder ID for the folder in which this folder will reside (i.e. its parent folder)
 	• To upload the folder to the root of a drive, use the root folder ID of the drive
-	--folder-name: (OPTIONAL) a destination file name to use when uploaded to ArDrive
+	--folder-name: a destination file name to use when uploaded to ArDrive
 	--drive-password: the drive password for the parent drive of the folder identified by --parent-folder-id
 	• Required only for files residing in private drives
 	• Can NOT be used in conjunction with --drive-key
