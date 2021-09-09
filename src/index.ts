@@ -207,8 +207,8 @@ program.command('get-mempool').action(async () => {
 });
 
 program
-	.command('trx-status')
-	.requiredOption('-t, --transaction-id <trxId>', 'The transaction id to check the status of in the mempool')
+	.command('tx-status')
+	.requiredOption('-t, --transaction-id <txId>', 'The transaction id to check the status of in the mempool')
 	.action(async ({ transactionId }) => {
 		if (!transactionId) {
 			console.log(transactionId);
