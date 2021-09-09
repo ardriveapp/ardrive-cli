@@ -1,11 +1,10 @@
-// import * as fs from 'fs';
+import * as fs from 'fs';
 import type { JWKWallet, Wallet } from './wallet_new';
 import Arweave from 'arweave';
 import { v4 as uuidv4 } from 'uuid';
 import Transaction from 'arweave/node/lib/transaction';
 import {
 	ArFSEncryptedData,
-	// ArFSFileData,
 	CipherType,
 	deriveDriveKey,
 	DriveAuthMode,
@@ -147,14 +146,12 @@ export class ArFSPublicFolderData implements ArFSObjectTransactionData {
 	}
 }
 
-// export class ArFSPublicFileData implements ArFSObjectTransactionData {
-// 	constructor(readonly name: string) {}
-// 	asTransactionData(): string | Buffer {
-// 		return JSON.stringify({
-// 			name: this.name
-// 		});
-// 	}
-// }
+export class ArFSPublicFileData implements ArFSObjectTransactionData {
+	constructor(readonly data: Buffer) {}
+	asTransactionData(): Buffer {
+		return this.data;
+	}
+}
 
 export class ArFSPrivateFolderData implements ArFSObjectTransactionData {
 	private constructor(
@@ -260,50 +257,50 @@ export class ArFSPrivateFolderMetaDataPrototype extends ArFSFolderMetaDataProtot
 	}
 }
 
-// export abstract class ArFSFileMetaDataPrototype extends ArFSObjectMetadataPrototype {
-// 	abstract unixTime: number;
-// 	abstract driveId: DriveID;
-// 	abstract fileId: FileID;
-// 	abstract objectData: ArFSObjectTransactionData;
-// 	abstract parentFolderId: FolderID;
-// 	abstract readonly privacy: DrivePrivacy;
+export abstract class ArFSFileMetaDataPrototype extends ArFSObjectMetadataPrototype {
+	abstract unixTime: number;
+	abstract driveId: DriveID;
+	abstract fileId: FileID;
+	abstract objectData: ArFSObjectTransactionData;
+	abstract parentFolderId: FolderID;
+	abstract readonly privacy: DrivePrivacy;
 
-// 	get protectedTags(): string[] {
-// 		return ['Entity-Type', 'Unix-Time', 'Drive-Id', 'File-Id', 'Drive-Privacy', 'Parent-Folder-Id'];
-// 	}
+	get protectedTags(): string[] {
+		return ['Entity-Type', 'Unix-Time', 'Drive-Id', 'File-Id', 'Drive-Privacy', 'Parent-Folder-Id'];
+	}
 
-// 	addTagsToTransaction(transaction: Transaction): void {
-// 		transaction.addTag('Entity-Type', 'file');
-// 		transaction.addTag('Unix-Time', this.unixTime.toString());
-// 		transaction.addTag('Drive-Id', this.driveId);
-// 		transaction.addTag('File-Id', this.fileId);
-// 		transaction.addTag('Drive-Privacy', this.privacy);
-// 		transaction.addTag('Parent-Folder-Id', this.parentFolderId);
-// 	}
-// }
+	addTagsToTransaction(transaction: Transaction): void {
+		transaction.addTag('Entity-Type', 'file');
+		transaction.addTag('Unix-Time', this.unixTime.toString());
+		transaction.addTag('Drive-Id', this.driveId);
+		transaction.addTag('File-Id', this.fileId);
+		transaction.addTag('Drive-Privacy', this.privacy);
+		transaction.addTag('Parent-Folder-Id', this.parentFolderId);
+	}
+}
 
-// export class ArFSPublicFileMetaDataPrototype extends ArFSFileMetaDataPrototype {
-// 	readonly privacy: DrivePrivacy = 'public';
+export class ArFSPublicFileMetaDataPrototype extends ArFSFileMetaDataPrototype {
+	readonly privacy: DrivePrivacy = 'public';
 
-// 	constructor(
-// 		readonly objectData: ArFSPublicFileData,
-// 		readonly unixTime: number,
-// 		readonly driveId: DriveID,
-// 		readonly fileId: FileID,
-// 		readonly parentFolderId: FolderID
-// 	) {
-// 		super();
-// 	}
+	constructor(
+		readonly objectData: ArFSPublicFileData,
+		readonly unixTime: number,
+		readonly driveId: DriveID,
+		readonly fileId: FileID,
+		readonly parentFolderId: FolderID
+	) {
+		super();
+	}
 
-// 	get protectedTags(): string[] {
-// 		return ['Content-Type', ...super.protectedTags];
-// 	}
+	get protectedTags(): string[] {
+		return ['Content-Type', ...super.protectedTags];
+	}
 
-// 	addTagsToTransaction(transaction: Transaction): void {
-// 		super.addTagsToTransaction(transaction);
-// 		transaction.addTag('Content-Type', 'application/json');
-// 	}
-// }
+	addTagsToTransaction(transaction: Transaction): void {
+		super.addTagsToTransaction(transaction);
+		transaction.addTag('Content-Type', 'application/json');
+	}
+}
 
 // TODO: Extend rather than union type?
 export type ArFSDriveMetaData =
@@ -454,25 +451,40 @@ export class ArFSDAO {
 
 		return { driveTrx, rootFolderTrx, driveId, rootFolderId, driveKey };
 	}
-	// async uploadPublicFile(
-	// 	parentFolderId: string,
-	// 	filePath: string,
-	// 	destFileName: string
-	// ): Promise<ArFSUploadFileResult> {
-	// 	const fileData = fs.readFileSync(filePath);
+	async uploadPublicFile(
+		parentFolderId: string,
+		filePath: string,
+		driveId: DriveID,
+		destFileName?: string
+	): Promise<ArFSUploadFileResult> {
+		const fileData = fs.readFileSync(filePath);
 
-	// 	const fileId = uuidv4();
+		const fileId = uuidv4();
 
-	// 	const unixTime = Math.round(Date.now() / 1000);
+		const unixTime = Math.round(Date.now() / 1000);
 
-	// 	// const rootFileMetadata = new ArFSPublicFileMetaDataPrototype(
-	// 	// 	new ArFSPublicFileData(driveName),
-	// 	// 	unixTime,
-	// 	// 	driveId,
-	// 	// 	rootFolderId
-	// 	// );
-	// 	// const rootFolderTrx = await this.prepareArFSObjectTransaction(rootFolderMetadata);
-	// }
+		const fileMetadata = new ArFSPublicFileMetaDataPrototype(
+			new ArFSPublicFileData(fileData),
+			unixTime,
+			driveId,
+			fileId,
+			parentFolderId
+		);
+		const fileTrx = await this.prepareArFSObjectTransaction(fileMetadata);
+
+		// Create the Folder Uploader objects
+		// const fileUploader = await this.arweave.transactions.getUploader(fileTrx);
+
+		// // Execute the uploads
+		// while (!fileUploader.isComplete) {
+		// 	await fileUploader.uploadChunk();
+		// }
+
+		// TODO: Use destFileName?
+		console.log(destFileName);
+
+		return { fileTrx, fileId };
+	}
 
 	async prepareArFSObjectTransaction(
 		objectMetaData: ArFSObjectMetadataPrototype,

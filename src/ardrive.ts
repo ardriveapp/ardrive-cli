@@ -34,11 +34,24 @@ export interface CreateDriveResult {
 export class ArDrive {
 	constructor(private readonly arFsDao: ArFSDAO) {}
 
-	// async uploadFile(parentFolderId: string, filePath: string): Promise<CreateDriveResult> {
-	// 	this.arFsDao.uploadFile(parentFolderId, filePath);
+	async uploadFile(parentFolderId: string, filePath: string, driveId: string): Promise<CreateDriveResult> {
+		const { fileId, fileTrx } = await this.arFsDao.uploadPublicFile(parentFolderId, filePath, driveId);
 
-	// 	return Promise.resolve();
-	// }
+		return Promise.resolve({
+			created: [
+				{
+					type: 'file',
+					metadataTxId: fileTrx.id,
+					entityId: fileId,
+					key: ''
+				}
+			],
+			tips: [],
+			fees: {
+				[fileTrx.id]: +fileTrx.reward
+			}
+		});
+	}
 
 	async createPublicFolder(
 		folderName: string,
