@@ -206,13 +206,6 @@ program.command('get-mempool').action(async () => {
 	process.exit(0);
 });
 
-program.command('mempool-count').action(async () => {
-	const transactionsInMempool = await fetchMempool();
-
-	console.log(`Number of transactions in mempool: ${transactionsInMempool.length}`);
-	process.exit(0);
-});
-
 program
 	.command('trx-status')
 	.requiredOption('-t, --transaction-id <trxId>', 'The transaction id to check the status of in the mempool')
