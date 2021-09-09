@@ -8,6 +8,7 @@ import { ArFSDAO } from './arfsdao';
 import { JWKInterface } from 'ardrive-core-js';
 import { Wallet, JWKWallet, WalletDAO } from './wallet_new';
 import Arweave from 'arweave';
+import fetch from 'node-fetch';
 
 /* eslint-disable no-console */
 
@@ -92,10 +93,7 @@ program
 	.option('-a, --address <Arweave wallet address>', 'get the balance of this Arweave wallet address')
 	.action(async (options) => {
 		if (options.walletFile != null) {
-			const walletFileData = fs.readFileSync(options.walletFile, { encoding: 'utf8', flag: 'r' });
-			const walletJSON = JSON.parse(walletFileData);
-			const walletJWK = walletJSON as JWKInterface;
-			const wallet = new JWKWallet(walletJWK);
+			const wallet = readJWKFile(options.walletFile);
 			const walletAddress = await wallet.getAddress();
 			console.log(walletAddress);
 			console.log(await walletDao.getWalletWinstonBalance(wallet));
@@ -118,10 +116,7 @@ program
 	)
 	.action(async (options) => {
 		if (options.walletFile != null) {
-			const walletFileData = fs.readFileSync(options.walletFile, { encoding: 'utf8', flag: 'r' });
-			const walletJSON = JSON.parse(walletFileData);
-			const walletJWK = walletJSON as JWKInterface;
-			const wallet = new JWKWallet(walletJWK);
+			const wallet = readJWKFile(options.walletFile);
 			const walletAddress = await wallet.getAddress();
 			console.log(walletAddress);
 			process.exit(0);
@@ -184,12 +179,62 @@ program.command('generate-seedphrase').action(async () => {
 program
 	.command('generate-wallet')
 	.requiredOption('-s, --seed <seed>', 'The previously generated mnemonic seed phrase')
+	// TODO: Add --out flag for wallet destination output
 	.action(async (options) => {
 		if (!options.seed) {
 			throw new Error('Missing required seed phrase');
 		}
 		const wallet = await walletDao.generateJWKWallet(options.seed);
 		console.log(JSON.stringify(wallet));
+		process.exit(0);
+	});
+
+async function fetchMempool(): Promise<string[]> {
+	const response = await fetch('https://arweave.net/tx/pending');
+	return response.json();
+}
+
+program.command('get-mempool').action(async () => {
+	const transactionsInMempool = await fetchMempool();
+
+	console.log(JSON.stringify(transactionsInMempool, null, 4));
+	process.exit(0);
+});
+
+program
+	.command('tx-status')
+	.requiredOption('-t, --tx-id <transaction id>', 'The transaction id to check the status of in the mempool')
+	.option(
+		'-c, --confirmations <number of confirmations>',
+		'Number of confirmations to determine if a transaction is mined'
+	)
+	.action(async ({ txId, confirmations }) => {
+		const transactionsInMempool = await fetchMempool();
+		const pending = transactionsInMempool.includes(txId);
+		const confirmationAmount = confirmations ?? 15;
+
+		if (pending) {
+			console.log(`${txId}: Pending`);
+			process.exit(0);
+		}
+
+		const confStatus = (await arweave.transactions.getStatus(txId)).confirmed;
+
+		if (!confStatus?.block_height) {
+			console.log(`${txId}: Not found`);
+			process.exit(1);
+		}
+
+		if (confStatus?.number_of_confirmations >= confirmationAmount) {
+			console.log(
+				`${txId}: Mined at block height ${confStatus.block_height} with ${confStatus.number_of_confirmations} confirmations`
+			);
+		} else {
+			console.log(
+				`${txId}: Confirming at block height ${confStatus.block_height} with ${confStatus.number_of_confirmations} confirmations`
+			);
+		}
+
 		process.exit(0);
 	});
 
