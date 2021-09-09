@@ -194,21 +194,58 @@ program
 		process.exit(0);
 	});
 
+async function fetchMempool(): Promise<string[]> {
+	const response = await fetch('https://arweave.net/tx/pending');
+	return response.json();
+}
+
+program.command('get-mempool').action(async () => {
+	const transactionsInMempool = await fetchMempool();
+
+	console.log(JSON.stringify(transactionsInMempool, null, 4));
+	process.exit(0);
+});
+
+program.command('mempool-count').action(async () => {
+	const transactionsInMempool = await fetchMempool();
+
+	console.log(`Number of transactions in mempool: ${transactionsInMempool.length}`);
+	process.exit(0);
+});
+
 program
-	.command('check-mempool')
-	.requiredOption('-t, --transaction-id <txId>', 'The transaction id to check for in the mempool')
-	.action(async (options) => {
-		if (!options.transactionId) {
-			throw new Error('Missing required transaction id');
+	.command('trx-status')
+	.requiredOption('-t, --transaction-id <trxId>', 'The transaction id to check the status of in the mempool')
+	.action(async ({ transactionId }) => {
+		if (!transactionId) {
+			console.log(transactionId);
+			throw new Error('Missing required transaction idd');
 		}
 
-		const response = await fetch('https://arweave.net/tx/pending');
-		const transactionsInMempool: string[] = await response.json();
-		const isTransactionInMempool = transactionsInMempool.includes(options.transactionId);
+		const transactionsInMempool = await fetchMempool();
+		const pending = transactionsInMempool.includes(transactionId);
 
-		console.log(isTransactionInMempool);
+		const confStatus = (await arweave.transactions.getStatus(transactionId)).confirmed;
+
+		if (pending) {
+			console.log(`${transactionId}: Pending`);
+		} else if (confStatus?.block_height) {
+			if (confStatus?.number_of_confirmations >= 15) {
+				console.log(
+					`${transactionId}: Mined at block height ${confStatus.block_height} with ${confStatus.number_of_confirmations} confirmations`
+				);
+			} else {
+				console.log(
+					`${transactionId}: Confirming at block height ${confStatus.block_height} with ${confStatus.number_of_confirmations} confirmations`
+				);
+			}
+		} else {
+			console.log(`${transactionId}: Not found`);
+		}
+
 		process.exit(0);
 	});
+
 interface UploadFileParameter {
 	parentFolderId: string;
 	localFilePath: string;
