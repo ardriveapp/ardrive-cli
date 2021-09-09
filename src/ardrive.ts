@@ -1,18 +1,18 @@
-import { ArFSDAO, FolderID } from './arfsdao';
+import { ArFSDAO, FolderID, TransactionID } from './arfsdao';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 export type ArFSTipType = 'drive' | 'folder';
 
 export interface ArFSEntityData {
 	type: ArFSEntityDataType;
-	metadataTxId: string; // TODO: make a type that checks lengths
+	metadataTxId: TransactionID; // TODO: make a type that checks lengths
 	key?: string;
 }
 
 // TODO: Is this really in the ArFS domain?
 export interface ArFSTipData {
 	type: ArFSTipType;
-	txId: string; // TODO: make a type that checks lengths
+	txId: TransactionID; // TODO: make a type that checks lengths
 	winston: number; // TODO: make a type that checks validity
 }
 
@@ -36,22 +36,29 @@ export class ArDrive {
 	async uploadPublicFile(
 		parentFolderId: string,
 		filePath: string,
-		destinationFileName: string
+		destinationFileName?: string
 	): Promise<CreateDriveResult> {
-		const { fileId, fileTrx } = await this.arFsDao.uploadPublicFile(parentFolderId, filePath, destinationFileName);
+		const { dataTrx, metaDataTrx, fileId } = await this.arFsDao.uploadPublicFile(
+			parentFolderId,
+			filePath,
+			destinationFileName
+		);
 
+		// TODO: send community tip
 		return Promise.resolve({
 			created: [
 				{
 					type: 'file',
-					metadataTxId: fileTrx.id,
-					entityId: fileId,
-					key: ''
+					metadataTxId: metaDataTrx.id,
+					dataTxId: dataTrx.id,
+					entityId: fileId
 				}
 			],
 			tips: [],
 			fees: {
-				[fileTrx.id]: +fileTrx.reward
+				[metaDataTrx.id]: +metaDataTrx.reward,
+				[dataTrx.id]: +dataTrx.reward
+				// qGr1BIVWQwdPMuQxJ9MmwMM8CBmZTIj9powGxJSZyi0: 344523
 			}
 		});
 	}

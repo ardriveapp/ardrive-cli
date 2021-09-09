@@ -11,12 +11,14 @@ import {
 	DriveAuthMode,
 	driveEncrypt,
 	DrivePrivacy,
+	extToMime,
 	fileEncrypt,
 	GQLEdgeInterface,
 	GQLTagInterface,
 	JWKInterface,
 	Utf8ArrayToStr
 } from 'ardrive-core-js';
+import { basename } from 'path';
 
 export const ArFS_O_11 = '0.11';
 
@@ -25,6 +27,8 @@ export type FolderID = string;
 export type FileID = string;
 export type DriveID = string;
 export type DriveKey = Buffer;
+export type DataContentType = string;
+export type TransactionID = string;
 
 export const graphQLURL = 'https://arweave.net/graphql';
 
@@ -152,13 +156,30 @@ export class ArFSPublicFolderData implements ArFSObjectTransactionData {
 }
 
 export class ArFSPublicFileData implements ArFSObjectTransactionData {
-	constructor(readonly data: Buffer, readonly name: string) {}
+	constructor(
+		readonly name: string,
+		readonly size: number,
+		readonly lastModifiedDate: number,
+		readonly dataTxId: TransactionID,
+		readonly dataContentType: DataContentType
+	) {}
 
 	asTransactionData(): string | Buffer {
 		return JSON.stringify({
 			name: this.name,
-			data: this.data
+			size: this.size,
+			lastModifiedDate: this.lastModifiedDate,
+			dataTxId: this.dataTxId,
+			dataContentType: this.dataContentType
 		});
+	}
+}
+
+export class ArFSFileData implements ArFSObjectTransactionData {
+	constructor(readonly data: Buffer) {}
+
+	asTransactionData(): Buffer {
+		return this.data;
 	}
 }
 
@@ -288,6 +309,20 @@ export abstract class ArFSFileMetaDataPrototype extends ArFSObjectMetadataProtot
 	}
 }
 
+export class ArFSFileDataPrototype extends ArFSObjectMetadataPrototype {
+	constructor(readonly objectData: ArFSFileData, readonly contentType: DataContentType) {
+		super();
+	}
+
+	get protectedTags(): string[] {
+		return ['Content-Type'];
+	}
+
+	addTagsToTransaction(transaction: Transaction): void {
+		transaction.addTag('Content-Type', this.contentType);
+	}
+}
+
 export class ArFSPublicFileMetaDataPrototype extends ArFSFileMetaDataPrototype {
 	readonly privacy: DrivePrivacy = 'public';
 
@@ -332,7 +367,8 @@ export interface ArFSCreateFolderResult {
 }
 
 export interface ArFSUploadFileResult {
-	fileTrx: Transaction;
+	dataTrx: Transaction;
+	metaDataTrx: Transaction;
 	fileId: FileID;
 }
 
@@ -484,35 +520,57 @@ export class ArFSDAO {
 		filePath: string,
 		destFileName?: string
 	): Promise<ArFSUploadFileResult> {
-		const fileData = fs.readFileSync(filePath);
+		// Establish destination file name
+		const destinationFileName = destFileName ?? basename(filePath);
 
+		// Generate file ID
 		const fileId = uuidv4();
 
+		// Get current time
 		const unixTime = Math.round(Date.now() / 1000);
 
+		// Retrieve drive ID from folder ID
 		const driveId = await this.getDriveIdForFolderId(parentFolderId);
 
+		// Gather file information
+		const fileStats = fs.statSync(filePath);
+		const fileData = fs.readFileSync(filePath);
+		const dataContentType = extToMime(filePath);
+		const lastModifiedDateMS = Math.floor(fileStats.mtimeMs);
+
+		// Build file data transaction
+		const fileDataPrototype = new ArFSFileDataPrototype(new ArFSFileData(fileData), dataContentType);
+		const dataTrx = await this.prepareArFSObjectTransaction(fileDataPrototype);
+
+		// Upload file data
+		const dataUploader = await this.arweave.transactions.getUploader(dataTrx);
+		while (!dataUploader.isComplete) {
+			await dataUploader.uploadChunk();
+		}
+
+		// Prepare meta data transaction
 		const fileMetadata = new ArFSPublicFileMetaDataPrototype(
-			new ArFSPublicFileData(fileData, 'FIXME'),
+			new ArFSPublicFileData(
+				destinationFileName,
+				fileStats.size,
+				lastModifiedDateMS,
+				dataTrx.id,
+				dataContentType
+			),
 			unixTime,
 			driveId,
 			fileId,
 			parentFolderId
 		);
-		const fileTrx = await this.prepareArFSObjectTransaction(fileMetadata);
+		const metaDataTrx = await this.prepareArFSObjectTransaction(fileMetadata);
 
-		// Create the Folder Uploader objects
-		// const fileUploader = await this.arweave.transactions.getUploader(fileTrx);
+		// Upload meta data
+		const metaDataUploader = await this.arweave.transactions.getUploader(metaDataTrx);
+		while (!metaDataUploader.isComplete) {
+			await metaDataUploader.uploadChunk();
+		}
 
-		// // Execute the uploads
-		// while (!fileUploader.isComplete) {
-		// 	await fileUploader.uploadChunk();
-		// }
-
-		// TODO: Use destFileName?
-		console.log(destFileName);
-
-		return { fileTrx, fileId };
+		return { dataTrx, metaDataTrx, fileId };
 	}
 
 	async prepareArFSObjectTransaction(

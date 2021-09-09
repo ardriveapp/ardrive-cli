@@ -387,32 +387,29 @@ program
 				drivePassword: options.drivePassword,
 				driveKey: options.driveKey
 			};
-			if (!options.parentFolderId || !options.localFilePath || !options.destFileName) {
+			if (!options.parentFolderId || !options.localFilePath) {
 				console.log(`Bad file: ${JSON.stringify(singleParameter)}`);
 				process.exit(1);
 			}
 			return [singleParameter];
 		})();
 		if (filesToUpload.length) {
-			console.log(`TODO: upload these files: ${JSON.stringify(filesToUpload, null, 4)}`);
 			const wallet = readJWKFile(options.walletFile);
-			const arDrive = new ArFSDAO(wallet, arweave);
-			filesToUpload.forEach(async (fileToUpload) => {
-				console.log(`About to upload file ${fileToUpload.localFilePath}`);
-				if (!fileToUpload.parentFolderId || !fileToUpload.localFilePath || !fileToUpload.destinationFileName) {
-					// bad file
-					console.log(`Bad file: ${JSON.stringify(fileToUpload)}`);
-					process.exit(1);
-				}
-				const result = await arDrive.uploadPublicFile(
-					fileToUpload.parentFolderId,
-					fileToUpload.localFilePath,
-					fileToUpload.destinationFileName
-				);
-				console.log(
-					`File sent to the network. File id: ${result.fileId}, transaction id: ${result.fileTrx.id}`
-				);
-			});
+			const arDrive = new ArDrive(new ArFSDAO(wallet, arweave));
+			await Promise.all(
+				filesToUpload.map(async (fileToUpload) => {
+					if (!fileToUpload.parentFolderId || !fileToUpload.localFilePath) {
+						console.log(`Bad file: ${JSON.stringify(fileToUpload)}`);
+						process.exit(1);
+					}
+					const result = await arDrive.uploadPublicFile(
+						fileToUpload.parentFolderId,
+						fileToUpload.localFilePath,
+						fileToUpload.destinationFileName
+					);
+					console.log(JSON.stringify(result, null, 4));
+				})
+			);
 			process.exit(0);
 		}
 		console.log(`No files to upload`);
