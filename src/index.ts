@@ -131,6 +131,14 @@ program
 		}
 	});
 
+function readJWKFile(path: string): Wallet {
+	const walletFileData = fs.readFileSync(path, { encoding: 'utf8', flag: 'r' });
+	const walletJSON = JSON.parse(walletFileData);
+	const walletJWK = walletJSON as JWKInterface;
+	const wallet = new JWKWallet(walletJWK);
+	return wallet;
+}
+
 program
 	.command('send-ar')
 	.requiredOption('-a, --ar-amount <ar amount>', 'required: amount of AR to send')
@@ -146,10 +154,7 @@ program
 			process.exit(1);
 		}
 
-		const walletFileData = fs.readFileSync(options.walletFile, { encoding: 'utf8', flag: 'r' });
-		const walletJSON = JSON.parse(walletFileData);
-		const walletJWK = walletJSON as JWKInterface;
-		const wallet = new JWKWallet(walletJWK);
+		const wallet = readJWKFile(options.walletFile);
 		const walletAddress = await wallet.getAddress();
 		console.log(walletAddress);
 		console.log(`arAmount: ${options.arAmount}`);
@@ -186,6 +191,114 @@ program
 		const wallet = await walletDao.generateJWKWallet(options.seed);
 		console.log(JSON.stringify(wallet));
 		process.exit(0);
+	});
+
+interface UploadFileParameter {
+	parentFolderId: string;
+	localFilePath: string;
+	destinationFileName?: string;
+	drivePassword?: string;
+	driveKey?: string;
+}
+
+program
+	.command('upload-file')
+	.option(
+		'-f, --parent-folder-id <parent folder id>',
+		`the ArFS folder ID for the folder in which this file will reside (i.e. its parent folder)
+		• To upload the file to the root of a drive, use the root folder ID of the drive`
+	)
+	.option(
+		'-l, --local-file-path <local file path>',
+		`the path on the local filesystem for the file that will be uploaded`
+	)
+	.option(
+		'-d, --dest-file-name <destination file name>',
+		`(OPTIONAL) a destination file name to use when uploaded to ArDrive`
+	)
+	.option(
+		'--local-files <local file paths>',
+		`a path to a csv (tab delimited) file containing rows of data for the following columns:
+		• CSV Columns
+		• local file path
+		• destination file name (optional)
+		• parent folder ID (optional)
+			• --parent-folder-id used, otherwise
+			• all parent folder IDs should reside in the same drive
+		• Can NOT be used in conjunction with --local-file-path`
+	)
+	.option(
+		'-p, --drive-password <drive password>',
+		`the drive password for the parent drive of the folder identified by --parent-folder-id
+		• Required only for files residing in private drives
+		• Can NOT be used in conjunction with --drive-key`
+	)
+	.option(
+		'-k, --drive-key <drive key>',
+		`the drive key for the parent drive of the folder identified by --parent-folder-id
+		• Required only for files residing in private drives
+		• Can NOT be used in conjunction with --drive-password`
+	)
+	.option(
+		'-w, --wallet-file [path_to_jwk_file]',
+		`the path to a JWK file on the file system
+			• Can't be used with --seed-phrase`
+	)
+	.action(async (options) => {
+		const filesToUpload: UploadFileParameter[] = (function (): UploadFileParameter[] {
+			if (options.drivePassword && options.driveKey) {
+				console.log(`Can not use --drive-password in conjunction with --drive-key`);
+				process.exit(1);
+			}
+			if (options.localFiles) {
+				if (options.localFilePath) {
+					console.log(`Can not use --local-files in conjunction with --localFilePath`);
+					process.exit(1);
+				}
+				const COLUMN_SEPARATOR = ',';
+				const ROW_SEPARATOR = '.';
+				const csvRows = options.localFiles.split(ROW_SEPARATOR);
+				const fileParameters: UploadFileParameter[] = csvRows.map((row: string) => {
+					const csvFields = row.split(COLUMN_SEPARATOR).map((f: string) => f.trim());
+					const [parentFolderId, localFilePath, destinationFileName, drivePassword, driveKey] = csvFields;
+					return {
+						parentFolderId,
+						localFilePath,
+						destinationFileName,
+						drivePassword,
+						driveKey
+					};
+				});
+				return fileParameters;
+			}
+			const singleParameter = {
+				parentFolderId: options.parentFolderId,
+				localFilePath: options.localFilePath,
+				destinationFileName: options.destFileName,
+				drivePassword: options.drivePassword,
+				driveKey: options.driveKey
+			};
+			if (!options.parentFolderId || !options.localFilePath || !options.destFileName) {
+				console.log(`Bad file: ${JSON.stringify(singleParameter)}`);
+				process.exit(1);
+			}
+			return [singleParameter];
+		})();
+		if (filesToUpload.length) {
+			console.log(`TODO: upload these files: ${JSON.stringify(filesToUpload, null, 4)}`);
+			// const wallet = readJWKFile(options.walletFile);
+			// const arDrive = new ArDrive(new ArFSDAO(wallet, arweave));
+			// params.forEach((filesToUpload) =>
+			// if (!filesToUpload.parentFolderId || !filesToUpload.localFilePath || !filesToUpload.destFileName) {
+			//	bad file
+			//	process.exit(1);
+			// }
+			// 	arDrive.uploadPublicFile(filesToUpload.parentFolderId, filesToUpload.localFilePath, filesToUpload.destinationFileName)
+			// );
+			process.exit(0);
+		}
+		console.log(`No files to upload`);
+		process.exit(1);
 	});
 
 program.parse(process.argv);
