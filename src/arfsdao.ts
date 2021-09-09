@@ -4,6 +4,7 @@ import Arweave from 'arweave';
 import { v4 as uuidv4 } from 'uuid';
 import Transaction from 'arweave/node/lib/transaction';
 import {
+	ArFSDriveEntity,
 	ArFSEncryptedData,
 	CipherType,
 	deriveDriveKey,
@@ -11,6 +12,7 @@ import {
 	driveEncrypt,
 	DrivePrivacy,
 	fileEncrypt,
+	GQLEdgeInterface,
 	GQLTagInterface,
 	JWKInterface
 } from 'ardrive-core-js';
@@ -22,6 +24,8 @@ export type FolderID = string;
 export type FileID = string;
 export type DriveID = string;
 export type DriveKey = Buffer;
+
+export const graphQLURL = 'https://arweave.net/graphql';
 
 export interface ArFSObjectTransactionData {
 	asTransactionData(): string | Buffer;
@@ -345,19 +349,23 @@ export class ArFSDAO {
 		// Generate a new folder ID
 		const folderId = uuidv4();
 
-		// if (!parentFolderId) {
+		if (parentFolderId) {
+			// Assert that drive ID is consistent with parent folder ID
+			const actualDriveId = await this.getDriveIdForFolderId(parentFolderId);
 
-		// 	// Check if drive has root folder
+			if (actualDriveId !== driveId) {
+				throw new Error(
+					`Drive id: ${driveId} does not match actual drive id: ${actualDriveId} for parent folder id`
+				);
+			}
+		} else {
+			// If drive contains a root folder ID, treat this as a subfolder to the root folder
+			const drive = await this.getPublicDriveEntity(driveId);
 
-		// 	// If not create it
-
-		// 	// otherwise its a new folder on the root level
-
-		// 	// TODO:
-
-		// } else {
-
-		// }
+			if (drive.rootFolderId) {
+				parentFolderId = drive.rootFolderId;
+			}
+		}
 
 		// Get the current time so the app can display the "created" data later on
 		const unixTime = Math.round(Date.now() / 1000);
@@ -535,5 +543,129 @@ export class ArFSDAO {
 		// Sign the transaction
 		await this.arweave.transactions.sign(transaction, wallet.getPrivateKey());
 		return transaction;
+	}
+
+	async getDriveIdForFolderId(folderId: FolderID): Promise<DriveID> {
+		const query = {
+			query: `query {
+				transactions(
+					first: 1
+					tags: [
+						{ name: "Folder-Id", values: "${folderId}" }
+					]
+				) {
+					edges {
+						node {
+							id
+							tags {
+								name
+								value
+							}
+						}
+					}
+				}
+    }`
+		};
+		const response = await this.arweave.api.post(graphQLURL, query);
+		const { data } = response.data;
+		const { transactions } = data;
+
+		const edges: GQLEdgeInterface[] = transactions.edges;
+
+		if (!edges.length) {
+			throw new Error(`No folder found with Folder-Id: ${folderId}`);
+		}
+
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		const driveIdTag = edges[0].node.tags.find((t) => t.name === 'Drive-Id');
+		if (driveIdTag) {
+			return driveIdTag.value;
+		}
+
+		throw new Error(`No Drive-Id tag found for meta data transaction of Folder-Id: ${folderId}`);
+	}
+
+	async getPublicDriveEntity(driveId: string): Promise<ArFSDriveEntity> {
+		const drive: ArFSDriveEntity = {
+			appName: '',
+			appVersion: '',
+			arFS: '',
+			contentType: '',
+			driveId,
+			drivePrivacy: '',
+			entityType: 'drive',
+			name: '',
+			rootFolderId: '',
+			txId: '',
+			unixTime: 0,
+			syncStatus: 0
+		};
+
+		// GraphQL Query
+		const query = {
+			query: `query {
+		  transactions(
+			first: 1
+			sort: HEIGHT_ASC
+			tags: [
+			  { name: "Drive-Id", values: "${driveId}" }
+			  { name: "Entity-Type", values: "drive" }
+			  { name: "Drive-Privacy", values: "public" }])
+			]
+		  ) {
+			edges {
+			  node {
+				id
+				tags {
+				  name
+				  value
+				}
+			  }
+			}
+		  }
+		}`
+		};
+		const response = await this.arweave.api.post(graphQLURL, query);
+		const { data } = response.data;
+		const { transactions } = data;
+		const { edges } = transactions;
+		edges.forEach((edge: GQLEdgeInterface) => {
+			// Iterate through each tag and pull out each drive ID as well the drives privacy status
+			const { node } = edge;
+			const { tags } = node;
+			tags.forEach((tag: GQLTagInterface) => {
+				const key = tag.name;
+				const { value } = tag;
+				switch (key) {
+					case 'App-Name':
+						drive.appName = value;
+						break;
+					case 'App-Version':
+						drive.appVersion = value;
+						break;
+					case 'ArFS':
+						drive.arFS = value;
+						break;
+					case 'Content-Type':
+						drive.contentType = value;
+						break;
+					case 'Drive-Id':
+						drive.driveId = value;
+						break;
+					case 'Drive-Privacy':
+						drive.drivePrivacy = value;
+						break;
+					case 'Unix-Time':
+						drive.unixTime = +value;
+						break;
+					default:
+						break;
+				}
+			});
+
+			// Get the drives transaction ID
+			drive.txId = node.id;
+		});
+		return drive;
 	}
 }

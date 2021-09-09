@@ -1,4 +1,3 @@
-//import { v4 as uuidv4 } from 'uuid';
 import { ArFSDAO, FolderID } from './arfsdao';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';

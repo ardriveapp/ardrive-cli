@@ -34,32 +34,6 @@ export class ArFSEntity {
 		this.txId = txId;
 		this.unixTime = unixTime;
 	}
-
-	// static From(
-	// 	appName?: string,
-	// 	appVersion?: string,
-	// 	arFS?: string,
-	// 	contentType?: string,
-	// 	driveId?: string,
-	// 	entityType?: string,
-	// 	name?: string,
-	// 	syncStatus?: number,
-	// 	txId?: string,
-	// 	unixTime?: number
-	// ): ArFSEntity {
-	// 	return new ArFSEntity(
-	// 		appName ?? '',
-	// 		appVersion ?? '',
-	// 		arFS ?? '',
-	// 		contentType ?? '',
-	// 		driveId ?? '',
-	// 		entityType ?? '',
-	// 		name ?? '',
-	// 		syncStatus ?? 0,
-	// 		txId ?? '0',
-	// 		unixTime ?? 0
-	// 	);
-	// }
 }
 
 // A Drive is a logical grouping of folders and files. All folders and files must be part of a drive, and reference the Drive ID.
@@ -119,24 +93,6 @@ export class ArFSFileData {
 		this.txId = txId;
 		this.unixTime = unixTime;
 	}
-
-	static From(
-		appName?: string,
-		appVersion?: string,
-		contentType?: string,
-		syncStatus?: number,
-		txId?: string,
-		unixTime?: number
-	): ArFSFileData {
-		return new ArFSFileData(
-			appName ?? '',
-			appVersion ?? '',
-			contentType ?? '',
-			syncStatus ?? 0,
-			txId ?? '0',
-			unixTime ?? 0
-		);
-	}
 }
 
 // Used for private file data only
@@ -157,27 +113,5 @@ export class ArFSPrivateFileData extends ArFSFileData {
 		super(appName, appVersion, contentType, syncStatus, txId, unixTime);
 		this.cipher = cipher;
 		this.cipherIV = cipherIV;
-	}
-
-	static From(
-		appName?: string,
-		appVersion?: string,
-		contentType?: string,
-		syncStatus?: number,
-		txId?: string,
-		unixTime?: number,
-		cipher?: string,
-		cipherIV?: string
-	): ArFSPrivateFileData {
-		return new ArFSPrivateFileData(
-			appName ?? '',
-			appVersion ?? '',
-			contentType ?? '',
-			syncStatus ?? 0,
-			txId ?? '0',
-			unixTime ?? 0,
-			cipher ?? '',
-			cipherIV ?? ''
-		);
 	}
 }
