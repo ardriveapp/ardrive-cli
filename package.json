@@ -19,6 +19,7 @@
 		"community-js": "^1.1.36",
 		"jwk-to-pem": "^2.0.4",
 		"lodash": "^4.17.21",
+		"node-fetch": "2.6.2",
 		"progress": "^2.0.3",
 		"prompt-password": "^1.2.0",
 		"prompt-sync": "^4.2.0",
@@ -29,6 +30,7 @@
 	"devDependencies": {
 		"@types/jwk-to-pem": "^2.0.0",
 		"@types/lodash": "^4",
+		"@types/node-fetch": "2.5.3",
 		"@types/prompt-sync": "^4.1.0",
 		"@types/prompts": "^2.0.9",
 		"@typescript-eslint/eslint-plugin": "^4.18.0",

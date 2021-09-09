@@ -8,6 +8,7 @@ import { ArFSDAO } from './arfsdao';
 import { JWKInterface } from 'ardrive-core-js';
 import { Wallet, JWKWallet, WalletDAO } from './wallet_new';
 import Arweave from 'arweave';
+import fetch from 'node-fetch';
 
 /* eslint-disable no-console */
 
@@ -193,6 +194,21 @@ program
 		process.exit(0);
 	});
 
+program
+	.command('check-mempool')
+	.requiredOption('-t, --transaction-id <txId>', 'The transaction id to check for in the mempool')
+	.action(async (options) => {
+		if (!options.transactionId) {
+			throw new Error('Missing required transaction id');
+		}
+
+		const response = await fetch('https://arweave.net/tx/pending');
+		const transactionsInMempool: string[] = await response.json();
+		const isTransactionInMempool = transactionsInMempool.includes(options.transactionId);
+
+		console.log(isTransactionInMempool);
+		process.exit(0);
+	});
 interface UploadFileParameter {
 	parentFolderId: string;
 	localFilePath: string;

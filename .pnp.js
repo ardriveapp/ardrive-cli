@@ -40,6 +40,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/jwk-to-pem", "npm:2.0.0"],
             ["@types/lodash", "npm:4.14.172"],
             ["@types/node", "npm:14.14.37"],
+            ["@types/node-fetch", "npm:2.5.3"],
             ["@types/prompt-sync", "npm:4.1.0"],
             ["@types/prompts", "npm:2.4.0"],
             ["@types/uuid", "npm:8.3.0"],
@@ -59,6 +60,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["jwk-to-pem", "npm:2.0.4"],
             ["lint-staged", "npm:11.0.0"],
             ["lodash", "npm:4.17.21"],
+            ["node-fetch", "npm:2.6.2"],
             ["prettier", "npm:2.2.1"],
             ["progress", "npm:2.0.3"],
             ["prompt-password", "npm:1.2.0"],
@@ -464,6 +466,16 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/@types-node-npm-16.7.13-08a1515fa1-e22d3b58e5.zip/node_modules/@types/node/",
           "packageDependencies": [
             ["@types/node", "npm:16.7.13"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["@types/node-fetch", [
+        ["npm:2.5.3", {
+          "packageLocation": "./.yarn/cache/@types-node-fetch-npm-2.5.3-63cbf4aef6-c85f183722.zip/node_modules/@types/node-fetch/",
+          "packageDependencies": [
+            ["@types/node-fetch", "npm:2.5.3"],
+            ["@types/node", "npm:14.6.4"]
           ],
           "linkType": "HARD",
         }]
@@ -1213,6 +1225,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/jwk-to-pem", "npm:2.0.0"],
             ["@types/lodash", "npm:4.14.172"],
             ["@types/node", "npm:14.14.37"],
+            ["@types/node-fetch", "npm:2.5.3"],
             ["@types/prompt-sync", "npm:4.1.0"],
             ["@types/prompts", "npm:2.4.0"],
             ["@types/uuid", "npm:8.3.0"],
@@ -1232,6 +1245,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["jwk-to-pem", "npm:2.0.4"],
             ["lint-staged", "npm:11.0.0"],
             ["lodash", "npm:4.17.21"],
+            ["node-fetch", "npm:2.6.2"],
             ["prettier", "npm:2.2.1"],
             ["progress", "npm:2.0.3"],
             ["prompt-password", "npm:1.2.0"],
@@ -4661,6 +4675,13 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/node-fetch-npm-2.6.1-46c670dbc1-cbb171635e.zip/node_modules/node-fetch/",
           "packageDependencies": [
             ["node-fetch", "npm:2.6.1"]
+          ],
+          "linkType": "HARD",
+        }],
+        ["npm:2.6.2", {
+          "packageLocation": "./.yarn/cache/node-fetch-npm-2.6.2-2820154539-f48d84c89c.zip/node_modules/node-fetch/",
+          "packageDependencies": [
+            ["node-fetch", "npm:2.6.2"]
           ],
           "linkType": "HARD",
         }]
