@@ -208,32 +208,31 @@ program.command('get-mempool').action(async () => {
 
 program
 	.command('tx-status')
-	.requiredOption('-t, --transaction-id <txId>', 'The transaction id to check the status of in the mempool')
-	.action(async ({ transactionId }) => {
-		if (!transactionId) {
-			console.log(transactionId);
+	.requiredOption('-t, --tx-id <transaction id>', 'The transaction id to check the status of in the mempool')
+	.action(async ({ txId }) => {
+		if (!txId) {
 			throw new Error('Missing required transaction idd');
 		}
 
 		const transactionsInMempool = await fetchMempool();
-		const pending = transactionsInMempool.includes(transactionId);
+		const pending = transactionsInMempool.includes(txId);
 
-		const confStatus = (await arweave.transactions.getStatus(transactionId)).confirmed;
+		const confStatus = (await arweave.transactions.getStatus(txId)).confirmed;
 
 		if (pending) {
-			console.log(`${transactionId}: Pending`);
+			console.log(`${txId}: Pending`);
 		} else if (confStatus?.block_height) {
 			if (confStatus?.number_of_confirmations >= 15) {
 				console.log(
-					`${transactionId}: Mined at block height ${confStatus.block_height} with ${confStatus.number_of_confirmations} confirmations`
+					`${txId}: Mined at block height ${confStatus.block_height} with ${confStatus.number_of_confirmations} confirmations`
 				);
 			} else {
 				console.log(
-					`${transactionId}: Confirming at block height ${confStatus.block_height} with ${confStatus.number_of_confirmations} confirmations`
+					`${txId}: Confirming at block height ${confStatus.block_height} with ${confStatus.number_of_confirmations} confirmations`
 				);
 			}
 		} else {
-			console.log(`${transactionId}: Not found`);
+			console.log(`${txId}: Not found`);
 		}
 
 		process.exit(0);
