@@ -93,10 +93,7 @@ program
 	.option('-a, --address <Arweave wallet address>', 'get the balance of this Arweave wallet address')
 	.action(async (options) => {
 		if (options.walletFile != null) {
-			const walletFileData = fs.readFileSync(options.walletFile, { encoding: 'utf8', flag: 'r' });
-			const walletJSON = JSON.parse(walletFileData);
-			const walletJWK = walletJSON as JWKInterface;
-			const wallet = new JWKWallet(walletJWK);
+			const wallet = readJWKFile(options.walletFile);
 			const walletAddress = await wallet.getAddress();
 			console.log(walletAddress);
 			console.log(await walletDao.getWalletWinstonBalance(wallet));
@@ -119,10 +116,7 @@ program
 	)
 	.action(async (options) => {
 		if (options.walletFile != null) {
-			const walletFileData = fs.readFileSync(options.walletFile, { encoding: 'utf8', flag: 'r' });
-			const walletJSON = JSON.parse(walletFileData);
-			const walletJWK = walletJSON as JWKInterface;
-			const wallet = new JWKWallet(walletJWK);
+			const wallet = readJWKFile(options.walletFile);
 			const walletAddress = await wallet.getAddress();
 			console.log(walletAddress);
 			process.exit(0);
@@ -212,7 +206,7 @@ program
 	.requiredOption('-t, --tx-id <transaction id>', 'The transaction id to check the status of in the mempool')
 	.action(async ({ txId }) => {
 		if (!txId) {
-			throw new Error('Missing required transaction idd');
+			throw new Error('Missing required transaction id');
 		}
 
 		const transactionsInMempool = await fetchMempool();
