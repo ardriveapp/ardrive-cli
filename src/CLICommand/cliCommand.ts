@@ -22,6 +22,11 @@ export class CLICommand {
 	constructor(private readonly commandDescription: CommandDescriptor, program?: Command) {
 		if (!CLICommand.program) {
 			CLICommand.program = program || new Command();
+			// Set up command line option parsing
+			//const validActions = ['create-drive', 'rename-drive', 'upload-file'];
+			CLICommand.program.option('-h, --help', 'Get help');
+			//program.option('create-drive', 'action to create a new drive (and its corresponding root folder)');
+			CLICommand.program.addHelpCommand(false);
 		}
 		this.setCommand();
 	}

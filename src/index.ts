@@ -8,6 +8,7 @@ import { ArFSDAO } from './arfsdao';
 import { JWKInterface } from 'ardrive-core-js';
 import { Wallet, JWKWallet, WalletDAO } from './wallet_new';
 import Arweave from 'arweave';
+import { CLICommand } from './CLICommand';
 
 /* eslint-disable no-console */
 
@@ -24,63 +25,66 @@ const walletDao = new WalletDAO(arweave);
 // Utility for parsing command line options
 const program = new Command();
 
-// Set up command line option parsing
-//const validActions = ['create-drive', 'rename-drive', 'upload-file'];
-program.option('-h, --help', 'Get help');
-//program.option('create-drive', 'action to create a new drive (and its corresponding root folder)');
-program.addHelpCommand(false);
-
-program
-	.command('create-drive')
-	.option(
-		'-w, --wallet-file [path_to_jwk_file]',
-		`the path to a JWK file on the file system
+new CLICommand(
+	{
+		name: 'create-drive',
+		parameters: [
+			{
+				aliases: ['-w', '--wallet-file'],
+				description: `the path to a JWK file on the file system
 	• Can't be used with --seed-phrase`
-	)
-	.option(
-		'-s, --seed-phrase [12-word seed phrase]',
-		`a 12-word seed phrase representing a JWK
+			},
+			{
+				aliases: ['-s', '--seed-phrase'],
+				description: `a 12-word seed phrase representing a JWK
 		• Can't be used with --wallet-file`
-	)
-	.option(
-		'-p, --drive-password <drive password>',
-		`the encryption password for the private drive (OPTIONAL)
+			},
+			{
+				aliases: ['-p', '--drive-password'],
+				description: `the encryption password for the private drive (OPTIONAL)
 		• When provided, creates the drive as a private drive. Public drive otherwise.`
-	)
-	.option('-n, --drive-name [name]', `the name for the new drive`)
-	.action(async (options) => {
-		const wallet: Wallet = await (async function () {
-			// Enforce -w OR -s but not both
-			if (!!options.walletFile === !!options.seedPhrase) {
-				// Enters this condition if none or both has data
-				console.log('Choose --wallet-file OR --seed-phrase, but not both.');
-				process.exit(1);
+			},
+			{
+				aliases: ['-n', '--drive-name'],
+				description: `the name for the new drive`
 			}
+		],
+		async action(options) {
+			const wallet: Wallet = await (async function () {
+				// Enforce -w OR -s but not both
+				if (!!options.walletFile === !!options.seedPhrase) {
+					// Enters this condition if none or both has data
+					console.log('Choose --wallet-file OR --seed-phrase, but not both.');
+					process.exit(1);
+				}
 
-			if (options.walletFile) {
-				const walletFileData = fs.readFileSync(options.walletFile, { encoding: 'utf8', flag: 'r' });
-				const walletJSON = JSON.parse(walletFileData);
-				const walletJWK: JWKInterface = walletJSON as JWKInterface;
-				return new JWKWallet(walletJWK);
-			} else {
-				return await walletDao.generateJWKWallet(options.seed);
-			}
-		})();
+				if (options.walletFile) {
+					const walletFileData = fs.readFileSync(options.walletFile, { encoding: 'utf8', flag: 'r' });
+					const walletJSON = JSON.parse(walletFileData);
+					const walletJWK: JWKInterface = walletJSON as JWKInterface;
+					return new JWKWallet(walletJWK);
+				} else {
+					return await walletDao.generateJWKWallet(options.seed);
+				}
+			})();
 
-		// TODO: Export convert seed phrase to wallet
+			// TODO: Export convert seed phrase to wallet
 
-		const ardrive = new ArDrive(new ArFSDAO(wallet, arweave));
-		const createDriveResult = await (async function () {
-			if (options.drivePassword) {
-				return ardrive.createPrivateDrive(options.driveName, options.drivePassword);
-			} else {
-				return ardrive.createPublicDrive(options.driveName);
-			}
-		})();
-		console.log(JSON.stringify(createDriveResult, null, 4));
+			const ardrive = new ArDrive(new ArFSDAO(wallet, arweave));
+			const createDriveResult = await (async function () {
+				if (options.drivePassword) {
+					return ardrive.createPrivateDrive(options.driveName, options.drivePassword);
+				} else {
+					return ardrive.createPublicDrive(options.driveName);
+				}
+			})();
+			console.log(JSON.stringify(createDriveResult, null, 4));
 
-		process.exit(0);
-	});
+			process.exit(0);
+		}
+	},
+	program
+);
 
 program
 	.command('get-balance')
