@@ -5,7 +5,11 @@ import { v4 as uuidv4 } from 'uuid';
 import Transaction from 'arweave/node/lib/transaction';
 import {
 	ArFSDriveEntity,
+	ArFSEntity,
 	ArFSPrivateDriveEntity,
+	ContentType,
+	DrivePrivacy,
+	EntityType,
 	extToMime,
 	GQLEdgeInterface,
 	GQLTagInterface,
@@ -89,7 +93,7 @@ export class ArFSDAO {
 			}
 		} else if (syncParentFolderId) {
 			// If drive contains a root folder ID, treat this as a subfolder to the root folder
-			const drive = await this.getPublicDriveEntity(driveId);
+			const drive = await this.getPublicDrive(driveId);
 			if (!drive) {
 				throw new Error(`Public drive with Drive ID ${driveId} not found!`);
 			}
@@ -217,7 +221,7 @@ export class ArFSDAO {
 	): Promise<ArFSUploadFileResult> {
 		// Retrieve drive ID from folder ID and ensure that it is indeed public
 		const driveId = await this.getDriveIdForFolderId(parentFolderId);
-		const drive = await this.getPublicDriveEntity(driveId);
+		const drive = await this.getPublicDrive(driveId);
 		if (!drive) {
 			throw new Error(`Public drive with Drive ID ${driveId} not found!`);
 		}
@@ -402,7 +406,7 @@ export class ArFSDAO {
 		throw new Error(`No Drive-Id tag found for meta data transaction of Folder-Id: ${folderId}`);
 	}
 
-	async getPublicDriveEntity(driveId: string): Promise<ArFSDriveEntity> {
+	async getPublicDrive(driveId: string): Promise<ArFSPublicDrive> {
 		const gqlQuery = buildQuery([
 			{ name: 'Drive-Id', value: driveId },
 			{ name: 'Entity-Type', value: 'drive' },
@@ -418,21 +422,7 @@ export class ArFSDAO {
 			throw new Error(`Public drive with Drive ID ${driveId} not found!`);
 		}
 
-		// TODO: CREATE A BUILDER AND REJECT INVALID ENTITIES
-		const drive: ArFSDriveEntity = {
-			appName: '',
-			appVersion: '',
-			arFS: '',
-			contentType: '',
-			driveId,
-			drivePrivacy: '',
-			entityType: 'drive',
-			name: '',
-			rootFolderId: '',
-			txId: '',
-			unixTime: 0,
-			syncStatus: 0
-		};
+		const driveBuilder = new ArFSPublicDriveBuilder();
 
 		const { node } = edges[0];
 		const { tags } = node;
@@ -441,25 +431,25 @@ export class ArFSDAO {
 			const { value } = tag;
 			switch (key) {
 				case 'App-Name':
-					drive.appName = value;
+					driveBuilder.appName = value;
 					break;
 				case 'App-Version':
-					drive.appVersion = value;
+					driveBuilder.appVersion = value;
 					break;
 				case 'ArFS':
-					drive.arFS = value;
+					driveBuilder.arFS = value;
 					break;
 				case 'Content-Type':
-					drive.contentType = value;
+					driveBuilder.contentType = value as ContentType;
 					break;
 				case 'Drive-Id':
-					drive.driveId = value;
+					driveBuilder.driveId = value;
 					break;
 				case 'Drive-Privacy':
-					drive.drivePrivacy = value;
+					driveBuilder.drivePrivacy = value as DrivePrivacy;
 					break;
 				case 'Unix-Time':
-					drive.unixTime = +value;
+					driveBuilder.unixTime = +value;
 					break;
 				default:
 					break;
@@ -467,17 +457,19 @@ export class ArFSDAO {
 		});
 
 		// Get the drives transaction ID
-		drive.txId = node.id;
+		driveBuilder.txId = node.id;
 
-		const txData = await this.arweave.transactions.getData(drive.txId, { decode: true });
-		const dataString = await Utf8ArrayToStr(txData);
-		const dataJSON = await JSON.parse(dataString);
+		if (driveBuilder.txId) {
+			const txData = await this.arweave.transactions.getData(driveBuilder.txId, { decode: true });
+			const dataString = await Utf8ArrayToStr(txData);
+			const dataJSON = await JSON.parse(dataString);
 
-		// Get the drive name and root folder id
-		drive.name = dataJSON.name;
-		drive.rootFolderId = dataJSON.rootFolderId;
+			// Get the drive name and root folder id
+			driveBuilder.name = dataJSON.name;
+			driveBuilder.rootFolderId = dataJSON.rootFolderId;
+		}
 
-		return drive;
+		return driveBuilder.build();
 	}
 
 	async getPrivateDriveEntity(driveId: string): Promise<ArFSPrivateDriveEntity> {
@@ -570,5 +562,142 @@ export class ArFSDAO {
 			drive.rootFolderId = dataJSON.rootFolderId;
 		});
 		return drive;
+	}
+
+	// 	getTagValue(tagName: string, tags: GQLTagInterface[]): string {
+	// 		const tag = tags.find((t) => t.name === tagName);
+
+	// 		if (!tag) {
+	// 			throw new Error(`Cannot find tag name ${tagName} in tags for this entity: ${tags}`);
+	// 		}
+
+	// 		return tag.value;
+	// 	}
+
+	// 	edgeToEntity(edge: GQLEdgeInterface): ArFSEntity {
+	// 		const { tags } = edge.node;
+
+	// 		return {
+	// 			appName: this.getTagValue('App-Name', tags),
+	// 			appVersion: this.getTagValue('App-Version', tags),
+	// 			arFS: this.getTagValue('ArFS', tags),
+	// 			contentType: this.getTagValue('Content-Type', tags),
+	// 			driveId: this.getTagValue('Drive-Id', tags),
+	// 			entityType: this.getTagValue('Entity-Type', tags),
+	// 			name: '',
+	// 			txId: edge.node.id,
+	// 			unixTime: +this.getTagValue('Unix-Time', tags),
+	// 			syncStatus: 0
+	// 		};
+	// 	}
+
+	// 	async getAllEntitiesForDriveId(driveId: DriveID): Promise<ArFSEntity[]> {
+	// 		let hasNextPage = true;
+	// 		let cursor = '';
+	// 		let allEntities: ArFSEntity[] = [];
+
+	// 		while (hasNextPage) {
+	// 			const gqlQuery = buildQuery([{ name: 'Drive-Id', value: driveId }], cursor);
+	// 			const response = await this.arweave.api.post(graphQLURL, gqlQuery);
+	// 			const { data } = response.data;
+	// 			const { transactions } = data;
+	// 			const edges: GQLEdgeInterface[] = transactions.edges;
+	// 			hasNextPage = transactions.pageInfo.hasNextPage;
+
+	// 			for (const edge of edges) {
+	// 				cursor = edge.cursor;
+
+	// 				const baseEntity = this.edgeToEntity(edge);
+
+	// 				allEntities = [...allEntities, baseEntity];
+
+	// 				edge.node.tags;
+	// 				// switch (baseEntity.entityType) {
+	// 				// 	case 'file':
+
+	// 				// 		break;
+
+	// 				// 	default:
+	// 				// 		break;
+	// 				// }
+	// 			}
+	// 		}
+
+	// 		return allEntities;
+	// 	}
+}
+
+export class ArFSPublicDrive extends ArFSEntity implements ArFSDriveEntity {
+	constructor(
+		readonly appName: string,
+		readonly appVersion: string,
+		readonly arFS: string,
+		readonly contentType: string,
+		readonly driveId: string,
+		readonly entityType: string,
+		readonly name: string,
+		// readonly syncStatus: never,
+		readonly txId: string,
+		readonly unixTime: number,
+		readonly drivePrivacy: string,
+		readonly rootFolderId: string
+	) {
+		super(appName, appVersion, arFS, contentType, driveId, entityType, name, 0, txId, unixTime);
+	}
+}
+
+export class ArFSPublicDriveBuilder {
+	appName?: string;
+	appVersion?: string;
+	arFS?: string;
+	contentType?: ContentType;
+	driveId?: DriveID;
+	entityType?: EntityType;
+	name?: string;
+	txId?: TransactionID;
+	unixTime?: number;
+	drivePrivacy?: DrivePrivacy;
+	rootFolderId?: FolderID;
+
+	build(): ArFSPublicDrive {
+		if (
+			this.appName &&
+			this.appName.length &&
+			this.appVersion &&
+			this.appVersion.length &&
+			this.arFS &&
+			this.arFS.length &&
+			this.contentType &&
+			this.contentType.length &&
+			this.driveId &&
+			this.driveId.length &&
+			this.entityType &&
+			this.entityType.length &&
+			this.name &&
+			this.name.length &&
+			this.txId &&
+			this.txId.length &&
+			this.unixTime &&
+			this.drivePrivacy &&
+			this.drivePrivacy.length &&
+			this.rootFolderId &&
+			this.rootFolderId.length
+		) {
+			return new ArFSPublicDrive(
+				this.appName,
+				this.appVersion,
+				this.arFS,
+				this.contentType,
+				this.driveId,
+				this.entityType,
+				this.name,
+				this.txId,
+				this.unixTime,
+				this.drivePrivacy,
+				this.rootFolderId
+			);
+		}
+
+		throw new Error('Invalid drive state');
 	}
 }

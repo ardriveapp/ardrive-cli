@@ -1,4 +1,4 @@
-import { ArFSDAO, FolderID, TransactionID } from './arfsdao';
+import { ArFSDAO, ArFSPublicDrive, FolderID, TransactionID, DriveID } from './arfsdao';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 export type ArFSTipType = 'drive' | 'folder';
@@ -179,5 +179,11 @@ export class ArDrive {
 				[rootFolderTrx.id]: +rootFolderTrx.reward
 			}
 		});
+	}
+
+	async getPublicDrive(driveId: DriveID): Promise<ArFSPublicDrive> {
+		const driveEntity = await this.arFsDao.getPublicDrive(driveId);
+
+		return Promise.resolve(driveEntity);
 	}
 }
