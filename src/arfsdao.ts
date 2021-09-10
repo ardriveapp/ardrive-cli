@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import * as fs from 'fs';
 import type { JWKWallet, Wallet } from './wallet_new';
 import Arweave from 'arweave';
@@ -412,14 +413,12 @@ export class ArFSDAO {
 			{ name: 'Entity-Type', value: 'drive' },
 			{ name: 'Drive-Privacy', value: 'public' }
 		]);
-		console.log('before response');
 
 		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
+
 		const { data } = response.data;
 		const { transactions } = data;
 		const { edges } = transactions;
-
-		console.log('after response');
 
 		if (!edges.length) {
 			throw new Error(`Public drive with Drive ID ${driveId} not found!`);
@@ -450,6 +449,9 @@ export class ArFSDAO {
 					break;
 				case 'Drive-Privacy':
 					driveBuilder.drivePrivacy = value as DrivePrivacy;
+					break;
+				case 'Entity-Type':
+					driveBuilder.entityType = value as EntityType;
 					break;
 				case 'Unix-Time':
 					driveBuilder.unixTime = +value;
@@ -545,6 +547,9 @@ export class ArFSDAO {
 					case 'Drive-Privacy':
 						drive.drivePrivacy = value;
 						break;
+					case 'Entity-Type':
+						drive.entityType = value as EntityType;
+						break;
 					case 'Unix-Time':
 						drive.unixTime = +value;
 						break;
@@ -639,7 +644,6 @@ export class ArFSPublicDrive extends ArFSEntity implements ArFSDriveEntity {
 		readonly driveId: string,
 		readonly entityType: string,
 		readonly name: string,
-		// readonly syncStatus: never,
 		readonly txId: string,
 		readonly unixTime: number,
 		readonly drivePrivacy: string,

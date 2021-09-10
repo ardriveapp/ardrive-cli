@@ -182,15 +182,7 @@ export class ArDrive {
 	}
 
 	async getPublicDrive(driveId: DriveID): Promise<ArFSPublicDrive> {
-		try {
-			console.log('entering');
-			const driveEntity = await this.arFsDao.getPublicDrive(driveId);
-			console.log('driveEntity in ardrive.ts', driveEntity);
-
-			return Promise.resolve(driveEntity);
-		} catch (error) {
-			console.log(error);
-		}
-		throw new Error('bad');
+		const driveEntity = await this.arFsDao.getPublicDrive(driveId);
+		return Promise.resolve(driveEntity);
 	}
 }

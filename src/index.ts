@@ -448,7 +448,7 @@ program
 		`the path to a JWK file on the file system
 			• Can't be used with --seed-phrase`
 	)
-	.action((options) => {
+	.action(async (options) => {
 		const wallet = (function () {
 			if (options.walletFile) {
 				return readJWKFile(options.walletFile);
@@ -459,8 +459,8 @@ program
 		const arDrive = new ArDrive(new ArFSDAO(wallet, arweave));
 		const driveId: string = options.driveId;
 		// const getAllRevisions: boolean = options.getAllRevisions;
-		const result = arDrive.getPublicDrive(driveId /*, getAllRevisions*/);
-		console.log(JSON.stringify(result));
+		const result = await arDrive.getPublicDrive(driveId /*, getAllRevisions*/);
+		console.log(JSON.stringify(result, null, 4));
 		process.exit(0);
 	});
 
