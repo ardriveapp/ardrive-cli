@@ -412,11 +412,14 @@ export class ArFSDAO {
 			{ name: 'Entity-Type', value: 'drive' },
 			{ name: 'Drive-Privacy', value: 'public' }
 		]);
+		console.log('before response');
 
 		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 		const { data } = response.data;
 		const { transactions } = data;
 		const { edges } = transactions;
+
+		console.log('after response');
 
 		if (!edges.length) {
 			throw new Error(`Public drive with Drive ID ${driveId} not found!`);
