@@ -1,14 +1,20 @@
 import {
-	ArFSFileData,
+	ArFSDriveTransactionData,
+	ArFSFileDataTransactionData,
+	ArFSFileMetadataTransactionData,
+	ArFSFolderTransactionData,
 	ArFSObjectTransactionData,
-	ArFSPrivateDriveData,
-	ArFSPrivateFolderData,
-	ArFSPublicDriveData,
-	ArFSPublicFileData,
-	ArFSPublicFolderData
+	ArFSPrivateDriveTransactionData,
+	ArFSPrivateFileDataTransactionData,
+	ArFSPrivateFileMetadataTransactionData,
+	ArFSPrivateFolderTransactionData,
+	ArFSPublicDriveTransactionData,
+	ArFSPublicFileDataTransactionData,
+	ArFSPublicFileMetadataTransactionData,
+	ArFSPublicFolderTransactionData
 } from './arfs_trx_data_types';
 import Transaction from 'arweave/node/lib/transaction';
-import { DrivePrivacy, GQLTagInterface } from 'ardrive-core-js';
+import { ContentType, DrivePrivacy, GQLTagInterface } from 'ardrive-core-js';
 import { DataContentType, DriveID, FileID, FolderID } from './arfsdao';
 
 export abstract class ArFSObjectMetadataPrototype {
@@ -29,14 +35,16 @@ export abstract class ArFSObjectMetadataPrototype {
 export abstract class ArFSDriveMetaDataPrototype extends ArFSObjectMetadataPrototype {
 	abstract unixTime: number;
 	abstract driveId: string;
-	abstract objectData: ArFSObjectTransactionData;
+	abstract objectData: ArFSDriveTransactionData;
 	abstract readonly privacy: DrivePrivacy;
+	abstract readonly contentType: ContentType;
 
 	get protectedTags(): string[] {
-		return ['Entity-Type', 'Unix-Time', 'Drive-Id', 'Drive-Privacy'];
+		return ['Content-Type', 'Entity-Type', 'Unix-Time', 'Drive-Id', 'Drive-Privacy'];
 	}
 
 	addTagsToTransaction(transaction: Transaction): void {
+		transaction.addTag('Content-Type', this.contentType);
 		transaction.addTag('Entity-Type', 'drive');
 		transaction.addTag('Unix-Time', this.unixTime.toString());
 		transaction.addTag('Drive-Id', this.driveId);
@@ -46,12 +54,17 @@ export abstract class ArFSDriveMetaDataPrototype extends ArFSObjectMetadataProto
 
 export class ArFSPublicDriveMetaDataPrototype extends ArFSDriveMetaDataPrototype {
 	readonly privacy: DrivePrivacy = 'public';
+	readonly contentType: ContentType = 'application/json';
 
 	get protectedTags(): string[] {
 		return ['Content-Type', ...super.protectedTags];
 	}
 
-	constructor(readonly objectData: ArFSPublicDriveData, readonly unixTime: number, readonly driveId: string) {
+	constructor(
+		readonly objectData: ArFSPublicDriveTransactionData,
+		readonly unixTime: number,
+		readonly driveId: string
+	) {
 		super();
 	}
 
@@ -63,14 +76,22 @@ export class ArFSPublicDriveMetaDataPrototype extends ArFSDriveMetaDataPrototype
 
 export class ArFSPrivateDriveMetaDataPrototype extends ArFSDriveMetaDataPrototype {
 	readonly privacy: DrivePrivacy = 'private';
+	readonly contentType: ContentType = 'application/octet-stream';
 
-	constructor(readonly unixTime: number, readonly driveId: string, readonly objectData: ArFSPrivateDriveData) {
+	constructor(
+		readonly unixTime: number,
+		readonly driveId: string,
+		readonly objectData: ArFSPrivateDriveTransactionData
+	) {
 		super();
+	}
+
+	get protectedTags(): string[] {
+		return ['Cipher', 'Cipher-IV', 'Drive-Auth-Mode', ...super.protectedTags];
 	}
 
 	addTagsToTransaction(transaction: Transaction): void {
 		super.addTagsToTransaction(transaction);
-		transaction.addTag('Content-Type', 'application/octet-stream');
 		transaction.addTag('Cipher', this.objectData.cipher);
 		transaction.addTag('Cipher-IV', this.objectData.cipherIV);
 		transaction.addTag('Drive-Auth-Mode', this.objectData.driveAuthMode);
@@ -81,20 +102,20 @@ export abstract class ArFSFolderMetaDataPrototype extends ArFSObjectMetadataProt
 	abstract unixTime: number;
 	abstract driveId: DriveID;
 	abstract folderId: FolderID;
-	abstract objectData: ArFSObjectTransactionData;
+	abstract objectData: ArFSFolderTransactionData;
 	abstract parentFolderId?: FolderID;
-	abstract readonly privacy: DrivePrivacy;
+	abstract readonly contentType: ContentType;
 
 	get protectedTags(): string[] {
-		return ['Entity-Type', 'Unix-Time', 'Drive-Id', 'Folder-Id', 'Drive-Privacy', 'Parent-Folder-Id'];
+		return ['Content-Type', 'Entity-Type', 'Unix-Time', 'Drive-Id', 'Folder-Id', 'Parent-Folder-Id'];
 	}
 
 	addTagsToTransaction(transaction: Transaction): void {
+		transaction.addTag('Content-Type', this.contentType);
 		transaction.addTag('Entity-Type', 'folder');
 		transaction.addTag('Unix-Time', this.unixTime.toString());
 		transaction.addTag('Drive-Id', this.driveId);
 		transaction.addTag('Folder-Id', this.folderId);
-		transaction.addTag('Drive-Privacy', this.privacy);
 		if (this.parentFolderId) {
 			// Root folder transactions do not have Parent-Folder-Id
 			transaction.addTag('Parent-Folder-Id', this.parentFolderId);
@@ -103,49 +124,41 @@ export abstract class ArFSFolderMetaDataPrototype extends ArFSObjectMetadataProt
 }
 
 export class ArFSPublicFolderMetaDataPrototype extends ArFSFolderMetaDataPrototype {
-	readonly privacy: DrivePrivacy = 'public';
+	readonly contentType: ContentType = 'application/json';
 
 	constructor(
-		readonly objectData: ArFSPublicFolderData,
+		readonly objectData: ArFSPublicFolderTransactionData,
 		readonly unixTime: number,
 		readonly driveId: DriveID,
 		readonly folderId: FolderID,
+		readonly parentFolderId?: FolderID
+	) {
+		super();
+	}
+}
+
+export class ArFSPrivateFolderMetaDataPrototype extends ArFSFolderMetaDataPrototype {
+	readonly privacy: DrivePrivacy = 'private';
+	readonly contentType: ContentType = 'application/octet-stream';
+
+	constructor(
+		readonly unixTime: number,
+		readonly driveId: DriveID,
+		readonly folderId: FolderID,
+		readonly objectData: ArFSPrivateFolderTransactionData,
 		readonly parentFolderId?: FolderID
 	) {
 		super();
 	}
 
 	get protectedTags(): string[] {
-		return ['Content-Type', ...super.protectedTags];
+		return ['Cipher', 'Cipher-IV', ...super.protectedTags];
 	}
 
 	addTagsToTransaction(transaction: Transaction): void {
 		super.addTagsToTransaction(transaction);
-		transaction.addTag('Content-Type', 'application/json');
-	}
-}
-
-export class ArFSPrivateFolderMetaDataPrototype extends ArFSFolderMetaDataPrototype {
-	readonly privacy: DrivePrivacy = 'private';
-
-	constructor(
-		//readonly folderName: string,
-		//readonly rootFolderId: string,
-		readonly unixTime: number,
-		readonly driveId: DriveID,
-		readonly folderId: FolderID,
-		readonly objectData: ArFSPrivateFolderData,
-		readonly parentFolderId?: FolderID
-	) {
-		super();
-	}
-
-	addTagsToTransaction(transaction: Transaction): void {
-		super.addTagsToTransaction(transaction);
-		transaction.addTag('Content-Type', 'application/octet-stream');
 		transaction.addTag('Cipher', this.objectData.cipher);
 		transaction.addTag('Cipher-IV', this.objectData.cipherIV);
-		transaction.addTag('Drive-Auth-Mode', this.objectData.driveAuthMode);
 	}
 }
 
@@ -153,28 +166,64 @@ export abstract class ArFSFileMetaDataPrototype extends ArFSObjectMetadataProtot
 	abstract unixTime: number;
 	abstract driveId: DriveID;
 	abstract fileId: FileID;
-	abstract objectData: ArFSObjectTransactionData;
+	abstract objectData: ArFSFileMetadataTransactionData;
 	abstract parentFolderId: FolderID;
-	abstract readonly privacy: DrivePrivacy;
+	abstract contentType: ContentType;
 
 	get protectedTags(): string[] {
-		return ['Entity-Type', 'Unix-Time', 'Drive-Id', 'File-Id', 'Drive-Privacy', 'Parent-Folder-Id'];
+		return ['Content-Type', 'Entity-Type', 'Unix-Time', 'Drive-Id', 'File-Id', 'Parent-Folder-Id'];
 	}
 
 	addTagsToTransaction(transaction: Transaction): void {
+		transaction.addTag('Content-Type', this.contentType);
 		transaction.addTag('Entity-Type', 'file');
 		transaction.addTag('Unix-Time', this.unixTime.toString());
 		transaction.addTag('Drive-Id', this.driveId);
 		transaction.addTag('File-Id', this.fileId);
-		transaction.addTag('Drive-Privacy', this.privacy);
 		transaction.addTag('Parent-Folder-Id', this.parentFolderId);
 	}
 }
+export class ArFSPublicFileMetaDataPrototype extends ArFSFileMetaDataPrototype {
+	readonly contentType: ContentType = 'application/json';
 
-export class ArFSFileDataPrototype extends ArFSObjectMetadataPrototype {
-	constructor(readonly objectData: ArFSFileData, readonly contentType: DataContentType) {
+	constructor(
+		readonly objectData: ArFSPublicFileMetadataTransactionData,
+		readonly unixTime: number,
+		readonly driveId: DriveID,
+		readonly fileId: FileID,
+		readonly parentFolderId: FolderID
+	) {
 		super();
 	}
+}
+
+export class ArFSPrivateFileMetaDataPrototype extends ArFSFileMetaDataPrototype {
+	readonly contentType: ContentType = 'application/octet-stream';
+
+	constructor(
+		readonly objectData: ArFSPrivateFileMetadataTransactionData,
+		readonly unixTime: number,
+		readonly driveId: DriveID,
+		readonly fileId: FileID,
+		readonly parentFolderId: FolderID
+	) {
+		super();
+	}
+
+	get protectedTags(): string[] {
+		return ['Cipher', 'Cipher-IV', ...super.protectedTags];
+	}
+
+	addTagsToTransaction(transaction: Transaction): void {
+		super.addTagsToTransaction(transaction);
+		transaction.addTag('Cipher', this.objectData.cipher);
+		transaction.addTag('Cipher-IV', this.objectData.cipherIV);
+	}
+}
+
+export abstract class ArFSFileDataPrototype extends ArFSObjectMetadataPrototype {
+	abstract readonly objectData: ArFSFileDataTransactionData;
+	abstract readonly contentType: DataContentType | 'application/octet-stream';
 
 	get protectedTags(): string[] {
 		return ['Content-Type'];
@@ -185,25 +234,25 @@ export class ArFSFileDataPrototype extends ArFSObjectMetadataPrototype {
 	}
 }
 
-export class ArFSPublicFileMetaDataPrototype extends ArFSFileMetaDataPrototype {
-	readonly privacy: DrivePrivacy = 'public';
+export class ArFSPublicFileDataPrototype extends ArFSFileDataPrototype {
+	constructor(readonly objectData: ArFSPublicFileDataTransactionData, readonly contentType: DataContentType) {
+		super();
+	}
+}
 
-	constructor(
-		readonly objectData: ArFSPublicFileData,
-		readonly unixTime: number,
-		readonly driveId: DriveID,
-		readonly fileId: FileID,
-		readonly parentFolderId: FolderID
-	) {
+export class ArFSPrivateFileDataPrototype extends ArFSFileDataPrototype {
+	readonly contentType = 'application/octet-stream';
+	constructor(readonly objectData: ArFSPrivateFileDataTransactionData) {
 		super();
 	}
 
 	get protectedTags(): string[] {
-		return ['Content-Type', ...super.protectedTags];
+		return ['Cipher', 'Cipher-IV', ...super.protectedTags];
 	}
 
 	addTagsToTransaction(transaction: Transaction): void {
 		super.addTagsToTransaction(transaction);
-		transaction.addTag('Content-Type', 'application/json');
+		transaction.addTag('Cipher', this.objectData.cipher);
+		transaction.addTag('Cipher-IV', this.objectData.cipherIV);
 	}
 }

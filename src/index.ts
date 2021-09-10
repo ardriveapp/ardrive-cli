@@ -312,7 +312,7 @@ interface UploadFileParameter {
 
 program
 	.command('upload-file')
-	.option(
+	.requiredOption(
 		'-f, --parent-folder-id <parent folder id>',
 		`the ArFS folder ID for the folder in which this file will reside (i.e. its parent folder)
 		• To upload the file to the root of a drive, use the root folder ID of the drive`
@@ -402,11 +402,22 @@ program
 						console.log(`Bad file: ${JSON.stringify(fileToUpload)}`);
 						process.exit(1);
 					}
-					const result = await arDrive.uploadPublicFile(
-						fileToUpload.parentFolderId,
-						fileToUpload.localFilePath,
-						fileToUpload.destinationFileName
-					);
+					const result = await (async () => {
+						if (options.drivePassword) {
+							return arDrive.uploadPrivateFile(
+								fileToUpload.parentFolderId,
+								fileToUpload.localFilePath,
+								options.drivePassword,
+								fileToUpload.destinationFileName
+							);
+						} else {
+							return arDrive.uploadPublicFile(
+								fileToUpload.parentFolderId,
+								fileToUpload.localFilePath,
+								fileToUpload.destinationFileName
+							);
+						}
+					})();
 					console.log(JSON.stringify(result, null, 4));
 				})
 			);

@@ -34,13 +34,45 @@ export class ArDrive {
 	constructor(private readonly arFsDao: ArFSDAO) {}
 
 	async uploadPublicFile(
-		parentFolderId: string,
+		parentFolderId: FolderID,
 		filePath: string,
 		destinationFileName?: string
 	): Promise<CreateDriveResult> {
 		const { dataTrx, metaDataTrx, fileId } = await this.arFsDao.uploadPublicFile(
 			parentFolderId,
 			filePath,
+			destinationFileName
+		);
+
+		// TODO: send community tip
+		return Promise.resolve({
+			created: [
+				{
+					type: 'file',
+					metadataTxId: metaDataTrx.id,
+					dataTxId: dataTrx.id,
+					entityId: fileId
+				}
+			],
+			tips: [],
+			fees: {
+				[metaDataTrx.id]: +metaDataTrx.reward,
+				[dataTrx.id]: +dataTrx.reward
+				// qGr1BIVWQwdPMuQxJ9MmwMM8CBmZTIj9powGxJSZyi0: 344523
+			}
+		});
+	}
+
+	async uploadPrivateFile(
+		parentFolderId: FolderID,
+		filePath: string,
+		password: string,
+		destinationFileName?: string
+	): Promise<CreateDriveResult> {
+		const { dataTrx, metaDataTrx, fileId } = await this.arFsDao.uploadPrivateFile(
+			parentFolderId,
+			filePath,
+			password,
 			destinationFileName
 		);
 
