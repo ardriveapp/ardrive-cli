@@ -33,6 +33,7 @@ import {
 	ArFSPublicFileMetadataTransactionData,
 	ArFSPublicFolderTransactionData
 } from './arfs_trx_data_types';
+import { buildQuery } from './query';
 
 export const ArFS_O_11 = '0.11';
 
@@ -380,27 +381,9 @@ export class ArFSDAO {
 	}
 
 	async getDriveIdForFolderId(folderId: FolderID): Promise<DriveID> {
-		const query = {
-			query: `query {
-				transactions(
-					first: 1
-					tags: [
-						{ name: "Folder-Id", values: "${folderId}" }
-					]
-				) {
-					edges {
-						node {
-							id
-							tags {
-								name
-								value
-							}
-						}
-					}
-				}
-			}`
-		};
-		const response = await this.arweave.api.post(graphQLURL, query);
+		const gqlQuery = buildQuery([{ name: 'Folder-Id', value: folderId }]);
+
+		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 		const { data } = response.data;
 		const { transactions } = data;
 
@@ -420,32 +403,13 @@ export class ArFSDAO {
 	}
 
 	async getPublicDriveEntity(driveId: string): Promise<ArFSDriveEntity> {
-		// GraphQL Query
-		const query = {
-			query: `query {
-						transactions(
-							first: 1
-							sort: HEIGHT_ASC
-							tags: [
-							{ name: "Drive-Id", values: "${driveId}" }
-							{ name: "Entity-Type", values: "drive" }
-							{ name: "Drive-Privacy", values: "public" }
-							]
-						) {
-							edges {
-								node {
-									id
-									tags {
-										name
-										value
-									}
-								}
-							}
-						}
-					}`
-		};
+		const gqlQuery = buildQuery([
+			{ name: 'Drive-Id', value: driveId },
+			{ name: 'Entity-Type', value: 'drive' },
+			{ name: 'Drive-Privacy', value: 'public' }
+		]);
 
-		const response = await this.arweave.api.post(graphQLURL, query);
+		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 		const { data } = response.data;
 		const { transactions } = data;
 		const { edges } = transactions;
@@ -517,32 +481,13 @@ export class ArFSDAO {
 	}
 
 	async getPrivateDriveEntity(driveId: string): Promise<ArFSPrivateDriveEntity> {
-		// GraphQL Query
-		const query = {
-			query: `query {
-						transactions(
-							first: 1
-							sort: HEIGHT_ASC
-							tags: [
-								{ name: "Drive-Id", values: "${driveId}" }
-								{ name: "Entity-Type", values: "drive" }
-								{ name: "Drive-Privacy", values: "private" }
-							]
-						) {
-							edges {
-								node {
-								id
-								tags {
-									name
-									value
-								}
-								}
-							}
-						}
-					}`
-		};
+		const gqlQuery = buildQuery([
+			{ name: 'Drive-Id', value: driveId },
+			{ name: 'Entity-Type', value: 'drive' },
+			{ name: 'Drive-Privacy', value: 'private' }
+		]);
 
-		const response = await this.arweave.api.post(graphQLURL, query);
+		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 		const { data } = response.data;
 		const { transactions } = data;
 		const { edges } = transactions;
