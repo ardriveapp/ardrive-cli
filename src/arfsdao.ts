@@ -76,7 +76,11 @@ export class ArFSDAO {
 		driveId: DriveID,
 		parentFolderId?: FolderID
 	): Promise<ArFSCreateFolderResult> {
-		// TODO: ENFORCE THAT DRIVE IS PUBLIC
+		// Ensure that drive is indeed public
+		const drive = await this.getPublicDriveEntity(driveId);
+		if (!drive) {
+			throw new Error(`Public drive with Drive ID ${driveId} not found!`);
+		}
 
 		// Generate a new folder ID
 		const folderId = uuidv4();
