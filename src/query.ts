@@ -12,7 +12,7 @@ const edgesFragment = `
 	}
 `;
 
-type GQLQuery = { query: string };
+export type GQLQuery = { query: string };
 
 /**
  * Builds a GraphQL query which will only return the latest result
