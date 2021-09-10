@@ -56,7 +56,7 @@ export interface ArFSCreatePrivateDriveResult extends ArFSCreateDriveResult {
 	driveKey: DriveKey;
 }
 
-export default class ArFSDAO {
+export class ArFSDAO {
 	// TODO: Can we abstract Arweave type(s)?
 	constructor(private readonly wallet: Wallet, private readonly arweave: Arweave) {}
 
