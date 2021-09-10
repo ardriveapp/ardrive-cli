@@ -570,7 +570,7 @@ export class ArFSDAO {
 			syncStatus: 0
 		};
 
-		edges.forEach((edge: GQLEdgeInterface) => {
+		edges.forEach(async (edge: GQLEdgeInterface) => {
 			// Iterate through each tag and pull out each drive ID as well the drives privacy status
 			const { node } = edge;
 			const { tags } = node;
@@ -615,6 +615,14 @@ export class ArFSDAO {
 
 			// Get the drives transaction ID
 			drive.txId = node.id;
+
+			const txData = await this.arweave.transactions.getData(drive.txId, { decode: true });
+			const dataString = await Utf8ArrayToStr(txData);
+			const dataJSON = await JSON.parse(dataString);
+
+			// Get the drive name and root folder id
+			drive.name = dataJSON.name;
+			drive.rootFolderId = dataJSON.rootFolderId;
 		});
 		return drive;
 	}
