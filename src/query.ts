@@ -12,9 +12,7 @@ const edgesFragment = `
 	}
 `;
 
-// interface ArFSTagInterface extends GQLTagInterface {
-// 	name: 'Drive-Id' | 'Folder-Id';
-// }
+type GQLQuery = { query: string };
 
 /**
  * Builds a GraphQL query which will only return the latest result
@@ -24,7 +22,7 @@ const edgesFragment = `
  * @example
  * const query = buildQuery([{ name: 'Folder-Id', value: folderId }]);
  */
-export function buildQuery(tags: GQLTagInterface[]): { query: string } {
+export function buildQuery(tags: GQLTagInterface[]): GQLQuery {
 	let queryTags = ``;
 
 	tags.forEach((t) => {
