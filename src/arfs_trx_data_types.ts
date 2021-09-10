@@ -183,8 +183,6 @@ export class ArFSPrivateFileMetadataTransactionData extends ArFSFileMetadataTran
 	}
 }
 
-// TODO: FIND A BETTER NAME OR UNIFY
-
 export abstract class ArFSFileDataTransactionData implements ArFSObjectTransactionData {
 	abstract asTransactionData(): string | Buffer;
 }
