@@ -240,7 +240,6 @@ export class ArFSPublicFileDataPrototype extends ArFSFileDataPrototype {
 	}
 }
 
-// TODO: PRIVATIZE
 export class ArFSPrivateFileDataPrototype extends ArFSFileDataPrototype {
 	readonly contentType = 'application/octet-stream';
 	constructor(readonly objectData: ArFSPrivateFileDataTransactionData) {
