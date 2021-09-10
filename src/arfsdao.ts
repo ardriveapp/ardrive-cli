@@ -75,7 +75,7 @@ export class ArFSDAO {
 		folderName: string,
 		driveId: DriveID,
 		parentFolderId?: FolderID,
-		newDrive = false
+		syncParentFolderId = true
 	): Promise<ArFSCreateFolderResult> {
 		if (parentFolderId) {
 			// Assert that drive ID is consistent with parent folder ID
@@ -86,7 +86,7 @@ export class ArFSDAO {
 					`Drive id: ${driveId} does not match actual drive id: ${actualDriveId} for parent folder id`
 				);
 			}
-		} else if (!newDrive) {
+		} else if (syncParentFolderId) {
 			// If drive contains a root folder ID, treat this as a subfolder to the root folder
 			const drive = await this.getPublicDriveEntity(driveId);
 			if (!drive) {
@@ -134,7 +134,7 @@ export class ArFSDAO {
 			driveName,
 			driveId,
 			undefined,
-			true
+			false
 		);
 
 		// Get the current time so the app can display the "created" data later on
