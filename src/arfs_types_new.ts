@@ -1,3 +1,5 @@
+/*
+
 // The primary ArFS entity that all other entities inherit from.
 export class ArFSEntity {
 	appName: string; // The app that has submitted this entity.  Should not be longer than 64 characters.  eg. ArDrive-Web
@@ -115,3 +117,5 @@ export class ArFSPrivateFileData extends ArFSFileData {
 		this.cipherIV = cipherIV;
 	}
 }
+
+*/

@@ -2,20 +2,27 @@ import {
 	ArFSEncryptedData,
 	CipherType,
 	deriveDriveKey,
+	deriveFileKey,
 	DriveAuthMode,
 	driveEncrypt,
 	fileEncrypt,
 	JWKInterface
 } from 'ardrive-core-js';
-import { CipherIV, DataContentType, DriveID, DriveKey, FolderID, TransactionID } from './arfsdao';
+import { CipherIV, DataContentType, DriveID, DriveKey, FileID, FolderID, TransactionID } from './arfsdao';
 
 export interface ArFSObjectTransactionData {
 	asTransactionData(): string | Buffer;
 }
 
-export class ArFSPublicDriveData implements ArFSObjectTransactionData {
-	constructor(readonly name: string, readonly rootFolderId: FolderID) {}
-	asTransactionData(): string | Buffer {
+export abstract class ArFSDriveTransactionData implements ArFSObjectTransactionData {
+	abstract asTransactionData(): string | Buffer;
+}
+
+export class ArFSPublicDriveTransactionData extends ArFSDriveTransactionData {
+	constructor(private readonly name: string, private readonly rootFolderId: FolderID) {
+		super();
+	}
+	asTransactionData(): string {
 		return JSON.stringify({
 			name: this.name,
 			rootFolderId: this.rootFolderId
@@ -23,22 +30,24 @@ export class ArFSPublicDriveData implements ArFSObjectTransactionData {
 	}
 }
 
-export class ArFSPrivateDriveData implements ArFSObjectTransactionData {
+export class ArFSPrivateDriveTransactionData extends ArFSDriveTransactionData {
 	private constructor(
 		readonly cipher: CipherType,
 		readonly cipherIV: CipherIV,
 		readonly encryptedDriveData: Buffer,
 		readonly driveKey: DriveKey,
 		readonly driveAuthMode: DriveAuthMode = 'password'
-	) {}
+	) {
+		super();
+	}
 
-	static async createArFSPrivateDriveData(
+	static async from(
 		name: string,
 		rootFolderId: FolderID,
 		driveId: DriveID,
 		drivePassword: string,
 		privateKey: JWKInterface
-	): Promise<ArFSPrivateDriveData> {
+	): Promise<ArFSPrivateDriveTransactionData> {
 		const driveKey: Buffer = await deriveDriveKey(drivePassword, driveId, JSON.stringify(privateKey));
 		const { cipher, cipherIV, data } = await driveEncrypt(
 			driveKey,
@@ -49,33 +58,78 @@ export class ArFSPrivateDriveData implements ArFSObjectTransactionData {
 				})
 			)
 		);
-		return new ArFSPrivateDriveData(cipher, cipherIV, data, driveKey);
+		return new ArFSPrivateDriveTransactionData(cipher, cipherIV, data, driveKey);
 	}
 
-	asTransactionData(): string | Buffer {
+	asTransactionData(): Buffer {
 		return this.encryptedDriveData;
 	}
 }
 
-export class ArFSPublicFolderData implements ArFSObjectTransactionData {
-	constructor(readonly name: string) {}
-	asTransactionData(): string | Buffer {
+export abstract class ArFSFolderTransactionData implements ArFSObjectTransactionData {
+	abstract asTransactionData(): string | Buffer;
+}
+
+export class ArFSPublicFolderTransactionData extends ArFSFolderTransactionData {
+	constructor(private readonly name: string) {
+		super();
+	}
+	asTransactionData(): string {
 		return JSON.stringify({
 			name: this.name
 		});
 	}
 }
 
-export class ArFSPublicFileData implements ArFSObjectTransactionData {
-	constructor(
+export class ArFSPrivateFolderTransactionData extends ArFSFolderTransactionData {
+	private constructor(
 		readonly name: string,
-		readonly size: number,
-		readonly lastModifiedDate: number,
-		readonly dataTxId: TransactionID,
-		readonly dataContentType: DataContentType
-	) {}
+		readonly cipher: CipherType,
+		readonly cipherIV: CipherIV,
+		readonly encryptedFolderData: Buffer
+	) {
+		super();
+	}
 
-	asTransactionData(): string | Buffer {
+	static async from(
+		name: string,
+		driveId: DriveID,
+		drivePassword: string,
+		privateKey: JWKInterface
+	): Promise<ArFSPrivateFolderTransactionData> {
+		const driveKey: Buffer = await deriveDriveKey(drivePassword, driveId, JSON.stringify(privateKey));
+		const { cipher, cipherIV, data }: ArFSEncryptedData = await fileEncrypt(
+			driveKey,
+			Buffer.from(
+				JSON.stringify({
+					name: name
+				})
+			)
+		);
+		return new ArFSPrivateFolderTransactionData(name, cipher, cipherIV, data);
+	}
+
+	asTransactionData(): Buffer {
+		return this.encryptedFolderData;
+	}
+}
+
+export abstract class ArFSFileMetadataTransactionData implements ArFSObjectTransactionData {
+	abstract asTransactionData(): string | Buffer;
+}
+
+export class ArFSPublicFileMetadataTransactionData extends ArFSFileMetadataTransactionData {
+	constructor(
+		private readonly name: string,
+		private readonly size: number,
+		private readonly lastModifiedDate: number,
+		private readonly dataTxId: TransactionID,
+		private readonly dataContentType: DataContentType
+	) {
+		super();
+	}
+
+	asTransactionData(): string {
 		return JSON.stringify({
 			name: this.name,
 			size: this.size,
@@ -86,43 +140,88 @@ export class ArFSPublicFileData implements ArFSObjectTransactionData {
 	}
 }
 
-// TODO: FIND A BETTER NAME OR UNIFY
-export class ArFSFileData implements ArFSObjectTransactionData {
-	constructor(readonly data: Buffer) {}
-
-	asTransactionData(): Buffer {
-		return this.data;
-	}
-}
-
-export class ArFSPrivateFolderData implements ArFSObjectTransactionData {
+export class ArFSPrivateFileMetadataTransactionData extends ArFSFileMetadataTransactionData {
 	private constructor(
-		readonly name: string,
 		readonly cipher: CipherType,
 		readonly cipherIV: CipherIV,
-		readonly encryptedFolderData: Buffer,
+		readonly encryptedFileMetadata: Buffer,
 		readonly driveAuthMode: DriveAuthMode = 'password'
-	) {}
+	) {
+		super();
+	}
 
-	static async createArFSPrivateFolderData(
+	static async from(
 		name: string,
+		size: number,
+		lastModifiedDate: number,
+		dataTxId: TransactionID,
+		dataContentType: DataContentType,
+		fileId: FileID,
 		driveId: DriveID,
 		drivePassword: string,
 		privateKey: JWKInterface
-	): Promise<ArFSPrivateFolderData> {
+	): Promise<ArFSPrivateFileMetadataTransactionData> {
 		const driveKey: Buffer = await deriveDriveKey(drivePassword, driveId, JSON.stringify(privateKey));
+		const fileKey: Buffer = await deriveFileKey(fileId, driveKey);
 		const { cipher, cipherIV, data }: ArFSEncryptedData = await fileEncrypt(
-			driveKey,
+			fileKey,
 			Buffer.from(
 				JSON.stringify({
-					name: name
+					name: name,
+					size: size,
+					lastModifiedDate: lastModifiedDate,
+					dataTxId: dataTxId,
+					dataContentType: dataContentType
 				})
 			)
 		);
-		return new ArFSPrivateFolderData(name, cipher, cipherIV, data);
+		return new ArFSPrivateFileMetadataTransactionData(cipher, cipherIV, data);
+	}
+
+	asTransactionData(): Buffer {
+		return this.encryptedFileMetadata;
+	}
+}
+
+// TODO: FIND A BETTER NAME OR UNIFY
+
+export abstract class ArFSFileDataTransactionData implements ArFSObjectTransactionData {
+	abstract asTransactionData(): string | Buffer;
+}
+export class ArFSPublicFileDataTransactionData extends ArFSFileDataTransactionData {
+	constructor(private readonly fileData: Buffer) {
+		super();
+	}
+
+	asTransactionData(): Buffer {
+		return this.fileData;
+	}
+}
+
+export class ArFSPrivateFileDataTransactionData extends ArFSFileDataTransactionData {
+	private constructor(
+		readonly cipher: CipherType,
+		readonly cipherIV: CipherIV,
+		readonly encryptedFileData: Buffer,
+		readonly driveAuthMode: DriveAuthMode = 'password'
+	) {
+		super();
+	}
+
+	static async from(
+		fileData: Buffer,
+		fileId: FileID,
+		driveId: DriveID,
+		drivePassword: string,
+		privateKey: JWKInterface
+	): Promise<ArFSPrivateFileDataTransactionData> {
+		const driveKey: Buffer = await deriveDriveKey(drivePassword, driveId, JSON.stringify(privateKey));
+		const fileKey: Buffer = await deriveFileKey(fileId, driveKey);
+		const { cipher, cipherIV, data }: ArFSEncryptedData = await fileEncrypt(fileKey, fileData);
+		return new ArFSPrivateFileDataTransactionData(cipher, cipherIV, data);
 	}
 
 	asTransactionData(): string | Buffer {
-		return this.encryptedFolderData;
+		return this.encryptedFileData;
 	}
 }
