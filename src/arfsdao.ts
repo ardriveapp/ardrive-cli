@@ -548,7 +548,7 @@ export class ArFSDAO {
 		const { edges } = transactions;
 
 		if (!edges.length) {
-			throw new Error('');
+			throw new Error(`Private drive with Drive ID ${driveId} not found or is not private!`);
 		}
 
 		// TODO: CREATE A BUILDER AND REJECT INVALID ENTITIES
