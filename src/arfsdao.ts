@@ -74,17 +74,9 @@ export class ArFSDAO {
 	async createPublicFolder(
 		folderName: string,
 		driveId: DriveID,
-		parentFolderId?: FolderID
+		parentFolderId?: FolderID,
+		newDrive = false
 	): Promise<ArFSCreateFolderResult> {
-		// Ensure that drive is indeed public
-		const drive = await this.getPublicDriveEntity(driveId);
-		if (!drive) {
-			throw new Error(`Public drive with Drive ID ${driveId} not found!`);
-		}
-
-		// Generate a new folder ID
-		const folderId = uuidv4();
-
 		if (parentFolderId) {
 			// Assert that drive ID is consistent with parent folder ID
 			const actualDriveId = await this.getDriveIdForFolderId(parentFolderId);
@@ -94,7 +86,7 @@ export class ArFSDAO {
 					`Drive id: ${driveId} does not match actual drive id: ${actualDriveId} for parent folder id`
 				);
 			}
-		} else {
+		} else if (!newDrive) {
 			// If drive contains a root folder ID, treat this as a subfolder to the root folder
 			const drive = await this.getPublicDriveEntity(driveId);
 			if (!drive) {
@@ -105,6 +97,9 @@ export class ArFSDAO {
 				parentFolderId = drive.rootFolderId;
 			}
 		}
+
+		// Generate a new folder ID
+		const folderId = uuidv4();
 
 		// Get the current time so the app can display the "created" data later on
 		const unixTime = Math.round(Date.now() / 1000);
@@ -135,7 +130,12 @@ export class ArFSDAO {
 		const driveId = uuidv4();
 
 		// Create root folder
-		const { folderTrx: rootFolderTrx, folderId: rootFolderId } = await this.createPublicFolder(driveName, driveId);
+		const { folderTrx: rootFolderTrx, folderId: rootFolderId } = await this.createPublicFolder(
+			driveName,
+			driveId,
+			undefined,
+			true
+		);
 
 		// Get the current time so the app can display the "created" data later on
 		const unixTime = Math.round(Date.now() / 1000);
