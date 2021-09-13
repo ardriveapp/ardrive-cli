@@ -5,10 +5,17 @@ import { Command } from 'commander';
 import * as fs from 'fs';
 import { ArDrive } from './ardrive';
 import { ArFSDAO } from './arfsdao';
-import { JWKInterface } from 'ardrive-core-js';
 import { Wallet, JWKWallet, WalletDAO } from './wallet_new';
 import Arweave from 'arweave';
 import { CLICommand } from './CLICommand';
+import {
+	DriveNameParameter,
+	DrivePasswordParameter,
+	SeedPhraseParameter,
+	WalletFileParameter
+} from './parameter_declarations';
+import { CommonContext } from './CLICommand/commonContext';
+import { JWKInterface } from './wallet';
 
 /* eslint-disable no-console */
 
@@ -25,66 +32,43 @@ const walletDao = new WalletDAO(arweave);
 // Utility for parsing command line options
 const program = new Command();
 
-new CLICommand(
-	{
-		name: 'create-drive',
-		parameters: [
-			{
-				aliases: ['-w', '--wallet-file'],
-				description: `the path to a JWK file on the file system
-	• Can't be used with --seed-phrase`
-			},
-			{
-				aliases: ['-s', '--seed-phrase'],
-				description: `a 12-word seed phrase representing a JWK
-		• Can't be used with --wallet-file`
-			},
-			{
-				aliases: ['-p', '--drive-password'],
-				description: `the encryption password for the private drive (OPTIONAL)
-		• When provided, creates the drive as a private drive. Public drive otherwise.`
-			},
-			{
-				aliases: ['-n', '--drive-name'],
-				description: `the name for the new drive`
+CLICommand.commanderProgram = program;
+
+new CLICommand({
+	name: 'create-drive',
+	parameters: [WalletFileParameter, SeedPhraseParameter, DriveNameParameter, DrivePasswordParameter],
+	async action(options) {
+		const context = new CommonContext(options, arweave);
+		const wallet: Wallet = await context.getWallet();
+		const ardrive = new ArDrive(new ArFSDAO(wallet, arweave));
+		const createDriveResult = await (async function () {
+			if (await context.getIsPrivate()) {
+				return ardrive.createPrivateDrive(options.driveName, options.drivePassword);
+			} else {
+				return ardrive.createPublicDrive(options.driveName);
 			}
-		],
-		async action(options) {
-			const wallet: Wallet = await (async function () {
-				// Enforce -w OR -s but not both
-				if (!!options.walletFile === !!options.seedPhrase) {
-					// Enters this condition if none or both has data
-					console.log('Choose --wallet-file OR --seed-phrase, but not both.');
-					process.exit(1);
-				}
+		})();
+		console.log(JSON.stringify(createDriveResult, null, 4));
 
-				if (options.walletFile) {
-					const walletFileData = fs.readFileSync(options.walletFile, { encoding: 'utf8', flag: 'r' });
-					const walletJSON = JSON.parse(walletFileData);
-					const walletJWK: JWKInterface = walletJSON as JWKInterface;
-					return new JWKWallet(walletJWK);
-				} else {
-					return await walletDao.generateJWKWallet(options.seed);
-				}
-			})();
+		process.exit(0);
+	}
+});
 
-			// TODO: Export convert seed phrase to wallet
-
-			const ardrive = new ArDrive(new ArFSDAO(wallet, arweave));
-			const createDriveResult = await (async function () {
-				if (options.drivePassword) {
-					return ardrive.createPrivateDrive(options.driveName, options.drivePassword);
-				} else {
-					return ardrive.createPublicDrive(options.driveName);
-				}
-			})();
-			console.log(JSON.stringify(createDriveResult, null, 4));
-
-			process.exit(0);
+new CLICommand({
+	name: 'get-balance',
+	parameters: [WalletFileParameter, SeedPhraseParameter],
+	async action(options) {
+		const context = new CommonContext(options, arweave);
+		const wallet: Wallet | false = await context.getWallet().catch(() => {
+			return false;
+		});
+		const address = wallet ? await wallet.getAddress() : context.driveAddress;
+		if (address) {
+			const balance = await walletDao.getAddressWinstonBalance(address);
+			console.log(balance);
 		}
-	},
-	program
-);
+	}
+});
 
 program
 	.command('get-balance')
