@@ -52,7 +52,7 @@ export class CommonContext {
 		} else if (seedPhrase) {
 			return await this.walletDao.generateJWKWallet(seedPhrase);
 		}
-		throw new Error('No wallet filee neither seed phrase provided!');
+		throw new Error('No wallet file neither seed phrase provided!');
 	}
 
 	/**

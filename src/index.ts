@@ -63,33 +63,36 @@ new CLICommand({
 		if (address) {
 			const balance = await walletDao.getAddressWinstonBalance(address);
 			console.log(balance);
+		} else {
+			console.log(`No wallet provided`);
+			process.exit(0);
 		}
 	}
 });
 
-program
-	.command('get-balance')
-	.option(
-		'-w, --wallet-file [path_to_jwk_file]',
-		`the path to a JWK file on the file system
-			• Can't be used with --seed-phrase`
-	)
-	.option('-a, --address <Arweave wallet address>', 'get the balance of this Arweave wallet address')
-	.action(async (options) => {
-		if (options.walletFile != null) {
-			const wallet = readJWKFile(options.walletFile);
-			const walletAddress = await wallet.getAddress();
-			console.log(walletAddress);
-			console.log(await walletDao.getWalletWinstonBalance(wallet));
-			process.exit(0);
-		} else if (options.address != null) {
-			console.log(await walletDao.getAddressWinstonBalance(options.address));
-			process.exit(0);
-		} else {
-			console.log('MISSING WALLET FILE OR DESTINATION ADDRESS!');
-			process.exit(1);
-		}
-	});
+// program
+// 	.command('get-balance')
+// 	.option(
+// 		'-w, --wallet-file [path_to_jwk_file]',
+// 		`the path to a JWK file on the file system
+// 			• Can't be used with --seed-phrase`
+// 	)
+// 	.option('-a, --address <Arweave wallet address>', 'get the balance of this Arweave wallet address')
+// 	.action(async (options) => {
+// 		if (options.walletFile != null) {
+// 			const wallet = readJWKFile(options.walletFile);
+// 			const walletAddress = await wallet.getAddress();
+// 			console.log(walletAddress);
+// 			console.log(await walletDao.getWalletWinstonBalance(wallet));
+// 			process.exit(0);
+// 		} else if (options.address != null) {
+// 			console.log(await walletDao.getAddressWinstonBalance(options.address));
+// 			process.exit(0);
+// 		} else {
+// 			console.log('MISSING WALLET FILE OR DESTINATION ADDRESS!');
+// 			process.exit(1);
+// 		}
+// 	});
 
 program
 	.command('get-address')

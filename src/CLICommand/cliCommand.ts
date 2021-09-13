@@ -23,7 +23,15 @@ function setCommanderCommand(commandDescriptor: CommandDescriptor, program: Comm
 	commandDescriptor.parameters.forEach((parameterName) => {
 		const parameter = new Parameter(parameterName);
 		const aliasesAsString = parameter.aliases.join(' ');
-		command.option(aliasesAsString, parameter.description, parameter.default);
+		const paramType = (function () {
+			if (parameter.type === 'array') {
+				return `<...${parameterName}>`;
+			} else if (parameter.type === 'boolean') {
+				return '';
+			}
+			return `<${parameterName}>`;
+		})();
+		command.option(`${aliasesAsString} ${paramType}`, parameter.description, parameter.default);
 	});
 	command.action((options) => {
 		commandDescriptor.action(options);

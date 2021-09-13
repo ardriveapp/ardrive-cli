@@ -1,9 +1,11 @@
 export type ParameterName = string;
+export type ParameterType = 'single-value' | 'boolean' | 'array';
 
 export interface ParameterData {
 	name: ParameterName;
 	aliases: ParameterName[];
 	description: string;
+	type?: ParameterType;
 	default?: string;
 	required?: true;
 	forbiddenConjunctionParameters?: ParameterName[];
@@ -28,6 +30,10 @@ export class Parameter implements ParameterData {
 
 	public get default(): string | undefined {
 		return this.parameterData.default;
+	}
+
+	public get type(): ParameterType {
+		return this.parameterData.type || 'single-value';
 	}
 
 	public get value(): string | undefined {
