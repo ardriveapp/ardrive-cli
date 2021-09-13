@@ -1,18 +1,33 @@
 import { GQLTagInterface } from 'ardrive-core-js';
+import { ArweaveAddress } from './wallet_new';
 
-const edgesFragment = `
-	edges {
-		node {
-			id
-			tags {
-				name
-				value
-			}
+const nodeFragment = `
+	node {
+		id
+		tags {
+			name
+			value
 		}
 	}
 `;
 
+const edgesFragment = (singleResult: boolean) => `
+	edges {
+		${singleResult ? '' : 'cursor'}
+		${nodeFragment}
+	}
+`;
+
+const pageInfoFragment = `
+	pageInfo {
+		hasNextPage
+	}
+`;
+
 export type GQLQuery = { query: string };
+
+const latestResult = 1;
+const pageLimit = 100;
 
 /**
  * Builds a GraphQL query which will only return the latest result
@@ -22,7 +37,7 @@ export type GQLQuery = { query: string };
  * @example
  * const query = buildQuery([{ name: 'Folder-Id', value: folderId }]);
  */
-export function buildQuery(tags: GQLTagInterface[]): GQLQuery {
+export function buildQuery(tags: GQLTagInterface[], cursor?: string, owner?: ArweaveAddress): GQLQuery {
 	let queryTags = ``;
 
 	tags.forEach((t) => {
@@ -30,15 +45,20 @@ export function buildQuery(tags: GQLTagInterface[]): GQLQuery {
 				{ name: "${t.name}", values: "${t.value}" }`;
 	});
 
+	const singleResult = cursor === undefined;
+
 	return {
 		query: `query {
 			transactions(
-				first: 1
+				first: ${singleResult ? latestResult : pageLimit}
+				${singleResult ? '' : `after: "${cursor}""`}
+				${owner === undefined ? '' : `owners: ["${owner}"]`}
 				tags: [
 					${queryTags}
 				]
 			) {
-				${edgesFragment}
+				${singleResult ? '' : pageInfoFragment}
+				${edgesFragment(singleResult)}
 			}
 		}`
 	};

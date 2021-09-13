@@ -6,7 +6,7 @@ import Arweave from 'arweave';
 import * as mnemonicKeys from 'arweave-mnemonic-keys';
 
 type PublicKey = string;
-type ArweaveAddress = string;
+export type ArweaveAddress = string;
 type SeedPhrase = string;
 type TransactionID = string;
 type Winston = string;

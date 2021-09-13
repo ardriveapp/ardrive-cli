@@ -427,6 +427,43 @@ program
 		process.exit(1);
 	});
 
+program
+	.command('drive-info')
+	.requiredOption('-d, --drive-id <the drive id>', 'the drive ID to get metadata from')
+	.option('-a, --get-all-revisions', '(OPTIONAL) get meta data of all revisions, defaults to false')
+	.option(
+		'-p, --drive-password <drive password>',
+		`the drive password for drive of the folder identified by --drive-id
+		• Required only for folders residing in private drives
+		• Can NOT be used in conjunction with --drive-key`
+	)
+	.option(
+		'-k, --drive-key <drive key>',
+		`the drive key for the parent drive of the folder identified by --folder-id
+		• Required only for folders residing in private drives
+		• Can NOT be used in conjunction with --drive-password`
+	)
+	.option(
+		'-w, --wallet-file [path_to_jwk_file]',
+		`the path to a JWK file on the file system
+			• Can't be used with --seed-phrase`
+	)
+	.action(async (options) => {
+		const wallet = (function () {
+			if (options.walletFile) {
+				return readJWKFile(options.walletFile);
+			}
+			console.log('Not implemented');
+			process.exit(1);
+		})();
+		const arDrive = new ArDrive(new ArFSDAO(wallet, arweave));
+		const driveId: string = options.driveId;
+		// const getAllRevisions: boolean = options.getAllRevisions;
+		const result = await arDrive.getPublicDrive(driveId /*, getAllRevisions*/);
+		console.log(JSON.stringify(result, null, 4));
+		process.exit(0);
+	});
+
 program.parse(process.argv);
 
 // Process command line inputs

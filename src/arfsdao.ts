@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import * as fs from 'fs';
 import type { JWKWallet, Wallet } from './wallet_new';
 import Arweave from 'arweave';
@@ -5,7 +6,11 @@ import { v4 as uuidv4 } from 'uuid';
 import Transaction from 'arweave/node/lib/transaction';
 import {
 	ArFSDriveEntity,
+	ArFSEntity,
 	ArFSPrivateDriveEntity,
+	ContentType,
+	DrivePrivacy,
+	EntityType,
 	extToMime,
 	GQLEdgeInterface,
 	GQLTagInterface,
@@ -89,7 +94,7 @@ export class ArFSDAO {
 			}
 		} else if (syncParentFolderId) {
 			// If drive contains a root folder ID, treat this as a subfolder to the root folder
-			const drive = await this.getPublicDriveEntity(driveId);
+			const drive = await this.getPublicDrive(driveId);
 			if (!drive) {
 				throw new Error(`Public drive with Drive ID ${driveId} not found!`);
 			}
@@ -217,7 +222,7 @@ export class ArFSDAO {
 	): Promise<ArFSUploadFileResult> {
 		// Retrieve drive ID from folder ID and ensure that it is indeed public
 		const driveId = await this.getDriveIdForFolderId(parentFolderId);
-		const drive = await this.getPublicDriveEntity(driveId);
+		const drive = await this.getPublicDrive(driveId);
 		if (!drive) {
 			throw new Error(`Public drive with Drive ID ${driveId} not found!`);
 		}
@@ -402,7 +407,7 @@ export class ArFSDAO {
 		throw new Error(`No Drive-Id tag found for meta data transaction of Folder-Id: ${folderId}`);
 	}
 
-	async getPublicDriveEntity(driveId: string): Promise<ArFSDriveEntity> {
+	async getPublicDrive(driveId: string): Promise<ArFSPublicDrive> {
 		const gqlQuery = buildQuery([
 			{ name: 'Drive-Id', value: driveId },
 			{ name: 'Entity-Type', value: 'drive' },
@@ -410,6 +415,7 @@ export class ArFSDAO {
 		]);
 
 		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
+
 		const { data } = response.data;
 		const { transactions } = data;
 		const { edges } = transactions;
@@ -418,21 +424,7 @@ export class ArFSDAO {
 			throw new Error(`Public drive with Drive ID ${driveId} not found!`);
 		}
 
-		// TODO: CREATE A BUILDER AND REJECT INVALID ENTITIES
-		const drive: ArFSDriveEntity = {
-			appName: '',
-			appVersion: '',
-			arFS: '',
-			contentType: '',
-			driveId,
-			drivePrivacy: '',
-			entityType: 'drive',
-			name: '',
-			rootFolderId: '',
-			txId: '',
-			unixTime: 0,
-			syncStatus: 0
-		};
+		const driveBuilder = new ArFSPublicDriveBuilder();
 
 		const { node } = edges[0];
 		const { tags } = node;
@@ -441,25 +433,28 @@ export class ArFSDAO {
 			const { value } = tag;
 			switch (key) {
 				case 'App-Name':
-					drive.appName = value;
+					driveBuilder.appName = value;
 					break;
 				case 'App-Version':
-					drive.appVersion = value;
+					driveBuilder.appVersion = value;
 					break;
 				case 'ArFS':
-					drive.arFS = value;
+					driveBuilder.arFS = value;
 					break;
 				case 'Content-Type':
-					drive.contentType = value;
+					driveBuilder.contentType = value as ContentType;
 					break;
 				case 'Drive-Id':
-					drive.driveId = value;
+					driveBuilder.driveId = value;
 					break;
 				case 'Drive-Privacy':
-					drive.drivePrivacy = value;
+					driveBuilder.drivePrivacy = value as DrivePrivacy;
+					break;
+				case 'Entity-Type':
+					driveBuilder.entityType = value as EntityType;
 					break;
 				case 'Unix-Time':
-					drive.unixTime = +value;
+					driveBuilder.unixTime = +value;
 					break;
 				default:
 					break;
@@ -467,17 +462,19 @@ export class ArFSDAO {
 		});
 
 		// Get the drives transaction ID
-		drive.txId = node.id;
+		driveBuilder.txId = node.id;
 
-		const txData = await this.arweave.transactions.getData(drive.txId, { decode: true });
-		const dataString = await Utf8ArrayToStr(txData);
-		const dataJSON = await JSON.parse(dataString);
+		if (driveBuilder.txId) {
+			const txData = await this.arweave.transactions.getData(driveBuilder.txId, { decode: true });
+			const dataString = await Utf8ArrayToStr(txData);
+			const dataJSON = await JSON.parse(dataString);
 
-		// Get the drive name and root folder id
-		drive.name = dataJSON.name;
-		drive.rootFolderId = dataJSON.rootFolderId;
+			// Get the drive name and root folder id
+			driveBuilder.name = dataJSON.name;
+			driveBuilder.rootFolderId = dataJSON.rootFolderId;
+		}
 
-		return drive;
+		return driveBuilder.build();
 	}
 
 	async getPrivateDriveEntity(driveId: string): Promise<ArFSPrivateDriveEntity> {
@@ -550,6 +547,9 @@ export class ArFSDAO {
 					case 'Drive-Privacy':
 						drive.drivePrivacy = value;
 						break;
+					case 'Entity-Type':
+						drive.entityType = value as EntityType;
+						break;
 					case 'Unix-Time':
 						drive.unixTime = +value;
 						break;
@@ -570,5 +570,68 @@ export class ArFSDAO {
 			drive.rootFolderId = dataJSON.rootFolderId;
 		});
 		return drive;
+	}
+
+export class ArFSPublicDrive extends ArFSEntity implements ArFSDriveEntity {
+	constructor(
+		readonly appName: string,
+		readonly appVersion: string,
+		readonly arFS: string,
+		readonly contentType: string,
+		readonly driveId: string,
+		readonly entityType: string,
+		readonly name: string,
+		readonly txId: string,
+		readonly unixTime: number,
+		readonly drivePrivacy: string,
+		readonly rootFolderId: string
+	) {
+		super(appName, appVersion, arFS, contentType, driveId, entityType, name, 0, txId, unixTime);
+	}
+}
+
+export class ArFSPublicDriveBuilder {
+	appName?: string;
+	appVersion?: string;
+	arFS?: string;
+	contentType?: ContentType;
+	driveId?: DriveID;
+	entityType?: EntityType;
+	name?: string;
+	txId?: TransactionID;
+	unixTime?: number;
+	drivePrivacy?: DrivePrivacy;
+	rootFolderId?: FolderID;
+
+	build(): ArFSPublicDrive {
+		if (
+			this.appName?.length &&
+			this.appVersion?.length &&
+			this.arFS?.length &&
+			this.contentType?.length &&
+			this.driveId?.length &&
+			this.entityType?.length &&
+			this.name?.length &&
+			this.txId?.length &&
+			this.unixTime &&
+			this.drivePrivacy?.length &&
+			this.rootFolderId?.length
+		) {
+			return new ArFSPublicDrive(
+				this.appName,
+				this.appVersion,
+				this.arFS,
+				this.contentType,
+				this.driveId,
+				this.entityType,
+				this.name,
+				this.txId,
+				this.unixTime,
+				this.drivePrivacy,
+				this.rootFolderId
+			);
+		}
+
+		throw new Error('Invalid drive state');
 	}
 }
