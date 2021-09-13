@@ -18,17 +18,11 @@ export interface ArFSTipData {
 
 export type ArFSFees = { [key: string]: number };
 
-export interface CreateDriveResult {
+export interface ArFSResult {
 	created: ArFSEntityData[];
 	tips: ArFSTipData[];
 	fees: ArFSFees;
 }
-
-// export interface UploadFileResult {
-// 	created: ArFSEntityData[]
-// 	tips: ArFSTipData[];
-// 	fees: ArFSFees;
-// }
 
 export class ArDrive {
 	constructor(private readonly arFsDao: ArFSDAO) {}
@@ -37,7 +31,7 @@ export class ArDrive {
 		parentFolderId: FolderID,
 		filePath: string,
 		destinationFileName?: string
-	): Promise<CreateDriveResult> {
+	): Promise<ArFSResult> {
 		const { dataTrx, metaDataTrx, fileId } = await this.arFsDao.uploadPublicFile(
 			parentFolderId,
 			filePath,
@@ -68,7 +62,7 @@ export class ArDrive {
 		filePath: string,
 		password: string,
 		destinationFileName?: string
-	): Promise<CreateDriveResult> {
+	): Promise<ArFSResult> {
 		const { dataTrx, metaDataTrx, fileId } = await this.arFsDao.uploadPrivateFile(
 			parentFolderId,
 			filePath,
@@ -95,11 +89,7 @@ export class ArDrive {
 		});
 	}
 
-	async createPublicFolder(
-		folderName: string,
-		driveId: string,
-		parentFolderId?: FolderID
-	): Promise<CreateDriveResult> {
+	async createPublicFolder(folderName: string, driveId: string, parentFolderId?: FolderID): Promise<ArFSResult> {
 		// TODO: Fetch drive ID for parent folder ID
 
 		// Generate a new drive ID
@@ -122,7 +112,7 @@ export class ArDrive {
 		});
 	}
 
-	async createPublicDrive(driveName: string): Promise<CreateDriveResult> {
+	async createPublicDrive(driveName: string): Promise<ArFSResult> {
 		// Generate a new drive ID
 		const { driveTrx, rootFolderTrx, driveId, rootFolderId } = await this.arFsDao.createPublicDrive(driveName);
 
@@ -150,7 +140,7 @@ export class ArDrive {
 		});
 	}
 
-	async createPrivateDrive(driveName: string, password: string): Promise<CreateDriveResult> {
+	async createPrivateDrive(driveName: string, password: string): Promise<ArFSResult> {
 		// Generate a new drive ID
 		const { driveTrx, rootFolderTrx, driveId, rootFolderId, driveKey } = await this.arFsDao.createPrivateDrive(
 			driveName,
