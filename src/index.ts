@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-//import * as ardrive from 'ardrive-core-js';
-import { Command } from 'commander';
 import * as fs from 'fs';
 import { ArDrive } from './ardrive';
 import { ArFSDAO } from './arfsdao';
@@ -30,10 +28,8 @@ const arweave = Arweave.init({
 
 const walletDao = new WalletDAO(arweave);
 
-// Utility for parsing command line options
-const program = new Command();
-
-CLICommand.commanderProgram = program;
+// TODO: remove when fully de-coupled
+const program = CLICommand.program;
 
 new CLICommand({
 	name: 'create-drive',

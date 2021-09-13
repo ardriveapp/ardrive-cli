@@ -10,6 +10,14 @@ export interface CommandDescriptor {
 	action(options: any): void;
 }
 
+const program = new Command();
+
+// Set up command line option parsing
+//const validActions = ['create-drive', 'rename-drive', 'upload-file'];
+program.option('-h, --help', 'Get help');
+//program.option('create-drive', 'action to create a new drive (and its corresponding root folder)');
+program.addHelpCommand(false);
+
 function setCommanderCommand(commandDescriptor: CommandDescriptor, program: Command): void {
 	const command = program.command(commandDescriptor.name);
 	commandDescriptor.parameters.forEach((parameterName) => {
@@ -24,23 +32,15 @@ function setCommanderCommand(commandDescriptor: CommandDescriptor, program: Comm
 
 export class CLICommand {
 	// A singleton instance of the commander's program object
-	private static program?: Command;
+	public static get program(): Command {
+		// TODO: make me private when index.ts is fully de-coupled from commander library
+		return program;
+	}
 	// private static parameters: Parameter[] = [];
 	private static _doneSettingCommands = false;
 
 	constructor(private readonly commandDescription: CommandDescriptor) {
 		this.setCommand();
-	}
-
-	static set commanderProgram(program: Command) {
-		if (!CLICommand.program) {
-			CLICommand.program = program || new Command();
-			// Set up command line option parsing
-			//const validActions = ['create-drive', 'rename-drive', 'upload-file'];
-			CLICommand.program.option('-h, --help', 'Get help');
-			//program.option('create-drive', 'action to create a new drive (and its corresponding root folder)');
-			CLICommand.program.addHelpCommand(false);
-		}
 	}
 
 	private setCommand(): void {
