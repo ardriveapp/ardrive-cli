@@ -51,7 +51,7 @@ export function buildQuery(tags: GQLTagInterface[], cursor?: string, owner?: Arw
 		query: `query {
 			transactions(
 				first: ${singleResult ? latestResult : pageLimit}
-				${singleResult ? '' : `after: "${cursor}""`}
+				${singleResult ? '' : `after: "${cursor}"`}
 				${owner === undefined ? '' : `owners: ["${owner}"]`}
 				tags: [
 					${queryTags}
