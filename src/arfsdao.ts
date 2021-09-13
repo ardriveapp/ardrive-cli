@@ -605,27 +605,17 @@ export class ArFSPublicDriveBuilder {
 
 	build(): ArFSPublicDrive {
 		if (
-			this.appName &&
-			this.appName.length &&
-			this.appVersion &&
-			this.appVersion.length &&
-			this.arFS &&
-			this.arFS.length &&
-			this.contentType &&
-			this.contentType.length &&
-			this.driveId &&
-			this.driveId.length &&
-			this.entityType &&
-			this.entityType.length &&
-			this.name &&
-			this.name.length &&
-			this.txId &&
-			this.txId.length &&
+			this.appName?.length &&
+			this.appVersion?.length &&
+			this.arFS?.length &&
+			this.contentType?.length &&
+			this.driveId?.length &&
+			this.entityType?.length &&
+			this.name?.length &&
+			this.txId?.length &&
 			this.unixTime &&
-			this.drivePrivacy &&
-			this.drivePrivacy.length &&
-			this.rootFolderId &&
-			this.rootFolderId.length
+			this.drivePrivacy?.length &&
+			this.rootFolderId?.length
 		) {
 			return new ArFSPublicDrive(
 				this.appName,
