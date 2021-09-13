@@ -1,25 +1,38 @@
+// import Arweave from 'arweave';
 import { Command } from 'commander';
+// import { CommonContext } from './commonContext';
+import { Parameter, ParameterName } from './parameter';
 
 export type CommandName = string;
-export type ParameterName = string;
-export interface Parameter {
-	aliases: ParameterName[];
-	description: string;
-	default?: string;
-}
-
 export interface CommandDescriptor {
 	name: CommandName;
-	parameters: Parameter[];
+	parameters: ParameterName[];
 	action(options: any): void;
+}
+
+function setCommanderCommand(commandDescriptor: CommandDescriptor, program: Command): void {
+	const command = program.command(commandDescriptor.name);
+	commandDescriptor.parameters.forEach((parameterName) => {
+		const parameter = new Parameter(parameterName);
+		const aliasesAsString = parameter.aliases.join(' ');
+		command.option(aliasesAsString, parameter.description, parameter.default);
+	});
+	command.action((options) => {
+		commandDescriptor.action(options);
+	});
 }
 
 export class CLICommand {
 	// A singleton instance of the commander's program object
-	private static program: Command;
+	private static program?: Command;
+	// private static parameters: Parameter[] = [];
 	private static _doneSettingCommands = false;
 
-	constructor(private readonly commandDescription: CommandDescriptor, program?: Command) {
+	constructor(private readonly commandDescription: CommandDescriptor) {
+		this.setCommand();
+	}
+
+	static set commanderProgram(program: Command) {
 		if (!CLICommand.program) {
 			CLICommand.program = program || new Command();
 			// Set up command line option parsing
@@ -28,30 +41,22 @@ export class CLICommand {
 			//program.option('create-drive', 'action to create a new drive (and its corresponding root folder)');
 			CLICommand.program.addHelpCommand(false);
 		}
-		this.setCommand();
 	}
 
 	private setCommand(): void {
+		if (!CLICommand.program) {
+			throw new Error(`Commander program instance is not set!`);
+		}
 		if (CLICommand._doneSettingCommands) {
-			// eslint-disable-next-line no-console
-			console.log(
+			throw new Error(
 				`Won't set a command after parameters are parsed! \n${JSON.stringify(this.commandDescription, null, 4)}`
 			);
-			return;
 		}
-		this.setCommanderCommand();
+		// CLICommand.parameters.push(...this.commandDescription.parameters);
+		setCommanderCommand(this.commandDescription, CLICommand.program);
 	}
 
-	private setCommanderCommand(): void {
-		const command = CLICommand.program.command(this.commandDescription.name);
-		this.commandDescription.parameters.forEach((parameter) => {
-			const aliasesAsString = parameter.aliases.join(' ');
-			command.option(aliasesAsString, parameter.description, parameter.default);
-		});
-		command.action(this.commandDescription.action);
-	}
-
-	public static doneSettingCommands(): void {
+	public static parse(): void {
 		CLICommand.program.parse(process.argv);
 		CLICommand._doneSettingCommands = true;
 	}
