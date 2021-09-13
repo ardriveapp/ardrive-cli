@@ -572,69 +572,6 @@ export class ArFSDAO {
 		return drive;
 	}
 
-	// 	getTagValue(tagName: string, tags: GQLTagInterface[]): string {
-	// 		const tag = tags.find((t) => t.name === tagName);
-
-	// 		if (!tag) {
-	// 			throw new Error(`Cannot find tag name ${tagName} in tags for this entity: ${tags}`);
-	// 		}
-
-	// 		return tag.value;
-	// 	}
-
-	// 	edgeToEntity(edge: GQLEdgeInterface): ArFSEntity {
-	// 		const { tags } = edge.node;
-
-	// 		return {
-	// 			appName: this.getTagValue('App-Name', tags),
-	// 			appVersion: this.getTagValue('App-Version', tags),
-	// 			arFS: this.getTagValue('ArFS', tags),
-	// 			contentType: this.getTagValue('Content-Type', tags),
-	// 			driveId: this.getTagValue('Drive-Id', tags),
-	// 			entityType: this.getTagValue('Entity-Type', tags),
-	// 			name: '',
-	// 			txId: edge.node.id,
-	// 			unixTime: +this.getTagValue('Unix-Time', tags),
-	// 			syncStatus: 0
-	// 		};
-	// 	}
-
-	// 	async getAllEntitiesForDriveId(driveId: DriveID): Promise<ArFSEntity[]> {
-	// 		let hasNextPage = true;
-	// 		let cursor = '';
-	// 		let allEntities: ArFSEntity[] = [];
-
-	// 		while (hasNextPage) {
-	// 			const gqlQuery = buildQuery([{ name: 'Drive-Id', value: driveId }], cursor);
-	// 			const response = await this.arweave.api.post(graphQLURL, gqlQuery);
-	// 			const { data } = response.data;
-	// 			const { transactions } = data;
-	// 			const edges: GQLEdgeInterface[] = transactions.edges;
-	// 			hasNextPage = transactions.pageInfo.hasNextPage;
-
-	// 			for (const edge of edges) {
-	// 				cursor = edge.cursor;
-
-	// 				const baseEntity = this.edgeToEntity(edge);
-
-	// 				allEntities = [...allEntities, baseEntity];
-
-	// 				edge.node.tags;
-	// 				// switch (baseEntity.entityType) {
-	// 				// 	case 'file':
-
-	// 				// 		break;
-
-	// 				// 	default:
-	// 				// 		break;
-	// 				// }
-	// 			}
-	// 		}
-
-	// 		return allEntities;
-	// 	}
-}
-
 export class ArFSPublicDrive extends ArFSEntity implements ArFSDriveEntity {
 	constructor(
 		readonly appName: string,
