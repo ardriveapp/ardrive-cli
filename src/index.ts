@@ -8,6 +8,7 @@ import { ArFSDAO } from './arfsdao';
 import { JWKInterface } from 'ardrive-core-js';
 import { Wallet, JWKWallet, WalletDAO } from './wallet_new';
 import Arweave from 'arweave';
+import fetch from 'node-fetch';
 
 /* eslint-disable no-console */
 
@@ -29,6 +30,70 @@ const program = new Command();
 program.option('-h, --help', 'Get help');
 //program.option('create-drive', 'action to create a new drive (and its corresponding root folder)');
 program.addHelpCommand(false);
+
+program
+	.command('create-folder')
+	.requiredOption('-n, --folder-name [name]', `a destination folder name to use when uploaded to ArDrive`)
+	.requiredOption('-d, --drive-id [drive id]', `a destination drive id to create folder within`)
+	.option(
+		'-p, --parent-folder-id <parent folder id>',
+		`the ArFS folder ID for the folder in which
+		this folder will reside (i.e. its parent folder)
+		• If no parent folder is supplied, the folder will become a subfolder of the root folder`
+	)
+	.option(
+		'-w, --wallet-file [path_to_jwk_file]',
+		`the path to a JWK file on the file system
+	• Can't be used with --seed-phrase`
+	)
+	.option(
+		'-s, --seed-phrase [12-word seed phrase]',
+		`a 12-word seed phrase representing a JWK
+		• Can't be used with --wallet-file`
+	)
+	.option(
+		'-p, --drive-password <drive password>',
+		`the encryption password for the private drive (OPTIONAL)
+		• When provided, creates the drive as a private drive. Public drive otherwise.`
+	)
+	.option(
+		'-k, --drive-key <drive key>',
+		`the drive key for the parent drive of the folder identified by --parent-folder-id
+		• Required only for files residing in private drives
+		• Can NOT be used in conjunction with --drive-password`
+	)
+	.action(async (options) => {
+		const wallet: Wallet = await (async function () {
+			// Enforce -w OR -s but not both
+			if (!!options.walletFile === !!options.seedPhrase) {
+				// Enters this condition if none or both has data
+				console.log('Choose --wallet-file OR --seed-phrase, but not both.');
+				process.exit(1);
+			}
+
+			if (options.walletFile) {
+				const walletFileData = fs.readFileSync(options.walletFile, { encoding: 'utf8', flag: 'r' });
+				const walletJSON = JSON.parse(walletFileData);
+				const walletJWK: JWKInterface = walletJSON as JWKInterface;
+				return new JWKWallet(walletJWK);
+			} else {
+				return await walletDao.generateJWKWallet(options.seed);
+			}
+		})();
+
+		const { folderName, driveId, parentFolderId } = options;
+
+		// TODO: Export convert seed phrase to wallet
+
+		const ardrive = new ArDrive(new ArFSDAO(wallet, arweave));
+		const createFolderResult = await (async function () {
+			return ardrive.createPublicFolder(folderName, driveId, parentFolderId);
+		})();
+
+		console.log(JSON.stringify(createFolderResult, null, 4));
+
+		process.exit(0);
+	});
 
 program
 	.command('create-drive')
@@ -92,10 +157,7 @@ program
 	.option('-a, --address <Arweave wallet address>', 'get the balance of this Arweave wallet address')
 	.action(async (options) => {
 		if (options.walletFile != null) {
-			const walletFileData = fs.readFileSync(options.walletFile, { encoding: 'utf8', flag: 'r' });
-			const walletJSON = JSON.parse(walletFileData);
-			const walletJWK = walletJSON as JWKInterface;
-			const wallet = new JWKWallet(walletJWK);
+			const wallet = readJWKFile(options.walletFile);
 			const walletAddress = await wallet.getAddress();
 			console.log(walletAddress);
 			console.log(await walletDao.getWalletWinstonBalance(wallet));
@@ -118,10 +180,7 @@ program
 	)
 	.action(async (options) => {
 		if (options.walletFile != null) {
-			const walletFileData = fs.readFileSync(options.walletFile, { encoding: 'utf8', flag: 'r' });
-			const walletJSON = JSON.parse(walletFileData);
-			const walletJWK = walletJSON as JWKInterface;
-			const wallet = new JWKWallet(walletJWK);
+			const wallet = readJWKFile(options.walletFile);
 			const walletAddress = await wallet.getAddress();
 			console.log(walletAddress);
 			process.exit(0);
@@ -130,6 +189,14 @@ program
 			process.exit(1);
 		}
 	});
+
+function readJWKFile(path: string): Wallet {
+	const walletFileData = fs.readFileSync(path, { encoding: 'utf8', flag: 'r' });
+	const walletJSON = JSON.parse(walletFileData);
+	const walletJWK = walletJSON as JWKInterface;
+	const wallet = new JWKWallet(walletJWK);
+	return wallet;
+}
 
 program
 	.command('send-ar')
@@ -146,10 +213,7 @@ program
 			process.exit(1);
 		}
 
-		const walletFileData = fs.readFileSync(options.walletFile, { encoding: 'utf8', flag: 'r' });
-		const walletJSON = JSON.parse(walletFileData);
-		const walletJWK = walletJSON as JWKInterface;
-		const wallet = new JWKWallet(walletJWK);
+		const wallet = readJWKFile(options.walletFile);
 		const walletAddress = await wallet.getAddress();
 		console.log(walletAddress);
 		console.log(`arAmount: ${options.arAmount}`);
@@ -179,12 +243,224 @@ program.command('generate-seedphrase').action(async () => {
 program
 	.command('generate-wallet')
 	.requiredOption('-s, --seed <seed>', 'The previously generated mnemonic seed phrase')
+	// TODO: Add --out flag for wallet destination output
 	.action(async (options) => {
 		if (!options.seed) {
 			throw new Error('Missing required seed phrase');
 		}
 		const wallet = await walletDao.generateJWKWallet(options.seed);
 		console.log(JSON.stringify(wallet));
+		process.exit(0);
+	});
+
+async function fetchMempool(): Promise<string[]> {
+	const response = await fetch('https://arweave.net/tx/pending');
+	return response.json();
+}
+
+program.command('get-mempool').action(async () => {
+	const transactionsInMempool = await fetchMempool();
+
+	console.log(JSON.stringify(transactionsInMempool, null, 4));
+	process.exit(0);
+});
+
+program
+	.command('tx-status')
+	.requiredOption('-t, --tx-id <transaction id>', 'The transaction id to check the status of in the mempool')
+	.option(
+		'-c, --confirmations <number of confirmations>',
+		'Number of confirmations to determine if a transaction is mined'
+	)
+	.action(async ({ txId, confirmations }) => {
+		const transactionsInMempool = await fetchMempool();
+		const pending = transactionsInMempool.includes(txId);
+		const confirmationAmount = confirmations ?? 15;
+
+		if (pending) {
+			console.log(`${txId}: Pending`);
+			process.exit(0);
+		}
+
+		const confStatus = (await arweave.transactions.getStatus(txId)).confirmed;
+
+		if (!confStatus?.block_height) {
+			console.log(`${txId}: Not found`);
+			process.exit(1);
+		}
+
+		if (confStatus?.number_of_confirmations >= confirmationAmount) {
+			console.log(
+				`${txId}: Mined at block height ${confStatus.block_height} with ${confStatus.number_of_confirmations} confirmations`
+			);
+		} else {
+			console.log(
+				`${txId}: Confirming at block height ${confStatus.block_height} with ${confStatus.number_of_confirmations} confirmations`
+			);
+		}
+
+		process.exit(0);
+	});
+
+interface UploadFileParameter {
+	parentFolderId: string;
+	localFilePath: string;
+	destinationFileName?: string;
+	drivePassword?: string;
+	driveKey?: string;
+}
+
+program
+	.command('upload-file')
+	.requiredOption(
+		'-f, --parent-folder-id <parent folder id>',
+		`the ArFS folder ID for the folder in which this file will reside (i.e. its parent folder)
+		• To upload the file to the root of a drive, use the root folder ID of the drive`
+	)
+	.option(
+		'-l, --local-file-path <local file path>',
+		`the path on the local filesystem for the file that will be uploaded`
+	)
+	.option(
+		'-d, --dest-file-name <destination file name>',
+		`(OPTIONAL) a destination file name to use when uploaded to ArDrive`
+	)
+	.option(
+		'--local-files <local file paths>',
+		`a path to a csv (tab delimited) file containing rows of data for the following columns:
+		• CSV Columns
+		• local file path
+		• destination file name (optional)
+		• parent folder ID (optional)
+			• --parent-folder-id used, otherwise
+			• all parent folder IDs should reside in the same drive
+		• Can NOT be used in conjunction with --local-file-path`
+	)
+	.option(
+		'-p, --drive-password <drive password>',
+		`the drive password for the parent drive of the folder identified by --parent-folder-id
+		• Required only for files residing in private drives
+		• Can NOT be used in conjunction with --drive-key`
+	)
+	.option(
+		'-k, --drive-key <drive key>',
+		`the drive key for the parent drive of the folder identified by --parent-folder-id
+		• Required only for files residing in private drives
+		• Can NOT be used in conjunction with --drive-password`
+	)
+	.option(
+		'-w, --wallet-file [path_to_jwk_file]',
+		`the path to a JWK file on the file system
+			• Can't be used with --seed-phrase`
+	)
+	.action(async (options) => {
+		const filesToUpload: UploadFileParameter[] = (function (): UploadFileParameter[] {
+			if (options.drivePassword && options.driveKey) {
+				console.log(`Can not use --drive-password in conjunction with --drive-key`);
+				process.exit(1);
+			}
+			if (options.localFiles) {
+				if (options.localFilePath) {
+					console.log(`Can not use --local-files in conjunction with --localFilePath`);
+					process.exit(1);
+				}
+				const COLUMN_SEPARATOR = ',';
+				const ROW_SEPARATOR = '.';
+				const csvRows = options.localFiles.split(ROW_SEPARATOR);
+				const fileParameters: UploadFileParameter[] = csvRows.map((row: string) => {
+					const csvFields = row.split(COLUMN_SEPARATOR).map((f: string) => f.trim());
+					const [parentFolderId, localFilePath, destinationFileName, drivePassword, driveKey] = csvFields;
+					return {
+						parentFolderId,
+						localFilePath,
+						destinationFileName,
+						drivePassword,
+						driveKey
+					};
+				});
+				return fileParameters;
+			}
+			const singleParameter = {
+				parentFolderId: options.parentFolderId,
+				localFilePath: options.localFilePath,
+				destinationFileName: options.destFileName,
+				drivePassword: options.drivePassword,
+				driveKey: options.driveKey
+			};
+			if (!options.parentFolderId || !options.localFilePath) {
+				console.log(`Bad file: ${JSON.stringify(singleParameter)}`);
+				process.exit(1);
+			}
+			return [singleParameter];
+		})();
+		if (filesToUpload.length) {
+			const wallet = readJWKFile(options.walletFile);
+			const arDrive = new ArDrive(new ArFSDAO(wallet, arweave));
+			await Promise.all(
+				filesToUpload.map(async (fileToUpload) => {
+					if (!fileToUpload.parentFolderId || !fileToUpload.localFilePath) {
+						console.log(`Bad file: ${JSON.stringify(fileToUpload)}`);
+						process.exit(1);
+					}
+					const result = await (async () => {
+						if (options.drivePassword) {
+							return arDrive.uploadPrivateFile(
+								fileToUpload.parentFolderId,
+								fileToUpload.localFilePath,
+								options.drivePassword,
+								fileToUpload.destinationFileName
+							);
+						} else {
+							return arDrive.uploadPublicFile(
+								fileToUpload.parentFolderId,
+								fileToUpload.localFilePath,
+								fileToUpload.destinationFileName
+							);
+						}
+					})();
+					console.log(JSON.stringify(result, null, 4));
+				})
+			);
+			process.exit(0);
+		}
+		console.log(`No files to upload`);
+		process.exit(1);
+	});
+
+program
+	.command('drive-info')
+	.requiredOption('-d, --drive-id <the drive id>', 'the drive ID to get metadata from')
+	.option('-a, --get-all-revisions', '(OPTIONAL) get meta data of all revisions, defaults to false')
+	.option(
+		'-p, --drive-password <drive password>',
+		`the drive password for drive of the folder identified by --drive-id
+		• Required only for folders residing in private drives
+		• Can NOT be used in conjunction with --drive-key`
+	)
+	.option(
+		'-k, --drive-key <drive key>',
+		`the drive key for the parent drive of the folder identified by --folder-id
+		• Required only for folders residing in private drives
+		• Can NOT be used in conjunction with --drive-password`
+	)
+	.option(
+		'-w, --wallet-file [path_to_jwk_file]',
+		`the path to a JWK file on the file system
+			• Can't be used with --seed-phrase`
+	)
+	.action(async (options) => {
+		const wallet = (function () {
+			if (options.walletFile) {
+				return readJWKFile(options.walletFile);
+			}
+			console.log('Not implemented');
+			process.exit(1);
+		})();
+		const arDrive = new ArDrive(new ArFSDAO(wallet, arweave));
+		const driveId: string = options.driveId;
+		// const getAllRevisions: boolean = options.getAllRevisions;
+		const result = await arDrive.getPublicDrive(driveId /*, getAllRevisions*/);
+		console.log(JSON.stringify(result, null, 4));
 		process.exit(0);
 	});
 
@@ -268,7 +544,7 @@ rename-file:
 create-folder:
 	--parent-folder-id: the ArFS folder ID for the folder in which this folder will reside (i.e. its parent folder)
 	• To upload the folder to the root of a drive, use the root folder ID of the drive
-	--folder-name: (OPTIONAL) a destination file name to use when uploaded to ArDrive
+	--folder-name: a destination file name to use when uploaded to ArDrive
 	--drive-password: the drive password for the parent drive of the folder identified by --parent-folder-id
 	• Required only for files residing in private drives
 	• Can NOT be used in conjunction with --drive-key
