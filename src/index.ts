@@ -7,9 +7,20 @@ import { Wallet, JWKWallet, WalletDAO } from './wallet_new';
 import Arweave from 'arweave';
 import { CLICommand } from './CLICommand';
 import {
+	ArAmountParameter,
+	ConfirmationsParameter,
+	DestinationAddressParameter,
+	DestinationFileNameParameter,
+	DriveIdParameter,
+	DriveKeyParameter,
 	DriveNameParameter,
 	DrivePasswordParameter,
+	GetAllRevisionsParameter,
+	LocalFilePathParameter,
+	LocalFilesParameter,
+	ParentFolderIdParameter,
 	SeedPhraseParameter,
+	TransactionIdParameter,
 	WalletFileParameter
 } from './parameter_declarations';
 import { CommonContext } from './CLICommand/commonContext';
@@ -63,55 +74,32 @@ new CLICommand({
 		if (address) {
 			const balance = await walletDao.getAddressWinstonBalance(address);
 			console.log(balance);
+			process.exit(0);
 		} else {
 			console.log(`No wallet provided`);
-			process.exit(0);
+			process.exit(1);
 		}
 	}
 });
 
-// program
-// 	.command('get-balance')
-// 	.option(
-// 		'-w, --wallet-file [path_to_jwk_file]',
-// 		`the path to a JWK file on the file system
-// 			• Can't be used with --seed-phrase`
-// 	)
-// 	.option('-a, --address <Arweave wallet address>', 'get the balance of this Arweave wallet address')
-// 	.action(async (options) => {
-// 		if (options.walletFile != null) {
-// 			const wallet = readJWKFile(options.walletFile);
-// 			const walletAddress = await wallet.getAddress();
-// 			console.log(walletAddress);
-// 			console.log(await walletDao.getWalletWinstonBalance(wallet));
-// 			process.exit(0);
-// 		} else if (options.address != null) {
-// 			console.log(await walletDao.getAddressWinstonBalance(options.address));
-// 			process.exit(0);
-// 		} else {
-// 			console.log('MISSING WALLET FILE OR DESTINATION ADDRESS!');
-// 			process.exit(1);
-// 		}
-// 	});
-
-program
-	.command('get-address')
-	.option(
-		'-w, --wallet-file [path_to_jwk_file]',
-		`the path to a JWK file on the file system
-			• Can't be used with --seed-phrase`
-	)
-	.action(async (options) => {
-		if (options.walletFile != null) {
-			const wallet = readJWKFile(options.walletFile);
-			const walletAddress = await wallet.getAddress();
-			console.log(walletAddress);
-			process.exit(0);
-		} else {
-			console.log('MISSING WALLET FILE!');
-			process.exit(1);
-		}
-	});
+new CLICommand({
+	name: 'get-address',
+	parameters: [WalletFileParameter, SeedPhraseParameter],
+	async action(options) {
+		const context = new CommonContext(options, arweave);
+		const address = await context
+			.getWallet()
+			.then((wallet) => {
+				return wallet.getAddress();
+			})
+			.catch(() => {
+				console.log(`No wallet provided`);
+				process.exit(1);
+			});
+		console.log(address);
+		process.exit(0);
+	}
+});
 
 function readJWKFile(path: string): Wallet {
 	const walletFileData = fs.readFileSync(path, { encoding: 'utf8', flag: 'r' });
@@ -121,22 +109,12 @@ function readJWKFile(path: string): Wallet {
 	return wallet;
 }
 
-program
-	.command('send-ar')
-	.requiredOption('-a, --ar-amount <ar amount>', 'required: amount of AR to send')
-	.requiredOption('-d, --dest-address <destination wallet address>', 'required: destination wallet address')
-	.option(
-		'-w, --wallet-file [path_to_jwk_file]',
-		`the path to a JWK file on the file system
-			• Can't be used with --seed-phrase`
-	)
-	.action(async (options) => {
-		if (!options.walletFile) {
-			console.log('MISSING WALLET FILE!');
-			process.exit(1);
-		}
-
-		const wallet = readJWKFile(options.walletFile);
+new CLICommand({
+	name: 'send-ar',
+	parameters: [ArAmountParameter, DestinationAddressParameter, WalletFileParameter],
+	async action(options) {
+		const context = new CommonContext(options, arweave);
+		const wallet = await context.getWallet();
 		const walletAddress = await wallet.getAddress();
 		console.log(walletAddress);
 		console.log(`arAmount: ${options.arAmount}`);
@@ -155,47 +133,53 @@ program
 			)
 		);
 		process.exit(0);
-	});
-
-program.command('generate-seedphrase').action(async () => {
-	const seedPhrase = await walletDao.generateSeedPhrase();
-	console.log(JSON.stringify(seedPhrase));
-	process.exit(0);
+	}
 });
 
-program
-	.command('generate-wallet')
-	.requiredOption('-s, --seed <seed>', 'The previously generated mnemonic seed phrase')
-	// TODO: Add --out flag for wallet destination output
-	.action(async (options) => {
-		if (!options.seed) {
+new CLICommand({
+	name: 'generate-seedphrase',
+	parameters: [],
+	async action() {
+		const seedPhrase = await walletDao.generateSeedPhrase();
+		console.log(JSON.stringify(seedPhrase));
+		process.exit(0);
+	}
+});
+
+new CLICommand({
+	name: 'generate-wallet',
+	parameters: [SeedPhraseParameter],
+	async action(options) {
+		if (!options.seedPhrase) {
 			throw new Error('Missing required seed phrase');
 		}
 		const wallet = await walletDao.generateJWKWallet(options.seed);
 		console.log(JSON.stringify(wallet));
 		process.exit(0);
-	});
+	}
+});
 
 async function fetchMempool(): Promise<string[]> {
 	const response = await fetch('https://arweave.net/tx/pending');
 	return response.json();
 }
 
-program.command('get-mempool').action(async () => {
-	const transactionsInMempool = await fetchMempool();
+new CLICommand({
+	name: 'get-mempool',
+	parameters: [],
+	async action() {
+		const transactionsInMempool = await fetchMempool();
 
-	console.log(JSON.stringify(transactionsInMempool, null, 4));
-	process.exit(0);
+		console.log(JSON.stringify(transactionsInMempool, null, 4));
+		process.exit(0);
+	}
 });
 
-program
-	.command('tx-status')
-	.requiredOption('-t, --tx-id <transaction id>', 'The transaction id to check the status of in the mempool')
-	.option(
-		'-c, --confirmations <number of confirmations>',
-		'Number of confirmations to determine if a transaction is mined'
-	)
-	.action(async ({ txId, confirmations }) => {
+new CLICommand({
+	name: 'tx-status',
+	parameters: [TransactionIdParameter, ConfirmationsParameter],
+	async action(options) {
+		const { txId, confirmations } = options;
 		const transactionsInMempool = await fetchMempool();
 		const pending = transactionsInMempool.includes(txId);
 		const confirmationAmount = confirmations ?? 15;
@@ -223,8 +207,8 @@ program
 		}
 
 		process.exit(0);
-	});
-
+	}
+});
 interface UploadFileParameter {
 	parentFolderId: string;
 	localFilePath: string;
@@ -233,50 +217,18 @@ interface UploadFileParameter {
 	driveKey?: string;
 }
 
-program
-	.command('upload-file')
-	.requiredOption(
-		'-f, --parent-folder-id <parent folder id>',
-		`the ArFS folder ID for the folder in which this file will reside (i.e. its parent folder)
-		• To upload the file to the root of a drive, use the root folder ID of the drive`
-	)
-	.option(
-		'-l, --local-file-path <local file path>',
-		`the path on the local filesystem for the file that will be uploaded`
-	)
-	.option(
-		'-d, --dest-file-name <destination file name>',
-		`(OPTIONAL) a destination file name to use when uploaded to ArDrive`
-	)
-	.option(
-		'--local-files <local file paths>',
-		`a path to a csv (tab delimited) file containing rows of data for the following columns:
-		• CSV Columns
-		• local file path
-		• destination file name (optional)
-		• parent folder ID (optional)
-			• --parent-folder-id used, otherwise
-			• all parent folder IDs should reside in the same drive
-		• Can NOT be used in conjunction with --local-file-path`
-	)
-	.option(
-		'-p, --drive-password <drive password>',
-		`the drive password for the parent drive of the folder identified by --parent-folder-id
-		• Required only for files residing in private drives
-		• Can NOT be used in conjunction with --drive-key`
-	)
-	.option(
-		'-k, --drive-key <drive key>',
-		`the drive key for the parent drive of the folder identified by --parent-folder-id
-		• Required only for files residing in private drives
-		• Can NOT be used in conjunction with --drive-password`
-	)
-	.option(
-		'-w, --wallet-file [path_to_jwk_file]',
-		`the path to a JWK file on the file system
-			• Can't be used with --seed-phrase`
-	)
-	.action(async (options) => {
+new CLICommand({
+	name: 'upload-file',
+	parameters: [
+		ParentFolderIdParameter,
+		LocalFilePathParameter,
+		DestinationFileNameParameter,
+		LocalFilesParameter,
+		DrivePasswordParameter,
+		DriveKeyParameter,
+		WalletFileParameter
+	],
+	async action(options) {
 		const filesToUpload: UploadFileParameter[] = (function (): UploadFileParameter[] {
 			if (options.drivePassword && options.driveKey) {
 				console.log(`Can not use --drive-password in conjunction with --drive-key`);
@@ -348,44 +300,29 @@ program
 		}
 		console.log(`No files to upload`);
 		process.exit(1);
-	});
+	}
+});
 
-program
-	.command('drive-info')
-	.requiredOption('-d, --drive-id <the drive id>', 'the drive ID to get metadata from')
-	.option('-a, --get-all-revisions', '(OPTIONAL) get meta data of all revisions, defaults to false')
-	.option(
-		'-p, --drive-password <drive password>',
-		`the drive password for drive of the folder identified by --drive-id
-		• Required only for folders residing in private drives
-		• Can NOT be used in conjunction with --drive-key`
-	)
-	.option(
-		'-k, --drive-key <drive key>',
-		`the drive key for the parent drive of the folder identified by --folder-id
-		• Required only for folders residing in private drives
-		• Can NOT be used in conjunction with --drive-password`
-	)
-	.option(
-		'-w, --wallet-file [path_to_jwk_file]',
-		`the path to a JWK file on the file system
-			• Can't be used with --seed-phrase`
-	)
-	.action(async (options) => {
-		const wallet = (function () {
-			if (options.walletFile) {
-				return readJWKFile(options.walletFile);
-			}
-			console.log('Not implemented');
-			process.exit(1);
-		})();
+new CLICommand({
+	name: 'drive-info',
+	parameters: [
+		DriveIdParameter,
+		GetAllRevisionsParameter,
+		DrivePasswordParameter,
+		DriveKeyParameter,
+		WalletFileParameter
+	],
+	async action(options) {
+		const context = new CommonContext(options, arweave);
+		const wallet = await context.getWallet();
 		const arDrive = new ArDrive(new ArFSDAO(wallet, arweave));
 		const driveId: string = options.driveId;
 		// const getAllRevisions: boolean = options.getAllRevisions;
 		const result = await arDrive.getPublicDrive(driveId /*, getAllRevisions*/);
 		console.log(JSON.stringify(result, null, 4));
 		process.exit(0);
-	});
+	}
+});
 
 program.parse(process.argv);
 

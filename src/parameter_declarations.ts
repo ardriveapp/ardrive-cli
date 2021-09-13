@@ -6,6 +6,16 @@ export const DrivePasswordParameter = 'drivePassword';
 export const DriveNameParameter = 'driveName';
 export const DriveKeyParameter = 'driveKey';
 export const DriveAddressParameter = 'driveAddress';
+export const DriveIdParameter = 'driveId';
+export const ArAmountParameter = 'arAmount';
+export const DestinationAddressParameter = 'destAddres';
+export const TransactionIdParameter = 'txId';
+export const ConfirmationsParameter = 'confirmations';
+export const ParentFolderIdParameter = 'parentFolderId';
+export const LocalFilePathParameter = 'localFilePath';
+export const DestinationFileNameParameter = 'destFileName';
+export const LocalFilesParameter = 'localFiles';
+export const GetAllRevisionsParameter = 'getAllRevisions';
 
 Parameter.declare({
 	name: WalletFileParameter,
@@ -48,7 +58,48 @@ Parameter.declare({
 
 Parameter.declare({
 	name: DriveAddressParameter,
-	aliases: ['-a', '-drive-address'],
+	aliases: ['-a', '--drive-address'],
 	description: 'the address',
 	forbiddenConjunctionParameters: [DrivePasswordParameter, DriveKeyParameter]
+});
+
+Parameter.declare({
+	name: DriveIdParameter,
+	aliases: ['-d', '--drive-id'],
+	description: 'the drive ID to get metadata from',
+	required: true
+});
+
+Parameter.declare({
+	name: ArAmountParameter,
+	aliases: ['-a', '--ar-amount'],
+	description: 'required: amount of AR to send',
+	required: true
+});
+
+Parameter.declare({
+	name: DestinationAddressParameter,
+	aliases: ['-d', '--dest-address'],
+	description: 'required: destination wallet address',
+	required: true
+});
+
+Parameter.declare({
+	name: TransactionIdParameter,
+	aliases: ['-t', '--tx-id'],
+	description: 'The transaction id to check the status of in the mempool',
+	required: true
+});
+
+Parameter.declare({
+	name: ConfirmationsParameter,
+	aliases: ['-c', '--confirmations'],
+	description: 'Number of confirmations to determine if a transaction is mined'
+});
+
+Parameter.declare({
+	name: GetAllRevisionsParameter,
+	aliases: [],
+	description: '',
+	type: 'boolean'
 });

@@ -7,7 +7,7 @@ export interface ParameterData {
 	description: string;
 	type?: ParameterType;
 	default?: string;
-	required?: true;
+	required?: boolean;
 	forbiddenConjunctionParameters?: ParameterName[];
 	requireedConjunctionParameters?: ParameterName[];
 }
@@ -34,6 +34,10 @@ export class Parameter implements ParameterData {
 
 	public get type(): ParameterType {
 		return this.parameterData.type || 'single-value';
+	}
+
+	public get required(): boolean {
+		return !!this.parameterData.required;
 	}
 
 	public get value(): string | undefined {

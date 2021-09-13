@@ -31,7 +31,8 @@ function setCommanderCommand(commandDescriptor: CommandDescriptor, program: Comm
 			}
 			return `<${parameterName}>`;
 		})();
-		command.option(`${aliasesAsString} ${paramType}`, parameter.description, parameter.default);
+		const setOption = parameter.required ? command.requiredOption : command.option;
+		setOption(`${aliasesAsString} ${paramType}`, parameter.description, parameter.default);
 	});
 	command.action((options) => {
 		commandDescriptor.action(options);
