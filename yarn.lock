@@ -1456,6 +1456,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"arconnect@npm:^0.2.8":
+  version: 0.2.9
+  resolution: "arconnect@npm:0.2.9"
+  dependencies:
+    arweave: ^1.10.13
+  checksum: 7871621da205358f3acaba2845ce8df261b9b8d55a6d8d4c247cd4494fbaa6b222285a09b5216429bc25c63b14f09d2859b292253d74db05ac29c127ad60aa6e
+  languageName: node
+  linkType: hard
+
 "ardrive-cli@workspace:.":
   version: 0.0.0-use.local
   resolution: "ardrive-cli@workspace:."
@@ -1500,6 +1509,7 @@ __metadata:
     redstone-smartweave: ^0.3.10-alpha.8
     rimraf: ^3.0.2
     sinon: ^11.1.2
+    smartweave: ^0.4.45
     source-map-support: ^0.5.20
     ts-node: ^10.2.1
     ts-sinon: ^2.0.1
@@ -1875,6 +1885,15 @@ __metadata:
   bin:
     browserslist: cli.js
   checksum: e7c4b78520f1e6f547112891d4a2298fa2d9bcba0156fd62b8229d654cd7a6c72db74254d774a55cacf604fbee0966189ac6fb1ce71e8c1a24bb5ce1c2ed9644
+  languageName: node
+  linkType: hard
+
+"bson@npm:^4.5.0":
+  version: 4.5.2
+  resolution: "bson@npm:4.5.2"
+  dependencies:
+    buffer: ^5.6.0
+  checksum: 03a4329e887ab58a0d24924a79214ed2a4cb21022b881c76a65f1e7902b99d75035e1ae0f218c98123403f0181b2623806ebf311ea20bf9d9d7dd5f46da80988
   languageName: node
   linkType: hard
 
@@ -2598,6 +2617,15 @@ __metadata:
   dependencies:
     strip-bom: ^4.0.0
   checksum: c53a7ddfa11c731f503ec99a40c7955802982ba06d8503f25a22bbc84aec8b1a976d4f431fe0c6378c3c862d6da2f38c0dfbb0b3951b2e3aa72778ed70d7a56c
+  languageName: node
+  linkType: hard
+
+"defaults@npm:^1.0.3":
+  version: 1.0.3
+  resolution: "defaults@npm:1.0.3"
+  dependencies:
+    clone: ^1.0.2
+  checksum: 974f63dd0acb79d14e94ac0f2ea69a880ab2a6e4b341bb9bdc2409b4091b928abe2709a4e140528948d02f29c286efdef22851d1dc972636eed2ce8e1c5b7465
   languageName: node
   linkType: hard
 
@@ -6413,7 +6441,31 @@ __metadata:
   languageName: node
   linkType: hard
 
-"source-map-support@npm:^0.5.20":
+"smartweave@npm:^0.4.45":
+  version: 0.4.45
+  resolution: "smartweave@npm:0.4.45"
+  dependencies:
+    "@types/clui": ^0.3.0
+    "@types/inquirer": ^7.3.1
+    "@weavery/clarity": ^0.1.5
+    arweave: ^1.10.16
+    bignumber.js: ^9.0.1
+    chalk: ^4.1.2
+    clui: ^0.3.6
+    figlet: ^1.5.2
+    inquirer: ^8.1.2
+    json-beautify: ^1.1.1
+    loglevel: ^1.7.0
+    sentencer: ^0.2.1
+    yargs: ^17.1.1
+  bin:
+    smartweave: lib/bin/smartweave.js
+    smartweave-cli: lib/bin/smartweave-cli.js
+  checksum: d8d925df0b976bc7334a3211b42d5b16e4447eb6a54c74db2c6bf0d26839481348b15990619e77ac5e57d3420021eec4a0cad0a2f89a63b1a9d31abc2d59e8ae
+  languageName: node
+  linkType: hard
+
+"source-map-support@npm:^0.5.19, source-map-support@npm:^0.5.20":
   version: 0.5.20
   resolution: "source-map-support@npm:0.5.20"
   dependencies:
@@ -7134,6 +7186,15 @@ typescript@^4.2.3:
   languageName: node
   linkType: hard
 
+"wcwidth@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "wcwidth@npm:1.0.1"
+  dependencies:
+    defaults: ^1.0.3
+  checksum: abf8ba432dd19a95af63895de6af932900a9451e175745551aeca0fd2d46604bc72ff80aa83adc3f67fb8389191329340e2864aefcf20655ffe91f0dbee5d953
+  languageName: node
+  linkType: hard
+
 "which-module@npm:^2.0.0":
   version: 2.0.0
   resolution: "which-module@npm:2.0.0"
@@ -7323,6 +7384,21 @@ typescript@^4.2.3:
     y18n: ^4.0.0
     yargs-parser: ^18.1.2
   checksum: dbf687d6b938f01bbf11e158dde6df906282b70cd9295af0217ee8cefbd83ad09d49fa9458d0d5325b0e66f03df954a38986db96f91e5b46ccdbbaf9a0157b23
+  languageName: node
+  linkType: hard
+
+"yargs@npm:^17.1.1":
+  version: 17.1.1
+  resolution: "yargs@npm:17.1.1"
+  dependencies:
+    cliui: ^7.0.2
+    escalade: ^3.1.1
+    get-caller-file: ^2.0.5
+    require-directory: ^2.1.1
+    string-width: ^4.2.0
+    y18n: ^5.0.5
+    yargs-parser: ^20.2.2
+  checksum: c2a16b61eb0db8882becd0aa382a5c59b87afcd17b35dd7077b3c9d83f77a3ad3de1526e4f1cf940f9481d7ce537e883af7c16879c33258724a09bc43a04e8ea
   languageName: node
   linkType: hard
 

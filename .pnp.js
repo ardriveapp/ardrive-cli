@@ -77,6 +77,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["redstone-smartweave", "npm:0.3.10-alpha.8"],
             ["rimraf", "npm:3.0.2"],
             ["sinon", "npm:11.1.2"],
+            ["smartweave", "npm:0.4.45"],
             ["source-map-support", "npm:0.5.20"],
             ["ts-node", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:10.2.1"],
             ["ts-sinon", "npm:2.0.1"],
@@ -1803,6 +1804,16 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD",
         }]
       ]],
+      ["arconnect", [
+        ["npm:0.2.9", {
+          "packageLocation": "./.yarn/cache/arconnect-npm-0.2.9-a276136014-7871621da2.zip/node_modules/arconnect/",
+          "packageDependencies": [
+            ["arconnect", "npm:0.2.9"],
+            ["arweave", "npm:1.10.16"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
       ["ardrive-cli", [
         ["workspace:.", {
           "packageLocation": "./",
@@ -1848,6 +1859,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["redstone-smartweave", "npm:0.3.10-alpha.8"],
             ["rimraf", "npm:3.0.2"],
             ["sinon", "npm:11.1.2"],
+            ["smartweave", "npm:0.4.45"],
             ["source-map-support", "npm:0.5.20"],
             ["ts-node", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:10.2.1"],
             ["ts-sinon", "npm:2.0.1"],
@@ -2271,6 +2283,16 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["electron-to-chromium", "npm:1.3.836"],
             ["escalade", "npm:3.1.1"],
             ["node-releases", "npm:1.1.75"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["bson", [
+        ["npm:4.5.2", {
+          "packageLocation": "./.yarn/cache/bson-npm-4.5.2-99d8eb4572-03a4329e88.zip/node_modules/bson/",
+          "packageDependencies": [
+            ["bson", "npm:4.5.2"],
+            ["buffer", "npm:5.7.1"]
           ],
           "linkType": "HARD",
         }]
@@ -3110,6 +3132,16 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [
             ["default-require-extensions", "npm:3.0.0"],
             ["strip-bom", "npm:4.0.0"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["defaults", [
+        ["npm:1.0.3", {
+          "packageLocation": "./.yarn/cache/defaults-npm-1.0.3-e829107b9e-974f63dd0a.zip/node_modules/defaults/",
+          "packageDependencies": [
+            ["defaults", "npm:1.0.3"],
+            ["clone", "npm:1.0.4"]
           ],
           "linkType": "HARD",
         }]
@@ -6901,7 +6933,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["arweave", "npm:1.10.16"],
             ["arweave-multihost", "npm:0.1.0"],
             ["bignumber.js", "npm:9.0.1"],
-            ["bson", "npm:4.5.1"],
+            ["bson", "npm:4.5.2"],
             ["json-beautify", "npm:1.1.1"],
             ["tslog", "npm:3.2.2"]
           ],
@@ -7414,15 +7446,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["source-map-support", [
-        ["npm:0.5.20", {
-          "packageLocation": "./.yarn/cache/source-map-support-npm-0.5.20-edfc5ce275-2c5821ee94.zip/node_modules/source-map-support/",
-          "packageDependencies": [
-            ["source-map-support", "npm:0.5.20"],
-            ["buffer-from", "npm:1.1.1"],
-            ["source-map", "npm:0.6.1"]
-          ],
-          "linkType": "HARD",
-        }],
         ["npm:0.5.20", {
           "packageLocation": "./.yarn/cache/source-map-support-npm-0.5.20-edfc5ce275-2c5821ee94.zip/node_modules/source-map-support/",
           "packageDependencies": [
