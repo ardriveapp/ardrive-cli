@@ -1,8 +1,9 @@
 import { weightedRandom } from 'ardrive-core-js';
 import { ContractOracle } from './contract_oracle';
 import { CommunityOracle } from './community_oracle';
-import { VertoContractOracle } from './verto_contract_oracle';
 import { ArweaveAddress } from '../wallet_new';
+import { ArDriveContractOracle } from './ardrive_contract_oracle';
+import Arweave from 'arweave';
 
 /**
  * Minimum ArDrive community tip from the Community Improvement Proposal Doc:
@@ -15,7 +16,11 @@ export const minArDriveCommunityARTip = 0.000_010_000_000;
  * and selecting the PST token holder for tip distribution
  * */
 export class ArDriveCommunityOracle implements CommunityOracle {
-	constructor(private readonly contractOracle: ContractOracle = new VertoContractOracle()) {}
+	constructor(readonly arweave: Arweave) {
+		this.contractOracle = new ArDriveContractOracle(arweave);
+	}
+
+	private readonly contractOracle: ContractOracle;
 
 	/** Given an AR data cost, returns a calculated ArDrive community tip amount in AR */
 	async getCommunityARTip(arCost: number): Promise<number> {
@@ -31,6 +36,9 @@ export class ArDriveCommunityOracle implements CommunityOracle {
 
 		const balances = contract.balances;
 		const vault = contract.vault;
+
+		console.log('token holders: ', Object.keys(balances).length);
+		console.timeEnd('contract read');
 
 		// Get the total number of token holders
 		let total = 0;
@@ -71,6 +79,18 @@ export class ArDriveCommunityOracle implements CommunityOracle {
 	}
 }
 
+const arweave = Arweave.init({
+	host: 'arweave.net', // Arweave Gateway
+	//host: 'arweave.dev', // Arweave Dev Gateway
+	port: 443,
+	protocol: 'https',
+	timeout: 600000
+});
+
+const communityOracle = new ArDriveCommunityOracle(arweave);
+
+console.time('contract read');
+
 // Self-test with: yarn ts-node src/community/ardrive_community_oracle.ts
-(async () => console.log(await new ArDriveCommunityOracle().getCommunityARTip(1)))();
-(async () => console.log(await new ArDriveCommunityOracle().selectTokenHolder()))();
+(async () => console.log(await communityOracle.getCommunityARTip(1)))();
+(async () => console.log(await communityOracle.selectTokenHolder()))();
