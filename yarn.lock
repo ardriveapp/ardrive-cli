@@ -1002,6 +1002,7 @@ __metadata:
     prompt-password: ^1.2.0
     prompt-sync: ^4.2.0
     prompts: ^2.4.0
+    redstone-smartweave: ^0.3.10-alpha.8
     rimraf: ^3.0.2
     smartweave: ^0.4.45
     ts-node: ^9.1.1
@@ -1116,6 +1117,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"arweave-multihost@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "arweave-multihost@npm:0.1.0"
+  dependencies:
+    arweave: ^1.10.15
+    axios: ^0.21.1
+  checksum: 0f18cbe1de0d760fad9ab5188f434cebb8ccd0dbf1ebc02b13067346a05a23173501311aa89ef3134a7b77ad1c52a46f31e617a631037a9483f5afab38b730ae
+  languageName: node
+  linkType: hard
+
 "arweave@npm:^1.10.11, arweave@npm:^1.10.5":
   version: 1.10.13
   resolution: "arweave@npm:1.10.13"
@@ -1128,7 +1139,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"arweave@npm:^1.10.13, arweave@npm:^1.10.16":
+"arweave@npm:^1.10.13, arweave@npm:^1.10.15, arweave@npm:^1.10.16":
   version: 1.10.16
   resolution: "arweave@npm:1.10.16"
   dependencies:
@@ -1334,6 +1345,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bson@npm:^4.5.0":
+  version: 4.5.1
+  resolution: "bson@npm:4.5.1"
+  dependencies:
+    buffer: ^5.6.0
+  checksum: 2ae15fa353b132f08976b939695894c52a03bdad9e548e3cfa9fbab467760f489f7b7dcb9e444995a82b471aded170cc898e56c6764722fee86aadd3730607be
+  languageName: node
+  linkType: hard
+
 "buffer-from@npm:^1.0.0":
   version: 1.1.1
   resolution: "buffer-from@npm:1.1.1"
@@ -1341,7 +1361,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"buffer@npm:^5.2.1, buffer@npm:^5.5.0":
+"buffer@npm:^5.2.1, buffer@npm:^5.5.0, buffer@npm:^5.6.0":
   version: 5.7.1
   resolution: "buffer@npm:5.7.1"
   dependencies:
@@ -4712,6 +4732,21 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
+"redstone-smartweave@npm:^0.3.10-alpha.8":
+  version: 0.3.10-alpha.8
+  resolution: "redstone-smartweave@npm:0.3.10-alpha.8"
+  dependencies:
+    "@weavery/clarity": ^0.1.5
+    arweave: ^1.10.16
+    arweave-multihost: ^0.1.0
+    bignumber.js: ^9.0.1
+    bson: ^4.5.0
+    json-beautify: ^1.1.1
+    tslog: ^3.2.1
+  checksum: 9d25776c0361eaddc1d9f8453abab812c15170b0dc4850cd010a4c2748721283d6d400f804b8bdac59563177e4c32379c14b31cab2da3d9beb479f7410f953df
+  languageName: node
+  linkType: hard
+
 "regexpp@npm:^3.0.0, regexpp@npm:^3.1.0":
   version: 3.1.0
   resolution: "regexpp@npm:3.1.0"
@@ -5110,6 +5145,16 @@ fsevents@~2.3.1:
     buffer-from: ^1.0.0
     source-map: ^0.6.0
   checksum: 59d4efaae97755155b078413ecba63517e3ef054cc7ab767bbd30e6f3054be2ae8e8f5cce7eef53b7eb93e98fe27a58dd8f5e7abfb13144ba420ddaf5267bbb2
+  languageName: node
+  linkType: hard
+
+"source-map-support@npm:^0.5.19":
+  version: 0.5.20
+  resolution: "source-map-support@npm:0.5.20"
+  dependencies:
+    buffer-from: ^1.0.0
+    source-map: ^0.6.0
+  checksum: 2c5821ee94732b2ddbb1e1d9e61ed76ef00f72415fa686ab96d5f5c711789d55424866fa7d6c493beea380e44418053d86ec490b82c101008eac311463da84a9
   languageName: node
   linkType: hard
 
@@ -5516,6 +5561,15 @@ fsevents@~2.3.1:
   version: 2.1.0
   resolution: "tslib@npm:2.1.0"
   checksum: d8f5bdd067611651c6b846c2388f4dc8ba1f5af124e66105f5263d1ad56da17f4b8c6566887ca2f205c5a9758451871ceca87d5d06087af2dca1699c5e33db69
+  languageName: node
+  linkType: hard
+
+"tslog@npm:^3.2.1":
+  version: 3.2.2
+  resolution: "tslog@npm:3.2.2"
+  dependencies:
+    source-map-support: ^0.5.19
+  checksum: 5d2aed2b6b3ce8f9311c7a20f5f64142c1c3198e30bdb27f3ba7fc5706ba0c89a38c7e5fd3d90e74aedf396159ecffbdcab1ae3d9dfe2d189a31936a4c13d14d
   languageName: node
   linkType: hard
 
