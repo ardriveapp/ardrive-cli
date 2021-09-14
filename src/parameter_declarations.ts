@@ -7,6 +7,10 @@ export const DriveNameParameter = 'driveName';
 export const DriveKeyParameter = 'driveKey';
 export const DriveAddressParameter = 'driveAddress';
 
+/**
+ * Note: importing this file will declare all the above parameters
+ */
+
 Parameter.declare({
 	name: WalletFileParameter,
 	aliases: ['-w', '--wallet-file'],
