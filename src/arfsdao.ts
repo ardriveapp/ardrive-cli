@@ -571,6 +571,7 @@ export class ArFSDAO {
 		});
 		return drive;
 	}
+}
 
 export class ArFSPublicDrive extends ArFSEntity implements ArFSDriveEntity {
 	constructor(
