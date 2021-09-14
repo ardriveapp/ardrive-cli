@@ -1,6 +1,5 @@
-// import Arweave from 'arweave';
 import { Command } from 'commander';
-// import { CommonContext } from './commonContext';
+import { CliApiObject } from './cli';
 import { Parameter, ParameterName } from './parameter';
 
 export type CommandName = string;
@@ -10,7 +9,7 @@ export interface CommandDescriptor {
 	action(options: any): void;
 }
 
-const program = new Command();
+const program: CliApiObject = new Command() as CliApiObject;
 
 // Set up command line option parsing
 //const validActions = ['create-drive', 'rename-drive', 'upload-file'];
@@ -18,9 +17,9 @@ program.option('-h, --help', 'Get help');
 //program.option('create-drive', 'action to create a new drive (and its corresponding root folder)');
 program.addHelpCommand(false);
 
-function setCommanderCommand(commandDescriptor: CommandDescriptor, program: Command): void {
+function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliApiObject): void {
 	// debugger;
-	let command: Command = program.command(commandDescriptor.name);
+	let command: CliApiObject = program.command(commandDescriptor.name);
 	commandDescriptor.parameters.forEach((parameterName) => {
 		const parameter = new Parameter(parameterName);
 		const aliasesAsString = parameter.aliases.join(' ');
@@ -47,7 +46,7 @@ export class CLICommand {
 	 * @param {CommandDescriptor} commandDescription an immputable representation of a command
 	 * @param {string[]} argv a custom argv for testing propuses
 	 */
-	constructor(private readonly commandDescription: CommandDescriptor, private readonly _program?: Command) {
+	constructor(private readonly commandDescription: CommandDescriptor, private readonly _program?: CliApiObject) {
 		this.setCommand();
 	}
 
@@ -65,12 +64,12 @@ export class CLICommand {
 	}
 
 	// A singleton instance of the commander's program object
-	public static get program(): Command {
+	public static get program(): CliApiObject {
 		// TODO: make me private when index.ts is fully de-coupled from commander library
 		return program;
 	}
 
-	private get program(): Command {
+	private get program(): CliApiObject {
 		return this._program || CLICommand.program;
 	}
 
@@ -84,7 +83,7 @@ export class CLICommand {
 		setCommanderCommand(this.commandDescription, this.program);
 	}
 
-	public static parse(program: Command = this.program): void {
+	public static parse(program: CliApiObject = this.program): void {
 		// debugger;
 		program.parse(CLICommand.argv);
 		this._doneSettingCommands = true;

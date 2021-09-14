@@ -36,14 +36,6 @@ export class Parameter implements ParameterData {
 		return this.parameterData.type || 'single-value';
 	}
 
-	public get value(): string | undefined {
-		return this.parameterData.value;
-	}
-
-	public set value(v: string | undefined) {
-		this.parameterData.value = v;
-	}
-
 	public static declare(parameter: ParameterData): void {
 		Parameter.parameters.push(parameter);
 	}
