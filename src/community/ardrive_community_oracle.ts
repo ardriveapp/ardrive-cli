@@ -9,7 +9,7 @@ import Arweave from 'arweave';
  * Minimum ArDrive community tip from the Community Improvement Proposal Doc:
  * https://arweave.net/Yop13NrLwqlm36P_FDCdMaTBwSlj0sdNGAC4FqfRUgo
  */
-export const minArDriveCommunityARTip = 0.000_010_000_000;
+export const minArDriveCommunityWinstonTip = 10_000_000;
 
 /**
  * Oracle class responsible for determining the community tip
@@ -26,7 +26,7 @@ export class ArDriveCommunityOracle implements CommunityOracle {
 	async getCommunityWinstonTip(winstonCost: Winston): Promise<Winston> {
 		const communityTipValue = await this.contractOracle.getTipSettingFromContractSettings();
 		const arDriveCommunityTip = +winstonCost * (communityTipValue / 100);
-		return Math.max(arDriveCommunityTip, minArDriveCommunityARTip).toString();
+		return Math.round(Math.max(arDriveCommunityTip, minArDriveCommunityWinstonTip)).toString();
 	}
 
 	/** Gets a random ArDrive token holder based off their weight (amount of tokens they hold)  */
@@ -36,9 +36,6 @@ export class ArDriveCommunityOracle implements CommunityOracle {
 
 		const balances = contract.balances;
 		const vault = contract.vault;
-
-		console.log('token holders: ', Object.keys(balances).length);
-		console.timeEnd('contract read');
 
 		// Get the total number of token holders
 		let total = 0;
