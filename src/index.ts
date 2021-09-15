@@ -4,6 +4,7 @@
 import { Command } from 'commander';
 import * as fs from 'fs';
 import { ArDrive } from './ardrive';
+import { ArDriveCommunityOracle } from './community/ardrive_community_oracle';
 import { ArFSDAO } from './arfsdao';
 import { JWKInterface } from 'ardrive-core-js';
 import { Wallet, JWKWallet, WalletDAO } from './wallet_new';
@@ -20,10 +21,14 @@ const arweave = Arweave.init({
 	timeout: 600000
 });
 
-const walletDao = new WalletDAO(arweave);
+export const walletDao = new WalletDAO(arweave);
 
 // Utility for parsing command line options
 const program = new Command();
+
+function arDriveFactory(wallet: Wallet): ArDrive {
+	return new ArDrive(wallet, walletDao, new ArFSDAO(wallet, arweave), new ArDriveCommunityOracle(arweave));
+}
 
 // Set up command line option parsing
 //const validActions = ['create-drive', 'rename-drive', 'upload-file'];
@@ -85,7 +90,7 @@ program
 
 		// TODO: Export convert seed phrase to wallet
 
-		const ardrive = new ArDrive(new ArFSDAO(wallet, arweave));
+		const ardrive = arDriveFactory(wallet);
 		const createFolderResult = await (async function () {
 			return ardrive.createPublicFolder(folderName, driveId, parentFolderId);
 		})();
@@ -134,7 +139,8 @@ program
 
 		// TODO: Export convert seed phrase to wallet
 
-		const ardrive = new ArDrive(new ArFSDAO(wallet, arweave));
+		const ardrive = arDriveFactory(wallet);
+
 		const createDriveResult = await (async function () {
 			if (options.drivePassword) {
 				return ardrive.createPrivateDrive(options.driveName, options.drivePassword);
@@ -395,7 +401,8 @@ program
 		})();
 		if (filesToUpload.length) {
 			const wallet = readJWKFile(options.walletFile);
-			const arDrive = new ArDrive(new ArFSDAO(wallet, arweave));
+			const ardrive = arDriveFactory(wallet);
+
 			await Promise.all(
 				filesToUpload.map(async (fileToUpload) => {
 					if (!fileToUpload.parentFolderId || !fileToUpload.localFilePath) {
@@ -404,14 +411,14 @@ program
 					}
 					const result = await (async () => {
 						if (options.drivePassword) {
-							return arDrive.uploadPrivateFile(
+							return ardrive.uploadPrivateFile(
 								fileToUpload.parentFolderId,
 								fileToUpload.localFilePath,
 								options.drivePassword,
 								fileToUpload.destinationFileName
 							);
 						} else {
-							return arDrive.uploadPublicFile(
+							return ardrive.uploadPublicFile(
 								fileToUpload.parentFolderId,
 								fileToUpload.localFilePath,
 								fileToUpload.destinationFileName
@@ -456,10 +463,10 @@ program
 			console.log('Not implemented');
 			process.exit(1);
 		})();
-		const arDrive = new ArDrive(new ArFSDAO(wallet, arweave));
+		const ardrive = arDriveFactory(wallet);
 		const driveId: string = options.driveId;
 		// const getAllRevisions: boolean = options.getAllRevisions;
-		const result = await arDrive.getPublicDrive(driveId /*, getAllRevisions*/);
+		const result = await ardrive.getPublicDrive(driveId /*, getAllRevisions*/);
 		console.log(JSON.stringify(result, null, 4));
 		process.exit(0);
 	});
