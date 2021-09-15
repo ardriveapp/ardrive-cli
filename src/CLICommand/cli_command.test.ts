@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { Command } from 'commander';
 import { SinonStubbedInstance, stub } from 'sinon';
-import { CLICommand, CommandDescriptor } from './cliCommand';
+import { CLICommand, CommandDescriptor } from './cli_command';
 
 // declare all parameters
 import '../parameter_declarations';
@@ -72,7 +72,6 @@ describe('CLICommand class', () => {
 
 	it('The library parses the given argv', () => {
 		CLICommand.parse(stubbedProgram);
-
 		expect(stubbedProgram.parse.calledOnce).to.be.true;
 	});
 
@@ -80,7 +79,4 @@ describe('CLICommand class', () => {
 		expect(() => new CLICommand(driveNameCommandDescription, stubbedProgram)).to.throw;
 		expect(stubbedProgram.parse.notCalled);
 	});
-
-	it('Boolean parameter');
-	it('Array parameter');
 });

@@ -23,7 +23,7 @@ import {
 	TransactionIdParameter,
 	WalletFileParameter
 } from './parameter_declarations';
-import { CommonContext } from './CLICommand/commonContext';
+import { CommonContext } from './CLICommand/common_context';
 import { JWKInterface } from './wallet';
 import fetch from 'node-fetch';
 
