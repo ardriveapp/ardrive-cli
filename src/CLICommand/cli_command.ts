@@ -25,7 +25,7 @@ function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliA
 		const aliasesAsString = parameter.aliases.join(' ');
 		const paramType = (function () {
 			if (parameter.type === 'array') {
-				return `<...${parameterName}>`;
+				return `<${parameterName}...>`;
 			} else if (parameter.type === 'boolean') {
 				return '';
 			}

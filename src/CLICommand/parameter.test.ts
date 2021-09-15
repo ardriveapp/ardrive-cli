@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import { Parameter } from './parameter';
+import { defaultParameter, defaultParameterName } from './test_constants';
 
 const parameterName = 'myCustomParam';
 const parameterAliases = ['-c', '--my-custom-param'];
@@ -23,6 +24,12 @@ describe('Parameter class', () => {
 
 	it('Throws an error if reading a undefined parameter', () => {
 		expect(() => new Parameter('undefinedParameter')).to.throw();
+	});
+
+	it('Default type parameter is "single-value"', () => {
+		Parameter.declare(defaultParameter);
+		const defaultParam = new Parameter(defaultParameterName);
+		expect(defaultParam.type).to.equal('single-value');
 	});
 
 	it('The getters holds the right values', () => {

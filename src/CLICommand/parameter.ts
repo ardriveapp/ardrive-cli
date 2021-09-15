@@ -40,6 +40,15 @@ export class Parameter implements ParameterData {
 		Parameter.parameters.push(parameter);
 	}
 
+	/**
+	 * @name reset
+	 * For testing pruposes only. It will just remove all parameters declaration
+	 * @returns {ParameterData[]} the removed parameters
+	 */
+	public static reset(): ParameterData[] {
+		return this.parameters.splice(0, this.parameters.length);
+	}
+
 	public static get(parameterName: ParameterName): ParameterData {
 		const param = Parameter.parameters.find((p) => p.name === parameterName);
 		if (!param) {
