@@ -1,7 +1,7 @@
 import { weightedRandom } from 'ardrive-core-js';
 import { ContractOracle } from './contract_oracle';
 import { CommunityOracle } from './community_oracle';
-import { ArweaveAddress } from '../wallet_new';
+import { ArweaveAddress, Winston } from '../wallet_new';
 import { ArDriveContractOracle } from './ardrive_contract_oracle';
 import Arweave from 'arweave';
 
@@ -23,10 +23,10 @@ export class ArDriveCommunityOracle implements CommunityOracle {
 	private readonly contractOracle: ContractOracle;
 
 	/** Given an AR data cost, returns a calculated ArDrive community tip amount in AR */
-	async getCommunityARTip(arCost: number): Promise<number> {
+	async getCommunityWinstonTip(winstonCost: Winston): Promise<Winston> {
 		const communityTipValue = await this.contractOracle.getTipSettingFromContractSettings();
-		const arDriveCommunityTip = arCost * (communityTipValue / 100);
-		return Math.max(arDriveCommunityTip, minArDriveCommunityARTip);
+		const arDriveCommunityTip = +winstonCost * (communityTipValue / 100);
+		return Math.max(arDriveCommunityTip, minArDriveCommunityARTip).toString();
 	}
 
 	/** Gets a random ArDrive token holder based off their weight (amount of tokens they hold)  */
@@ -78,19 +78,3 @@ export class ArDriveCommunityOracle implements CommunityOracle {
 		return randomHolder;
 	}
 }
-
-const arweave = Arweave.init({
-	host: 'arweave.net', // Arweave Gateway
-	//host: 'arweave.dev', // Arweave Dev Gateway
-	port: 443,
-	protocol: 'https',
-	timeout: 600000
-});
-
-const communityOracle = new ArDriveCommunityOracle(arweave);
-
-console.time('contract read');
-
-// Self-test with: yarn ts-node src/community/ardrive_community_oracle.ts
-(async () => console.log(await communityOracle.getCommunityARTip(1)))();
-(async () => console.log(await communityOracle.selectTokenHolder()))();

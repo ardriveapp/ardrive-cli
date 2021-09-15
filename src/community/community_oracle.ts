@@ -1,6 +1,6 @@
-import { ArweaveAddress } from '../wallet_new';
+import { ArweaveAddress, Winston } from '../wallet_new';
 
 export interface CommunityOracle {
-	getCommunityARTip(arCost: number): Promise<number>;
+	getCommunityWinstonTip(winstonCost: Winston): Promise<Winston>;
 	selectTokenHolder(): Promise<ArweaveAddress>;
 }
