@@ -4,12 +4,13 @@ import * as crypto from 'crypto';
 import jwkToPem, { JWK } from 'jwk-to-pem';
 import Arweave from 'arweave';
 import * as mnemonicKeys from 'arweave-mnemonic-keys';
+import { Bytes } from './ardrive';
 
 type PublicKey = string;
 export type ArweaveAddress = string;
 type SeedPhrase = string;
 type TransactionID = string;
-type Winston = string;
+export type Winston = string;
 type NetworkReward = Winston;
 
 export type ARTransferResult = {
@@ -76,6 +77,15 @@ export class WalletDAO {
 
 	async getAddressWinstonBalance(address: ArweaveAddress): Promise<number> {
 		return Promise.resolve(+(await this.arweave.wallets.getBalance(address)));
+	}
+
+	async confirmBalance(wallet: Wallet, winstonPrice: Winston): Promise<boolean> {
+		const walletBalance = await this.getWalletWinstonBalance(wallet);
+		return +walletBalance > +winstonPrice;
+	}
+
+	async getWinstonPriceForBytes(bytes: Bytes): Promise<Winston> {
+		return this.arweave.transactions.getPrice(bytes);
 	}
 
 	async sendARToAddress(
