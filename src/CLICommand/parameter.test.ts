@@ -22,7 +22,7 @@ describe('Parameter class', () => {
 	});
 
 	it('Throws an error if reading a undefined parameter', () => {
-		expect(() => Parameter.get('undefinedParameter')).to.throw;
+		expect(() => new Parameter('undefinedParameter')).to.throw();
 	});
 
 	it('The getters holds the right values', () => {
