@@ -26,7 +26,7 @@ const arweave = Arweave.init({
 	timeout: 600000
 });
 
-const walletDao = new WalletDAO(arweave);
+export const walletDao = new WalletDAO(arweave);
 
 // TODO: remove when fully de-coupled
 const program = CLICommand.program;
