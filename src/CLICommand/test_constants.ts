@@ -34,3 +34,5 @@ export const requiredParameter: ParameterData = {
 	description: 'Required parameter',
 	required: true
 };
+export const testCommandName = 'test-command';
+export const baseArgv = ['ardrive', testCommandName];

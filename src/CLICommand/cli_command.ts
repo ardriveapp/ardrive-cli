@@ -18,7 +18,6 @@ program.option('-h, --help', 'Get help');
 program.addHelpCommand(false);
 
 function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliApiObject): void {
-	// debugger;
 	let command: CliApiObject = program.command(commandDescriptor.name);
 	commandDescriptor.parameters.forEach((parameterName) => {
 		const parameter = new Parameter(parameterName);
@@ -57,10 +56,7 @@ export class CLICommand {
 	}
 
 	public static get argv(): string[] {
-		if (this._argv) {
-			return this._argv;
-		}
-		return process.argv;
+		return this._argv || process.argv;
 	}
 
 	// A singleton instance of the commander's program object
@@ -84,7 +80,6 @@ export class CLICommand {
 	}
 
 	public static parse(program: CliApiObject = this.program): void {
-		// debugger;
 		program.parse(CLICommand.argv);
 		this._doneSettingCommands = true;
 	}

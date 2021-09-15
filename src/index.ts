@@ -7,6 +7,7 @@ import { Wallet, JWKWallet, WalletDAO } from './wallet_new';
 import Arweave from 'arweave';
 import { CLICommand } from './CLICommand';
 import {
+	DriveAddressParameter,
 	DriveNameParameter,
 	DrivePasswordParameter,
 	SeedPhraseParameter,
@@ -59,7 +60,7 @@ new CLICommand({
 		const wallet: Wallet | false = await context.getWallet().catch(() => {
 			return false;
 		});
-		const address = wallet ? await wallet.getAddress() : context.driveAddress;
+		const address = wallet ? await wallet.getAddress() : context.getParameterValue(DriveAddressParameter);
 		if (address) {
 			const balance = await walletDao.getAddressWinstonBalance(address);
 			console.log(balance);
@@ -387,8 +388,6 @@ program
 		process.exit(0);
 	});
 
-CLICommand.parse();
-
 // Process command line inputs
 const opts = program.opts();
 //console.log(`opts: ${Object.getOwnPropertyNames(opts)}`);
@@ -570,4 +569,8 @@ General Options:
 	• quiet - just return json and status code
 	• silent - just return status code
 	`);
+}
+
+if (require.main === module) {
+	CLICommand.parse();
 }

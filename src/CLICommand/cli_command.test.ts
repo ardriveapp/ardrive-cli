@@ -7,8 +7,7 @@ import { CLICommand, CommandDescriptor } from './cli_command';
 import '../parameter_declarations';
 import { DriveNameParameter } from '../parameter_declarations';
 import { CliApiObject } from './cli';
-
-const segmentOfActualArgvForThisEnv = process.argv.slice(0, 2);
+import { baseArgv } from './test_constants';
 
 const MY_DRIVE_NAME = 'My awesome drive!';
 const driveNameCommandName = 'drive-name-test';
@@ -20,7 +19,7 @@ const driveNameCommandDescription: CommandDescriptor = {
 		expect(option.driveNameTest).to.equal(MY_DRIVE_NAME);
 	}
 };
-const driveNameArgv: string[] = [...segmentOfActualArgvForThisEnv, driveNameCommandName, '--drive-name', MY_DRIVE_NAME];
+const driveNameArgv: string[] = [...baseArgv, driveNameCommandName, '--drive-name', MY_DRIVE_NAME];
 
 // const MY_DRIVE_ADDRESS = '00000000000000000000000000000000';
 // const driveAddressCommandName = 'drive-address-test';
@@ -33,7 +32,7 @@ const driveNameArgv: string[] = [...segmentOfActualArgvForThisEnv, driveNameComm
 // 	}
 // };
 // const driveAddressArgv: string[] = [
-// 	...segmentOfActualArgvForThisEnv,
+// 	...baseArgv,
 // 	driveAddressCommandName,
 // 	'--drive-address',
 // 	MY_DRIVE_NAME
