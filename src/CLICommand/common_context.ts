@@ -1,10 +1,8 @@
-import { DriveKey } from '../arfsdao';
 import { JWKWallet, Wallet, WalletDAO } from '../wallet_new';
 import { ParameterName } from './parameter';
 import * as fs from 'fs';
 import { JWKInterface } from 'ardrive-core-js';
 import {
-	DriveAddressParameter,
 	DriveKeyParameter,
 	DrivePasswordParameter,
 	SeedPhraseParameter,
@@ -34,7 +32,11 @@ export class CommonContext {
 	 * Returns true when a drive password, drive key or wallet file is provided
 	 */
 	public async getIsPrivate(): Promise<boolean> {
-		return !!(this.password || this.driveKey || (await this.getWallet().catch(() => false)));
+		return !!(
+			this.getParameterValue(DrivePasswordParameter) ||
+			this.getParameterValue(DriveKeyParameter) ||
+			(await this.getWallet().catch(() => false))
+		);
 	}
 
 	/**
@@ -53,28 +55,6 @@ export class CommonContext {
 			return await this.walletDao.generateJWKWallet(seedPhrase);
 		}
 		throw new Error('No wallet file neither seed phrase provided!');
-	}
-
-	/**
-	 * @type {string | undefined}
-	 * A getter for the drive password
-	 */
-	public get password(): string | undefined {
-		return this.getParameterValue(DrivePasswordParameter);
-	}
-
-	/**
-	 * @type {DriveKey | undefined}
-	 * A getter for the drive key
-	 */
-	public get driveKey(): DriveKey | undefined {
-		const key = this.getParameterValue(DriveKeyParameter);
-		return key ? Buffer.from(key) : undefined;
-	}
-
-	public get driveAddress(): string | undefined {
-		const addr = this.getParameterValue(DriveAddressParameter);
-		return addr;
 	}
 
 	/**
