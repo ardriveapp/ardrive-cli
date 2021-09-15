@@ -13,7 +13,7 @@ export interface ParameterData {
 }
 
 export class Parameter implements ParameterData {
-	private parameterData: ParameterData & { value?: string };
+	private parameterData: ParameterData;
 	private static parameters: ParameterData[] = [];
 
 	constructor(public readonly name: ParameterName) {
@@ -36,16 +36,17 @@ export class Parameter implements ParameterData {
 		return this.parameterData.type || 'single-value';
 	}
 
-	public get value(): string | undefined {
-		return this.parameterData.value;
-	}
-
-	public set value(v: string | undefined) {
-		this.parameterData.value = v;
-	}
-
 	public static declare(parameter: ParameterData): void {
 		Parameter.parameters.push(parameter);
+	}
+
+	/**
+	 * @name reset
+	 * For testing pruposes only. It will just remove all parameters declaration
+	 * @returns {ParameterData[]} the removed parameters
+	 */
+	public static reset(): ParameterData[] {
+		return this.parameters.splice(0, this.parameters.length);
 	}
 
 	public static get(parameterName: ParameterName): ParameterData {

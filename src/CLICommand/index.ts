@@ -1,1 +1,1 @@
-export * from './cliCommand';
+export * from './cli_command';

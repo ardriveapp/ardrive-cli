@@ -12,7 +12,7 @@ import {
 	SeedPhraseParameter,
 	WalletFileParameter
 } from './parameter_declarations';
-import { CommonContext } from './CLICommand/commonContext';
+import { CommonContext } from './CLICommand/common_context';
 import { JWKInterface } from './wallet';
 import fetch from 'node-fetch';
 
@@ -387,7 +387,7 @@ program
 		process.exit(0);
 	});
 
-program.parse(process.argv);
+CLICommand.parse();
 
 // Process command line inputs
 const opts = program.opts();
