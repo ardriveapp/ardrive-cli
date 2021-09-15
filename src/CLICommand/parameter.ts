@@ -13,7 +13,7 @@ export interface ParameterData {
 }
 
 export class Parameter implements ParameterData {
-	private parameterData: ParameterData & { value?: string };
+	private parameterData: ParameterData;
 	private static parameters: ParameterData[] = [];
 
 	constructor(public readonly name: ParameterName) {
@@ -38,14 +38,6 @@ export class Parameter implements ParameterData {
 
 	public get required(): boolean {
 		return !!this.parameterData.required;
-	}
-
-	public get value(): string | undefined {
-		return this.parameterData.value;
-	}
-
-	public set value(v: string | undefined) {
-		this.parameterData.value = v;
 	}
 
 	public static declare(parameter: ParameterData): void {

@@ -17,6 +17,10 @@ export const DestinationFileNameParameter = 'destFileName';
 export const LocalFilesParameter = 'localFiles';
 export const GetAllRevisionsParameter = 'getAllRevisions';
 
+/**
+ * Note: importing this file will declare all the above parameters
+ */
+
 Parameter.declare({
 	name: WalletFileParameter,
 	aliases: ['-w', '--wallet-file'],

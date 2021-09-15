@@ -324,7 +324,7 @@ new CLICommand({
 	}
 });
 
-program.parse(process.argv);
+CLICommand.parse();
 
 // Process command line inputs
 const opts = program.opts();
