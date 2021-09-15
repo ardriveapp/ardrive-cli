@@ -1,12 +1,12 @@
 import { Command } from 'commander';
-import { CliApiObject } from './cli';
+import { CliApiObject, ParsedArguments } from './cli';
 import { Parameter, ParameterName } from './parameter';
 
 export type CommandName = string;
 export interface CommandDescriptor {
 	name: CommandName;
 	parameters: ParameterName[];
-	action(options: any): void;
+	action(options: ParsedArguments): void;
 }
 
 const program: CliApiObject = new Command() as CliApiObject;

@@ -13,7 +13,7 @@ export interface ParameterData {
 }
 
 export class Parameter implements ParameterData {
-	private parameterData: ParameterData & { value?: string };
+	private parameterData: ParameterData;
 	private static parameters: ParameterData[] = [];
 
 	constructor(public readonly name: ParameterName) {
