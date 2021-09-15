@@ -1,7 +1,6 @@
 import { ArweaveAddress, Wallet, WalletDAO, Winston } from './wallet_new';
 import { ArFSDAO, ArFSPublicDrive, FolderID, TransactionID, DriveID } from './arfsdao';
 import { CommunityOracle } from './community/community_oracle';
-import { walletDao } from '.';
 import { winstonToAr } from 'ardrive-core-js';
 import * as fs from 'fs';
 
@@ -47,7 +46,7 @@ export class ArDrive {
 	async sendCommunityTip(communityWinstonTip: Winston): Promise<ArFSTipData> {
 		const tokenHolder: ArweaveAddress = await this.communityOracle.selectTokenHolder();
 
-		const communityTipResult = await walletDao.sendARToAddress(
+		const communityTipResult = await this.walletDao.sendARToAddress(
 			winstonToAr(+communityWinstonTip),
 			this.wallet,
 			tokenHolder,
