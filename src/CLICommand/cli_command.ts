@@ -40,11 +40,11 @@ function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliA
 
 export class CLICommand {
 	private static _doneSettingCommands = false;
-	private static _argv?: string[]; // Custom argv vector for testing propuse
+	private static _argv?: string[]; // Custom argv vector for testing purposes
 
 	/**
-	 * @param {CommandDescriptor} commandDescription an immputable representation of a command
-	 * @param {string[]} argv a custom argv for testing propuses
+	 * @param {CommandDescriptor} commandDescription an immutable representation of a command
+	 * @param {string[]} argv a custom argv for testing purposes
 	 */
 	constructor(private readonly commandDescription: CommandDescriptor, private readonly _program?: CliApiObject) {
 		this.setCommand();

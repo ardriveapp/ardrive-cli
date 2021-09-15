@@ -75,7 +75,7 @@ describe('CLICommand class', () => {
 		expect(stubbedProgram.parse.calledOnce).to.be.true;
 	});
 
-	it("CLICommmand won't allow to declare a command after parsed", () => {
+	it("CLICommand won't allow to declare a command after parsed", () => {
 		expect(() => new CLICommand(driveNameCommandDescription, stubbedProgram)).to.throw;
 		expect(stubbedProgram.parse.notCalled);
 	});
