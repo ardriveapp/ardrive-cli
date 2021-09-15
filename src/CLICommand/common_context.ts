@@ -10,7 +10,7 @@ import {
 	SeedPhraseParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
-import Arweave from 'arweave';
+import { walletDao } from '..';
 
 /**
  * @type {CommonContext}
@@ -25,8 +25,8 @@ export class CommonContext {
 	 * @param {Arweave} arweave The arweave instance
 	 * An immutable instance of CommonContext holding the parsed values of the parameters
 	 */
-	constructor(private readonly options: any, private readonly arweave: Arweave) {
-		this.walletDao = new WalletDAO(this.arweave);
+	constructor(private readonly options: any) {
+		this.walletDao = walletDao;
 	}
 
 	/**

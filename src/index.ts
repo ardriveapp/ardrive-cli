@@ -35,7 +35,7 @@ new CLICommand({
 	name: 'create-drive',
 	parameters: [WalletFileParameter, SeedPhraseParameter, DriveNameParameter, DrivePasswordParameter],
 	async action(options) {
-		const context = new CommonContext(options, arweave);
+		const context = new CommonContext(options);
 		const wallet: Wallet = await context.getWallet();
 		const ardrive = new ArDrive(new ArFSDAO(wallet, arweave));
 		const createDriveResult = await (async function () {
@@ -55,7 +55,7 @@ new CLICommand({
 	name: 'get-balance',
 	parameters: [WalletFileParameter, SeedPhraseParameter],
 	async action(options) {
-		const context = new CommonContext(options, arweave);
+		const context = new CommonContext(options);
 		const wallet: Wallet | false = await context.getWallet().catch(() => {
 			return false;
 		});

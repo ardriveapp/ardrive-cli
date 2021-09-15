@@ -1,4 +1,3 @@
-import Arweave from 'arweave';
 import { expect } from 'chai';
 import { Command } from 'commander';
 import { CliApiObject, ParsedArguments } from './cli';
@@ -16,14 +15,6 @@ import {
 } from './test_constants';
 
 const segmentOfActualArgvForThisEnv = process.argv.slice(0, 2);
-
-const arweave = Arweave.init({
-	host: 'arweave.net', // Arweave Gateway
-	//host: 'arweave.dev', // Arweave Dev Gateway
-	port: 443,
-	protocol: 'https',
-	timeout: 600000
-});
 
 const testCommandName = 'test-command';
 
@@ -51,7 +42,7 @@ describe('CommonContext class', () => {
 	it('Actually reads the value from argv', () => {
 		Parameter.declare(singleValueParameter);
 		declareCommandWithParams(program, [singleValueParameterName], (options) => {
-			const context = new CommonContext(options, arweave);
+			const context = new CommonContext(options);
 			expect(context.getParameterValue(singleValueParameterName)).to.not.be.undefined;
 		});
 		program.parse([...segmentOfActualArgvForThisEnv, testCommandName, '--single-value-parameter', '1234567890']);
@@ -60,7 +51,7 @@ describe('CommonContext class', () => {
 	it('Boolean parameter false', () => {
 		Parameter.declare(booleanParameter);
 		declareCommandWithParams(program, [booleanParameterName], (options) => {
-			const context = new CommonContext(options, arweave);
+			const context = new CommonContext(options);
 			expect(!!context.getParameterValue(booleanParameterName)).to.be.false;
 		});
 		program.parse([...segmentOfActualArgvForThisEnv, testCommandName]);
@@ -69,7 +60,7 @@ describe('CommonContext class', () => {
 	it('Boolean parameter true', () => {
 		Parameter.declare(booleanParameter);
 		declareCommandWithParams(program, [booleanParameterName], (options) => {
-			const context = new CommonContext(options, arweave);
+			const context = new CommonContext(options);
 			expect(context.getParameterValue(booleanParameterName)).to.be.true;
 		});
 		program.parse([...segmentOfActualArgvForThisEnv, testCommandName, '--boolean-parameter']);
@@ -79,7 +70,7 @@ describe('CommonContext class', () => {
 		const colorsArray = ['red', 'green', 'blue'];
 		Parameter.declare(arrayParameter);
 		declareCommandWithParams(program, [arrayParameterName], (options) => {
-			const context = new CommonContext(options, arweave);
+			const context = new CommonContext(options);
 			expect(context.getParameterValue(arrayParameterName)).to.deep.equal(colorsArray);
 		});
 		program.parse([...segmentOfActualArgvForThisEnv, testCommandName, '--array-parameter', ...colorsArray]);
