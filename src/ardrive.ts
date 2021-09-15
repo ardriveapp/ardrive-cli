@@ -1,4 +1,11 @@
+import { ArweaveAddress, Wallet, WalletDAO, Winston } from './wallet_new';
 import { ArFSDAO, ArFSPublicDrive, FolderID, TransactionID, DriveID } from './arfsdao';
+import { CommunityOracle } from './community/community_oracle';
+import { walletDao } from '.';
+import { winstonToAr } from 'ardrive-core-js';
+import * as fs from 'fs';
+
+export type Bytes = number;
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 export type ArFSTipType = 'drive' | 'folder';
@@ -11,9 +18,9 @@ export interface ArFSEntityData {
 
 // TODO: Is this really in the ArFS domain?
 export interface ArFSTipData {
-	type: ArFSTipType;
 	txId: TransactionID; // TODO: make a type that checks lengths
-	winston: number; // TODO: make a type that checks validity
+	tokenHolder: ArweaveAddress;
+	winston: Winston; // TODO: make a type that checks validity
 }
 
 export type ArFSFees = { [key: string]: number };
@@ -25,20 +32,58 @@ export interface ArFSResult {
 }
 
 export class ArDrive {
-	constructor(private readonly arFsDao: ArFSDAO) {}
+	constructor(
+		private readonly wallet: Wallet,
+		private readonly walletDao: WalletDAO,
+		private readonly arFsDao: ArFSDAO,
+		private readonly communityOracle: CommunityOracle
+	) {}
+
+	// TODO: FS shouldn't be reading the files more than once and doesn't belong in this class
+	getFileSize(filePath: string): Bytes {
+		return fs.statSync(filePath).size;
+	}
+
+	async sendCommunityTip(communityWinstonTip: Winston): Promise<ArFSTipData> {
+		const tokenHolder: ArweaveAddress = await this.communityOracle.selectTokenHolder();
+
+		const communityTipResult = await walletDao.sendARToAddress(
+			winstonToAr(+communityWinstonTip),
+			this.wallet,
+			tokenHolder,
+			[
+				{ name: 'appName', value: 'ArDrive-CLI' },
+				{ name: 'appVersion', value: '2.0' },
+				{ name: 'trxType', value: 'Community-Tip' }
+			]
+		);
+
+		return { txId: communityTipResult.trxID, tokenHolder: tokenHolder, winston: communityTipResult.winston };
+	}
 
 	async uploadPublicFile(
 		parentFolderId: FolderID,
 		filePath: string,
 		destinationFileName?: string
 	): Promise<ArFSResult> {
+		const winstonPrice = await this.walletDao.getWinstonPriceForBytes(this.getFileSize(filePath));
+		const communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(winstonPrice);
+		const totalWinstonPrice = (+winstonPrice + +communityWinstonTip).toString();
+
+		if (!this.walletDao.confirmBalance(this.wallet, totalWinstonPrice)) {
+			throw new Error('Not enough AR for file upload..');
+		}
+
+		// TODO: Add interactive confirmation of AR price estimation
+
 		const { dataTrx, metaDataTrx, fileId } = await this.arFsDao.uploadPublicFile(
 			parentFolderId,
 			filePath,
 			destinationFileName
 		);
 
-		// TODO: send community tip
+		const communityTipResult = await this.sendCommunityTip(communityWinstonTip);
+
 		return Promise.resolve({
 			created: [
 				{
@@ -48,11 +93,10 @@ export class ArDrive {
 					entityId: fileId
 				}
 			],
-			tips: [],
+			tips: [communityTipResult],
 			fees: {
 				[metaDataTrx.id]: +metaDataTrx.reward,
 				[dataTrx.id]: +dataTrx.reward
-				// qGr1BIVWQwdPMuQxJ9MmwMM8CBmZTIj9powGxJSZyi0: 344523
 			}
 		});
 	}
@@ -63,6 +107,16 @@ export class ArDrive {
 		password: string,
 		destinationFileName?: string
 	): Promise<ArFSResult> {
+		const winstonPrice = await this.walletDao.getWinstonPriceForBytes(this.getFileSize(filePath));
+		const communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(winstonPrice);
+		const totalWinstonPrice = (+winstonPrice + +communityWinstonTip).toString();
+
+		if (!this.walletDao.confirmBalance(this.wallet, totalWinstonPrice)) {
+			throw new Error('Not enough AR for file upload..');
+		}
+
+		// TODO: Add interactive confirmation of AR price estimation
+
 		const { dataTrx, metaDataTrx, fileId } = await this.arFsDao.uploadPrivateFile(
 			parentFolderId,
 			filePath,
@@ -70,21 +124,22 @@ export class ArDrive {
 			destinationFileName
 		);
 
-		// TODO: send community tip
+		const communityTipResult = await this.sendCommunityTip(communityWinstonTip);
+
 		return Promise.resolve({
 			created: [
 				{
 					type: 'file',
 					metadataTxId: metaDataTrx.id,
 					dataTxId: dataTrx.id,
-					entityId: fileId
+					entityId: fileId,
+					key: ''
 				}
 			],
-			tips: [],
+			tips: [communityTipResult],
 			fees: {
 				[metaDataTrx.id]: +metaDataTrx.reward,
 				[dataTrx.id]: +dataTrx.reward
-				// qGr1BIVWQwdPMuQxJ9MmwMM8CBmZTIj9powGxJSZyi0: 344523
 			}
 		});
 	}
@@ -101,8 +156,7 @@ export class ArDrive {
 				{
 					type: 'folder',
 					metadataTxId: folderTrx.id,
-					entityId: folderId,
-					key: ''
+					entityId: folderId
 				}
 			],
 			tips: [],
@@ -122,14 +176,12 @@ export class ArDrive {
 				{
 					type: 'drive',
 					metadataTxId: driveTrx.id,
-					entityId: driveId,
-					key: ''
+					entityId: driveId
 				},
 				{
 					type: 'folder',
 					metadataTxId: rootFolderTrx.id,
-					entityId: rootFolderId,
-					key: ''
+					entityId: rootFolderId
 				}
 			],
 			tips: [],
