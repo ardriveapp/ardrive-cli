@@ -29,7 +29,7 @@ import fetch from 'node-fetch';
 
 /* eslint-disable no-console */
 
-const arweave = Arweave.init({
+export const arweave = Arweave.init({
 	host: 'arweave.net', // Arweave Gateway
 	//host: 'arweave.dev', // Arweave Dev Gateway
 	port: 443,
