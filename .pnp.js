@@ -51,7 +51,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/uuid", "npm:8.3.0"],
             ["@typescript-eslint/eslint-plugin", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
             ["@typescript-eslint/parser", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
-            ["ardrive-core-js", "npm:0.5.0"],
+            ["ardrive-core-js", "npm:0.5.1"],
             ["arweave", "npm:1.10.16"],
             ["arweave-bundles", "npm:1.0.3"],
             ["arweave-mnemonic-keys", "npm:0.0.9"],
@@ -1833,7 +1833,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/uuid", "npm:8.3.0"],
             ["@typescript-eslint/eslint-plugin", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
             ["@typescript-eslint/parser", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
-            ["ardrive-core-js", "npm:0.5.0"],
+            ["ardrive-core-js", "npm:0.5.1"],
             ["arweave", "npm:1.10.16"],
             ["arweave-bundles", "npm:1.0.3"],
             ["arweave-mnemonic-keys", "npm:0.0.9"],
@@ -1871,11 +1871,11 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["ardrive-core-js", [
-        ["npm:0.5.0", {
-          "packageLocation": "./.yarn/cache/ardrive-core-js-npm-0.5.0-a45eb0f995-3f877a369a.zip/node_modules/ardrive-core-js/",
+        ["npm:0.5.1", {
+          "packageLocation": "./.yarn/cache/ardrive-core-js-npm-0.5.1-ffa53705af-da4d2d7539.zip/node_modules/ardrive-core-js/",
           "packageDependencies": [
-            ["ardrive-core-js", "npm:0.5.0"],
-            ["arweave", "npm:1.10.13"],
+            ["ardrive-core-js", "npm:0.5.1"],
+            ["arweave", "npm:1.10.16"],
             ["arweave-bundles", "npm:1.0.3"],
             ["axios", "npm:0.21.1"],
             ["better-sqlite3", "npm:7.4.0"],
@@ -1891,7 +1891,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["prompt-password", "npm:1.2.0"],
             ["prompt-sync", "npm:4.2.0"],
             ["prompts", "npm:2.4.0"],
-            ["smartweave", "npm:0.4.27"],
+            ["smartweave", "npm:0.4.45"],
             ["typescript", "patch:typescript@npm%3A4.2.3#builtin<compat/typescript>::version=4.2.3&hash=a45b0e"],
             ["utf8", "npm:3.0.0"],
             ["uuid", "npm:8.3.2"]

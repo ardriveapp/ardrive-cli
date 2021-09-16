@@ -1483,7 +1483,7 @@ __metadata:
     "@types/uuid": ^8.3.0
     "@typescript-eslint/eslint-plugin": ^4.18.0
     "@typescript-eslint/parser": ^4.18.0
-    ardrive-core-js: 0.5.0
+    ardrive-core-js: 0.5.1
     arweave: ^1.10.16
     arweave-bundles: ^1.0.3
     arweave-mnemonic-keys: ^0.0.9
@@ -1521,11 +1521,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"ardrive-core-js@npm:0.5.0":
-  version: 0.5.0
-  resolution: "ardrive-core-js@npm:0.5.0"
+"ardrive-core-js@npm:0.5.1":
+  version: 0.5.1
+  resolution: "ardrive-core-js@npm:0.5.1"
   dependencies:
-    arweave: ^1.10.11
+    arweave: ^1.10.16
     arweave-bundles: ^1.0.3
     axios: ^0.21.1
     better-sqlite3: ^7.1.2
@@ -1541,11 +1541,11 @@ __metadata:
     prompt-password: ^1.2.0
     prompt-sync: ^4.2.0
     prompts: ^2.4.0
-    smartweave: 0.4.27
+    smartweave: ^0.4.45
     typescript: ^4.2.3
     utf8: ^3.0.0
     uuid: ^8.3.2
-  checksum: 3f877a369a9be6afba6973bc9c1ca9cb338ea32c1c9bfe9fcf01b0869c1ac8859d4d0ae6fd11c4f6865faf76e78293ef70d5297253855f0bc57faa7fc4c092d5
+  checksum: da4d2d7539f55d8d2f6150761c42f158b55c6682b6546cf062d3201071a460fb885a831f111ca40e2f0e472f688b9b8aa7f5724b5b7f9a5c36b1dc5773577de8
   languageName: node
   linkType: hard
 
@@ -6417,7 +6417,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"smartweave@npm:0.4.27, smartweave@npm:^0.4.27":
+"smartweave@npm:^0.4.27":
   version: 0.4.27
   resolution: "smartweave@npm:0.4.27"
   dependencies:
