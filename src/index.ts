@@ -5,7 +5,11 @@ import Arweave from 'arweave';
 
 if (require.main === module) {
 	// Declares the commands
-	import('./commands');
+
+	// declare all parameters
+	import('./parameter_declarations').then(() => {
+		import('./commands');
+	});
 }
 
 export const arweave = Arweave.init({

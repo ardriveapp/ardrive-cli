@@ -14,14 +14,12 @@ import './generate_wallet';
 
 const program = CLICommand.program;
 
-if (require.main === module) {
-	CLICommand.parse();
-	const opts = program.opts();
-	if (
-		opts.help ||
-		(Object.getOwnPropertyNames(opts).length === 0 && Object.getOwnPropertyNames(program.arguments).length === 0)
-	) {
-		showHelp();
-		process.exit(0);
-	}
+CLICommand.parse();
+const opts = program.opts();
+if (
+	opts.help ||
+	(Object.getOwnPropertyNames(opts).length === 0 && Object.getOwnPropertyNames(program.arguments).length === 0)
+) {
+	showHelp();
+	process.exit(0);
 }
