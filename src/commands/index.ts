@@ -1,10 +1,16 @@
 import { CLICommand } from '../CLICommand';
 import { showHelp } from '../utils';
 import '../parameter_declarations';
-import './drive';
-import './file';
-import './transaction';
-import './wallet';
+import './create_drive';
+import './drive_info';
+import './upload_file';
+import './tx_status';
+import './get_mempool';
+import './send_ar';
+import './get_balance';
+import './get_address';
+import './generate_seedphrase';
+import './generate_wallet';
 
 const program = CLICommand.program;
 

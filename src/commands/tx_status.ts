@@ -1,24 +1,9 @@
 import { arweave } from '..';
 import { CLICommand } from '../CLICommand';
 import { ConfirmationsParameter, TransactionIdParameter } from '../parameter_declarations';
+import { fetchMempool } from '../utils';
 
 /* eslint-disable no-console */
-
-async function fetchMempool(): Promise<string[]> {
-	const response = await fetch('https://arweave.net/tx/pending');
-	return response.json();
-}
-
-new CLICommand({
-	name: 'get-mempool',
-	parameters: [],
-	async action() {
-		const transactionsInMempool = await fetchMempool();
-
-		console.log(JSON.stringify(transactionsInMempool, null, 4));
-		process.exit(0);
-	}
-});
 
 new CLICommand({
 	name: 'tx-status',

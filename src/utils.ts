@@ -12,6 +12,11 @@ export function readJWKFile(path: string): Wallet {
 	return wallet;
 }
 
+export async function fetchMempool(): Promise<string[]> {
+	const response = await fetch('https://arweave.net/tx/pending');
+	return response.json();
+}
+
 export function showHelp(): void {
 	console.log(`
 Usage: <this script> <action> <options>
