@@ -36,8 +36,12 @@ function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliA
 			}
 			return `<${parameterName}>`;
 		})();
-		const setOption = parameter.required ? command.requiredOption : command.option;
-		setOption(`${aliasesAsString} ${paramType}`, parameter.description, parameter.default);
+		const optionArguments = [`${aliasesAsString} ${paramType}`, parameter.description, parameter.default] as const;
+		if (parameter.required) {
+			command.requiredOption(...optionArguments);
+		} else {
+			command.option(...optionArguments);
+		}
 	});
 	command = command.action((options) => {
 		commandDescriptor.action(options);
@@ -86,8 +90,12 @@ export class CLICommand {
 		setCommanderCommand(this.commandDescription, this.program);
 	}
 
-	public static parse(program: CliApiObject = this.program): void {
-		program.parse(CLICommand.argv);
-		this._doneSettingCommands = true;
+	public static parse(
+		program: CliApiObject = this.program,
+		argv = CLICommand.argv,
+		doneSettingCommands = true
+	): void {
+		program.parse(argv);
+		this._doneSettingCommands = doneSettingCommands;
 	}
 }
