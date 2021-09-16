@@ -7,8 +7,7 @@ import { CLICommand, CommandDescriptor } from './cli_command';
 import '../parameter_declarations';
 import { DriveNameParameter } from '../parameter_declarations';
 import { CliApiObject } from './cli';
-
-const segmentOfActualArgvForThisEnv = process.argv.slice(0, 2);
+import { baseArgv } from './test_constants';
 
 const MY_DRIVE_NAME = 'My awesome drive!';
 const driveNameCommandName = 'drive-name-test';
@@ -20,24 +19,7 @@ const driveNameCommandDescription: CommandDescriptor = {
 		expect(option.driveNameTest).to.equal(MY_DRIVE_NAME);
 	}
 };
-const driveNameArgv: string[] = [...segmentOfActualArgvForThisEnv, driveNameCommandName, '--drive-name', MY_DRIVE_NAME];
-
-// const MY_DRIVE_ADDRESS = '00000000000000000000000000000000';
-// const driveAddressCommandName = 'drive-address-test';
-// const driveAddressCommandDescription: CommandDescriptor = {
-// 	name: driveAddressCommandName,
-// 	parameters: [DriveAddressParameter],
-// 	action(option) {
-// 		/** This code here will run after argv is parsed */
-// 		expect(option.driveNameTest).to.equal(MY_DRIVE_NAME);
-// 	}
-// };
-// const driveAddressArgv: string[] = [
-// 	...segmentOfActualArgvForThisEnv,
-// 	driveAddressCommandName,
-// 	'--drive-address',
-// 	MY_DRIVE_NAME
-// ];
+const driveNameArgv: string[] = [...baseArgv, driveNameCommandName, '--drive-name', MY_DRIVE_NAME];
 
 process.exit = (n: number) => {
 	process.exit(n);
@@ -75,7 +57,7 @@ describe('CLICommand class', () => {
 		expect(stubbedProgram.parse.calledOnce).to.be.true;
 	});
 
-	it("CLICommmand won't allow to declare a command after parsed", () => {
+	it("CLICommand won't allow to declare a command after parsed", () => {
 		expect(() => new CLICommand(driveNameCommandDescription, stubbedProgram)).to.throw;
 		expect(stubbedProgram.parse.notCalled);
 	});

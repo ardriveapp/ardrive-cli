@@ -17,8 +17,13 @@ program.option('-h, --help', 'Get help');
 //program.option('create-drive', 'action to create a new drive (and its corresponding root folder)');
 program.addHelpCommand(false);
 
+/**
+ * @name serCommanderCommand
+ * @param {CommandDescriptor} commandDescriptor the descripton of the command to be set
+ * @param {CliApiObject} program the instance of the commander class
+ * This function is the responsible to tell the third party library to declare a command
+ */
 function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliApiObject): void {
-	// debugger;
 	let command: CliApiObject = program.command(commandDescriptor.name);
 	commandDescriptor.parameters.forEach((parameterName) => {
 		const parameter = new Parameter(parameterName);
@@ -41,11 +46,11 @@ function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliA
 
 export class CLICommand {
 	private static _doneSettingCommands = false;
-	private static _argv?: string[]; // Custom argv vector for testing propuse
+	private static _argv?: string[]; // Custom argv vector for testing purposes
 
 	/**
-	 * @param {CommandDescriptor} commandDescription an immputable representation of a command
-	 * @param {string[]} argv a custom argv for testing propuses
+	 * @param {CommandDescriptor} commandDescription an immutable representation of a command
+	 * @param {string[]} argv a custom argv for testing purposes
 	 */
 	constructor(private readonly commandDescription: CommandDescriptor, private readonly _program?: CliApiObject) {
 		this.setCommand();
@@ -58,10 +63,7 @@ export class CLICommand {
 	}
 
 	public static get argv(): string[] {
-		if (this._argv) {
-			return this._argv;
-		}
-		return process.argv;
+		return this._argv || process.argv;
 	}
 
 	// A singleton instance of the commander's program object
@@ -85,7 +87,6 @@ export class CLICommand {
 	}
 
 	public static parse(program: CliApiObject = this.program): void {
-		// debugger;
 		program.parse(CLICommand.argv);
 		this._doneSettingCommands = true;
 	}

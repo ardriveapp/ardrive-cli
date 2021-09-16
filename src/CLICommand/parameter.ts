@@ -46,7 +46,7 @@ export class Parameter implements ParameterData {
 
 	/**
 	 * @name reset
-	 * For testing pruposes only. It will just remove all parameters declaration
+	 * For testing purposes only. It will just remove all parameters declaration
 	 * @returns {ParameterData[]} the removed parameters
 	 */
 	public static reset(): ParameterData[] {

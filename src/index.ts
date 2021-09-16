@@ -37,7 +37,7 @@ const arweave = Arweave.init({
 	timeout: 600000
 });
 
-const walletDao = new WalletDAO(arweave);
+export const walletDao = new WalletDAO(arweave);
 
 // TODO: remove when fully de-coupled
 const program = CLICommand.program;
@@ -46,7 +46,7 @@ new CLICommand({
 	name: 'create-drive',
 	parameters: [WalletFileParameter, SeedPhraseParameter, DriveNameParameter, DrivePasswordParameter],
 	async action(options) {
-		const context = new CommonContext(options, arweave);
+		const context = new CommonContext(options);
 		const wallet: Wallet = await context.getWallet();
 		const ardrive = new ArDrive(new ArFSDAO(wallet, arweave));
 		const createDriveResult = await (async function () {
@@ -66,11 +66,11 @@ new CLICommand({
 	name: 'get-balance',
 	parameters: [WalletFileParameter, SeedPhraseParameter],
 	async action(options) {
-		const context = new CommonContext(options, arweave);
+		const context = new CommonContext(options);
 		const wallet: Wallet | false = await context.getWallet().catch(() => {
 			return false;
 		});
-		const address = wallet ? await wallet.getAddress() : context.driveAddress;
+		const address = wallet ? await wallet.getAddress() : context.getParameterValue(DriveAddressParameter);
 		if (address) {
 			const balance = await walletDao.getAddressWinstonBalance(address);
 			console.log(balance);
@@ -324,8 +324,6 @@ new CLICommand({
 	}
 });
 
-CLICommand.parse();
-
 // Process command line inputs
 const opts = program.opts();
 //console.log(`opts: ${Object.getOwnPropertyNames(opts)}`);
@@ -507,4 +505,8 @@ General Options:
 	• quiet - just return json and status code
 	• silent - just return status code
 	`);
+}
+
+if (require.main === module) {
+	CLICommand.parse();
 }
