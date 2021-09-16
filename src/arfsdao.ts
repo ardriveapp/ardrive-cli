@@ -7,6 +7,7 @@ import Transaction from 'arweave/node/lib/transaction';
 import {
 	ArFSDriveEntity,
 	ArFSEntity,
+	ArFSFileFolderEntity,
 	ArFSPrivateDriveEntity,
 	ContentType,
 	DrivePrivacy,
@@ -630,6 +631,74 @@ export class ArFSPublicDriveBuilder {
 				this.unixTime,
 				this.drivePrivacy,
 				this.rootFolderId
+			);
+		}
+
+		throw new Error('Invalid drive state');
+	}
+}
+
+export class ArFSPublicFolder extends ArFSEntity implements ArFSFileFolderEntity {
+	constructor(
+		readonly appName: string,
+		readonly appVersion: string,
+		readonly arFS: string,
+		readonly contentType: string,
+		readonly driveId: string,
+		readonly entityType: string,
+		readonly name: string,
+		readonly txId: string,
+		readonly unixTime: number,
+		readonly parentFolderId: string,
+		readonly entityId: string,
+		readonly lastModifiedDate: number
+	) {
+		super(appName, appVersion, arFS, contentType, driveId, entityType, name, 0, txId, unixTime);
+	}
+}
+
+export class ArFSPublicFolderBuilder {
+	appName?: string;
+	appVersion?: string;
+	arFS?: string;
+	contentType?: ContentType;
+	driveId?: DriveID;
+	entityType?: EntityType;
+	name?: string;
+	txId?: TransactionID;
+	unixTime?: number;
+	parentFolderId?: string;
+	entityId?: string;
+	lastModifiedDate?: number;
+
+	build(): ArFSPublicFolder {
+		if (
+			this.appName?.length &&
+			this.appVersion?.length &&
+			this.arFS?.length &&
+			this.contentType?.length &&
+			this.driveId?.length &&
+			this.entityType?.length &&
+			this.name?.length &&
+			this.txId?.length &&
+			this.unixTime &&
+			this.parentFolderId?.length &&
+			this.entityId?.length &&
+			this.lastModifiedDate
+		) {
+			return new ArFSPublicFolder(
+				this.appName,
+				this.appVersion,
+				this.arFS,
+				this.contentType,
+				this.driveId,
+				this.entityType,
+				this.name,
+				this.txId,
+				this.unixTime,
+				this.parentFolderId,
+				this.entityId,
+				this.lastModifiedDate
 			);
 		}
 
