@@ -20,7 +20,6 @@ export class CommonContext {
 	/**
 	 * @returns {CommonContext}
 	 * @param {any} options The object containing the parameterName: value mapping
-	 * @param {Arweave} arweave The arweave instance
 	 * An immutable instance of CommonContext holding the parsed values of the parameters
 	 */
 	constructor(private readonly options: any) {

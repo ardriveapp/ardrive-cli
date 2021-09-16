@@ -21,23 +21,6 @@ const driveNameCommandDescription: CommandDescriptor = {
 };
 const driveNameArgv: string[] = [...baseArgv, driveNameCommandName, '--drive-name', MY_DRIVE_NAME];
 
-// const MY_DRIVE_ADDRESS = '00000000000000000000000000000000';
-// const driveAddressCommandName = 'drive-address-test';
-// const driveAddressCommandDescription: CommandDescriptor = {
-// 	name: driveAddressCommandName,
-// 	parameters: [DriveAddressParameter],
-// 	action(option) {
-// 		/** This code here will run after argv is parsed */
-// 		expect(option.driveNameTest).to.equal(MY_DRIVE_NAME);
-// 	}
-// };
-// const driveAddressArgv: string[] = [
-// 	...baseArgv,
-// 	driveAddressCommandName,
-// 	'--drive-address',
-// 	MY_DRIVE_NAME
-// ];
-
 process.exit = (n: number) => {
 	process.exit(n);
 };
