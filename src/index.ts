@@ -1,13 +1,20 @@
 #!/usr/bin/env node
 
-//import * as ardrive from 'ardrive-core-js';
-import { Command } from 'commander';
 import * as fs from 'fs';
 import { ArDrive } from './ardrive';
 import { ArFSDAO } from './arfsdao';
-import { JWKInterface } from 'ardrive-core-js';
 import { Wallet, JWKWallet, WalletDAO } from './wallet_new';
 import Arweave from 'arweave';
+import { CLICommand } from './CLICommand';
+import {
+	DriveAddressParameter,
+	DriveNameParameter,
+	DrivePasswordParameter,
+	SeedPhraseParameter,
+	WalletFileParameter
+} from './parameter_declarations';
+import { CommonContext } from './CLICommand/common_context';
+import { JWKInterface } from './wallet';
 import fetch from 'node-fetch';
 
 /* eslint-disable no-console */
@@ -20,123 +27,20 @@ const arweave = Arweave.init({
 	timeout: 600000
 });
 
-const walletDao = new WalletDAO(arweave);
+export const walletDao = new WalletDAO(arweave);
 
-// Utility for parsing command line options
-const program = new Command();
+// TODO: remove when fully de-coupled
+const program = CLICommand.program;
 
-// Set up command line option parsing
-//const validActions = ['create-drive', 'rename-drive', 'upload-file'];
-program.option('-h, --help', 'Get help');
-//program.option('create-drive', 'action to create a new drive (and its corresponding root folder)');
-program.addHelpCommand(false);
-
-program
-	.command('create-folder')
-	.requiredOption('-n, --folder-name [name]', `a destination folder name to use when uploaded to ArDrive`)
-	.requiredOption('-d, --drive-id [drive id]', `a destination drive id to create folder within`)
-	.option(
-		'-p, --parent-folder-id <parent folder id>',
-		`the ArFS folder ID for the folder in which
-		this folder will reside (i.e. its parent folder)
-		• If no parent folder is supplied, the folder will become a subfolder of the root folder`
-	)
-	.option(
-		'-w, --wallet-file [path_to_jwk_file]',
-		`the path to a JWK file on the file system
-	• Can't be used with --seed-phrase`
-	)
-	.option(
-		'-s, --seed-phrase [12-word seed phrase]',
-		`a 12-word seed phrase representing a JWK
-		• Can't be used with --wallet-file`
-	)
-	.option(
-		'-p, --drive-password <drive password>',
-		`the encryption password for the private drive (OPTIONAL)
-		• When provided, creates the drive as a private drive. Public drive otherwise.`
-	)
-	.option(
-		'-k, --drive-key <drive key>',
-		`the drive key for the parent drive of the folder identified by --parent-folder-id
-		• Required only for files residing in private drives
-		• Can NOT be used in conjunction with --drive-password`
-	)
-	.action(async (options) => {
-		const wallet: Wallet = await (async function () {
-			// Enforce -w OR -s but not both
-			if (!!options.walletFile === !!options.seedPhrase) {
-				// Enters this condition if none or both has data
-				console.log('Choose --wallet-file OR --seed-phrase, but not both.');
-				process.exit(1);
-			}
-
-			if (options.walletFile) {
-				const walletFileData = fs.readFileSync(options.walletFile, { encoding: 'utf8', flag: 'r' });
-				const walletJSON = JSON.parse(walletFileData);
-				const walletJWK: JWKInterface = walletJSON as JWKInterface;
-				return new JWKWallet(walletJWK);
-			} else {
-				return await walletDao.generateJWKWallet(options.seed);
-			}
-		})();
-
-		const { folderName, driveId, parentFolderId } = options;
-
-		// TODO: Export convert seed phrase to wallet
-
-		const ardrive = new ArDrive(new ArFSDAO(wallet, arweave));
-		const createFolderResult = await (async function () {
-			return ardrive.createPublicFolder(folderName, driveId, parentFolderId);
-		})();
-
-		console.log(JSON.stringify(createFolderResult, null, 4));
-
-		process.exit(0);
-	});
-
-program
-	.command('create-drive')
-	.option(
-		'-w, --wallet-file [path_to_jwk_file]',
-		`the path to a JWK file on the file system
-	• Can't be used with --seed-phrase`
-	)
-	.option(
-		'-s, --seed-phrase [12-word seed phrase]',
-		`a 12-word seed phrase representing a JWK
-		• Can't be used with --wallet-file`
-	)
-	.option(
-		'-p, --drive-password <drive password>',
-		`the encryption password for the private drive (OPTIONAL)
-		• When provided, creates the drive as a private drive. Public drive otherwise.`
-	)
-	.option('-n, --drive-name [name]', `the name for the new drive`)
-	.action(async (options) => {
-		const wallet: Wallet = await (async function () {
-			// Enforce -w OR -s but not both
-			if (!!options.walletFile === !!options.seedPhrase) {
-				// Enters this condition if none or both has data
-				console.log('Choose --wallet-file OR --seed-phrase, but not both.');
-				process.exit(1);
-			}
-
-			if (options.walletFile) {
-				const walletFileData = fs.readFileSync(options.walletFile, { encoding: 'utf8', flag: 'r' });
-				const walletJSON = JSON.parse(walletFileData);
-				const walletJWK: JWKInterface = walletJSON as JWKInterface;
-				return new JWKWallet(walletJWK);
-			} else {
-				return await walletDao.generateJWKWallet(options.seed);
-			}
-		})();
-
-		// TODO: Export convert seed phrase to wallet
-
+new CLICommand({
+	name: 'create-drive',
+	parameters: [WalletFileParameter, SeedPhraseParameter, DriveNameParameter, DrivePasswordParameter],
+	async action(options) {
+		const context = new CommonContext(options);
+		const wallet: Wallet = await context.getWallet();
 		const ardrive = new ArDrive(new ArFSDAO(wallet, arweave));
 		const createDriveResult = await (async function () {
-			if (options.drivePassword) {
+			if (await context.getIsPrivate()) {
 				return ardrive.createPrivateDrive(options.driveName, options.drivePassword);
 			} else {
 				return ardrive.createPublicDrive(options.driveName);
@@ -145,31 +49,51 @@ program
 		console.log(JSON.stringify(createDriveResult, null, 4));
 
 		process.exit(0);
-	});
+	}
+});
 
-program
-	.command('get-balance')
-	.option(
-		'-w, --wallet-file [path_to_jwk_file]',
-		`the path to a JWK file on the file system
-			• Can't be used with --seed-phrase`
-	)
-	.option('-a, --address <Arweave wallet address>', 'get the balance of this Arweave wallet address')
-	.action(async (options) => {
-		if (options.walletFile != null) {
-			const wallet = readJWKFile(options.walletFile);
-			const walletAddress = await wallet.getAddress();
-			console.log(walletAddress);
-			console.log(await walletDao.getWalletWinstonBalance(wallet));
-			process.exit(0);
-		} else if (options.address != null) {
-			console.log(await walletDao.getAddressWinstonBalance(options.address));
-			process.exit(0);
+new CLICommand({
+	name: 'get-balance',
+	parameters: [WalletFileParameter, SeedPhraseParameter],
+	async action(options) {
+		const context = new CommonContext(options);
+		const wallet: Wallet | false = await context.getWallet().catch(() => {
+			return false;
+		});
+		const address = wallet ? await wallet.getAddress() : context.getParameterValue(DriveAddressParameter);
+		if (address) {
+			const balance = await walletDao.getAddressWinstonBalance(address);
+			console.log(balance);
 		} else {
-			console.log('MISSING WALLET FILE OR DESTINATION ADDRESS!');
-			process.exit(1);
+			console.log(`No wallet provided`);
+			process.exit(0);
 		}
-	});
+	}
+});
+
+// program
+// 	.command('get-balance')
+// 	.option(
+// 		'-w, --wallet-file [path_to_jwk_file]',
+// 		`the path to a JWK file on the file system
+// 			• Can't be used with --seed-phrase`
+// 	)
+// 	.option('-a, --address <Arweave wallet address>', 'get the balance of this Arweave wallet address')
+// 	.action(async (options) => {
+// 		if (options.walletFile != null) {
+// 			const wallet = readJWKFile(options.walletFile);
+// 			const walletAddress = await wallet.getAddress();
+// 			console.log(walletAddress);
+// 			console.log(await walletDao.getWalletWinstonBalance(wallet));
+// 			process.exit(0);
+// 		} else if (options.address != null) {
+// 			console.log(await walletDao.getAddressWinstonBalance(options.address));
+// 			process.exit(0);
+// 		} else {
+// 			console.log('MISSING WALLET FILE OR DESTINATION ADDRESS!');
+// 			process.exit(1);
+// 		}
+// 	});
 
 program
 	.command('get-address')
@@ -464,8 +388,6 @@ program
 		process.exit(0);
 	});
 
-program.parse(process.argv);
-
 // Process command line inputs
 const opts = program.opts();
 //console.log(`opts: ${Object.getOwnPropertyNames(opts)}`);
@@ -647,4 +569,8 @@ General Options:
 	• quiet - just return json and status code
 	• silent - just return status code
 	`);
+}
+
+if (require.main === module) {
+	CLICommand.parse();
 }
