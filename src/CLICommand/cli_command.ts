@@ -17,6 +17,12 @@ program.option('-h, --help', 'Get help');
 //program.option('create-drive', 'action to create a new drive (and its corresponding root folder)');
 program.addHelpCommand(false);
 
+/**
+ * @name serCommanderCommand
+ * @param {CommandDescriptor} commandDescriptor the descripton of the command to be set
+ * @param {CliApiObject} program the instance of the commander class
+ * This function is the responsible to tell the third party library to declare a command
+ */
 function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliApiObject): void {
 	let command: CliApiObject = program.command(commandDescriptor.name);
 	commandDescriptor.parameters.forEach((parameterName) => {
