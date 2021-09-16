@@ -1,6 +1,6 @@
 import { JWKWallet, Wallet } from './wallet_new';
 import { JWKInterface } from './wallet';
-import fs from 'fs';
+import * as fs from 'fs';
 
 /* eslint-disable no-console */
 
