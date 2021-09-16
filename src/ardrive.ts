@@ -1,4 +1,4 @@
-import { ArFSDAO, ArFSPublicDrive, FolderID, TransactionID, DriveID } from './arfsdao';
+import { ArFSDAO, ArFSPublicDrive, FolderID, TransactionID, DriveID, ArFSPublicFolder } from './arfsdao';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 export type ArFSTipType = 'drive' | 'folder';
@@ -174,5 +174,20 @@ export class ArDrive {
 	async getPublicDrive(driveId: DriveID): Promise<ArFSPublicDrive> {
 		const driveEntity = await this.arFsDao.getPublicDrive(driveId);
 		return Promise.resolve(driveEntity);
+	}
+
+	async getPublicFolder(folderId: string): Promise<ArFSPublicFolder> {
+		const folder = await this.arFsDao.getPublicFolder(folderId);
+		return folder;
+	}
+
+	async getRootFolderIdOfPublicDrive(driveId: DriveID): Promise<FolderID> {
+		const drive = await this.getPublicDrive(driveId);
+		const rootFolderId = drive.rootFolderId;
+		return rootFolderId;
+	}
+
+	async getChildrenTxIds(folderId: FolderID): Promise<string[]> {
+		return this.arFsDao.getChildrenOfFolderTxIds(folderId);
 	}
 }

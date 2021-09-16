@@ -388,6 +388,31 @@ program
 		process.exit(0);
 	});
 
+program
+	.command('list-folder')
+	.option('--folder-id <folder id>', 'the ArFS folder ID for the folder to query')
+	.option(
+		'-w, --wallet-file [path_to_jwk_file]',
+		`the path to a JWK file on the file system
+		• Can't be used with --seed-phrase`
+	)
+	.action(async (options) => {
+		// FIXME: Add functionality for private folders
+		const wallet = (function () {
+			if (options.walletFile) {
+				return readJWKFile(options.walletFile);
+			}
+			console.log('Not implemented');
+			process.exit(1);
+		})();
+		const arDrive = new ArDrive(new ArFSDAO(wallet, arweave));
+		const folder = await arDrive.getPublicFolder(options.folderId);
+		const childrenTxIds = await arDrive.getChildrenTxIds(options.folderId);
+		console.log(JSON.stringify(folder, null, 4));
+		console.log(JSON.stringify(childrenTxIds, null, 4));
+		process.exit(0);
+	});
+
 // Process command line inputs
 const opts = program.opts();
 //console.log(`opts: ${Object.getOwnPropertyNames(opts)}`);
