@@ -74,7 +74,6 @@ export interface ArFSCreatePrivateDriveResult extends ArFSCreateDriveResult {
 
 export abstract class ArFSDAO {
 	protected abstract readonly arweave: Arweave;
-	// constructor() {}
 }
 
 /**
