@@ -74,7 +74,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["prompt-password", "npm:1.2.0"],
             ["prompt-sync", "npm:4.2.0"],
             ["prompts", "npm:2.4.0"],
-            ["redstone-smartweave", "npm:0.3.10-alpha.8"],
             ["rimraf", "npm:3.0.2"],
             ["sinon", "npm:11.1.2"],
             ["smartweave", "npm:0.4.45"],
@@ -1856,7 +1855,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["prompt-password", "npm:1.2.0"],
             ["prompt-sync", "npm:4.2.0"],
             ["prompts", "npm:2.4.0"],
-            ["redstone-smartweave", "npm:0.3.10-alpha.8"],
             ["rimraf", "npm:3.0.2"],
             ["sinon", "npm:11.1.2"],
             ["smartweave", "npm:0.4.45"],
@@ -2015,17 +2013,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["arweave-mnemonic-keys", "npm:0.0.9"],
             ["human-crypto-keys", "npm:0.1.4"],
             ["libp2p-crypto", "npm:0.19.7"]
-          ],
-          "linkType": "HARD",
-        }]
-      ]],
-      ["arweave-multihost", [
-        ["npm:0.1.0", {
-          "packageLocation": "./.yarn/cache/arweave-multihost-npm-0.1.0-9d93359e57-0f18cbe1de.zip/node_modules/arweave-multihost/",
-          "packageDependencies": [
-            ["arweave-multihost", "npm:0.1.0"],
-            ["arweave", "npm:1.10.16"],
-            ["axios", "npm:0.21.1"]
           ],
           "linkType": "HARD",
         }]
@@ -2283,16 +2270,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["electron-to-chromium", "npm:1.3.836"],
             ["escalade", "npm:3.1.1"],
             ["node-releases", "npm:1.1.75"]
-          ],
-          "linkType": "HARD",
-        }]
-      ]],
-      ["bson", [
-        ["npm:4.5.2", {
-          "packageLocation": "./.yarn/cache/bson-npm-4.5.2-99d8eb4572-03a4329e88.zip/node_modules/bson/",
-          "packageDependencies": [
-            ["bson", "npm:4.5.2"],
-            ["buffer", "npm:5.7.1"]
           ],
           "linkType": "HARD",
         }]
@@ -6924,22 +6901,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD",
         }]
       ]],
-      ["redstone-smartweave", [
-        ["npm:0.3.10-alpha.8", {
-          "packageLocation": "./.yarn/cache/redstone-smartweave-npm-0.3.10-alpha.8-2279f145ef-9d25776c03.zip/node_modules/redstone-smartweave/",
-          "packageDependencies": [
-            ["redstone-smartweave", "npm:0.3.10-alpha.8"],
-            ["@weavery/clarity", "npm:0.1.5"],
-            ["arweave", "npm:1.10.16"],
-            ["arweave-multihost", "npm:0.1.0"],
-            ["bignumber.js", "npm:9.0.1"],
-            ["bson", "npm:4.5.2"],
-            ["json-beautify", "npm:1.1.1"],
-            ["tslog", "npm:3.2.2"]
-          ],
-          "linkType": "HARD",
-        }]
-      ]],
       ["regexpp", [
         ["npm:3.1.0", {
           "packageLocation": "./.yarn/cache/regexpp-npm-3.1.0-94a1868d49-69d0ce6b44.zip/node_modules/regexpp/",
@@ -7982,16 +7943,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/tslib-npm-2.1.0-81c9ac9b82-d8f5bdd067.zip/node_modules/tslib/",
           "packageDependencies": [
             ["tslib", "npm:2.1.0"]
-          ],
-          "linkType": "HARD",
-        }]
-      ]],
-      ["tslog", [
-        ["npm:3.2.2", {
-          "packageLocation": "./.yarn/cache/tslog-npm-3.2.2-cbd80e9126-5d2aed2b6b.zip/node_modules/tslog/",
-          "packageDependencies": [
-            ["tslog", "npm:3.2.2"],
-            ["source-map-support", "npm:0.5.20"]
           ],
           "linkType": "HARD",
         }]

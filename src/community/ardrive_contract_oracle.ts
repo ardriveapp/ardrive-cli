@@ -2,7 +2,7 @@ import Arweave from 'arweave';
 import { ContractOracle, ContractReader } from './contract_oracle';
 import { VertoContractReader } from './verto_contract_oracle';
 import { SmartweaveContractReader } from './smartweave_contract_oracle';
-import { RedstoneContractReader } from './redstone_contract_oracle';
+// import { RedstoneContractReader } from './redstone_contract_oracle';
 
 // ArDrive Profit Sharing Community Smart Contract
 export const communityTxId = '-8A6RexFkpfWwuyVO98wzSFZh0d6VJuI-buTJvlwOJQ';
@@ -35,8 +35,8 @@ export class ArDriveContractOracle implements ContractOracle {
 	 */
 	private contractReaders: ContractReader[] = [
 		new VertoContractReader(),
-		new SmartweaveContractReader(this.arweave),
-		new RedstoneContractReader(this.arweave)
+		new SmartweaveContractReader(this.arweave)
+		// new RedstoneContractReader(this.arweave)
 	];
 	private currentContractReader = 0;
 	private readContractAttempts = 0;
