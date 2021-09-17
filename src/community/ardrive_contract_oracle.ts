@@ -57,7 +57,7 @@ export class ArDriveContractOracle implements ContractOracle {
 	}
 
 	/**
-	 * Reads the ArDrive Community Contract with the current contract reader
+	 * Reads a smart contract with the current contract reader
 	 *
 	 * @remarks Will fallback to other contract readers when one fails
 	 */
@@ -65,6 +65,7 @@ export class ArDriveContractOracle implements ContractOracle {
 		let contract: unknown;
 
 		try {
+			// Get contract with current contract reader's readContract implementation
 			contract = await this.contractReaders[this.currentContractReader].readContract(txId);
 			return contract;
 		} catch (error) {
