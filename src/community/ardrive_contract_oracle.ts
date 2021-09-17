@@ -4,10 +4,14 @@ import { VertoContractReader } from './verto_contract_oracle';
 import { SmartweaveContractReader } from './smartweave_contract_oracle';
 // import { RedstoneContractReader } from './redstone_contract_oracle';
 
+/* eslint-disable no-console */
+
 // ArDrive Profit Sharing Community Smart Contract
 export const communityTxId = '-8A6RexFkpfWwuyVO98wzSFZh0d6VJuI-buTJvlwOJQ';
 
 const maxReadContractAttempts = 3;
+const initialContractReader = 0;
+const initialContractAttempts = 0;
 
 export interface CommunityContractData {
 	votes: [Record<string, unknown>];
@@ -38,21 +42,19 @@ export class ArDriveContractOracle implements ContractOracle {
 		new SmartweaveContractReader(this.arweave)
 		// new RedstoneContractReader(this.arweave)
 	];
-	private currentContractReader = 0;
-	private readContractAttempts = 0;
+	private currentContractReader = initialContractReader;
+	private readContractAttempts = initialContractAttempts;
 
 	private communityContract?: CommunityContractData;
 	private contractPromise?: Promise<CommunityContractData>;
 
 	/** Sets the current contract reader to the next reader in descending order  */
 	fallbackToNextContractReader(): void {
-		const nextIndex = this.currentContractReader + 1;
-		const maxIndex = this.contractReaders.length - 1;
-		const firstIndex = 0;
+		const nextContractReaderIndex = this.currentContractReader + 1;
 
-		this.currentContractReader = nextIndex < maxIndex ? nextIndex : firstIndex;
+		this.readContractAttempts = initialContractAttempts;
+		this.currentContractReader = nextContractReaderIndex;
 
-		// eslint-disable-next-line no-console
 		console.log('Falling back to next contract reader..');
 	}
 
@@ -69,18 +71,27 @@ export class ArDriveContractOracle implements ContractOracle {
 			contract = await this.contractReaders[this.currentContractReader].readContract(txId);
 			return contract;
 		} catch (error) {
-			this.readContractAttempts++;
-			if (this.readContractAttempts < maxReadContractAttempts) {
-				console.error(`Contract could not fetched with contract reader: ${error}`);
+			console.error(`Contract could not fetched: ${error}`);
 
+			this.readContractAttempts++;
+
+			if (this.readContractAttempts >= maxReadContractAttempts) {
+				// Max attempts for contract reader has been reached
+				if (this.currentContractReader === this.contractReaders.length - 1) {
+					// Current contract reader is the last fallback,  throw an error
+					throw new Error(
+						`Max contract read attempts has been reached on the last fallback contract reader..`
+					);
+				}
+
+				// Else fallback to next reader
 				this.fallbackToNextContractReader();
-				return this.readContract(txId);
 			} else {
-				throw new Error(
-					`Maximum contract reading attempts have reached (${maxReadContractAttempts}),
-						ArDrive Community Contract could not be read`
-				);
+				console.log('Retrying with current contract reader..');
 			}
+
+			// Retry read contract if no error was thrown
+			return this.readContract(txId);
 		}
 	}
 
