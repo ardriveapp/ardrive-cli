@@ -854,7 +854,7 @@ export class ArFSPublicFolderBuilder {
 				this.name,
 				this.txId,
 				this.unixTime,
-				this.parentFolderId || '',
+				this.parentFolderId || 'root folder',
 				this.entityId,
 				this.lastModifiedDate || 0
 			);
