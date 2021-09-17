@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 import * as fs from 'fs';
-import { ArDrive } from './ardrive';
-import { ArFSDAO } from './arfsdao';
+import { ArDrive, ArDriveReadOnly } from './ardrive';
+import { ArFSDAO, ArFSReadOnlyDAO } from './arfsdao';
 import { Wallet, JWKWallet, WalletDAO } from './wallet_new';
 import Arweave from 'arweave';
 import { CLICommand } from './CLICommand';
@@ -19,7 +19,7 @@ import fetch from 'node-fetch';
 
 /* eslint-disable no-console */
 
-const arweave = Arweave.init({
+export const arweave = Arweave.init({
 	host: 'arweave.net', // Arweave Gateway
 	//host: 'arweave.dev', // Arweave Dev Gateway
 	port: 443,
@@ -373,17 +373,18 @@ program
 			• Can't be used with --seed-phrase`
 	)
 	.action(async (options) => {
-		const wallet = (function () {
-			if (options.walletFile) {
-				return readJWKFile(options.walletFile);
-			}
-			console.log('Not implemented');
-			process.exit(1);
-		})();
-		const arDrive = new ArDrive(new ArFSDAO(wallet, arweave));
-		const driveId: string = options.driveId;
+		const wallet = options.walletFile ? readJWKFile(options.walletFile) : false;
+		let result;
 		// const getAllRevisions: boolean = options.getAllRevisions;
-		const result = await arDrive.getPublicDrive(driveId /*, getAllRevisions*/);
+		if (wallet) {
+			const arDrive = new ArDrive(new ArFSDAO(wallet, arweave));
+			const driveId: string = options.driveId;
+			result = await arDrive.getPrivateDrive(driveId);
+		} else {
+			const arDrive = new ArDriveReadOnly(new ArFSReadOnlyDAO(arweave));
+			const driveId: string = options.driveId;
+			result = await arDrive.getPublicDrive(driveId);
+		}
 		console.log(JSON.stringify(result, null, 4));
 		process.exit(0);
 	});
