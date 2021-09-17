@@ -30,7 +30,7 @@ new CLICommand({
 				const arDrive = new ArDriveReadWrite(new ArFSDAOReadWrite(wallet, arweave));
 				const driveId: string = options.driveId;
 				// const getAllRevisions: boolean = options.getAllRevisions;
-				return arDrive.getPublicDrive(driveId /*, getAllRevisions*/);
+				return arDrive.getPrivateDrive(driveId /*, getAllRevisions*/);
 			} else {
 				const arDrive = new ArDriveReadOnly(new ArFSDAOReadOnly(arweave));
 				const driveId: string = options.driveId;
