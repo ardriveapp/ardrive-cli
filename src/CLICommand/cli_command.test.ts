@@ -3,8 +3,6 @@ import { Command } from 'commander';
 import { SinonStubbedInstance, stub } from 'sinon';
 import { CLICommand, CommandDescriptor } from './cli_command';
 
-// declare all parameters
-import '../parameter_declarations';
 import { DriveNameParameter } from '../parameter_declarations';
 import { CliApiObject } from './cli';
 import { baseArgv } from './test_constants';
