@@ -652,6 +652,83 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		});
 		return drive.build();
 	}
+
+	async getPrivateFolder(folderId: FolderID): Promise<ArFSPrivateFolder> {
+		const gqlQuery = buildQuery([
+			{ name: 'Folder-Id', value: folderId },
+			{ name: 'Entity-Type', value: 'folder' },
+			{ name: 'Drive-Privacy', value: 'private' }
+		]);
+
+		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
+		const { data } = response.data;
+		const { transactions } = data;
+		const { edges } = transactions;
+
+		if (!edges.length) {
+			throw new Error(`Private folder with ID ${folderId} not found or is not private!`);
+		}
+
+		const folderBuilder = new ArFSPrivateFolderBuilder();
+
+		edges.forEach(async (edge: GQLEdgeInterface) => {
+			// Iterate through each tag and pull out each drive ID as well the drives privacy status
+			const { node } = edge;
+			const { tags } = node;
+			tags.forEach((tag: GQLTagInterface) => {
+				const key = tag.name;
+				const { value } = tag;
+				switch (key) {
+					case 'App-Name':
+						folderBuilder.appName = value;
+						break;
+					case 'App-Version':
+						folderBuilder.appVersion = value;
+						break;
+					case 'ArFS':
+						folderBuilder.arFS = value;
+						break;
+					case 'Cipher':
+						folderBuilder.cipher = value;
+						break;
+					case 'Cipher-IV':
+						folderBuilder.cipherIV = value;
+						break;
+					case 'Content-Type':
+						folderBuilder.contentType = value as ContentType;
+						break;
+					case 'Drive-Id':
+						folderBuilder.driveId = value;
+						break;
+					case 'Entity-Type':
+						folderBuilder.entityType = value as EntityType;
+						break;
+					case 'Unix-Time':
+						folderBuilder.unixTime = +value;
+						break;
+					case 'Parent-Folder-Id':
+						folderBuilder.parentFolderId = value;
+						break;
+					case 'Folder-Id':
+						folderBuilder.folderId = value;
+						break;
+					default:
+						break;
+				}
+			});
+
+			// Get the drives transaction ID
+			folderBuilder.txId = node.id;
+
+			const txData = await this.arweave.transactions.getData(folderBuilder.txId, { decode: true });
+			const dataString = await Utf8ArrayToStr(txData);
+			const dataJSON = await JSON.parse(dataString);
+
+			// Get the drive name and root folder id
+			folderBuilder.name = dataJSON.name;
+		});
+		return folderBuilder.build();
+	}
 }
 
 export class ArFSPublicDrive extends ArFSEntity implements ArFSDriveEntity {
@@ -794,6 +871,7 @@ export class ArFSPrivateDriveBuilder {
 }
 
 export class ArFSPublicFolder extends ArFSEntity implements ArFSFileFolderEntity {
+	// TODO: remove these types from the base class
 	lastModifiedDate: never;
 	entityId: never;
 
@@ -852,6 +930,80 @@ export class ArFSPublicFolderBuilder {
 				this.unixTime,
 				this.parentFolderId || 'root folder',
 				this.folderId
+			);
+		}
+		throw new Error('Invalid folder state');
+	}
+}
+
+export class ArFSPrivateFolder extends ArFSEntity implements ArFSFileFolderEntity {
+	// TODO: remove these types from the base class
+	lastModifiedDate: never;
+	entityId: never;
+
+	constructor(
+		readonly appName: string,
+		readonly appVersion: string,
+		readonly arFS: string,
+		readonly contentType: string,
+		readonly driveId: string,
+		readonly entityType: string,
+		readonly name: string,
+		readonly txId: string,
+		readonly unixTime: number,
+		readonly parentFolderId: string,
+		readonly folderId: string,
+		readonly cipher: string,
+		readonly cipherIV: string
+	) {
+		super(appName, appVersion, arFS, contentType, driveId, entityType, name, 0, txId, unixTime);
+	}
+}
+
+export class ArFSPrivateFolderBuilder {
+	appName?: string;
+	appVersion?: string;
+	arFS?: string;
+	contentType?: ContentType;
+	driveId?: DriveID;
+	entityType?: EntityType;
+	name?: string;
+	txId?: TransactionID;
+	unixTime?: number;
+	parentFolderId?: string;
+	folderId?: string;
+	cipher?: string;
+	cipherIV?: string;
+
+	build(): ArFSPrivateFolder {
+		if (
+			this.appName?.length &&
+			this.appVersion?.length &&
+			this.arFS?.length &&
+			this.contentType?.length &&
+			this.driveId?.length &&
+			this.entityType?.length &&
+			this.name?.length &&
+			this.txId?.length &&
+			this.unixTime &&
+			this.folderId?.length &&
+			this.cipher?.length &&
+			this.cipherIV?.length
+		) {
+			return new ArFSPrivateFolder(
+				this.appName,
+				this.appVersion,
+				this.arFS,
+				this.contentType,
+				this.driveId,
+				this.entityType,
+				this.name,
+				this.txId,
+				this.unixTime,
+				this.parentFolderId || 'root folder',
+				this.folderId,
+				this.cipher,
+				this.cipherIV
 			);
 		}
 		throw new Error('Invalid folder state');

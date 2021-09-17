@@ -15,9 +15,7 @@ new CLICommand({
 		let folder, childrenTxIds;
 		if (wallet) {
 			const arDrive = new ArDrive(new ArFSDAO(wallet, arweave));
-			// FIXME: replace with the actual getPrivateFolder() when implemented
-			// folder = await arDrive.getPrivateFolder(options.folderId);
-			folder = await arDrive.getPublicFolder(options.folderId);
+			folder = await arDrive.getPrivateFolder(options.folderId);
 			childrenTxIds = await arDrive.getChildrenTxIds(options.folderId);
 		} else {
 			const arDrive = new ArDriveAnonymous(new ArFSDAOAnonymous(arweave));
