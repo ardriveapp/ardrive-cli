@@ -72,11 +72,18 @@ export interface ArFSCreatePrivateDriveResult extends ArFSCreateDriveResult {
 	driveKey: DriveKey;
 }
 
+export abstract class ArFSDAO {
+	protected abstract readonly arweave: Arweave;
+	// constructor() {}
+}
+
 /**
  * contains all queries that doesn't need for a wallet
  */
-export class ArFSDAOReadOnly {
-	constructor(protected readonly arweave: Arweave) {}
+export class ArFSDAOReadOnly extends ArFSDAO {
+	constructor(protected readonly arweave: Arweave) {
+		super();
+	}
 
 	async getDriveIdForFolderId(folderId: FolderID): Promise<DriveID> {
 		const gqlQuery = buildQuery([{ name: 'Folder-Id', value: folderId }]);
@@ -171,7 +178,7 @@ export class ArFSDAOReadOnly {
 	}
 }
 
-export class ArFSDAO extends ArFSDAOReadOnly {
+export class ArFSDAOReadWrite extends ArFSDAOReadOnly {
 	// TODO: Can we abstract Arweave type(s)?
 	constructor(private readonly wallet: Wallet, arweave: Arweave) {
 		super(arweave);

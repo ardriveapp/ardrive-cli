@@ -1,5 +1,5 @@
-import { ArDrive } from '../ardrive';
-import { ArFSDAO } from '../arfsdao';
+import { ArDriveReadWrite } from '../ardrive';
+import { ArFSDAOReadWrite } from '../arfsdao';
 import { CLICommand } from '../CLICommand';
 import { CommonContext } from '../CLICommand/common_context';
 import {
@@ -19,7 +19,7 @@ new CLICommand({
 	async action(options) {
 		const context = new CommonContext(options);
 		const wallet: Wallet = await context.getWallet();
-		const ardrive = new ArDrive(new ArFSDAO(wallet, arweave));
+		const ardrive = new ArDriveReadWrite(new ArFSDAOReadWrite(wallet, arweave));
 		const createDriveResult = await (async function () {
 			if (await context.getIsPrivate()) {
 				return ardrive.createPrivateDrive(options.driveName, options.drivePassword);

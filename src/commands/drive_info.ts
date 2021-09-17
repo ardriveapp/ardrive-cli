@@ -1,5 +1,5 @@
-import { ArDrive } from '../ardrive';
-import { ArFSDAO } from '../arfsdao';
+import { ArDriveReadOnly, ArDriveReadWrite } from '../ardrive';
+import { ArFSDAOReadOnly, ArFSDAOReadWrite } from '../arfsdao';
 import { CLICommand } from '../CLICommand';
 import { CommonContext } from '../CLICommand/common_context';
 import {
@@ -24,11 +24,20 @@ new CLICommand({
 	],
 	async action(options) {
 		const context = new CommonContext(options);
-		const wallet = await context.getWallet();
-		const arDrive = new ArDrive(new ArFSDAO(wallet, arweave));
-		const driveId: string = options.driveId;
-		// const getAllRevisions: boolean = options.getAllRevisions;
-		const result = await arDrive.getPublicDrive(driveId /*, getAllRevisions*/);
+		const wallet = await context.getWallet().catch(() => null);
+		const result = await (function () {
+			if (wallet) {
+				const arDrive = new ArDriveReadWrite(new ArFSDAOReadWrite(wallet, arweave));
+				const driveId: string = options.driveId;
+				// const getAllRevisions: boolean = options.getAllRevisions;
+				return arDrive.getPublicDrive(driveId /*, getAllRevisions*/);
+			} else {
+				const arDrive = new ArDriveReadOnly(new ArFSDAOReadOnly(arweave));
+				const driveId: string = options.driveId;
+				// const getAllRevisions: boolean = options.getAllRevisions;
+				return arDrive.getPublicDrive(driveId /*, getAllRevisions*/);
+			}
+		})();
 		console.log(JSON.stringify(result, null, 4));
 		process.exit(0);
 	}

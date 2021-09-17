@@ -1,4 +1,12 @@
-import { ArFSDAO, ArFSPublicDrive, FolderID, TransactionID, DriveID, ArFSDAOReadOnly } from './arfsdao';
+import {
+	ArFSDAOReadWrite,
+	ArFSPublicDrive,
+	FolderID,
+	TransactionID,
+	DriveID,
+	ArFSDAOReadOnly,
+	ArFSDAO
+} from './arfsdao';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 export type ArFSTipType = 'drive' | 'folder';
@@ -24,18 +32,24 @@ export interface ArFSResult {
 	fees: ArFSFees;
 }
 
-export class ArDriveReadOnly {
-	constructor(private readonly arFsDaoReadOnly: ArFSDAOReadOnly) {}
+export abstract class ArDrive {
+	protected abstract readonly arFsDao: ArFSDAO;
+}
+
+export class ArDriveReadOnly extends ArDrive {
+	constructor(protected readonly arFsDao: ArFSDAOReadOnly) {
+		super();
+	}
 
 	async getPublicDrive(driveId: DriveID): Promise<ArFSPublicDrive> {
-		const driveEntity = await this.arFsDaoReadOnly.getPublicDrive(driveId);
+		const driveEntity = await this.arFsDao.getPublicDrive(driveId);
 		return Promise.resolve(driveEntity);
 	}
 }
 
-export class ArDrive extends ArDriveReadOnly {
-	constructor(private readonly arFsDao: ArFSDAO, arFsDaoReadOnly: ArFSDAOReadOnly = arFsDao) {
-		super(arFsDaoReadOnly);
+export class ArDriveReadWrite extends ArDriveReadOnly {
+	constructor(protected readonly arFsDao: ArFSDAOReadWrite) {
+		super(arFsDao);
 	}
 
 	async uploadPublicFile(
