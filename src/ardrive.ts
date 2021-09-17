@@ -1,5 +1,5 @@
 import { ArweaveAddress, Wallet, WalletDAO, Winston } from './wallet_new';
-import { ArFSDAO, ArFSPublicDrive, FolderID, TransactionID, DriveID } from './arfsdao';
+import { ArFSDAO, ArFSPublicDrive, FolderID, TransactionID, DriveID, ArFSDAOAnonymous, ArFSDAOType } from './arfsdao';
 import { CommunityOracle } from './community/community_oracle';
 import { GQLTagInterface, winstonToAr } from 'ardrive-core-js';
 import * as fs from 'fs';
@@ -30,6 +30,21 @@ export interface ArFSResult {
 	fees: ArFSFees;
 }
 
+export abstract class ArDriveType {
+	protected abstract readonly arFsDao: ArFSDAOType;
+}
+
+export class ArDriveAnonymous extends ArDriveType {
+	constructor(protected readonly arFsDao: ArFSDAOAnonymous) {
+		super();
+	}
+
+	async getPublicDrive(driveId: DriveID): Promise<ArFSPublicDrive> {
+		const driveEntity = await this.arFsDao.getPublicDrive(driveId);
+		return Promise.resolve(driveEntity);
+	}
+}
+
 // TODO: ArDrive should accept App-Name and App-Version tags from constructor?
 const commTipMetaTags: GQLTagInterface[] = [
 	{ name: 'App-Name', value: 'ArDrive-CLI' },
@@ -37,13 +52,15 @@ const commTipMetaTags: GQLTagInterface[] = [
 	{ name: 'Trx-Type', value: 'Community-Tip' }
 ];
 
-export class ArDrive {
+export class ArDrive extends ArDriveAnonymous {
 	constructor(
 		private readonly wallet: Wallet,
 		private readonly walletDao: WalletDAO,
-		private readonly arFsDao: ArFSDAO,
+		protected readonly arFsDao: ArFSDAO,
 		private readonly communityOracle: CommunityOracle
-	) {}
+	) {
+		super(arFsDao);
+	}
 
 	// TODO: FS shouldn't be reading the files more than once and doesn't belong in this class
 	getFileSize(filePath: string): Bytes {
@@ -225,8 +242,8 @@ export class ArDrive {
 		});
 	}
 
-	async getPublicDrive(driveId: DriveID): Promise<ArFSPublicDrive> {
-		const driveEntity = await this.arFsDao.getPublicDrive(driveId);
+	async getPrivateDrive(driveId: DriveID): Promise<ArFSPublicDrive> {
+		const driveEntity = await this.arFsDao.getPrivateDrive(driveId);
 		return Promise.resolve(driveEntity);
 	}
 }

@@ -7,7 +7,6 @@ import Transaction from 'arweave/node/lib/transaction';
 import {
 	ArFSDriveEntity,
 	ArFSEntity,
-	ArFSPrivateDriveEntity,
 	ContentType,
 	DrivePrivacy,
 	EntityType,
@@ -73,9 +72,116 @@ export interface ArFSCreatePrivateDriveResult extends ArFSCreateDriveResult {
 	driveKey: DriveKey;
 }
 
-export class ArFSDAO {
+export abstract class ArFSDAOType {
+	protected abstract readonly arweave: Arweave;
+}
+
+/**
+ * Performs all ArFS spec operations that do NOT require a wallet for signing or decryption
+ */
+export class ArFSDAOAnonymous extends ArFSDAOType {
+	constructor(protected readonly arweave: Arweave) {
+		super();
+	}
+
+	async getDriveIdForFolderId(folderId: FolderID): Promise<DriveID> {
+		const gqlQuery = buildQuery([{ name: 'Folder-Id', value: folderId }]);
+
+		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
+		const { data } = response.data;
+		const { transactions } = data;
+
+		const edges: GQLEdgeInterface[] = transactions.edges;
+
+		if (!edges.length) {
+			throw new Error(`Folder with Folder ID ${folderId} not found!`);
+		}
+
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		const driveIdTag = edges[0].node.tags.find((t) => t.name === 'Drive-Id');
+		if (driveIdTag) {
+			return driveIdTag.value;
+		}
+
+		throw new Error(`No Drive-Id tag found for meta data transaction of Folder-Id: ${folderId}`);
+	}
+
+	async getPublicDrive(driveId: string): Promise<ArFSPublicDrive> {
+		const gqlQuery = buildQuery([
+			{ name: 'Drive-Id', value: driveId },
+			{ name: 'Entity-Type', value: 'drive' },
+			{ name: 'Drive-Privacy', value: 'public' }
+		]);
+
+		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
+
+		const { data } = response.data;
+		const { transactions } = data;
+		const { edges } = transactions;
+
+		if (!edges.length) {
+			throw new Error(`Public drive with Drive ID ${driveId} not found!`);
+		}
+
+		const driveBuilder = new ArFSPublicDriveBuilder();
+
+		const { node } = edges[0];
+		const { tags } = node;
+		tags.forEach((tag: GQLTagInterface) => {
+			const key = tag.name;
+			const { value } = tag;
+			switch (key) {
+				case 'App-Name':
+					driveBuilder.appName = value;
+					break;
+				case 'App-Version':
+					driveBuilder.appVersion = value;
+					break;
+				case 'ArFS':
+					driveBuilder.arFS = value;
+					break;
+				case 'Content-Type':
+					driveBuilder.contentType = value as ContentType;
+					break;
+				case 'Drive-Id':
+					driveBuilder.driveId = value;
+					break;
+				case 'Drive-Privacy':
+					driveBuilder.drivePrivacy = value as DrivePrivacy;
+					break;
+				case 'Entity-Type':
+					driveBuilder.entityType = value as EntityType;
+					break;
+				case 'Unix-Time':
+					driveBuilder.unixTime = +value;
+					break;
+				default:
+					break;
+			}
+		});
+
+		// Get the drives transaction ID
+		driveBuilder.txId = node.id;
+
+		if (driveBuilder.txId) {
+			const txData = await this.arweave.transactions.getData(driveBuilder.txId, { decode: true });
+			const dataString = await Utf8ArrayToStr(txData);
+			const dataJSON = await JSON.parse(dataString);
+
+			// Get the drive name and root folder id
+			driveBuilder.name = dataJSON.name;
+			driveBuilder.rootFolderId = dataJSON.rootFolderId;
+		}
+
+		return driveBuilder.build();
+	}
+}
+
+export class ArFSDAO extends ArFSDAOAnonymous {
 	// TODO: Can we abstract Arweave type(s)?
-	constructor(private readonly wallet: Wallet, private readonly arweave: Arweave) {}
+	constructor(private readonly wallet: Wallet, arweave: Arweave) {
+		super(arweave);
+	}
 
 	async createPublicFolder(
 		folderName: string,
@@ -290,7 +396,7 @@ export class ArFSDAO {
 
 		// Retrieve drive ID from folder ID and ensure that it is indeed a private drive
 		const driveId = await this.getDriveIdForFolderId(parentFolderId);
-		const drive = await this.getPrivateDriveEntity(driveId);
+		const drive = await this.getPrivateDrive(driveId);
 		if (!drive) {
 			throw new Error(`Private drive with Drive ID ${driveId} not found!`);
 		}
@@ -385,99 +491,7 @@ export class ArFSDAO {
 		return transaction;
 	}
 
-	async getDriveIdForFolderId(folderId: FolderID): Promise<DriveID> {
-		const gqlQuery = buildQuery([{ name: 'Folder-Id', value: folderId }]);
-
-		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
-		const { data } = response.data;
-		const { transactions } = data;
-
-		const edges: GQLEdgeInterface[] = transactions.edges;
-
-		if (!edges.length) {
-			throw new Error(`Folder with Folder ID ${folderId} not found!`);
-		}
-
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		const driveIdTag = edges[0].node.tags.find((t) => t.name === 'Drive-Id');
-		if (driveIdTag) {
-			return driveIdTag.value;
-		}
-
-		throw new Error(`No Drive-Id tag found for meta data transaction of Folder-Id: ${folderId}`);
-	}
-
-	async getPublicDrive(driveId: string): Promise<ArFSPublicDrive> {
-		const gqlQuery = buildQuery([
-			{ name: 'Drive-Id', value: driveId },
-			{ name: 'Entity-Type', value: 'drive' },
-			{ name: 'Drive-Privacy', value: 'public' }
-		]);
-
-		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
-
-		const { data } = response.data;
-		const { transactions } = data;
-		const { edges } = transactions;
-
-		if (!edges.length) {
-			throw new Error(`Public drive with Drive ID ${driveId} not found!`);
-		}
-
-		const driveBuilder = new ArFSPublicDriveBuilder();
-
-		const { node } = edges[0];
-		const { tags } = node;
-		tags.forEach((tag: GQLTagInterface) => {
-			const key = tag.name;
-			const { value } = tag;
-			switch (key) {
-				case 'App-Name':
-					driveBuilder.appName = value;
-					break;
-				case 'App-Version':
-					driveBuilder.appVersion = value;
-					break;
-				case 'ArFS':
-					driveBuilder.arFS = value;
-					break;
-				case 'Content-Type':
-					driveBuilder.contentType = value as ContentType;
-					break;
-				case 'Drive-Id':
-					driveBuilder.driveId = value;
-					break;
-				case 'Drive-Privacy':
-					driveBuilder.drivePrivacy = value as DrivePrivacy;
-					break;
-				case 'Entity-Type':
-					driveBuilder.entityType = value as EntityType;
-					break;
-				case 'Unix-Time':
-					driveBuilder.unixTime = +value;
-					break;
-				default:
-					break;
-			}
-		});
-
-		// Get the drives transaction ID
-		driveBuilder.txId = node.id;
-
-		if (driveBuilder.txId) {
-			const txData = await this.arweave.transactions.getData(driveBuilder.txId, { decode: true });
-			const dataString = await Utf8ArrayToStr(txData);
-			const dataJSON = await JSON.parse(dataString);
-
-			// Get the drive name and root folder id
-			driveBuilder.name = dataJSON.name;
-			driveBuilder.rootFolderId = dataJSON.rootFolderId;
-		}
-
-		return driveBuilder.build();
-	}
-
-	async getPrivateDriveEntity(driveId: string): Promise<ArFSPrivateDriveEntity> {
+	async getPrivateDrive(driveId: string): Promise<ArFSPrivateDrive> {
 		const gqlQuery = buildQuery([
 			{ name: 'Drive-Id', value: driveId },
 			{ name: 'Entity-Type', value: 'drive' },
@@ -493,24 +507,7 @@ export class ArFSDAO {
 			throw new Error(`Private drive with Drive ID ${driveId} not found or is not private!`);
 		}
 
-		// TODO: CREATE A BUILDER AND REJECT INVALID ENTITIES
-		const drive: ArFSPrivateDriveEntity = {
-			appName: '',
-			appVersion: '',
-			arFS: '',
-			cipher: '',
-			cipherIV: '',
-			contentType: '',
-			driveId,
-			drivePrivacy: '',
-			driveAuthMode: '',
-			entityType: '',
-			name: '',
-			rootFolderId: '',
-			txId: '',
-			unixTime: 0,
-			syncStatus: 0
-		};
+		const drive = new ArFSPrivateDriveBuilder();
 
 		edges.forEach(async (edge: GQLEdgeInterface) => {
 			// Iterate through each tag and pull out each drive ID as well the drives privacy status
@@ -536,7 +533,7 @@ export class ArFSDAO {
 						drive.cipherIV = value;
 						break;
 					case 'Content-Type':
-						drive.contentType = value;
+						drive.contentType = value as ContentType;
 						break;
 					case 'Drive-Auth-Mode':
 						drive.driveAuthMode = value;
@@ -545,7 +542,7 @@ export class ArFSDAO {
 						drive.driveId = value;
 						break;
 					case 'Drive-Privacy':
-						drive.drivePrivacy = value;
+						drive.drivePrivacy = value as DrivePrivacy;
 						break;
 					case 'Entity-Type':
 						drive.entityType = value as EntityType;
@@ -569,7 +566,7 @@ export class ArFSDAO {
 			drive.name = dataJSON.name;
 			drive.rootFolderId = dataJSON.rootFolderId;
 		});
-		return drive;
+		return drive.build();
 	}
 }
 
@@ -630,6 +627,81 @@ export class ArFSPublicDriveBuilder {
 				this.unixTime,
 				this.drivePrivacy,
 				this.rootFolderId
+			);
+		}
+
+		throw new Error('Invalid drive state');
+	}
+}
+
+export class ArFSPrivateDrive extends ArFSEntity implements ArFSDriveEntity {
+	constructor(
+		readonly appName: string,
+		readonly appVersion: string,
+		readonly arFS: string,
+		readonly contentType: string,
+		readonly driveId: string,
+		readonly entityType: string,
+		readonly name: string,
+		readonly txId: string,
+		readonly unixTime: number,
+		readonly drivePrivacy: string,
+		readonly rootFolderId: string,
+		readonly driveAuthMode: string,
+		readonly cipher: string,
+		readonly cipherIV: string
+	) {
+		super(appName, appVersion, arFS, contentType, driveId, entityType, name, 0, txId, unixTime);
+	}
+}
+export class ArFSPrivateDriveBuilder {
+	appName?: string;
+	appVersion?: string;
+	arFS?: string;
+	contentType?: ContentType;
+	driveId?: DriveID;
+	entityType?: EntityType;
+	name?: string;
+	txId?: TransactionID;
+	unixTime?: number;
+	drivePrivacy?: DrivePrivacy;
+	rootFolderId?: FolderID;
+	driveAuthMode?: string;
+	cipher?: string;
+	cipherIV?: string;
+
+	build(): ArFSPrivateDrive {
+		if (
+			this.appName?.length &&
+			this.appVersion?.length &&
+			this.arFS?.length &&
+			this.contentType?.length &&
+			this.driveId?.length &&
+			this.entityType?.length &&
+			this.name?.length &&
+			this.txId?.length &&
+			this.unixTime &&
+			this.drivePrivacy?.length &&
+			this.rootFolderId?.length &&
+			this.driveAuthMode?.length &&
+			this.cipher?.length &&
+			this.cipherIV?.length
+		) {
+			return new ArFSPrivateDrive(
+				this.appName,
+				this.appVersion,
+				this.arFS,
+				this.contentType,
+				this.driveId,
+				this.entityType,
+				this.name,
+				this.txId,
+				this.unixTime,
+				this.drivePrivacy,
+				this.rootFolderId,
+				this.driveAuthMode,
+				this.cipher,
+				this.cipherIV
 			);
 		}
 
