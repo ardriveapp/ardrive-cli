@@ -1,5 +1,5 @@
-import { ArDriveReadOnly, ArDriveReadWrite } from '../ardrive';
-import { ArFSDAOReadOnly, ArFSDAOReadWrite } from '../arfsdao';
+import { ArDriveAnonymous, ArDrive } from '../ardrive';
+import { ArFSDAOAnonymous, ArFSDAO } from '../arfsdao';
 import { CLICommand } from '../CLICommand';
 import { CommonContext } from '../CLICommand/common_context';
 import {
@@ -27,12 +27,12 @@ new CLICommand({
 		const wallet = await context.getWallet().catch(() => null);
 		const result = await (function () {
 			if (wallet) {
-				const arDrive = new ArDriveReadWrite(new ArFSDAOReadWrite(wallet, arweave));
+				const arDrive = new ArDrive(new ArFSDAO(wallet, arweave));
 				const driveId: string = options.driveId;
 				// const getAllRevisions: boolean = options.getAllRevisions;
 				return arDrive.getPrivateDrive(driveId /*, getAllRevisions*/);
 			} else {
-				const arDrive = new ArDriveReadOnly(new ArFSDAOReadOnly(arweave));
+				const arDrive = new ArDriveAnonymous(new ArFSDAOAnonymous(arweave));
 				const driveId: string = options.driveId;
 				// const getAllRevisions: boolean = options.getAllRevisions;
 				return arDrive.getPublicDrive(driveId /*, getAllRevisions*/);

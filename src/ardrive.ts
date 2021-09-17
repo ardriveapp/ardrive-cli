@@ -1,12 +1,4 @@
-import {
-	ArFSDAOReadWrite,
-	ArFSPublicDrive,
-	FolderID,
-	TransactionID,
-	DriveID,
-	ArFSDAOReadOnly,
-	ArFSDAO
-} from './arfsdao';
+import { ArFSDAO, ArFSPublicDrive, FolderID, TransactionID, DriveID, ArFSDAOAnonymous, ArFSDAOType } from './arfsdao';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 export type ArFSTipType = 'drive' | 'folder';
@@ -32,12 +24,12 @@ export interface ArFSResult {
 	fees: ArFSFees;
 }
 
-export abstract class ArDrive {
-	protected abstract readonly arFsDao: ArFSDAO;
+export abstract class ArDriveType {
+	protected abstract readonly arFsDao: ArFSDAOType;
 }
 
-export class ArDriveReadOnly extends ArDrive {
-	constructor(protected readonly arFsDao: ArFSDAOReadOnly) {
+export class ArDriveAnonymous extends ArDriveType {
+	constructor(protected readonly arFsDao: ArFSDAOAnonymous) {
 		super();
 	}
 
@@ -47,8 +39,8 @@ export class ArDriveReadOnly extends ArDrive {
 	}
 }
 
-export class ArDriveReadWrite extends ArDriveReadOnly {
-	constructor(protected readonly arFsDao: ArFSDAOReadWrite) {
+export class ArDrive extends ArDriveAnonymous {
+	constructor(protected readonly arFsDao: ArFSDAO) {
 		super(arFsDao);
 	}
 

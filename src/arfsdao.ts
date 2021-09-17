@@ -72,14 +72,14 @@ export interface ArFSCreatePrivateDriveResult extends ArFSCreateDriveResult {
 	driveKey: DriveKey;
 }
 
-export abstract class ArFSDAO {
+export abstract class ArFSDAOType {
 	protected abstract readonly arweave: Arweave;
 }
 
 /**
- * contains all queries that doesn't need for a wallet
+ * Performs all ArFS spec operations that do NOT require a wallet for signing or decryption
  */
-export class ArFSDAOReadOnly extends ArFSDAO {
+export class ArFSDAOAnonymous extends ArFSDAOType {
 	constructor(protected readonly arweave: Arweave) {
 		super();
 	}
@@ -177,7 +177,7 @@ export class ArFSDAOReadOnly extends ArFSDAO {
 	}
 }
 
-export class ArFSDAOReadWrite extends ArFSDAOReadOnly {
+export class ArFSDAO extends ArFSDAOAnonymous {
 	// TODO: Can we abstract Arweave type(s)?
 	constructor(private readonly wallet: Wallet, arweave: Arweave) {
 		super(arweave);

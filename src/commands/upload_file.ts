@@ -1,6 +1,6 @@
 import { arweave } from '..';
-import { ArDriveReadWrite } from '../ardrive';
-import { ArFSDAOReadWrite } from '../arfsdao';
+import { ArDrive } from '../ardrive';
+import { ArFSDAO } from '../arfsdao';
 import { CLICommand } from '../CLICommand';
 import {
 	DestinationFileNameParameter,
@@ -76,7 +76,7 @@ new CLICommand({
 		})();
 		if (filesToUpload.length) {
 			const wallet = readJWKFile(options.walletFile);
-			const arDrive = new ArDriveReadWrite(new ArFSDAOReadWrite(wallet, arweave));
+			const arDrive = new ArDrive(new ArFSDAO(wallet, arweave));
 			await Promise.all(
 				filesToUpload.map(async (fileToUpload) => {
 					if (!fileToUpload.parentFolderId || !fileToUpload.localFilePath) {
