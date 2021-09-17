@@ -4,10 +4,9 @@ import { WalletDAO } from './wallet_new';
 import Arweave from 'arweave';
 
 if (require.main === module) {
-	// Declares the commands
-
 	// declare all parameters
 	import('./parameter_declarations').then(() => {
+		// declares the commands
 		import('./commands');
 	});
 }

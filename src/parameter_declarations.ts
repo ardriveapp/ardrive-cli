@@ -103,18 +103,18 @@ Parameter.declare({
 
 Parameter.declare({
 	name: ParentFolderIdParameter,
-	aliases: ['--parent-folder-id'],
+	aliases: ['-f', '--parent-folder-id'],
 	description: `the ArFS folder ID for the folder in which this file will reside (i.e. its parent folder)
 		• To upload the file to the root of a drive, use the root folder ID of the drive`
 });
 Parameter.declare({
 	name: LocalFilePathParameter,
-	aliases: ['--local-file-path'],
+	aliases: ['-l', '--local-file-path'],
 	description: `the path on the local filesystem for the file that will be uploaded`
 });
 Parameter.declare({
 	name: DestinationFileNameParameter,
-	aliases: ['--dest-file-name'],
+	aliases: ['-d', '--dest-file-name'],
 	description: `(OPTIONAL) a destination file name to use when uploaded to ArDrive`
 });
 Parameter.declare({
@@ -132,7 +132,7 @@ Parameter.declare({
 
 Parameter.declare({
 	name: GetAllRevisionsParameter,
-	aliases: [],
-	description: '',
+	aliases: ['--get-all-revisions'],
+	description: '(OPTIONAL) gets every revision',
 	type: 'boolean'
 });
