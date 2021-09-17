@@ -10,6 +10,8 @@ type PublicKey = string;
 export type ArweaveAddress = string;
 type SeedPhrase = string;
 type TransactionID = string;
+
+/** TODO: Use big int library on Winston types */
 export type Winston = string;
 type NetworkReward = Winston;
 

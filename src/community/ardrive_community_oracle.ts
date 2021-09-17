@@ -22,7 +22,11 @@ export class ArDriveCommunityOracle implements CommunityOracle {
 
 	private readonly contractOracle: ContractOracle;
 
-	/** Given an AR data cost, returns a calculated ArDrive community tip amount in AR */
+	/**
+	 * Given an AR data cost, returns a calculated ArDrive community tip amount in AR
+	 *
+	 * TODO: Use big int library on Winston types
+	 */
 	async getCommunityWinstonTip(winstonCost: Winston): Promise<Winston> {
 		const communityTipValue = await this.contractOracle.getTipSettingFromContractSettings();
 		const arDriveCommunityTip = +winstonCost * (communityTipValue / 100);
