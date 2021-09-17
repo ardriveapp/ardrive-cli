@@ -616,10 +616,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 					folderBuilder.parentFolderId = value;
 					break;
 				case 'Folder-Id':
-					folderBuilder.entityId = value;
-					break;
-				case 'Last-Modified-Date':
-					folderBuilder.lastModifiedDate = +value;
+					folderBuilder.folderId = value;
 					break;
 				default:
 					break;
@@ -798,6 +795,7 @@ export class ArFSPrivateDriveBuilder {
 
 export class ArFSPublicFolder extends ArFSEntity implements ArFSFileFolderEntity {
 	lastModifiedDate: never;
+	entityId: never;
 
 	constructor(
 		readonly appName: string,
@@ -810,7 +808,7 @@ export class ArFSPublicFolder extends ArFSEntity implements ArFSFileFolderEntity
 		readonly txId: string,
 		readonly unixTime: number,
 		readonly parentFolderId: string,
-		readonly entityId: string
+		readonly folderId: string
 	) {
 		super(appName, appVersion, arFS, contentType, driveId, entityType, name, 0, txId, unixTime);
 	}
@@ -827,7 +825,7 @@ export class ArFSPublicFolderBuilder {
 	txId?: TransactionID;
 	unixTime?: number;
 	parentFolderId?: string;
-	entityId?: string;
+	folderId?: string;
 
 	build(): ArFSPublicFolder {
 		if (
@@ -840,7 +838,7 @@ export class ArFSPublicFolderBuilder {
 			this.name?.length &&
 			this.txId?.length &&
 			this.unixTime &&
-			this.entityId?.length
+			this.folderId?.length
 		) {
 			return new ArFSPublicFolder(
 				this.appName,
@@ -853,7 +851,7 @@ export class ArFSPublicFolderBuilder {
 				this.txId,
 				this.unixTime,
 				this.parentFolderId || 'root folder',
-				this.entityId
+				this.folderId
 			);
 		}
 		throw new Error('Invalid folder state');
