@@ -46,6 +46,21 @@ export class ArDriveAnonymous extends ArDriveType {
 		const driveEntity = await this.arFsDao.getPublicDrive(driveId);
 		return Promise.resolve(driveEntity);
 	}
+
+	async getPublicFolder(folderId: string): Promise<ArFSPublicFolder> {
+		const folder = await this.arFsDao.getPublicFolder(folderId);
+		return folder;
+	}
+
+	async getRootFolderIdOfPublicDrive(driveId: DriveID): Promise<FolderID> {
+		const drive = await this.getPublicDrive(driveId);
+		const rootFolderId = drive.rootFolderId;
+		return rootFolderId;
+	}
+
+	async getChildrenTxIds(folderId: FolderID): Promise<string[]> {
+		return this.arFsDao.getChildrenOfFolderTxIds(folderId);
+	}
 }
 
 export class ArDrive extends ArDriveAnonymous {
@@ -200,20 +215,5 @@ export class ArDrive extends ArDriveAnonymous {
 	async getPrivateDrive(driveId: DriveID): Promise<ArFSPublicDrive> {
 		const driveEntity = await this.arFsDao.getPrivateDrive(driveId);
 		return Promise.resolve(driveEntity);
-	}
-
-	async getPublicFolder(folderId: string): Promise<ArFSPublicFolder> {
-		const folder = await this.arFsDao.getPublicFolder(folderId);
-		return folder;
-	}
-
-	async getRootFolderIdOfPublicDrive(driveId: DriveID): Promise<FolderID> {
-		const drive = await this.getPublicDrive(driveId);
-		const rootFolderId = drive.rootFolderId;
-		return rootFolderId;
-	}
-
-	async getChildrenTxIds(folderId: FolderID): Promise<string[]> {
-		return this.arFsDao.getChildrenOfFolderTxIds(folderId);
 	}
 }

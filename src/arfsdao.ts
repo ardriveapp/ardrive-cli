@@ -176,6 +176,89 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 
 		return driveBuilder.build();
 	}
+
+	async getPublicFolder(folderId: string): Promise<ArFSPublicFolder> {
+		const gqlQuery = buildQuery([{ name: 'Folder-Id', value: folderId }]);
+
+		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
+
+		const { data } = response.data;
+		const { transactions } = data;
+		const { edges } = transactions;
+
+		if (!edges.length) {
+			throw new Error(`Public folder with Folder ID ${folderId} not found!`);
+		}
+
+		const folderBuilder = new ArFSPublicFolderBuilder();
+
+		const { node } = edges[0];
+		const { tags } = node;
+		tags.forEach((tag: GQLTagInterface) => {
+			const key = tag.name;
+			const { value } = tag;
+			switch (key) {
+				case 'App-Name':
+					folderBuilder.appName = value;
+					break;
+				case 'App-Version':
+					folderBuilder.appVersion = value;
+					break;
+				case 'ArFS':
+					folderBuilder.arFS = value;
+					break;
+				case 'Content-Type':
+					folderBuilder.contentType = value as ContentType;
+					break;
+				case 'Drive-Id':
+					folderBuilder.driveId = value;
+					break;
+				case 'Entity-Type':
+					folderBuilder.entityType = value as EntityType;
+					break;
+				case 'Unix-Time':
+					folderBuilder.unixTime = +value;
+					break;
+				case 'Parent-Folder-Id':
+					folderBuilder.parentFolderId = value;
+					break;
+				case 'Folder-Id':
+					folderBuilder.folderId = value;
+					break;
+				default:
+					break;
+			}
+		});
+
+		// Get the drives transaction ID
+		folderBuilder.txId = node.id;
+
+		if (folderBuilder.txId) {
+			const txData = await this.arweave.transactions.getData(folderBuilder.txId, { decode: true });
+			const dataString = await Utf8ArrayToStr(txData);
+			const dataJSON = await JSON.parse(dataString);
+
+			// Get the drive name and root folder id
+			folderBuilder.name = dataJSON.name;
+		}
+
+		return folderBuilder.build();
+	}
+
+	async getChildrenOfFolderTxIds(folderId: FolderID): Promise<string[]> {
+		const gqlQuery = buildQuery([{ name: 'Parent-Folder-Id', value: folderId }]);
+		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
+
+		const { data } = response.data;
+		const { transactions } = data;
+		const { edges } = transactions;
+
+		// if (!edges.length) {
+		// 	throw new Error(`Public folder with Folder ID ${folderId} not found!`);
+		// }
+
+		return edges.map((edge: GQLEdgeInterface) => edge.node.id);
+	}
 }
 
 export class ArFSDAO extends ArFSDAOAnonymous {
@@ -568,89 +651,6 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			drive.rootFolderId = dataJSON.rootFolderId;
 		});
 		return drive.build();
-	}
-
-	async getPublicFolder(folderId: string): Promise<ArFSPublicFolder> {
-		const gqlQuery = buildQuery([{ name: 'Folder-Id', value: folderId }]);
-
-		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
-
-		const { data } = response.data;
-		const { transactions } = data;
-		const { edges } = transactions;
-
-		if (!edges.length) {
-			throw new Error(`Public folder with Folder ID ${folderId} not found!`);
-		}
-
-		const folderBuilder = new ArFSPublicFolderBuilder();
-
-		const { node } = edges[0];
-		const { tags } = node;
-		tags.forEach((tag: GQLTagInterface) => {
-			const key = tag.name;
-			const { value } = tag;
-			switch (key) {
-				case 'App-Name':
-					folderBuilder.appName = value;
-					break;
-				case 'App-Version':
-					folderBuilder.appVersion = value;
-					break;
-				case 'ArFS':
-					folderBuilder.arFS = value;
-					break;
-				case 'Content-Type':
-					folderBuilder.contentType = value as ContentType;
-					break;
-				case 'Drive-Id':
-					folderBuilder.driveId = value;
-					break;
-				case 'Entity-Type':
-					folderBuilder.entityType = value as EntityType;
-					break;
-				case 'Unix-Time':
-					folderBuilder.unixTime = +value;
-					break;
-				case 'Parent-Folder-Id':
-					folderBuilder.parentFolderId = value;
-					break;
-				case 'Folder-Id':
-					folderBuilder.folderId = value;
-					break;
-				default:
-					break;
-			}
-		});
-
-		// Get the drives transaction ID
-		folderBuilder.txId = node.id;
-
-		if (folderBuilder.txId) {
-			const txData = await this.arweave.transactions.getData(folderBuilder.txId, { decode: true });
-			const dataString = await Utf8ArrayToStr(txData);
-			const dataJSON = await JSON.parse(dataString);
-
-			// Get the drive name and root folder id
-			folderBuilder.name = dataJSON.name;
-		}
-
-		return folderBuilder.build();
-	}
-
-	async getChildrenOfFolderTxIds(folderId: FolderID): Promise<string[]> {
-		const gqlQuery = buildQuery([{ name: 'Parent-Folder-Id', value: folderId }]);
-		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
-
-		const { data } = response.data;
-		const { transactions } = data;
-		const { edges } = transactions;
-
-		// if (!edges.length) {
-		// 	throw new Error(`Public folder with Folder ID ${folderId} not found!`);
-		// }
-
-		return edges.map((edge: GQLEdgeInterface) => edge.node.id);
 	}
 }
 
