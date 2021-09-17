@@ -18,7 +18,7 @@ export interface ArFSEntityData {
 // TODO: Is this really in the ArFS domain?
 export interface ArFSTipData {
 	txId: TransactionID; // TODO: make a type that checks lengths
-	tokenHolder: ArweaveAddress;
+	recipient: ArweaveAddress;
 	winston: Winston; // TODO: make a type that checks validity
 }
 
@@ -57,7 +57,7 @@ export class ArDrive {
 			]
 		);
 
-		return { txId: communityTipResult.trxID, tokenHolder: tokenHolder, winston: communityTipResult.winston };
+		return { txId: communityTipResult.trxID, recipient: tokenHolder, winston: communityTipResult.winston };
 	}
 
 	async uploadPublicFile(
