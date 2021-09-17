@@ -1,7 +1,7 @@
 import { ArweaveAddress, Wallet, WalletDAO, Winston } from './wallet_new';
 import { ArFSDAO, ArFSPublicDrive, FolderID, TransactionID, DriveID } from './arfsdao';
 import { CommunityOracle } from './community/community_oracle';
-import { winstonToAr } from 'ardrive-core-js';
+import { GQLTagInterface, winstonToAr } from 'ardrive-core-js';
 import * as fs from 'fs';
 
 export type Bytes = number;
@@ -30,6 +30,13 @@ export interface ArFSResult {
 	fees: ArFSFees;
 }
 
+// TODO: ArDrive should accept App-Name and App-Version tags from constructor?
+const commTipMetaTags: GQLTagInterface[] = [
+	{ name: 'App-Name', value: 'ArDrive-CLI' },
+	{ name: 'App-Version', value: '2.0' },
+	{ name: 'Trx-Type', value: 'Community-Tip' }
+];
+
 export class ArDrive {
 	constructor(
 		private readonly wallet: Wallet,
@@ -50,11 +57,7 @@ export class ArDrive {
 			winstonToAr(+communityWinstonTip),
 			this.wallet,
 			tokenHolder,
-			[
-				{ name: 'appName', value: 'ArDrive-CLI' },
-				{ name: 'appVersion', value: '2.0' },
-				{ name: 'trxType', value: 'Community-Tip' }
-			]
+			commTipMetaTags
 		);
 
 		return { txId: communityTipResult.trxID, recipient: tokenHolder, winston: communityTipResult.winston };
