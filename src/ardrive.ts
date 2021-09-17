@@ -1,4 +1,13 @@
-import { ArFSDAO, ArFSPublicDrive, FolderID, TransactionID, DriveID, ArFSDAOAnonymous, ArFSDAOType } from './arfsdao';
+import {
+	ArFSDAO,
+	ArFSPublicDrive,
+	FolderID,
+	TransactionID,
+	DriveID,
+	ArFSDAOAnonymous,
+	ArFSDAOType,
+	ArFSPublicFolder
+} from './arfsdao';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 export type ArFSTipType = 'drive' | 'folder';
