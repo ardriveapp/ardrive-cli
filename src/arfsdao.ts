@@ -797,6 +797,8 @@ export class ArFSPrivateDriveBuilder {
 }
 
 export class ArFSPublicFolder extends ArFSEntity implements ArFSFileFolderEntity {
+	lastModifiedDate: never;
+
 	constructor(
 		readonly appName: string,
 		readonly appVersion: string,
@@ -808,8 +810,7 @@ export class ArFSPublicFolder extends ArFSEntity implements ArFSFileFolderEntity
 		readonly txId: string,
 		readonly unixTime: number,
 		readonly parentFolderId: string,
-		readonly entityId: string,
-		readonly lastModifiedDate: number
+		readonly entityId: string
 	) {
 		super(appName, appVersion, arFS, contentType, driveId, entityType, name, 0, txId, unixTime);
 	}
@@ -827,7 +828,6 @@ export class ArFSPublicFolderBuilder {
 	unixTime?: number;
 	parentFolderId?: string;
 	entityId?: string;
-	lastModifiedDate?: number;
 
 	build(): ArFSPublicFolder {
 		if (
@@ -841,8 +841,6 @@ export class ArFSPublicFolderBuilder {
 			this.txId?.length &&
 			this.unixTime &&
 			this.entityId?.length
-			// FIXME: Is the Last-Modified-Date missing sometimes?
-			// this.lastModifiedDate
 		) {
 			return new ArFSPublicFolder(
 				this.appName,
@@ -855,8 +853,7 @@ export class ArFSPublicFolderBuilder {
 				this.txId,
 				this.unixTime,
 				this.parentFolderId || 'root folder',
-				this.entityId,
-				this.lastModifiedDate || 0
+				this.entityId
 			);
 		}
 		throw new Error('Invalid folder state');
