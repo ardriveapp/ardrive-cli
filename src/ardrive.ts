@@ -1,4 +1,4 @@
-import { ArFSDAO, ArFSPublicDrive, FolderID, TransactionID, DriveID, ArFSPublicFolder } from './arfsdao';
+import { ArFSDAO, ArFSPublicDrive, FolderID, TransactionID, DriveID, ArFSDAOAnonymous, ArFSDAOType } from './arfsdao';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 export type ArFSTipType = 'drive' | 'folder';
@@ -24,8 +24,25 @@ export interface ArFSResult {
 	fees: ArFSFees;
 }
 
-export class ArDrive {
-	constructor(private readonly arFsDao: ArFSDAO) {}
+export abstract class ArDriveType {
+	protected abstract readonly arFsDao: ArFSDAOType;
+}
+
+export class ArDriveAnonymous extends ArDriveType {
+	constructor(protected readonly arFsDao: ArFSDAOAnonymous) {
+		super();
+	}
+
+	async getPublicDrive(driveId: DriveID): Promise<ArFSPublicDrive> {
+		const driveEntity = await this.arFsDao.getPublicDrive(driveId);
+		return Promise.resolve(driveEntity);
+	}
+}
+
+export class ArDrive extends ArDriveAnonymous {
+	constructor(protected readonly arFsDao: ArFSDAO) {
+		super(arFsDao);
+	}
 
 	async uploadPublicFile(
 		parentFolderId: FolderID,
@@ -171,8 +188,8 @@ export class ArDrive {
 		});
 	}
 
-	async getPublicDrive(driveId: DriveID): Promise<ArFSPublicDrive> {
-		const driveEntity = await this.arFsDao.getPublicDrive(driveId);
+	async getPrivateDrive(driveId: DriveID): Promise<ArFSPublicDrive> {
+		const driveEntity = await this.arFsDao.getPrivateDrive(driveId);
 		return Promise.resolve(driveEntity);
 	}
 
