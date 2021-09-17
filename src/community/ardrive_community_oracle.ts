@@ -14,7 +14,9 @@ export const minArDriveCommunityWinstonTip = 10_000_000;
 /**
  * Oracle class responsible for determining the community tip
  * and selecting the PST token holder for tip distribution
- * */
+ *
+ * TODO: Unit testing for important functions
+ */
 export class ArDriveCommunityOracle implements CommunityOracle {
 	constructor(readonly arweave: Arweave) {
 		this.contractOracle = new ArDriveContractOracle(arweave);
@@ -33,7 +35,11 @@ export class ArDriveCommunityOracle implements CommunityOracle {
 		return Math.round(Math.max(arDriveCommunityTip, minArDriveCommunityWinstonTip)).toString();
 	}
 
-	/** Gets a random ArDrive token holder based off their weight (amount of tokens they hold)  */
+	/**
+	 * Gets a random ArDrive token holder based off their weight (amount of tokens they hold)
+	 *
+	 * TODO: This is mostly copy-paste from core -- refactor into a more testable state
+	 */
 	async selectTokenHolder(): Promise<ArweaveAddress> {
 		// Read the ArDrive Smart Contract to get the latest state
 		const contract = await this.contractOracle.getCommunityContract();
