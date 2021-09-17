@@ -44,7 +44,7 @@ describe('CommonContext class', () => {
 			const context = new CommonContext(options);
 			expect(context.getParameterValue(singleValueParameterName)).to.not.be.undefined;
 		});
-		program.parse([...baseArgv, testCommandName, '--single-value-parameter', '1234567890']);
+		CLICommand.parse(program, [...baseArgv, testCommandName, '--single-value-parameter', '1234567890'], false);
 	});
 
 	it('Boolean parameter false', () => {
@@ -53,7 +53,7 @@ describe('CommonContext class', () => {
 			const context = new CommonContext(options);
 			expect(!!context.getParameterValue(booleanParameterName)).to.be.false;
 		});
-		program.parse([...baseArgv, testCommandName]);
+		CLICommand.parse(program, [...baseArgv, testCommandName], false);
 	});
 
 	it('Boolean parameter true', () => {
@@ -62,7 +62,7 @@ describe('CommonContext class', () => {
 			const context = new CommonContext(options);
 			expect(context.getParameterValue(booleanParameterName)).to.be.true;
 		});
-		program.parse([...baseArgv, testCommandName, '--boolean-parameter']);
+		CLICommand.parse(program, [...baseArgv, testCommandName, '--boolean-parameter'], false);
 	});
 
 	it('Array parameter', () => {
@@ -72,11 +72,11 @@ describe('CommonContext class', () => {
 			const context = new CommonContext(options);
 			expect(context.getParameterValue(arrayParameterName)).to.deep.equal(colorsArray);
 		});
-		program.parse([...baseArgv, testCommandName, '--array-parameter', ...colorsArray]);
+		CLICommand.parse(program, [...baseArgv, testCommandName, '--array-parameter', ...colorsArray], false);
 	});
 
 	it('Required parameter throws if missing', () => {
-		program.parse([...baseArgv, requiredParameterName]);
+		CLICommand.parse(program, [...baseArgv, requiredParameterName], false);
 		Parameter.declare(requiredParameter);
 	});
 });
