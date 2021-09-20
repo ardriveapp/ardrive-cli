@@ -1,4 +1,4 @@
-import { ArweaveAddress } from '../types';
+import { CommunityContractData } from './contract_types';
 import { ContractOracle, ContractReader } from './contract_oracle';
 
 /* eslint-disable no-console */
@@ -9,43 +9,6 @@ export const communityTxId = '-8A6RexFkpfWwuyVO98wzSFZh0d6VJuI-buTJvlwOJQ';
 const maxReadContractAttempts = 3;
 const initialContractReader = 0;
 const initialContractAttempts = 0;
-
-/** Shape of the ArDrive Community Smart Contract */
-export interface CommunityContractData {
-	name: 'ArDrive';
-	ticker: 'ARDRIVE';
-	votes: communityContractVotes[];
-	settings: CommunityContractSettings;
-	balances: { [tokenHolderAddress: string]: number };
-	vault: { [tokenHolderAddress: string]: { balance: number; start: number; end: number }[] };
-}
-
-interface communityContractVotes {
-	status: 'passed' | 'quorumFailed';
-	type: 'burnVault' | 'mintLocked' | 'mint' | 'set';
-	note: string;
-	yays: number;
-	nays: number;
-	voted: ArweaveAddress[];
-	start: number;
-	totalWeight: number;
-	recipient?: ArweaveAddress;
-	qty?: number;
-	lockLength?: number;
-}
-
-type CommunityContractSettings = [
-	['quorum', number],
-	['support', number],
-	['voteLength', number],
-	['lockMinLength', number],
-	['lockMaxLength', number],
-	['communityAppUrl', string],
-	['communityDiscussionLinks', string[]],
-	['communityDescription', string],
-	['communityLogo', ArweaveAddress],
-	['fee', number]
-];
 
 /**
  * Oracle class responsible for retrieving the correct data fields from
