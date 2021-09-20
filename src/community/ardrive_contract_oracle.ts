@@ -28,9 +28,11 @@ export interface CommunityContractData {
  * @remarks Will begin fetching data from default contract reader on construction
  */
 export class ArDriveContractOracle implements ContractOracle {
-	constructor(private readonly arweave: Arweave) {
-		// Get contract data upon construction
-		this.getCommunityContract();
+	constructor(private readonly arweave: Arweave, skipSetup = false) {
+		if (!skipSetup) {
+			// Get contract data upon construction
+			this.getCommunityContract();
+		}
 	}
 
 	/**
