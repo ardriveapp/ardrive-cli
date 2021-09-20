@@ -71,7 +71,7 @@ export class ArDriveContractOracle implements ContractOracle {
 			contract = await this.contractReaders[this.currentContractReader].readContract(txId);
 			return contract;
 		} catch (error) {
-			console.error(`Contract could not fetched: ${error}`);
+			console.error(`Contract could not be fetched: ${error}`);
 
 			this.readContractAttempts++;
 
