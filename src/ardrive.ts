@@ -148,7 +148,7 @@ export class ArDrive extends ArDriveAnonymous {
 			destinationFileName
 		);
 
-		const communityTipTransaction = await this.sendCommunityTip(communityWinstonTip);
+		const commTipTrx = await this.sendCommunityTip(communityWinstonTip);
 
 		return Promise.resolve({
 			created: [
@@ -157,19 +157,21 @@ export class ArDrive extends ArDriveAnonymous {
 					metadataTxId: metaDataTrx.id,
 					dataTxId: dataTrx.id,
 					entityId: fileId,
+					// TODO: Implement returning the file key
 					key: ''
 				}
 			],
 			tips: [
 				{
-					txId: communityTipTransaction.id,
-					recipient: communityTipTransaction.target,
-					winston: communityTipTransaction.quantity
+					txId: commTipTrx.id,
+					recipient: commTipTrx.target,
+					winston: commTipTrx.quantity
 				}
 			],
 			fees: {
 				[metaDataTrx.id]: +metaDataTrx.reward,
-				[dataTrx.id]: +dataTrx.reward
+				[dataTrx.id]: +dataTrx.reward,
+				[commTipTrx.id]: +commTipTrx.reward
 			}
 		});
 	}
