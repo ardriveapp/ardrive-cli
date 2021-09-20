@@ -1,5 +1,6 @@
-import { CommunityContractData } from './contract_types';
+import { CommunityContractData, CommunityTipPercentage } from './contract_types';
 import { ContractOracle, ContractReader } from './contract_oracle';
+import { TransactionID } from '../types';
 
 /* eslint-disable no-console */
 
@@ -53,7 +54,7 @@ export class ArDriveContractOracle implements ContractOracle {
 	 *
 	 * @remarks Will fallback to other contract readers when one fails
 	 */
-	async readContract(txId: string): Promise<unknown> {
+	async readContract(txId: TransactionID): Promise<unknown> {
 		let contract: unknown;
 
 		try {
@@ -117,7 +118,7 @@ export class ArDriveContractOracle implements ContractOracle {
 	 * @throws When community fee cannot be read from the contract, is negative, or is the wrong type
 	 */
 
-	async getTipSettingFromContractSettings(): Promise<number> {
+	async getTipPercentageFromContract(): Promise<CommunityTipPercentage> {
 		const contract = await this.getCommunityContract();
 
 		const arDriveCommTipFromSettings: [string, unknown] | undefined = contract.settings.find(

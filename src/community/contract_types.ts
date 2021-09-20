@@ -1,5 +1,7 @@
 import { ArweaveAddress } from '../types';
 
+export type CommunityTipPercentage = number;
+
 /** Shape of the ArDrive Community Smart Contract */
 export interface CommunityContractData {
 	name: 'ArDrive';
