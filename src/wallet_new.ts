@@ -4,17 +4,8 @@ import * as crypto from 'crypto';
 import jwkToPem, { JWK } from 'jwk-to-pem';
 import Arweave from 'arweave';
 import * as mnemonicKeys from 'arweave-mnemonic-keys';
-import { Bytes } from './ardrive';
 import Transaction from 'arweave/node/lib/transaction';
-
-type PublicKey = string;
-export type ArweaveAddress = string;
-type SeedPhrase = string;
-type TransactionID = string;
-
-/** TODO: Use big int library on Winston types */
-export type Winston = string;
-type NetworkReward = Winston;
+import { TransactionID, Winston, NetworkReward, PublicKey, ArweaveAddress, SeedPhrase, Bytes } from './types';
 
 export type ARTransferResult = {
 	trxID: TransactionID;

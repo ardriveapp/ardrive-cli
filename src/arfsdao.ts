@@ -38,16 +38,9 @@ import {
 	ArFSPublicFolderTransactionData
 } from './arfs_trx_data_types';
 import { buildQuery } from './query';
+import { DriveID, FolderID, FileID, DriveKey, TransactionID } from './types';
 
 export const ArFS_O_11 = '0.11';
-
-export type CipherIV = string;
-export type FolderID = string;
-export type FileID = string;
-export type DriveID = string;
-export type DriveKey = Buffer;
-export type DataContentType = string;
-export type TransactionID = string;
 
 export const graphQLURL = 'https://arweave.net/graphql';
 export interface ArFSCreateDriveResult {

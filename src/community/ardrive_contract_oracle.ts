@@ -1,4 +1,4 @@
-import { ArweaveAddress } from '../wallet_new';
+import { ArweaveAddress } from '../types';
 import { ContractOracle, ContractReader } from './contract_oracle';
 
 /* eslint-disable no-console */

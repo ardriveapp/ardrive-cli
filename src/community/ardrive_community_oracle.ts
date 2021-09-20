@@ -1,7 +1,7 @@
 import { weightedRandom } from 'ardrive-core-js';
 import { ContractOracle, ContractReader } from './contract_oracle';
 import { CommunityOracle } from './community_oracle';
-import { ArweaveAddress, Winston } from '../wallet_new';
+import { ArweaveAddress, Winston } from '../types';
 import { ArDriveContractOracle } from './ardrive_contract_oracle';
 import Arweave from 'arweave';
 import { SmartweaveContractReader } from './smartweave_contract_oracle';

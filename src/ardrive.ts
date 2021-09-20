@@ -1,14 +1,12 @@
-import { ArweaveAddress, Wallet, WalletDAO, Winston } from './wallet_new';
-import { ArFSDAO, ArFSPublicDrive, FolderID, TransactionID, DriveID, ArFSDAOAnonymous, ArFSDAOType } from './arfsdao';
 import { CommunityOracle } from './community/community_oracle';
 import { GQLTagInterface, winstonToAr } from 'ardrive-core-js';
 import * as fs from 'fs';
 import Transaction from 'arweave/node/lib/transaction';
-
-export type Bytes = number;
+import { ArFSDAOType, ArFSDAOAnonymous, ArFSPublicDrive, ArFSDAO } from './arfsdao';
+import { TransactionID, ArweaveAddress, Winston, DriveID, FolderID, Bytes } from './types';
+import { WalletDAO, Wallet } from './wallet_new';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
-export type ArFSTipType = 'drive' | 'folder';
 
 export interface ArFSEntityData {
 	type: ArFSEntityDataType;

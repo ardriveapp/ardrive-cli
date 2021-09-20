@@ -1,4 +1,4 @@
-import { ArweaveAddress, Winston } from '../wallet_new';
+import { Winston, ArweaveAddress } from '../types';
 
 export interface CommunityOracle {
 	getCommunityWinstonTip(winstonCost: Winston): Promise<Winston>;
