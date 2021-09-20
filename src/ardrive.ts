@@ -49,7 +49,7 @@ export class ArDriveAnonymous extends ArDriveType {
 const commTipMetaTags: GQLTagInterface[] = [
 	{ name: 'App-Name', value: 'ArDrive-CLI' },
 	{ name: 'App-Version', value: '2.0' },
-	{ name: 'Trx-Type', value: 'Community-Tip' }
+	{ name: 'Tip-Type', value: 'data upload' }
 ];
 
 export class ArDrive extends ArDriveAnonymous {
