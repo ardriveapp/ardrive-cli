@@ -86,6 +86,7 @@ export class WalletDAO {
 		return +walletBalance > +winstonPrice;
 	}
 
+	// TODO: Use price regression methods from price calc when reintegrated with core
 	async getWinstonPriceForBytes(bytes: Bytes): Promise<Winston> {
 		return this.arweave.transactions.getPrice(bytes);
 	}
