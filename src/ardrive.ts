@@ -89,7 +89,7 @@ export class ArDrive extends ArDriveAnonymous {
 		const communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(winstonPrice);
 		const totalWinstonPrice = (+winstonPrice + +communityWinstonTip).toString();
 
-		if (!this.walletDao.confirmBalance(this.wallet, totalWinstonPrice)) {
+		if (!this.walletDao.walletHasBalance(this.wallet, totalWinstonPrice)) {
 			throw new Error('Not enough AR for file upload..');
 		}
 
@@ -130,7 +130,7 @@ export class ArDrive extends ArDriveAnonymous {
 		const communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(winstonPrice);
 		const totalWinstonPrice = (+winstonPrice + +communityWinstonTip).toString();
 
-		if (!this.walletDao.confirmBalance(this.wallet, totalWinstonPrice)) {
+		if (!this.walletDao.walletHasBalance(this.wallet, totalWinstonPrice)) {
 			throw new Error('Not enough AR for file upload..');
 		}
 

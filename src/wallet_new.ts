@@ -81,7 +81,7 @@ export class WalletDAO {
 		return Promise.resolve(+(await this.arweave.wallets.getBalance(address)));
 	}
 
-	async confirmBalance(wallet: Wallet, winstonPrice: Winston): Promise<boolean> {
+	async walletHasBalance(wallet: Wallet, winstonPrice: Winston): Promise<boolean> {
 		const walletBalance = await this.getWalletWinstonBalance(wallet);
 		return +walletBalance > +winstonPrice;
 	}
