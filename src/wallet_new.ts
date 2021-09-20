@@ -83,7 +83,7 @@ export class WalletDAO {
 		return this.arweave.transactions.getPrice(bytes);
 	}
 
-	async sendARToAddress(
+	async prepareARToAddressTransaction(
 		arAmount: number,
 		fromWallet: Wallet,
 		toAddress: ArweaveAddress,
@@ -116,6 +116,10 @@ export class WalletDAO {
 		// Sign file
 		await this.arweave.transactions.sign(transaction, jwkWallet.getPrivateKey());
 
+		return transaction;
+	}
+
+	async submitTransaction(transaction: Transaction): Promise<Transaction> {
 		// Submit the transaction
 		const response = await this.arweave.transactions.post(transaction);
 		if (response.status === 200 || response.status === 202) {
