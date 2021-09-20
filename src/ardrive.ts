@@ -3,6 +3,7 @@ import { ArFSDAO, ArFSPublicDrive, FolderID, TransactionID, DriveID, ArFSDAOAnon
 import { CommunityOracle } from './community/community_oracle';
 import { GQLTagInterface, winstonToAr } from 'ardrive-core-js';
 import * as fs from 'fs';
+import Transaction from 'arweave/node/lib/transaction';
 
 export type Bytes = number;
 
@@ -67,7 +68,7 @@ export class ArDrive extends ArDriveAnonymous {
 		return fs.statSync(filePath).size;
 	}
 
-	async sendCommunityTip(communityWinstonTip: Winston): Promise<ArFSTipData> {
+	async sendCommunityTip(communityWinstonTip: Winston): Promise<Transaction> {
 		const tokenHolder: ArweaveAddress = await this.communityOracle.selectTokenHolder();
 
 		const communityTipResult = await this.walletDao.sendARToAddress(
@@ -77,7 +78,7 @@ export class ArDrive extends ArDriveAnonymous {
 			commTipMetaTags
 		);
 
-		return { txId: communityTipResult.trxID, recipient: tokenHolder, winston: communityTipResult.winston };
+		return communityTipResult;
 	}
 
 	async uploadPublicFile(
@@ -101,7 +102,7 @@ export class ArDrive extends ArDriveAnonymous {
 			destinationFileName
 		);
 
-		const communityTipResult = await this.sendCommunityTip(communityWinstonTip);
+		const communityTipTransaction = await this.sendCommunityTip(communityWinstonTip);
 
 		return Promise.resolve({
 			created: [
@@ -112,7 +113,13 @@ export class ArDrive extends ArDriveAnonymous {
 					entityId: fileId
 				}
 			],
-			tips: [communityTipResult],
+			tips: [
+				{
+					txId: communityTipTransaction.id,
+					recipient: communityTipTransaction.target,
+					winston: communityTipTransaction.quantity
+				}
+			],
 			fees: {
 				[metaDataTrx.id]: +metaDataTrx.reward,
 				[dataTrx.id]: +dataTrx.reward
@@ -143,7 +150,7 @@ export class ArDrive extends ArDriveAnonymous {
 			destinationFileName
 		);
 
-		const communityTipResult = await this.sendCommunityTip(communityWinstonTip);
+		const communityTipTransaction = await this.sendCommunityTip(communityWinstonTip);
 
 		return Promise.resolve({
 			created: [
@@ -155,7 +162,13 @@ export class ArDrive extends ArDriveAnonymous {
 					key: ''
 				}
 			],
-			tips: [communityTipResult],
+			tips: [
+				{
+					txId: communityTipTransaction.id,
+					recipient: communityTipTransaction.target,
+					winston: communityTipTransaction.quantity
+				}
+			],
 			fees: {
 				[metaDataTrx.id]: +metaDataTrx.reward,
 				[dataTrx.id]: +dataTrx.reward

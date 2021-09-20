@@ -5,6 +5,7 @@ import jwkToPem, { JWK } from 'jwk-to-pem';
 import Arweave from 'arweave';
 import * as mnemonicKeys from 'arweave-mnemonic-keys';
 import { Bytes } from './ardrive';
+import Transaction from 'arweave/node/lib/transaction';
 
 type PublicKey = string;
 export type ArweaveAddress = string;
@@ -101,7 +102,7 @@ export class WalletDAO {
 			{ value: trxType = 'transfer' },
 			...otherTags
 		]: GQLTagInterface[]
-	): Promise<ARTransferResult> {
+	): Promise<Transaction> {
 		// TODO: Figure out how this works for other wallet types
 		const jwkWallet = fromWallet as JWKWallet;
 		const winston: Winston = this.arweave.ar.arToWinston(arAmount.toString());
@@ -124,16 +125,10 @@ export class WalletDAO {
 		// Sign file
 		await this.arweave.transactions.sign(transaction, jwkWallet.getPrivateKey());
 
-		const ret = {
-			trxID: transaction.id,
-			winston: winston,
-			reward: transaction.reward
-		};
-
 		// Submit the transaction
 		const response = await this.arweave.transactions.post(transaction);
 		if (response.status === 200 || response.status === 202) {
-			return Promise.resolve(ret);
+			return Promise.resolve(transaction);
 		} else {
 			throw new Error(`Transaction failed. Response: ${response}`);
 		}
