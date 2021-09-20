@@ -1,9 +1,11 @@
 import { weightedRandom } from 'ardrive-core-js';
-import { ContractOracle } from './contract_oracle';
+import { ContractOracle, ContractReader } from './contract_oracle';
 import { CommunityOracle } from './community_oracle';
 import { ArweaveAddress, Winston } from '../wallet_new';
 import { ArDriveContractOracle } from './ardrive_contract_oracle';
 import Arweave from 'arweave';
+import { SmartweaveContractReader } from './smartweave_contract_oracle';
+import { VertoContractReader } from './verto_contract_oracle';
 
 /**
  * Minimum ArDrive community tip from the Community Improvement Proposal Doc:
@@ -18,11 +20,18 @@ export const minArDriveCommunityWinstonTip = 10_000_000;
  * TODO: Unit testing for important functions
  */
 export class ArDriveCommunityOracle implements CommunityOracle {
-	constructor(readonly arweave: Arweave) {
-		this.contractOracle = new ArDriveContractOracle(arweave);
+	constructor(readonly arweave: Arweave, contractReaders?: ContractReader[]) {
+		this.contractOracle = new ArDriveContractOracle(
+			contractReaders ? contractReaders : this.defaultContractReaders
+		);
 	}
 
 	private readonly contractOracle: ContractOracle;
+
+	private defaultContractReaders: ContractReader[] = [
+		new VertoContractReader(),
+		new SmartweaveContractReader(this.arweave)
+	];
 
 	/**
 	 * Given an AR data cost, returns a calculated ArDrive community tip amount in AR

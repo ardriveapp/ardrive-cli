@@ -1,8 +1,4 @@
-import Arweave from 'arweave';
 import { ContractOracle, ContractReader } from './contract_oracle';
-import { VertoContractReader } from './verto_contract_oracle';
-import { SmartweaveContractReader } from './smartweave_contract_oracle';
-// import { RedstoneContractReader } from './redstone_contract_oracle';
 
 /* eslint-disable no-console */
 
@@ -28,22 +24,20 @@ export interface CommunityContractData {
  * @remarks Will begin fetching data from default contract reader on construction
  */
 export class ArDriveContractOracle implements ContractOracle {
-	constructor(private readonly arweave: Arweave, skipSetup = false) {
+	constructor(
+		/**
+		 * Array of contract readers to use as fall back if one fails
+		 * Uses contract reader at index 0 first then descends down the list
+		 */
+		private readonly contractReaders: ContractReader[],
+		skipSetup = false
+	) {
 		if (!skipSetup) {
 			// Get contract data upon construction
 			this.getCommunityContract();
 		}
 	}
 
-	/**
-	 * Array of contract readers to use as fall back if one fails
-	 * Uses contract reader at index 0 first then descends down the list
-	 */
-	private contractReaders: ContractReader[] = [
-		new VertoContractReader(),
-		new SmartweaveContractReader(this.arweave)
-		// new RedstoneContractReader(this.arweave)
-	];
 	private currentContractReader = initialContractReader;
 	private readContractAttempts = initialContractAttempts;
 
