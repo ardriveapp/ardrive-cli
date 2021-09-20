@@ -143,10 +143,6 @@ export class ArDriveContractOracle implements ContractOracle {
 
 		this.communityContract = await this.contractPromise;
 
-		if (!this.communityContract.settings || !this.communityContract.balances) {
-			throw new Error(`Community contract has been returned in an unexpected shape: ${this.communityContract}`);
-		}
-
 		delete this.contractPromise;
 
 		return this.communityContract;
