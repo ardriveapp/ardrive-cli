@@ -39,7 +39,7 @@ export class ArDriveCommunityOracle implements CommunityOracle {
 	 * TODO: Use big int library on Winston types
 	 */
 	async getCommunityWinstonTip(winstonCost: Winston): Promise<Winston> {
-		const communityTipPercentage = (await this.contractOracle.getTipSettingFromContractSettings()) / 100;
+		const communityTipPercentage = await this.contractOracle.getTipPercentageFromContractSettings();
 		const arDriveCommunityTip = +winstonCost * communityTipPercentage;
 		return Math.round(Math.max(arDriveCommunityTip, minArDriveCommunityWinstonTip)).toString();
 	}

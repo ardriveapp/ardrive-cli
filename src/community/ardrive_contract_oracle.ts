@@ -136,6 +136,6 @@ export class ArDriveContractOracle implements ContractOracle {
 			throw new Error('Fee on smart contract community settings is set to a negative number');
 		}
 
-		return arDriveCommTipFromSettings[1];
+		return arDriveCommTipFromSettings[1] / 100;
 	}
 }
