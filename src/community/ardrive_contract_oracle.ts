@@ -33,21 +33,8 @@ export class ArDriveContractOracle implements ContractOracle {
 		}
 	}
 
-	private currentContractReader = initialContractReader;
-	private readContractAttempts = initialContractAttempts;
-
 	private communityContract?: CommunityContractData;
 	private contractPromise?: Promise<CommunityContractData>;
-
-	/** Sets the current contract reader to the next reader in descending order  */
-	fallbackToNextContractReader(): void {
-		const nextContractReaderIndex = this.currentContractReader + 1;
-
-		this.readContractAttempts = initialContractAttempts;
-		this.currentContractReader = nextContractReaderIndex;
-
-		console.log('Falling back to next contract reader..');
-	}
 
 	/**
 	 * Reads a smart contract with the current contract reader
@@ -56,34 +43,38 @@ export class ArDriveContractOracle implements ContractOracle {
 	 */
 	async readContract(txId: TransactionID): Promise<unknown> {
 		let contract: unknown;
+		let currentContractReader = initialContractReader;
+		let readContractAttempts = initialContractAttempts;
 
-		try {
-			// Get contract with current contract reader's readContract implementation
-			contract = await this.contractReaders[this.currentContractReader].readContract(txId);
-			return contract;
-		} catch (error) {
-			console.error(`Contract could not be fetched: ${error}`);
+		while (!contract) {
+			try {
+				// Get contract with current contract reader's readContract implementation
+				contract = await this.contractReaders[currentContractReader].readContract(txId);
+			} catch (error) {
+				console.error(`Contract could not be fetched: ${error}`);
+				readContractAttempts++;
 
-			this.readContractAttempts++;
+				if (readContractAttempts >= maxReadContractAttempts) {
+					// Max attempts for contract reader has been reached
+					if (currentContractReader === this.contractReaders.length - 1) {
+						// Current contract reader is the last fallback, throw an error
+						throw new Error(
+							`Max contract read attempts has been reached on the last fallback contract reader..`
+						);
+					}
 
-			if (this.readContractAttempts >= maxReadContractAttempts) {
-				// Max attempts for contract reader has been reached
-				if (this.currentContractReader === this.contractReaders.length - 1) {
-					// Current contract reader is the last fallback,  throw an error
-					throw new Error(
-						`Max contract read attempts has been reached on the last fallback contract reader..`
-					);
+					// Else fallback to next reader
+					const nextContractReaderIndex = currentContractReader + 1;
+					readContractAttempts = initialContractAttempts;
+					currentContractReader = nextContractReaderIndex;
+
+					console.log('Falling back to next contract reader..');
+				} else {
+					console.log('Retrying with current contract reader..');
 				}
-
-				// Else fallback to next reader
-				this.fallbackToNextContractReader();
-			} else {
-				console.log('Retrying with current contract reader..');
 			}
-
-			// Retry read contract if no error was thrown
-			return this.readContract(txId);
 		}
+		return contract;
 	}
 
 	/**
