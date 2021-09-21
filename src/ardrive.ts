@@ -150,7 +150,7 @@ export class ArDrive extends ArDriveAnonymous {
 	): Promise<ArFSResult> {
 		// Retrieve drive ID from folder ID and ensure that it is indeed a private drive
 		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
-		const drive = await this.arFsDao.getPrivateDrive(driveId);
+		const drive = await this.arFsDao.getPrivateDrive(driveId, password);
 		if (!drive) {
 			throw new Error(`Private drive with Drive ID ${driveId} not found!`);
 		}
@@ -289,8 +289,8 @@ export class ArDrive extends ArDriveAnonymous {
 		});
 	}
 
-	async getPrivateDrive(driveId: DriveID): Promise<ArFSPublicDrive> {
-		const driveEntity = await this.arFsDao.getPrivateDrive(driveId);
+	async getPrivateDrive(driveId: DriveID, drivePassword: string): Promise<ArFSPublicDrive> {
+		const driveEntity = await this.arFsDao.getPrivateDrive(driveId, drivePassword);
 		return Promise.resolve(driveEntity);
 	}
 }

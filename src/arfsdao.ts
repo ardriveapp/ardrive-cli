@@ -8,6 +8,8 @@ import {
 	ArFSDriveEntity,
 	ArFSEntity,
 	ContentType,
+	deriveDriveKey,
+	driveDecrypt,
 	DrivePrivacy,
 	EntityType,
 	extToMime,
@@ -448,7 +450,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return transaction;
 	}
 
-	async getPrivateDrive(driveId: string): Promise<ArFSPrivateDrive> {
+	async getPrivateDrive(driveId: DriveID, drivePassword: string): Promise<ArFSPrivateDrive> {
 		const gqlQuery = buildQuery([
 			{ name: 'Drive-Id', value: driveId },
 			{ name: 'Entity-Type', value: 'drive' },
@@ -458,7 +460,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 		const { data } = response.data;
 		const { transactions } = data;
-		const { edges } = transactions;
+		const edges: GQLEdgeInterface[] = transactions.edges;
 
 		if (!edges.length) {
 			throw new Error(`Private drive with Drive ID ${driveId} not found or is not private!`);
@@ -466,7 +468,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		const drive = new ArFSPrivateDriveBuilder();
 
-		edges.forEach(async (edge: GQLEdgeInterface) => {
+		for await (const edge of edges) {
 			// Iterate through each tag and pull out each drive ID as well the drives privacy status
 			const { node } = edge;
 			const { tags } = node;
@@ -516,13 +518,25 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			drive.txId = node.id;
 
 			const txData = await this.arweave.transactions.getData(drive.txId, { decode: true });
-			const dataString = await Utf8ArrayToStr(txData);
-			const dataJSON = await JSON.parse(dataString);
+
+			const wallet = this.wallet as JWKWallet;
+
+			const dataBuffer = Buffer.from(txData);
+			const driveKey: Buffer = await deriveDriveKey(
+				drivePassword,
+				driveId,
+				JSON.stringify(wallet.getPrivateKey())
+			);
+
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			const decryptedDriveBuffer: Buffer = await driveDecrypt(drive.cipherIV!, driveKey, dataBuffer);
+			const decryptedDriveString: string = await Utf8ArrayToStr(decryptedDriveBuffer);
+			const decryptedDriveJSON = await JSON.parse(decryptedDriveString);
 
 			// Get the drive name and root folder id
-			drive.name = dataJSON.name;
-			drive.rootFolderId = dataJSON.rootFolderId;
-		});
+			drive.name = decryptedDriveJSON.name;
+			drive.rootFolderId = decryptedDriveJSON.rootFolderId;
+		}
 		return drive.build();
 	}
 

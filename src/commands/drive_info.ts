@@ -30,7 +30,7 @@ new CLICommand({
 				const arDrive = arDriveFactory(wallet);
 				const driveId: string = options.driveId;
 				// const getAllRevisions: boolean = options.getAllRevisions;
-				return arDrive.getPrivateDrive(driveId /*, getAllRevisions*/);
+				return arDrive.getPrivateDrive(driveId, options.drivePassword /*, getAllRevisions*/);
 			} else {
 				const arDrive = new ArDriveAnonymous(new ArFSDAOAnonymous(arweave));
 				const driveId: string = options.driveId;
