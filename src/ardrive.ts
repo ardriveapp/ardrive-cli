@@ -116,7 +116,7 @@ export class ArDrive extends ArDriveAnonymous {
 			// Upload metadata transaction
 			this.arFsDao.uploadByChunk(metaDataTrx),
 			// Upload community tip transaction
-			this.arFsDao.uploadByChunk(commTipTrx)
+			this.walletDao.submitTransaction(commTipTrx)
 		]);
 
 		return Promise.resolve({
@@ -181,7 +181,7 @@ export class ArDrive extends ArDriveAnonymous {
 			// Upload metadata transaction
 			this.arFsDao.uploadByChunk(metaDataTrx),
 			// Upload community tip transaction
-			this.arFsDao.uploadByChunk(commTipTrx)
+			this.walletDao.submitTransaction(commTipTrx)
 		]);
 
 		return Promise.resolve({
