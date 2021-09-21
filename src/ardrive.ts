@@ -120,7 +120,14 @@ export class ArDrive extends ArDriveAnonymous {
 		password: string,
 		destinationFileName?: string
 	): Promise<ArFSResult> {
-		const { dataTrx, metaDataTrx, fileId } = await this.arFsDao.uploadPrivateFile(
+		// Retrieve drive ID from folder ID and ensure that it is indeed a private drive
+		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
+		const drive = await this.arFsDao.getPrivateDrive(driveId, password);
+		if (!drive) {
+			throw new Error(`Private drive with Drive ID ${driveId} not found!`);
+		}
+
+		const { dataTrx, metaDataTrx, fileId } = await this.arFsDao.preparePrivateFileTransactions(
 			parentFolderId,
 			filePath,
 			password,
@@ -228,6 +235,7 @@ export class ArDrive extends ArDriveAnonymous {
 		});
 	}
 
+<<<<<<< HEAD
 	async getPrivateDrive(driveId: DriveID): Promise<ArFSPublicDrive> {
 		const driveEntity = await this.arFsDao.getPrivateDrive(driveId);
 		return driveEntity;
@@ -244,5 +252,10 @@ export class ArDrive extends ArDriveAnonymous {
 
 	async getPrivateChildrenFilesFromFolderIDs(folderIDs: FolderID[]): Promise<ArFSPrivateFile[]> {
 		return this.arFsDao.getAllPrivateChildrenFilesFromFolderIDs(folderIDs);
+=======
+	async getPrivateDrive(driveId: DriveID, drivePassword: string): Promise<ArFSPublicDrive> {
+		const driveEntity = await this.arFsDao.getPrivateDrive(driveId, drivePassword);
+		return Promise.resolve(driveEntity);
+>>>>>>> 9e2118d (fix(get private drive): Decrypt data and properly build private drive PE-315)
 	}
 }
