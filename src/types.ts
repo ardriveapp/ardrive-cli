@@ -17,3 +17,8 @@ export type Bytes = number;
 export type DataContentType = string;
 
 export type TransactionID = string;
+
+export interface ArDriveCommunityTip {
+	tipPercentage: number;
+	minWinstonFee: number; // TODO: Align with Winston type?
+}
