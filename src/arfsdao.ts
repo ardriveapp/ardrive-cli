@@ -223,7 +223,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 					folderBuilder.parentFolderId = value;
 					break;
 				case 'Folder-Id':
-					folderBuilder.folderId = value;
+					folderBuilder.entityId = value;
 					break;
 				default:
 					break;
@@ -870,11 +870,39 @@ export class ArFSPrivateDriveBuilder {
 	}
 }
 
-export class ArFSPublicFolder extends ArFSEntity implements ArFSFileFolderEntity {
-	// TODO: remove these types from the base class
-	lastModifiedDate: never;
-	entityId: never;
+export abstract class ArFSFileOrFolderEntity extends ArFSEntity implements ArFSFileFolderEntity {
+	abstract readonly parentFolderId: string;
+	abstract readonly entityId: string;
+	lastModifiedDate!: never;
 
+	constructor(
+		appName: string,
+		appVersion: string,
+		arFS: string,
+		contentType: string,
+		driveId: string,
+		entityType: string,
+		name: string,
+		txId: string,
+		unixTime: number
+	) {
+		super(appName, appVersion, arFS, contentType, driveId, entityType, name, 0, txId, unixTime);
+	}
+}
+
+export abstract class ArFSFolderEntity extends ArFSFileOrFolderEntity {
+	abstract readonly appName: string;
+	abstract readonly appVersion: string;
+	abstract readonly arFS: string;
+	abstract readonly contentType: string;
+	abstract readonly driveId: string;
+	abstract readonly entityType: string;
+	abstract readonly name: string;
+	abstract readonly txId: string;
+	abstract readonly unixTime: number;
+}
+
+export class ArFSPublicFolder extends ArFSFolderEntity {
 	constructor(
 		readonly appName: string,
 		readonly appVersion: string,
@@ -886,9 +914,9 @@ export class ArFSPublicFolder extends ArFSEntity implements ArFSFileFolderEntity
 		readonly txId: string,
 		readonly unixTime: number,
 		readonly parentFolderId: string,
-		readonly folderId: string
+		readonly entityId: string
 	) {
-		super(appName, appVersion, arFS, contentType, driveId, entityType, name, 0, txId, unixTime);
+		super(appName, appVersion, arFS, contentType, driveId, entityType, name, txId, unixTime);
 	}
 }
 
@@ -903,7 +931,7 @@ export class ArFSPublicFolderBuilder {
 	txId?: TransactionID;
 	unixTime?: number;
 	parentFolderId?: string;
-	folderId?: string;
+	entityId?: string;
 
 	build(): ArFSPublicFolder {
 		if (
@@ -916,7 +944,7 @@ export class ArFSPublicFolderBuilder {
 			this.name?.length &&
 			this.txId?.length &&
 			this.unixTime &&
-			this.folderId?.length
+			this.entityId?.length
 		) {
 			return new ArFSPublicFolder(
 				this.appName,
@@ -929,18 +957,14 @@ export class ArFSPublicFolderBuilder {
 				this.txId,
 				this.unixTime,
 				this.parentFolderId || 'root folder',
-				this.folderId
+				this.entityId
 			);
 		}
 		throw new Error('Invalid folder state');
 	}
 }
 
-export class ArFSPrivateFolder extends ArFSEntity implements ArFSFileFolderEntity {
-	// TODO: remove these types from the base class
-	lastModifiedDate: never;
-	entityId: never;
-
+export class ArFSPrivateFolder extends ArFSFolderEntity {
 	constructor(
 		readonly appName: string,
 		readonly appVersion: string,
@@ -952,11 +976,11 @@ export class ArFSPrivateFolder extends ArFSEntity implements ArFSFileFolderEntit
 		readonly txId: string,
 		readonly unixTime: number,
 		readonly parentFolderId: string,
-		readonly folderId: string,
+		readonly entityId: string,
 		readonly cipher: string,
 		readonly cipherIV: string
 	) {
-		super(appName, appVersion, arFS, contentType, driveId, entityType, name, 0, txId, unixTime);
+		super(appName, appVersion, arFS, contentType, driveId, entityType, name, txId, unixTime);
 	}
 }
 
@@ -1007,5 +1031,112 @@ export class ArFSPrivateFolderBuilder {
 			);
 		}
 		throw new Error('Invalid folder state');
+	}
+}
+
+// export type FileOrFolder = ArFSPublicFolder | ArFSPrivateFolder; // TODO: add files when implemented
+
+export class FolderTreeNode {
+	constructor(
+		public readonly entity: ArFSFileOrFolderEntity,
+		private _children?: FolderTreeNode[],
+		private _childrenFiles?: ArFSFileOrFolderEntity[] // FIXME: make it to be the actual files entity
+	) {}
+
+	public set children(children: FolderTreeNode[] | undefined) {
+		if (this._children) {
+			throw new Error(`Children already set`);
+		}
+		this._children = children;
+	}
+
+	public get children(): FolderTreeNode[] | undefined {
+		return this._children;
+	}
+
+	public set childrenFiles(childrenFiles: ArFSFileOrFolderEntity[] | undefined) {
+		if (this._childrenFiles) {
+			throw new Error(`Children files already set`);
+		}
+		this._childrenFiles = childrenFiles;
+	}
+
+	public get childrenFiles(): ArFSFileOrFolderEntity[] | undefined {
+		return this._childrenFiles;
+	}
+
+	public static fromEntity(folderEntity: ArFSFolderEntity): FolderTreeNode {
+		const node = new FolderTreeNode(folderEntity);
+		return node;
+	}
+}
+
+export class FolderHierarchy {
+	private readonly _rootNode: FolderTreeNode;
+	readonly tree: { parent?: FolderTreeNode; children?: FolderTreeNode[] } = {};
+
+	private constructor(private readonly entities: ArFSFileOrFolderEntity[], readonly rootId: FolderID) {
+		const rootNode = entities.find((e) => e.entityId === rootId);
+		if (!rootNode) {
+			throw new Error(`There's no such folder with id ${rootId}`);
+		}
+		this._rootNode = new FolderTreeNode(rootNode);
+
+		FolderHierarchy.setupChildren(entities, this._rootNode);
+	}
+
+	public static fromEntityArray(entities: ArFSFileOrFolderEntity[], rootId?: FolderID): FolderHierarchy {
+		// Resolve the root id: if not present it's the drive root
+		if (!rootId) {
+			const driveRootFolderEntity = entities.find((e) => e.entityType === 'folder' && !e.parentFolderId);
+			if (!driveRootFolderEntity) {
+				throw new Error(`Neither of these entities are the root of the drive`);
+			}
+			rootId = driveRootFolderEntity.entityId;
+		} else {
+			const _rootFolderEntity = this.findEntity(entities, rootId);
+			if (!_rootFolderEntity) {
+				throw new Error(`Folder with entityId ${rootId} not present within provided entities`);
+			}
+		}
+		const hierarchy = new FolderHierarchy(entities, rootId);
+		return hierarchy;
+	}
+
+	private static setupChildren(entities: ArFSFileOrFolderEntity[], node: FolderTreeNode) {
+		const children = this.filterChildrenOf(entities, node.entity.entityId);
+		const files = children.filter((e) => e.entityType === 'file');
+		const folders = children
+			.filter((e) => e.entityType === 'folder')
+			.map((folderEntity) => new FolderTreeNode(folderEntity));
+		node.children = folders;
+		node.childrenFiles = files;
+		node.children.forEach((childrenNode) => {
+			this.setupChildren(entities, childrenNode);
+		});
+	}
+
+	public getRootFolder(): FolderTreeNode {
+		return this._rootNode;
+	}
+
+	public getFolder(folderId: FolderID): ArFSFolderEntity {
+		const found = FolderHierarchy.findEntity(this.entities, folderId);
+		if (!found) {
+			throw new Error(`No such entity provided with id: ${folderId}`);
+		}
+		return found;
+	}
+
+	private static filterChildrenOf(entities: ArFSFileOrFolderEntity[], parentFolderId: FolderID) {
+		return entities.filter((e) => e.parentFolderId === parentFolderId);
+	}
+
+	private static findEntity(
+		entities: ArFSFileOrFolderEntity[],
+		entityId: string
+	): ArFSFileOrFolderEntity | undefined {
+		const found = entities.find((entity) => entity.entityId === entityId);
+		return found;
 	}
 }
