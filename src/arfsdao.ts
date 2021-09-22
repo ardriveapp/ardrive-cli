@@ -1034,109 +1034,96 @@ export class ArFSPrivateFolderBuilder {
 	}
 }
 
-// export type FileOrFolder = ArFSPublicFolder | ArFSPrivateFolder; // TODO: add files when implemented
-
 export class FolderTreeNode {
 	constructor(
-		public readonly entity: ArFSFileOrFolderEntity,
-		private _children?: FolderTreeNode[],
-		private _childrenFiles?: ArFSFileOrFolderEntity[] // FIXME: make it to be the actual files entity
+		public readonly folderId: FolderID,
+		public readonly parent?: FolderTreeNode,
+		public children: FolderTreeNode[] = []
 	) {}
 
-	public set children(children: FolderTreeNode[] | undefined) {
-		if (this._children) {
-			throw new Error(`Children already set`);
-		}
-		this._children = children;
-	}
-
-	public get children(): FolderTreeNode[] | undefined {
-		return this._children;
-	}
-
-	public set childrenFiles(childrenFiles: ArFSFileOrFolderEntity[] | undefined) {
-		if (this._childrenFiles) {
-			throw new Error(`Children files already set`);
-		}
-		this._childrenFiles = childrenFiles;
-	}
-
-	public get childrenFiles(): ArFSFileOrFolderEntity[] | undefined {
-		return this._childrenFiles;
-	}
-
 	public static fromEntity(folderEntity: ArFSFolderEntity): FolderTreeNode {
-		const node = new FolderTreeNode(folderEntity);
+		const node = new FolderTreeNode(folderEntity.entityId);
 		return node;
 	}
 }
 
 export class FolderHierarchy {
-	private readonly _rootNode: FolderTreeNode;
-	readonly tree: { parent?: FolderTreeNode; children?: FolderTreeNode[] } = {};
+	private readonly _rootNode?: FolderTreeNode;
 
-	private constructor(private readonly entities: ArFSFileOrFolderEntity[], readonly rootId: FolderID) {
-		const rootNode = entities.find((e) => e.entityId === rootId);
-		if (!rootNode) {
-			throw new Error(`There's no such folder with id ${rootId}`);
+	constructor(
+		private readonly folderIdToEntityMap: { [k: string]: ArFSFileOrFolderEntity },
+		private readonly folderIdToNodeMap: { [k: string]: FolderTreeNode }
+	) {}
+
+	static folderHierarchyFromEntities(entities: ArFSFileOrFolderEntity[]) {
+		const folderIdToEntityMap = entities.reduce((accumulator, entity) => {
+			return Object.assign(accumulator, { [entity.entityId]: entity });
+		}, {});
+		const folderIdToNodeMap: { [k: string]: FolderTreeNode } = {};
+
+		for (const entity of entities) {
+			this.setupNodesWithEntity(entity, folderIdToEntityMap, folderIdToNodeMap);
 		}
-		this._rootNode = new FolderTreeNode(rootNode);
-
-		FolderHierarchy.setupChildren(entities, this._rootNode);
 	}
 
-	public static fromEntityArray(entities: ArFSFileOrFolderEntity[], rootId?: FolderID): FolderHierarchy {
-		// Resolve the root id: if not present it's the drive root
-		if (!rootId) {
-			const driveRootFolderEntity = entities.find((e) => e.entityType === 'folder' && !e.parentFolderId);
-			if (!driveRootFolderEntity) {
-				throw new Error(`Neither of these entities are the root of the drive`);
+	private static setupNodesWithEntity(
+		entity: ArFSFileOrFolderEntity,
+		folderIdToEntityMap: { [k: string]: ArFSFileOrFolderEntity },
+		folderIdToNodeMap: { [k: string]: FolderTreeNode }
+	): void {
+		const folderIdKeyIsPresent = Object.keys(folderIdToNodeMap).includes(entity.entityId);
+		const parentFolderIdKeyIsPresent = Object.keys(folderIdToNodeMap).includes(entity.parentFolderId);
+		if (!folderIdKeyIsPresent) {
+			if (parentFolderIdKeyIsPresent) {
+				const parent = folderIdToNodeMap[entity.parentFolderId];
+				const node = new FolderTreeNode(entity.entityId, parent);
+				parent.children.push(node);
+				folderIdToNodeMap[entity.entityId] = node;
+			} else {
+				this.setupNodesWithEntity(
+					folderIdToEntityMap[entity.parentFolderId],
+					folderIdToEntityMap,
+					folderIdToNodeMap
+				);
 			}
-			rootId = driveRootFolderEntity.entityId;
-		} else {
-			const _rootFolderEntity = this.findEntity(entities, rootId);
-			if (!_rootFolderEntity) {
-				throw new Error(`Folder with entityId ${rootId} not present within provided entities`);
-			}
 		}
-		const hierarchy = new FolderHierarchy(entities, rootId);
-		return hierarchy;
 	}
 
-	private static setupChildren(entities: ArFSFileOrFolderEntity[], node: FolderTreeNode) {
-		const children = this.filterChildrenOf(entities, node.entity.entityId);
-		const files = children.filter((e) => e.entityType === 'file');
-		const folders = children
-			.filter((e) => e.entityType === 'folder')
-			.map((folderEntity) => new FolderTreeNode(folderEntity));
-		node.children = folders;
-		node.childrenFiles = files;
-		node.children.forEach((childrenNode) => {
-			this.setupChildren(entities, childrenNode);
-		});
-	}
-
-	public getRootFolder(): FolderTreeNode {
-		return this._rootNode;
-	}
-
-	public getFolder(folderId: FolderID): ArFSFolderEntity {
-		const found = FolderHierarchy.findEntity(this.entities, folderId);
-		if (!found) {
-			throw new Error(`No such entity provided with id: ${folderId}`);
+	public get rootNode(): FolderTreeNode {
+		if (this._rootNode) {
+			return this._rootNode;
 		}
-		return found;
+
+		let tmpNode = this.folderIdToNodeMap[0];
+		while (tmpNode.parent) {
+			tmpNode = tmpNode.parent;
+		}
+		return tmpNode;
 	}
 
-	private static filterChildrenOf(entities: ArFSFileOrFolderEntity[], parentFolderId: FolderID) {
-		return entities.filter((e) => e.parentFolderId === parentFolderId);
+	public subTreeOf(folderId: FolderID): FolderHierarchy {
+		const newRootNode = this.folderIdToNodeMap[folderId];
+
+		const subTreeNodes = this.nodeAndChildrenOf(newRootNode);
+
+		const entitiesMapping = subTreeNodes.reduce((accumulator, node) => {
+			return Object.assign(accumulator, { [node.folderId]: this.folderIdToEntityMap[node.folderId] });
+		}, {});
+		const nodesMapping = subTreeNodes.reduce((accumulator, node) => {
+			return Object.assign(accumulator, { [node.folderId]: node });
+		}, {});
+
+		return new FolderHierarchy(entitiesMapping, nodesMapping);
 	}
 
-	private static findEntity(
-		entities: ArFSFileOrFolderEntity[],
-		entityId: string
-	): ArFSFileOrFolderEntity | undefined {
-		const found = entities.find((entity) => entity.entityId === entityId);
-		return found;
+	public allFolderIDs(): FolderID[] {
+		return Object.keys(this.folderIdToEntityMap);
+	}
+
+	public nodeAndChildrenOf(node: FolderTreeNode): FolderTreeNode[] {
+		const subTreeEntities: FolderTreeNode[] = [node];
+		subTreeEntities.push(...node.children);
+
+		return subTreeEntities;
 	}
 }
