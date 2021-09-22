@@ -1055,7 +1055,7 @@ export class FolderHierarchy {
 		private readonly folderIdToNodeMap: { [k: string]: FolderTreeNode }
 	) {}
 
-	static folderHierarchyFromEntities(entities: ArFSFileOrFolderEntity[]) {
+	static folderHierarchyFromEntities(entities: ArFSFileOrFolderEntity[]): FolderHierarchy {
 		const folderIdToEntityMap = entities.reduce((accumulator, entity) => {
 			return Object.assign(accumulator, { [entity.entityId]: entity });
 		}, {});
@@ -1064,6 +1064,8 @@ export class FolderHierarchy {
 		for (const entity of entities) {
 			this.setupNodesWithEntity(entity, folderIdToEntityMap, folderIdToNodeMap);
 		}
+
+		return new FolderHierarchy(folderIdToEntityMap, folderIdToNodeMap);
 	}
 
 	private static setupNodesWithEntity(
