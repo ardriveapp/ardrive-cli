@@ -42,6 +42,7 @@ import {
 } from './arfs_trx_data_types';
 import { buildQuery } from './query';
 import { DriveID, FolderID, FileID, DriveKey, TransactionID, Winston, FileKey } from './types';
+import { FsFile } from './fsFile';
 
 export const ArFS_O_11 = '0.11';
 
@@ -342,12 +343,12 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 	async uploadPublicFile(
 		parentFolderId: FolderID,
-		filePath: string,
+		wrappedFile: FsFile,
 		driveId: DriveID,
 		destFileName?: string
 	): Promise<ArFSUploadFileResult> {
 		// Establish destination file name
-		const destinationFileName = destFileName ?? basename(filePath);
+		const destinationFileName = destFileName ?? wrappedFile.getBaseFileName();
 
 		// Generate file ID
 		const fileId = uuidv4();
@@ -356,10 +357,10 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const unixTime = Math.round(Date.now() / 1000);
 
 		// Gather file information
-		const fileStats = fs.statSync(filePath);
-		const fileData = fs.readFileSync(filePath);
-		const dataContentType = extToMime(filePath);
-		const lastModifiedDateMS = Math.floor(fileStats.mtimeMs);
+		const fileStats = wrappedFile.fileStats;
+		const fileData = wrappedFile.getFileDataBuffer();
+		const dataContentType = wrappedFile.getContentType();
+		const lastModifiedDateMS = Math.floor(wrappedFile.fileStats.mtimeMs);
 
 		// Build file data transaction
 		const fileDataPrototype = new ArFSPublicFileDataPrototype(
@@ -407,7 +408,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 	async uploadPrivateFile(
 		parentFolderId: FolderID,
-		filePath: string,
+		wrappedFile: FsFile,
 		password: string,
 		driveId: DriveID,
 		destFileName?: string
@@ -415,7 +416,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const wallet: JWKWallet = this.wallet as JWKWallet;
 
 		// Establish destination file name
-		const destinationFileName = destFileName ?? basename(filePath);
+		const destinationFileName = destFileName ?? wrappedFile.getBaseFileName();
 
 		// Generate file ID
 		const fileId = uuidv4();
@@ -424,10 +425,11 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const unixTime = Math.round(Date.now() / 1000);
 
 		// Gather file information
-		const fileStats = fs.statSync(filePath);
-		const fileData = fs.readFileSync(filePath);
-		const dataContentType = extToMime(filePath);
-		const lastModifiedDateMS = Math.floor(fileStats.mtimeMs);
+		// Gather file information
+		const fileStats = wrappedFile.fileStats;
+		const fileData = wrappedFile.getFileDataBuffer();
+		const dataContentType = wrappedFile.getContentType();
+		const lastModifiedDateMS = Math.floor(wrappedFile.fileStats.mtimeMs);
 
 		// Build file data transaction
 		const fileDataPrototype = new ArFSPrivateFileDataPrototype(
