@@ -12,7 +12,7 @@ import { ArFSDAOType, ArFSDAOAnonymous, ArFSPublicDrive, ArFSDAO } from './arfsd
 import { TransactionID, ArweaveAddress, Winston, DriveID, FolderID, Bytes, TipType, FileID } from './types';
 import { WalletDAO, Wallet, JWKWallet } from './wallet_new';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
-import { wrapFileOrFolder, FsFolder, isFolder } from './fsFile';
+import { FsFolder, isFolder, FsFile } from './fsFile';
 import { ARDataPriceEstimator } from './utils/ar_data_price_estimator';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
@@ -103,7 +103,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 	async uploadPublicFile(
 		parentFolderId: FolderID,
-		filePath: string,
+		wrappedEntity: FsFile | FsFolder,
 		destinationFileName?: string
 	): Promise<ArFSResult> {
 		// Retrieve drive ID from folder ID and ensure that it is indeed public
@@ -112,8 +112,6 @@ export class ArDrive extends ArDriveAnonymous {
 		if (!drive) {
 			throw new Error(`Public drive with Drive ID ${driveId} not found!`);
 		}
-
-		const wrappedEntity = wrapFileOrFolder(filePath);
 
 		/** Total bytes of all Files that are part of an upload */
 		const totalBytes: Bytes = isFolder(wrappedEntity)
@@ -184,7 +182,7 @@ export class ArDrive extends ArDriveAnonymous {
 			wrappedFolder.getBaseFileName(),
 			driveId,
 			parentFolderId,
-			false // Don't check for folders that don't exit yet
+			false // Don't check for folders that don't exist yet
 		);
 
 		// Capture results
@@ -251,7 +249,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 	async uploadPrivateFile(
 		parentFolderId: FolderID,
-		filePath: string,
+		wrappedEntity: FsFile | FsFolder,
 		password: string,
 		destinationFileName?: string
 	): Promise<ArFSResult> {
@@ -261,8 +259,6 @@ export class ArDrive extends ArDriveAnonymous {
 		if (!drive) {
 			throw new Error(`Private drive with Drive ID ${driveId} not found!`);
 		}
-
-		const wrappedEntity = wrapFileOrFolder(filePath);
 
 		/** Total bytes of all Files that are part of an upload */
 		const totalBytes: Bytes = isFolder(wrappedEntity)
@@ -274,7 +270,7 @@ export class ArDrive extends ArDriveAnonymous {
 		const fakeDriveId = '00000000-0000-0000-0000-000000000000';
 		const fakeFileId = '00000000-0000-0000-0000-000000000000';
 		const winstonPrice = await this.priceEstimator.getBaseWinstonPriceForByteCount(
-			await this.encryptedFileSize(filePath, password, fakeDriveId, fakeFileId)
+			await this.encryptedFileSize(wrappedEntity.filePath, password, fakeDriveId, fakeFileId)
 		);
 		const communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(winstonPrice.toString());
 		const totalWinstonPrice = (+winstonPrice + +communityWinstonTip).toString();
