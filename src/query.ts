@@ -38,7 +38,7 @@ const pageLimit = 100;
  * const query = buildQuery([{ name: 'Folder-Id', value: folderId }]);
  */
 export function buildQuery(
-	tags: { name: string; values: string | string[] }[],
+	tags: { name: string; value: string | string[] }[],
 	cursor?: string,
 	owner?: ArweaveAddress
 ): GQLQuery {
@@ -46,7 +46,7 @@ export function buildQuery(
 
 	tags.forEach((t) => {
 		queryTags = `${queryTags}
-				{ name: "${t.name}", values: ${Array.isArray(t.values) ? JSON.stringify(t.values) : `"${t.values}"`} }`;
+				{ name: "${t.name}", values: ${Array.isArray(t.value) ? JSON.stringify(t.value) : `"${t.value}"`} }`;
 	});
 
 	const singleResult = cursor === undefined;
