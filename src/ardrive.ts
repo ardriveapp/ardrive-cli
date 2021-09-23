@@ -103,28 +103,22 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// TODO: Add interactive confirmation of AR price estimation
 
-		// TODO: DON'T DEAL WITH TRXs
-		const { dataTrx, metaDataTrx, fileId } = await this.arFsDao.uploadPublicFile(
-			parentFolderId,
-			filePath,
-			destinationFileName
-		);
-
+		const uploadFileResult = await this.arFsDao.uploadPublicFile(parentFolderId, filePath, destinationFileName);
 		const communityTipData = await this.sendCommunityTip(communityWinstonTip);
 
 		return Promise.resolve({
 			created: [
 				{
 					type: 'file',
-					metadataTxId: metaDataTrx.id,
-					dataTxId: dataTrx.id,
-					entityId: fileId
+					metadataTxId: uploadFileResult.metaDataTrxId,
+					dataTxId: uploadFileResult.dataTrxId,
+					entityId: uploadFileResult.fileId
 				}
 			],
 			tips: [communityTipData],
 			fees: {
-				[metaDataTrx.id]: +metaDataTrx.reward,
-				[dataTrx.id]: +dataTrx.reward,
+				[uploadFileResult.metaDataTrxId]: +uploadFileResult.metaDataTrxReward,
+				[uploadFileResult.dataTrxId]: +uploadFileResult.dataTrxReward,
 				[communityTipData.txId]: +communityTipData.reward
 			}
 		});
@@ -146,8 +140,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// TODO: Add interactive confirmation of AR price estimation
 
-		// TODO: DON'T DEAL WITH TRXs
-		const { dataTrx, metaDataTrx, fileId, fileKey } = await this.arFsDao.uploadPrivateFile(
+		const uploadFileResult = await this.arFsDao.uploadPrivateFile(
 			parentFolderId,
 			filePath,
 			password,
@@ -160,40 +153,41 @@ export class ArDrive extends ArDriveAnonymous {
 			created: [
 				{
 					type: 'file',
-					metadataTxId: metaDataTrx.id,
-					dataTxId: dataTrx.id,
-					entityId: fileId,
-					key: fileKey.toString('hex')
+					metadataTxId: uploadFileResult.metaDataTrxId,
+					dataTxId: uploadFileResult.dataTrxId,
+					entityId: uploadFileResult.fileId,
+					key: uploadFileResult.fileKey.toString('hex')
 				}
 			],
 			tips: [communityTipData],
 			fees: {
-				[metaDataTrx.id]: +metaDataTrx.reward,
-				[dataTrx.id]: +dataTrx.reward,
+				[uploadFileResult.metaDataTrxId]: +uploadFileResult.metaDataTrxReward,
+				[uploadFileResult.dataTrxId]: +uploadFileResult.dataTrxReward,
 				[communityTipData.txId]: +communityTipData.reward
 			}
 		});
 	}
 
 	async createPublicFolder(folderName: string, driveId: string, parentFolderId?: FolderID): Promise<ArFSResult> {
-		// TODO: Fetch drive ID for parent folder ID
-
 		// Create the folder and retrieve its folder ID
-		// TODO: DON'T DEAL WITH TRXs
-		const { folderTrx, folderId } = await this.arFsDao.createPublicFolder(folderName, driveId, parentFolderId);
+		const { folderTrxId, folderTrxReward, folderId } = await this.arFsDao.createPublicFolder(
+			folderName,
+			driveId,
+			parentFolderId
+		);
 
 		// IN THE FUTURE WE'LL SEND A COMMUNITY TIP HERE
 		return Promise.resolve({
 			created: [
 				{
 					type: 'folder',
-					metadataTxId: folderTrx.id,
+					metadataTxId: folderTrxId,
 					entityId: folderId
 				}
 			],
 			tips: [],
 			fees: {
-				[folderTrx.id]: +folderTrx.reward
+				[folderTrxId]: +folderTrxReward
 			}
 		});
 	}

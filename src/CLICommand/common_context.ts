@@ -28,13 +28,12 @@ export class CommonContext {
 
 	/**
 	 * @returns {Promise<boolean>}
-	 * Returns true when a drive password, drive key or wallet file is provided
+	 * Returns true when a drive password or drive key is provided
 	 */
 	public async getIsPrivate(): Promise<boolean> {
-		return !!(
-			this.getParameterValue(DrivePasswordParameter) ||
-			this.getParameterValue(DriveKeyParameter) ||
-			(await this.getWallet().catch(() => false))
+		return (
+			this.getParameterValue(DrivePasswordParameter) !== undefined ||
+			this.getParameterValue(DriveKeyParameter) !== undefined
 		);
 	}
 

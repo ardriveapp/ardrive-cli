@@ -55,24 +55,21 @@ export interface ArFSCreateDriveResult {
 	rootFolderId: FolderID;
 }
 
-// TODO: DON'T RETURN TRXS
 export interface ArFSCreateFolderResult {
-	folderTrx: Transaction;
+	folderTrxId: TransactionID;
+	folderTrxReward: Winston;
 	folderId: FolderID;
 }
 
-// TODO: DON'T RETURN TRXS
 export interface ArFSUploadFileResult {
-	dataTrx: Transaction;
-	metaDataTrx: Transaction;
+	dataTrxId: TransactionID;
+	dataTrxReward: Winston;
+	metaDataTrxId: TransactionID;
+	metaDataTrxReward: TransactionID;
 	fileId: FileID;
 }
 
-// TODO: DON'T RETURN TRXS
-export interface ArFSUploadPrivateFileResult {
-	dataTrx: Transaction;
-	metaDataTrx: Transaction;
-	fileId: FileID;
+export interface ArFSUploadPrivateFileResult extends ArFSUploadFileResult {
 	fileKey: FileKey;
 }
 
@@ -242,7 +239,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			await folderUploader.uploadChunk();
 		}
 
-		return { folderTrx, folderId };
+		return { folderTrxId: folderTrx.id, folderTrxReward: folderTrx.reward, folderId };
 	}
 
 	async createPublicDrive(driveName: string): Promise<ArFSCreateDriveResult> {
@@ -250,12 +247,11 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const driveId = uuidv4();
 
 		// Create root folder
-		const { folderTrx: rootFolderTrx, folderId: rootFolderId } = await this.createPublicFolder(
-			driveName,
-			driveId,
-			undefined,
-			false
-		);
+		const {
+			folderTrxId: rootFolderTrxId,
+			folderTrxReward: rootFolderTrxReward,
+			folderId: rootFolderId
+		} = await this.createPublicFolder(driveName, driveId, undefined, false);
 
 		// Get the current time so the app can display the "created" data later on
 		const unixTime = Math.round(Date.now() / 1000);
@@ -279,8 +275,8 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return {
 			driveTrxId: driveTrx.id,
 			driveTrxReward: driveTrx.reward,
-			rootFolderTrxId: rootFolderTrx.id,
-			rootFolderTrxReward: rootFolderTrx.reward,
+			rootFolderTrxId: rootFolderTrxId,
+			rootFolderTrxReward: rootFolderTrxReward,
 			driveId: driveId,
 			rootFolderId: rootFolderId
 		};
@@ -406,7 +402,13 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			await metaDataUploader.uploadChunk();
 		}
 
-		return { dataTrx, metaDataTrx, fileId };
+		return {
+			dataTrxId: dataTrx.id,
+			dataTrxReward: dataTrx.reward,
+			metaDataTrxId: metaDataTrx.id,
+			metaDataTrxReward: metaDataTrx.reward,
+			fileId
+		};
 	}
 
 	async uploadPrivateFile(
@@ -479,8 +481,10 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		// TODO: Get fileKey from ArFSPrivateFileMetadataTransactionData somehow
 		return {
-			dataTrx,
-			metaDataTrx,
+			dataTrxId: dataTrx.id,
+			dataTrxReward: dataTrx.reward,
+			metaDataTrxId: metaDataTrx.id,
+			metaDataTrxReward: metaDataTrx.reward,
 			fileId,
 			fileKey: await deriveFileKey(
 				fileId,
