@@ -68,7 +68,7 @@ export class FsFolder extends FsFile {
 			const absoluteEntityPath = join(this.filePath, entityPath);
 
 			// Get stats to determine whether a folder or a file
-			const entityStats = fs.statSync(entityPath);
+			const entityStats = fs.statSync(absoluteEntityPath);
 
 			if (entityStats.isDirectory()) {
 				// Child is a folder, build a new folder which will construct it's own children
