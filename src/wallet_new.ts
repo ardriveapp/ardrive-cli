@@ -4,7 +4,16 @@ import * as crypto from 'crypto';
 import jwkToPem, { JWK } from 'jwk-to-pem';
 import Arweave from 'arweave';
 import * as mnemonicKeys from 'arweave-mnemonic-keys';
-import { TransactionID, Winston, NetworkReward, PublicKey, ArweaveAddress, SeedPhrase } from './types';
+import {
+	TransactionID,
+	Winston,
+	NetworkReward,
+	PublicKey,
+	ArweaveAddress,
+	SeedPhrase,
+	DEFAULT_APP_NAME,
+	DEFAULT_APP_VERSION
+} from './types';
 
 export type ARTransferResult = {
 	trxID: TransactionID;
@@ -52,7 +61,11 @@ export class JWKWallet implements Wallet {
 }
 
 export class WalletDAO {
-	constructor(private readonly arweave: Arweave) {}
+	constructor(
+		private readonly arweave: Arweave,
+		private readonly appName = DEFAULT_APP_NAME,
+		private readonly appVersion = DEFAULT_APP_VERSION
+	) {}
 
 	async generateSeedPhrase(): Promise<SeedPhrase> {
 		const seedPhrase: SeedPhrase = await mnemonicKeys.generateMnemonic();
@@ -82,8 +95,8 @@ export class WalletDAO {
 		fromWallet: Wallet,
 		toAddress: ArweaveAddress,
 		[
-			{ value: appName = 'ArDrive-Core' },
-			{ value: appVersion = '1.0' },
+			{ value: appName = this.appName },
+			{ value: appVersion = this.appVersion },
 			{ value: trxType = 'transfer' },
 			...otherTags
 		]: GQLTagInterface[]

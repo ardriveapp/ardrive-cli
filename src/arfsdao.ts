@@ -41,9 +41,18 @@ import {
 	ArFSPublicFolderTransactionData
 } from './arfs_trx_data_types';
 import { buildQuery } from './query';
-import { DriveID, FolderID, FileID, DriveKey, TransactionID, Winston, FileKey } from './types';
-
-export const ArFS_O_11 = '0.11';
+import {
+	DriveID,
+	FolderID,
+	FileID,
+	DriveKey,
+	TransactionID,
+	Winston,
+	FileKey,
+	DEFAULT_APP_NAME,
+	DEFAULT_APP_VERSION,
+	CURRENT_ARFS_VERSION
+} from './types';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 export interface ArFSCreateDriveResult {
@@ -79,13 +88,19 @@ export interface ArFSCreatePrivateDriveResult extends ArFSCreateDriveResult {
 
 export abstract class ArFSDAOType {
 	protected abstract readonly arweave: Arweave;
+	protected abstract readonly appName: string;
+	protected abstract readonly appVersion: string;
 }
 
 /**
  * Performs all ArFS spec operations that do NOT require a wallet for signing or decryption
  */
 export class ArFSDAOAnonymous extends ArFSDAOType {
-	constructor(protected readonly arweave: Arweave) {
+	constructor(
+		protected readonly arweave: Arweave,
+		protected appName = DEFAULT_APP_NAME,
+		protected appVersion = DEFAULT_APP_VERSION
+	) {
 		super();
 	}
 
@@ -184,8 +199,13 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 
 export class ArFSDAO extends ArFSDAOAnonymous {
 	// TODO: Can we abstract Arweave type(s)?
-	constructor(private readonly wallet: Wallet, arweave: Arweave) {
-		super(arweave);
+	constructor(
+		private readonly wallet: Wallet,
+		arweave: Arweave,
+		protected appName = DEFAULT_APP_NAME,
+		protected appVersion = DEFAULT_APP_VERSION
+	) {
+		super(arweave, appName, appVersion);
 	}
 
 	async createPublicFolder(
@@ -495,9 +515,6 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 	async prepareArFSObjectTransaction(
 		objectMetaData: ArFSObjectMetadataPrototype,
-		appName = 'ArDrive-Core',
-		appVersion = '1.0',
-		arFSVersion = ArFS_O_11,
 		otherTags: GQLTagInterface[] = []
 	): Promise<Transaction> {
 		const wallet = this.wallet as JWKWallet;
@@ -509,9 +526,9 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		);
 
 		// Add baseline ArFS Tags
-		transaction.addTag('App-Name', appName);
-		transaction.addTag('App-Version', appVersion);
-		transaction.addTag('ArFS', arFSVersion);
+		transaction.addTag('App-Name', this.appName);
+		transaction.addTag('App-Version', this.appVersion);
+		transaction.addTag('ArFS', CURRENT_ARFS_VERSION);
 
 		// Add object-specific tags
 		objectMetaData.addTagsToTransaction(transaction);
