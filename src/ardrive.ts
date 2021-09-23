@@ -8,7 +8,9 @@ import {
 	ArFSDAOType,
 	ArFSPublicFolder,
 	ArFSPrivateFolder,
-	ArFSFolderEntity
+	ArFSFolderEntity,
+	ArFSPublicFile,
+	ArFSPrivateFile
 } from './arfsdao';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
@@ -64,8 +66,12 @@ export class ArDriveAnonymous extends ArDriveType {
 		return this.arFsDao.getChildrenOfFolderTxIds(folderId);
 	}
 
-	async getAllFoldersOfDrive(driveId: DriveID): Promise<ArFSFolderEntity[]> {
+	async getAllFoldersOfPublicDrive(driveId: DriveID): Promise<ArFSFolderEntity[]> {
 		return this.arFsDao.getAllFoldersOfPublicDrive(driveId);
+	}
+
+	async getAllChildrenFilesFromFolderIDs(folderIDs: FolderID[]): Promise<ArFSPublicFile[]> {
+		return this.arFsDao.getAllPublicChildrenFilesFromFolderIDs(folderIDs);
 	}
 }
 
@@ -226,5 +232,13 @@ export class ArDrive extends ArDriveAnonymous {
 	async getPrivateFolder(folderId: FolderID): Promise<ArFSPrivateFolder> {
 		const folderEntity = await this.arFsDao.getPrivateFolder(folderId);
 		return folderEntity;
+	}
+
+	async getAllFoldersOfPrivateDrive(driveId: DriveID): Promise<ArFSFolderEntity[]> {
+		return this.arFsDao.getAllFoldersOfPrivateDrive(driveId);
+	}
+
+	async getAllChildrenFilesFromFolderIDs(folderIDs: FolderID[]): Promise<ArFSPrivateFile[]> {
+		return this.arFsDao.getAllPrivateChildrenFilesFromFolderIDs(folderIDs);
 	}
 }
