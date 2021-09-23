@@ -2,15 +2,18 @@ import { CommunityOracle } from './community/community_oracle';
 import { GQLTagInterface, winstonToAr } from 'ardrive-core-js';
 import * as fs from 'fs';
 import { ArFSDAOType, ArFSDAOAnonymous, ArFSPublicDrive, ArFSDAO } from './arfsdao';
-import { TransactionID, ArweaveAddress, Winston, DriveID, FolderID, Bytes, TipType } from './types';
+import { TransactionID, ArweaveAddress, Winston, DriveID, FolderID, Bytes, TipType, FileID } from './types';
 import { WalletDAO, Wallet } from './wallet_new';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
+import { wrapFileOrFolder, FsFolder, isFolder } from './fsFile';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 
 export interface ArFSEntityData {
 	type: ArFSEntityDataType;
 	metadataTxId: TransactionID;
+	dataTxId?: TransactionID;
+	entityId: FolderID | DriveID | FileID;
 	key?: string;
 }
 
@@ -102,7 +105,14 @@ export class ArDrive extends ArDriveAnonymous {
 			throw new Error(`Public drive with Drive ID ${driveId} not found!`);
 		}
 
-		const winstonPrice = await this.priceEstimator.getWinstonPriceForByteCount(this.getFileSize(filePath));
+		const wrappedEntity = wrapFileOrFolder(filePath);
+
+		/** Total bytes of all Files that are part of an upload */
+		const totalBytes: Bytes = isFolder(wrappedEntity)
+			? wrappedEntity.getTotalBytes()
+			: wrappedEntity.fileStats.size;
+
+		const winstonPrice = await this.priceEstimator.getWinstonPriceForByteCount(totalBytes);
 		const communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(winstonPrice.toString());
 		const totalWinstonPrice = (+winstonPrice + +communityWinstonTip).toString();
 
@@ -110,32 +120,110 @@ export class ArDrive extends ArDriveAnonymous {
 			throw new Error('Not enough AR for file upload..');
 		}
 
-		// TODO: Add interactive confirmation of AR price estimation
+		let uploadEntityResults: ArFSEntityData[] = [];
+		let uploadEntityFees: ArFSFees = {};
 
-		const uploadFileResult = await this.arFsDao.uploadPublicFile(
-			parentFolderId,
-			filePath,
-			driveId,
-			destinationFileName
-		);
-		const { tipData, reward: communityTipTrxReward } = await this.sendCommunityTip(communityWinstonTip);
+		if (isFolder(wrappedEntity)) {
+			const results = await this.createPublicFolderAndUploadChildren(wrappedEntity, driveId, parentFolderId);
 
-		return Promise.resolve({
-			created: [
+			uploadEntityFees = results.feeResults;
+			uploadEntityResults = results.entityResults;
+		} else {
+			const uploadFileResult = await this.arFsDao.uploadPublicFile(
+				parentFolderId,
+				wrappedEntity,
+				driveId,
+				destinationFileName
+			);
+
+			uploadEntityFees = {
+				[uploadFileResult.dataTrxId]: +uploadFileResult.dataTrxReward,
+				[uploadFileResult.metaDataTrxId]: +uploadFileResult.metaDataTrxReward
+			};
+			uploadEntityResults = [
 				{
 					type: 'file',
 					metadataTxId: uploadFileResult.metaDataTrxId,
 					dataTxId: uploadFileResult.dataTrxId,
 					entityId: uploadFileResult.fileId
 				}
-			],
+			];
+		}
+
+		const { tipData, reward: communityTipTrxReward } = await this.sendCommunityTip(communityWinstonTip);
+
+		return Promise.resolve({
+			created: uploadEntityResults,
 			tips: [tipData],
-			fees: {
-				[uploadFileResult.metaDataTrxId]: +uploadFileResult.metaDataTrxReward,
-				[uploadFileResult.dataTrxId]: +uploadFileResult.dataTrxReward,
-				[tipData.txId]: +communityTipTrxReward
-			}
+			fees: { ...uploadEntityFees, [tipData.txId]: +communityTipTrxReward }
 		});
+	}
+
+	async createPublicFolderAndUploadChildren(
+		wrappedFolder: FsFolder,
+		driveId: DriveID,
+		parentFolderId: FolderID
+	): Promise<{
+		entityResults: ArFSEntityData[];
+		feeResults: ArFSFees;
+	}> {
+		let uploadEntityResults: ArFSEntityData[] = [];
+		let uploadEntityFees: ArFSFees = {};
+
+		// Create parent folder
+		const { folderTrxId, folderTrxReward, folderId } = await this.arFsDao.createPublicFolder(
+			wrappedFolder.getBaseFileName(),
+			driveId,
+			parentFolderId,
+			false // Don't check for folders that don't exit yet
+		);
+
+		// Capture results
+		uploadEntityFees = { ...uploadEntityFees, [folderTrxId]: +folderTrxReward };
+		uploadEntityResults = [
+			...uploadEntityResults,
+			{
+				type: 'folder',
+				metadataTxId: folderTrxId,
+				entityId: folderId
+			}
+		];
+
+		// Upload all files in the folder
+		for await (const wrappedFile of wrappedFolder.files) {
+			const uploadFileResult = await this.arFsDao.uploadPublicFile(folderId, wrappedFile, driveId);
+
+			// Capture all file results
+			uploadEntityFees = {
+				...uploadEntityFees,
+				[uploadFileResult.dataTrxId]: +uploadFileResult.dataTrxReward,
+				[uploadFileResult.metaDataTrxId]: +uploadFileResult.metaDataTrxReward
+			};
+			uploadEntityResults = [
+				...uploadEntityResults,
+				{
+					type: 'file',
+					metadataTxId: uploadFileResult.metaDataTrxId,
+					dataTxId: uploadFileResult.dataTrxId,
+					entityId: uploadFileResult.fileId
+				}
+			];
+		}
+
+		// Upload folders, and children of those folders
+		for await (const childFolder of wrappedFolder.folders) {
+			// Recursion alert, will keep creating folders of all nested folders
+			const results = await this.createPublicFolderAndUploadChildren(childFolder, driveId, folderId);
+
+			// Capture all results
+			uploadEntityFees = {
+				...uploadEntityFees,
+				...results.feeResults
+			};
+			uploadEntityResults = [...uploadEntityResults, ...results.entityResults];
+		}
+
+		return { entityResults: uploadEntityResults, feeResults: uploadEntityFees };
 	}
 
 	async uploadPrivateFile(
@@ -151,7 +239,14 @@ export class ArDrive extends ArDriveAnonymous {
 			throw new Error(`Private drive with Drive ID ${driveId} not found!`);
 		}
 
-		const winstonPrice = await this.priceEstimator.getWinstonPriceForByteCount(this.getFileSize(filePath));
+		const wrappedEntity = wrapFileOrFolder(filePath);
+
+		/** Total bytes of all Files that are part of an upload */
+		const totalBytes: Bytes = isFolder(wrappedEntity)
+			? wrappedEntity.getTotalBytes()
+			: wrappedEntity.fileStats.size;
+
+		const winstonPrice = await this.priceEstimator.getWinstonPriceForByteCount(totalBytes);
 		const communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(winstonPrice.toString());
 		const totalWinstonPrice = (+winstonPrice + +communityWinstonTip).toString();
 
@@ -163,7 +258,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		const uploadFileResult = await this.arFsDao.uploadPrivateFile(
 			parentFolderId,
-			filePath,
+			wrappedEntity,
 			password,
 			driveId,
 			destinationFileName
