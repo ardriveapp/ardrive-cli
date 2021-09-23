@@ -66,17 +66,17 @@ export class ArDrive extends ArDriveAnonymous {
 		return fs.statSync(filePath).size;
 	}
 
-	async prepareCommunityTipTrx(communityWinstonTip: Winston): Promise<Transaction> {
+	async sendCommunityTip(communityWinstonTip: Winston): Promise<Transaction> {
 		const tokenHolder: ArweaveAddress = await this.communityOracle.selectTokenHolder();
 
-		const communityTipTransaction = await this.walletDao.prepareARToAddressTransaction(
+		const communityTipResult = await this.walletDao.sendARToAddress(
 			winstonToAr(+communityWinstonTip),
 			this.wallet,
 			tokenHolder,
 			commTipMetaTags
 		);
 
-		return communityTipTransaction;
+		return communityTipResult;
 	}
 
 	async uploadPublicFile(
@@ -84,40 +84,23 @@ export class ArDrive extends ArDriveAnonymous {
 		filePath: string,
 		destinationFileName?: string
 	): Promise<ArFSResult> {
-		// Retrieve drive ID from folder ID and ensure that it is indeed public
-		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
-		const drive = await this.arFsDao.getPublicDrive(driveId);
-		if (!drive) {
-			throw new Error(`Public drive with Drive ID ${driveId} not found!`);
-		}
-
-		const { dataTrx, metaDataTrx, fileId } = await this.arFsDao.preparePublicFileTransactions(
-			parentFolderId,
-			filePath,
-			driveId,
-			destinationFileName
-		);
-
-		const communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(dataTrx.reward);
-		const commTipTrx = await this.prepareCommunityTipTrx(communityWinstonTip);
-
-		const totalWinstonPrice = (+dataTrx.reward + +commTipTrx.reward + +metaDataTrx.reward).toString();
-
-		// TODO: Add interactive confirmation of AR price estimation
+		const winstonPrice = await this.walletDao.getWinstonPriceForBytes(this.getFileSize(filePath));
+		const communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(winstonPrice);
+		const totalWinstonPrice = (+winstonPrice + +communityWinstonTip).toString();
 
 		if (!this.walletDao.walletHasBalance(this.wallet, totalWinstonPrice)) {
 			throw new Error('Not enough AR for file upload..');
 		}
 
-		// TODO: Upload these as a bundle!
-		await Promise.all([
-			// Upload data transaction
-			this.arFsDao.uploadByChunk(dataTrx),
-			// Upload metadata transaction
-			this.arFsDao.uploadByChunk(metaDataTrx),
-			// Upload community tip transaction
-			this.walletDao.submitTransaction(commTipTrx)
-		]);
+		// TODO: Add interactive confirmation of AR price estimation
+
+		const { dataTrx, metaDataTrx, fileId } = await this.arFsDao.uploadPublicFile(
+			parentFolderId,
+			filePath,
+			destinationFileName
+		);
+
+		const communityTipTransaction = await this.sendCommunityTip(communityWinstonTip);
 
 		return Promise.resolve({
 			created: [
@@ -130,9 +113,9 @@ export class ArDrive extends ArDriveAnonymous {
 			],
 			tips: [
 				{
-					txId: commTipTrx.id,
-					recipient: commTipTrx.target,
-					winston: commTipTrx.quantity
+					txId: communityTipTransaction.id,
+					recipient: communityTipTransaction.target,
+					winston: communityTipTransaction.quantity
 				}
 			],
 			fees: {
@@ -148,41 +131,24 @@ export class ArDrive extends ArDriveAnonymous {
 		password: string,
 		destinationFileName?: string
 	): Promise<ArFSResult> {
-		// Retrieve drive ID from folder ID and ensure that it is indeed a private drive
-		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
-		const drive = await this.arFsDao.getPrivateDrive(driveId, password);
-		if (!drive) {
-			throw new Error(`Private drive with Drive ID ${driveId} not found!`);
-		}
-
-		const { dataTrx, metaDataTrx, fileId } = await this.arFsDao.preparePrivateFileTransactions(
-			parentFolderId,
-			filePath,
-			driveId,
-			password,
-			destinationFileName
-		);
-
-		const communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(dataTrx.reward);
-		const commTipTrx = await this.prepareCommunityTipTrx(communityWinstonTip);
-
-		const totalWinstonPrice = (+dataTrx.reward + +commTipTrx.reward + +metaDataTrx.reward).toString();
-
-		// TODO: Add interactive confirmation of AR price estimation
+		const winstonPrice = await this.walletDao.getWinstonPriceForBytes(this.getFileSize(filePath));
+		const communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(winstonPrice);
+		const totalWinstonPrice = (+winstonPrice + +communityWinstonTip).toString();
 
 		if (!this.walletDao.walletHasBalance(this.wallet, totalWinstonPrice)) {
 			throw new Error('Not enough AR for file upload..');
 		}
 
-		// TODO: Upload these as a bundle!
-		await Promise.all([
-			// Upload data transaction
-			this.arFsDao.uploadByChunk(dataTrx),
-			// Upload metadata transaction
-			this.arFsDao.uploadByChunk(metaDataTrx),
-			// Upload community tip transaction
-			this.walletDao.submitTransaction(commTipTrx)
-		]);
+		// TODO: Add interactive confirmation of AR price estimation
+
+		const { dataTrx, metaDataTrx, fileId } = await this.arFsDao.uploadPrivateFile(
+			parentFolderId,
+			filePath,
+			password,
+			destinationFileName
+		);
+
+		const commTipTrx = await this.sendCommunityTip(communityWinstonTip);
 
 		return Promise.resolve({
 			created: [
