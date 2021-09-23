@@ -3,7 +3,7 @@ export type PublicKey = string;
 export type SeedPhrase = string;
 
 /** TODO: Use big int library on Winston types */
-export type Winston = string;
+export type Winston = string; // TODO: make a type that checks validity
 export type NetworkReward = Winston;
 
 export type FolderID = string;
@@ -12,13 +12,16 @@ export type DriveID = string;
 
 export type CipherIV = string;
 export type DriveKey = Buffer;
+export type FileKey = Buffer;
 
 export type Bytes = number;
 export type DataContentType = string;
 
-export type TransactionID = string;
+export type TransactionID = string; // TODO: make a type that checks lengths
 
 export interface ArDriveCommunityTip {
 	tipPercentage: number;
 	minWinstonFee: number; // TODO: Align with Winston type?
 }
+
+export type TipType = 'data upload';

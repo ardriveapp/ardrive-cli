@@ -9,6 +9,7 @@ import {
 	ArFSEntity,
 	ContentType,
 	deriveDriveKey,
+	deriveFileKey,
 	driveDecrypt,
 	DrivePrivacy,
 	EntityType,
@@ -40,27 +41,39 @@ import {
 	ArFSPublicFolderTransactionData
 } from './arfs_trx_data_types';
 import { buildQuery } from './query';
-import { DriveID, FolderID, FileID, DriveKey, TransactionID } from './types';
+import { DriveID, FolderID, FileID, DriveKey, TransactionID, Winston, FileKey } from './types';
 
 export const ArFS_O_11 = '0.11';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 export interface ArFSCreateDriveResult {
-	driveTrx: Transaction;
-	rootFolderTrx: Transaction;
+	driveTrxId: TransactionID;
+	driveTrxReward: Winston;
+	rootFolderTrxId: TransactionID;
+	rootFolderTrxReward: Winston;
 	driveId: DriveID;
 	rootFolderId: FolderID;
 }
 
+// TODO: DON'T RETURN TRXS
 export interface ArFSCreateFolderResult {
 	folderTrx: Transaction;
 	folderId: FolderID;
 }
 
+// TODO: DON'T RETURN TRXS
 export interface ArFSUploadFileResult {
 	dataTrx: Transaction;
 	metaDataTrx: Transaction;
 	fileId: FileID;
+}
+
+// TODO: DON'T RETURN TRXS
+export interface ArFSUploadPrivateFileResult {
+	dataTrx: Transaction;
+	metaDataTrx: Transaction;
+	fileId: FileID;
+	fileKey: FileKey;
 }
 
 export interface ArFSCreatePrivateDriveResult extends ArFSCreateDriveResult {
@@ -263,7 +276,14 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			await driveUploader.uploadChunk();
 		}
 
-		return { driveTrx, rootFolderTrx, driveId, rootFolderId };
+		return {
+			driveTrxId: driveTrx.id,
+			driveTrxReward: driveTrx.reward,
+			rootFolderTrxId: rootFolderTrx.id,
+			rootFolderTrxReward: rootFolderTrx.reward,
+			driveId: driveId,
+			rootFolderId: rootFolderId
+		};
 	}
 
 	async createPrivateDrive(driveName: string, password: string): Promise<ArFSCreatePrivateDriveResult> {
@@ -313,7 +333,15 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		const driveKey = privateDriveData.driveKey;
 
-		return { driveTrx, rootFolderTrx, driveId, rootFolderId, driveKey };
+		return {
+			driveTrxId: driveTrx.id,
+			driveTrxReward: driveTrx.reward,
+			rootFolderTrxId: rootFolderTrx.id,
+			rootFolderTrxReward: rootFolderTrx.reward,
+			driveId: driveId,
+			rootFolderId: rootFolderId,
+			driveKey
+		};
 	}
 
 	async uploadPublicFile(
@@ -386,7 +414,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		filePath: string,
 		password: string,
 		destFileName?: string
-	): Promise<ArFSUploadFileResult> {
+	): Promise<ArFSUploadPrivateFileResult> {
 		const wallet: JWKWallet = this.wallet as JWKWallet;
 
 		// Retrieve drive ID from folder ID and ensure that it is indeed a private drive
@@ -449,7 +477,16 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			await metaDataUploader.uploadChunk();
 		}
 
-		return { dataTrx, metaDataTrx, fileId };
+		// TODO: Get fileKey from ArFSPrivateFileMetadataTransactionData somehow
+		return {
+			dataTrx,
+			metaDataTrx,
+			fileId,
+			fileKey: await deriveFileKey(
+				fileId,
+				await deriveDriveKey(password, driveId, JSON.stringify(wallet.getPrivateKey()))
+			)
+		};
 	}
 
 	async prepareArFSObjectTransaction(

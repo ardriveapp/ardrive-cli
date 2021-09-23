@@ -25,5 +25,12 @@ export const arweave = Arweave.init({
 export const walletDao = new WalletDAO(arweave);
 
 export function arDriveFactory(wallet: Wallet): ArDrive {
-	return new ArDrive(wallet, walletDao, new ArFSDAO(wallet, arweave), new ArDriveCommunityOracle(arweave));
+	return new ArDrive(
+		wallet,
+		walletDao,
+		new ArFSDAO(wallet, arweave),
+		new ArDriveCommunityOracle(arweave),
+		'ArDrive-CLI',
+		'2.0'
+	);
 }

@@ -16,23 +16,13 @@ new CLICommand({
 		console.log(`arAmount: ${options.arAmount}`);
 		console.log(`destAddress: ${options.destAddress}`);
 		console.log(await walletDao.getAddressWinstonBalance(options.destAddress));
-		const transaction = await walletDao.sendARToAddress(+options.arAmount, wallet, options.destAddress, [
+		const arTransferResult = await walletDao.sendARToAddress(+options.arAmount, wallet, options.destAddress, [
 			{ name: 'appName', value: 'ArDrive-CLI' },
 			{ name: 'appVersion', value: '2.0' },
 			{ name: 'trxType', value: 'transfer' }
 		]);
 
-		console.log(
-			JSON.stringify(
-				{
-					trxID: transaction.id,
-					winston: transaction.quantity,
-					reward: transaction.reward
-				},
-				null,
-				4
-			)
-		);
+		console.log(JSON.stringify(arTransferResult, null, 4));
 		process.exit(0);
 	}
 });

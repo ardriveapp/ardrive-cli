@@ -4,8 +4,7 @@ import * as crypto from 'crypto';
 import jwkToPem, { JWK } from 'jwk-to-pem';
 import Arweave from 'arweave';
 import * as mnemonicKeys from 'arweave-mnemonic-keys';
-import Transaction from 'arweave/node/lib/transaction';
-import { TransactionID, Winston, NetworkReward, PublicKey, ArweaveAddress, SeedPhrase, Bytes } from './types';
+import { TransactionID, Winston, NetworkReward, PublicKey, ArweaveAddress, SeedPhrase } from './types';
 
 export type ARTransferResult = {
 	trxID: TransactionID;
@@ -78,11 +77,6 @@ export class WalletDAO {
 		return +walletBalance > +winstonPrice;
 	}
 
-	// TODO: Use price regression methods from price calc when reintegrated with core
-	async getWinstonPriceForBytes(bytes: Bytes): Promise<Winston> {
-		return this.arweave.transactions.getPrice(bytes);
-	}
-
 	async sendARToAddress(
 		arAmount: number,
 		fromWallet: Wallet,
@@ -93,7 +87,7 @@ export class WalletDAO {
 			{ value: trxType = 'transfer' },
 			...otherTags
 		]: GQLTagInterface[]
-	): Promise<Transaction> {
+	): Promise<ARTransferResult> {
 		// TODO: Figure out how this works for other wallet types
 		const jwkWallet = fromWallet as JWKWallet;
 		const winston: Winston = this.arweave.ar.arToWinston(arAmount.toString());
@@ -119,7 +113,11 @@ export class WalletDAO {
 		// Submit the transaction
 		const response = await this.arweave.transactions.post(transaction);
 		if (response.status === 200 || response.status === 202) {
-			return Promise.resolve(transaction);
+			return Promise.resolve({
+				trxID: transaction.id,
+				winston,
+				reward: transaction.reward
+			});
 		} else {
 			throw new Error(`Transaction failed. Response: ${response}`);
 		}
