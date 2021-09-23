@@ -5,6 +5,8 @@ import Arweave from 'arweave';
 import { ArDriveCommunityOracle } from './community/ardrive_community_oracle';
 import { ArDrive } from './ardrive';
 import { ArFSDAO } from './arfsdao';
+import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
+import { ARDataPriceEstimator } from './utils/ar_data_price_estimator';
 
 if (require.main === module) {
 	// declare all parameters
@@ -30,6 +32,7 @@ export const cliWalletDao = new WalletDAO(cliArweave, CLI_APP_NAME, CLI_APP_VERS
 
 export function arDriveFactory(
 	wallet: Wallet,
+	priceEstimator: ARDataPriceEstimator = new ARDataPriceRegressionEstimator(),
 	walletDao: WalletDAO = cliWalletDao,
 	arweave: Arweave = cliArweave
 ): ArDrive {
@@ -39,6 +42,7 @@ export function arDriveFactory(
 		new ArFSDAO(wallet, arweave),
 		new ArDriveCommunityOracle(arweave),
 		CLI_APP_NAME,
-		CLI_APP_VERSION
+		CLI_APP_VERSION,
+		priceEstimator
 	);
 }

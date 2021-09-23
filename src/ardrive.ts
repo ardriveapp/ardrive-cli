@@ -1,10 +1,18 @@
 import { CommunityOracle } from './community/community_oracle';
-import { GQLTagInterface, winstonToAr } from 'ardrive-core-js';
+import {
+	ArFSEncryptedData,
+	deriveDriveKey,
+	deriveFileKey,
+	fileEncrypt,
+	GQLTagInterface,
+	winstonToAr
+} from 'ardrive-core-js';
 import * as fs from 'fs';
 import { ArFSDAOType, ArFSDAOAnonymous, ArFSPublicDrive, ArFSDAO } from './arfsdao';
 import { TransactionID, ArweaveAddress, Winston, DriveID, FolderID, Bytes, TipType } from './types';
-import { WalletDAO, Wallet } from './wallet_new';
+import { WalletDAO, Wallet, JWKWallet } from './wallet_new';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
+import { ARDataPriceEstimator } from './utils/ar_data_price_estimator';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 
@@ -56,7 +64,7 @@ export class ArDrive extends ArDriveAnonymous {
 		private readonly communityOracle: CommunityOracle,
 		private readonly appName: string,
 		private readonly appVersion: string,
-		private readonly priceEstimator: ARDataPriceRegressionEstimator = new ARDataPriceRegressionEstimator(true)
+		private readonly priceEstimator: ARDataPriceEstimator = new ARDataPriceRegressionEstimator(true)
 	) {
 		super(arFsDao);
 	}
@@ -95,7 +103,7 @@ export class ArDrive extends ArDriveAnonymous {
 		filePath: string,
 		destinationFileName?: string
 	): Promise<ArFSResult> {
-		const winstonPrice = await this.priceEstimator.getWinstonPriceForByteCount(this.getFileSize(filePath));
+		const winstonPrice = await this.priceEstimator.getBaseWinstonPriceForByteCount(this.getFileSize(filePath));
 		const communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(winstonPrice.toString());
 		const totalWinstonPrice = (+winstonPrice + +communityWinstonTip).toString();
 
@@ -105,7 +113,12 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// TODO: Add interactive confirmation of AR price estimation
 
-		const uploadFileResult = await this.arFsDao.uploadPublicFile(parentFolderId, filePath, destinationFileName);
+		const uploadFileResult = await this.arFsDao.uploadPublicFile(
+			parentFolderId,
+			filePath,
+			winstonPrice.toString(),
+			destinationFileName
+		);
 		const { tipData, reward: communityTipTrxReward } = await this.sendCommunityTip(communityWinstonTip);
 
 		return Promise.resolve({
@@ -126,13 +139,26 @@ export class ArDrive extends ArDriveAnonymous {
 		});
 	}
 
+	async encryptedFileSize(filePath: string, drivePassword: string, driveId: string, fileId: string): Promise<number> {
+		const wallet = this.wallet as JWKWallet;
+		const driveKey: Buffer = await deriveDriveKey(drivePassword, driveId, JSON.stringify(wallet.getPrivateKey()));
+		const fileKey: Buffer = await deriveFileKey(fileId, driveKey);
+		const fileData = fs.readFileSync(filePath);
+		const encryptedFileData: ArFSEncryptedData = await fileEncrypt(fileKey, fileData);
+		return encryptedFileData.data.byteLength;
+	}
+
 	async uploadPrivateFile(
 		parentFolderId: FolderID,
 		filePath: string,
 		password: string,
 		destinationFileName?: string
 	): Promise<ArFSResult> {
-		const winstonPrice = await this.priceEstimator.getWinstonPriceForByteCount(this.getFileSize(filePath));
+		const fakeDriveId = '00000000-0000-0000-0000-000000000000';
+		const fakeFileId = '00000000-0000-0000-0000-000000000000';
+		const winstonPrice = await this.priceEstimator.getBaseWinstonPriceForByteCount(
+			await this.encryptedFileSize(filePath, password, fakeDriveId, fakeFileId)
+		);
 		const communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(winstonPrice.toString());
 		const totalWinstonPrice = (+winstonPrice + +communityWinstonTip).toString();
 
@@ -146,6 +172,7 @@ export class ArDrive extends ArDriveAnonymous {
 			parentFolderId,
 			filePath,
 			password,
+			winstonPrice.toString(),
 			destinationFileName
 		);
 

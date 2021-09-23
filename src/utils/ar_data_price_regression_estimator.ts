@@ -2,17 +2,15 @@ import { GatewayOracle } from './gateway_oracle';
 import type { ArweaveOracle } from './arweave_oracle';
 import { ARDataPriceRegression } from './data_price_regression';
 import { ARDataPrice } from './ar_data_price';
-import type { ARDataPriceEstimator } from './ar_data_price_estimator';
+import { AbstractARDataPriceAndCapacityEstimator } from './ar_data_price_estimator';
 import type { ArDriveCommunityTip } from '../types';
-
-export const arPerWinston = 0.000_000_000_001;
 
 /**
  * A utility class for Arweave data pricing estimation.
  * Fetches Arweave data prices to build a linear regression model to use for estimations.
  */
-export class ARDataPriceRegressionEstimator implements ARDataPriceEstimator {
-	private static readonly sampleByteVolumes = [
+export class ARDataPriceRegressionEstimator extends AbstractARDataPriceAndCapacityEstimator {
+	public static readonly sampleByteVolumes = [
 		Math.pow(2, 10) * 100, // 100 KiB
 		Math.pow(2, 20) * 100, // 100 MiB
 		Math.pow(2, 30) * 10 // 10 GiB
@@ -37,6 +35,7 @@ export class ARDataPriceRegressionEstimator implements ARDataPriceEstimator {
 		private readonly oracle: ArweaveOracle = new GatewayOracle(),
 		private readonly byteVolumes: number[] = ARDataPriceRegressionEstimator.sampleByteVolumes
 	) {
+		super();
 		if (byteVolumes.length < 2) {
 			throw new Error('Byte volume array must contain at least 2 values to calculate regression');
 		}
@@ -85,7 +84,7 @@ export class ARDataPriceRegressionEstimator implements ARDataPriceEstimator {
 	 *
 	 * @remarks Will fetch pricing data for regression modeling if a regression has not yet been run.
 	 */
-	public async getWinstonPriceForByteCount(byteCount: number): Promise<number> {
+	public async getBaseWinstonPriceForByteCount(byteCount: number): Promise<number> {
 		// Lazily generate the price predictor
 		if (!this.predictor) {
 			await this.refreshPriceData();
@@ -96,23 +95,6 @@ export class ARDataPriceRegressionEstimator implements ARDataPriceEstimator {
 
 		const predictedPrice = this.predictor.predictedPriceForByteCount(byteCount);
 		return predictedPrice.winstonPrice;
-	}
-
-	/**
-	 * Estimates the price in AR for a given byte count
-	 *
-	 * @remarks Will fetch pricing data for regression modeling if a regression has not yet been run.
-	 */
-	public async getARPriceForByteCount(
-		byteCount: number,
-		{ minWinstonFee, tipPercentage }: ArDriveCommunityTip
-	): Promise<number> {
-		const winstonPrice = await this.getWinstonPriceForByteCount(byteCount);
-		const communityWinstonFee = Math.max(winstonPrice * tipPercentage, minWinstonFee);
-
-		const totalWinstonPrice = winstonPrice + communityWinstonFee;
-
-		return totalWinstonPrice * arPerWinston;
 	}
 
 	/**
@@ -158,17 +140,6 @@ export class ARDataPriceRegressionEstimator implements ARDataPriceEstimator {
 			}
 		}
 
-		const winstonPrice = arPrice / arPerWinston;
-
-		const communityWinstonFee = Math.max(winstonPrice - winstonPrice / (1 + tipPercentage), minWinstonFee);
-
-		const winstonPriceWithoutFee = Math.round(winstonPrice - communityWinstonFee);
-
-		if (winstonPriceWithoutFee > 0) {
-			return this.getByteCountForWinston(winstonPriceWithoutFee);
-		}
-
-		// Specified `arPrice` does not cover provided `minimumWinstonFee`
-		return 0;
+		return super.getByteCountForAR(arPrice, { minWinstonFee, tipPercentage });
 	}
 }

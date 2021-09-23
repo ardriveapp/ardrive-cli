@@ -35,7 +35,7 @@ describe('ARDataPriceEstimator class', () => {
 	});
 
 	it('makes three oracle calls after the first price estimation request', async () => {
-		await calculator.getWinstonPriceForByteCount(0);
+		await calculator.getBaseWinstonPriceForByteCount(0);
 		expect(spyedOracle.getWinstonPriceForByteCount.calledThrice).to.be.true;
 	});
 
@@ -61,7 +61,7 @@ describe('ARDataPriceEstimator class', () => {
 	});
 
 	it('getWinstonPriceForByteCount function returns the expected value', async () => {
-		const actualWinstonPriceEstimation = await calculator.getWinstonPriceForByteCount(100);
+		const actualWinstonPriceEstimation = await calculator.getBaseWinstonPriceForByteCount(100);
 		expect(actualWinstonPriceEstimation).to.equal(100);
 	});
 

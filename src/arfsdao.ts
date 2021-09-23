@@ -53,6 +53,7 @@ import {
 	DEFAULT_APP_VERSION,
 	CURRENT_ARFS_VERSION
 } from './types';
+import { CreateTransactionInterface } from 'arweave/node/common';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 export interface ArFSCreateDriveResult {
@@ -363,6 +364,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	async uploadPublicFile(
 		parentFolderId: FolderID,
 		filePath: string,
+		reward: Winston,
 		destFileName?: string
 	): Promise<ArFSUploadFileResult> {
 		// Retrieve drive ID from folder ID and ensure that it is indeed public
@@ -392,7 +394,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			new ArFSPublicFileDataTransactionData(fileData),
 			dataContentType
 		);
-		const dataTrx = await this.prepareArFSObjectTransaction(fileDataPrototype);
+		const dataTrx = await this.prepareArFSObjectTransaction(fileDataPrototype, reward);
 
 		// Upload file data
 		const dataUploader = await this.arweave.transactions.getUploader(dataTrx);
@@ -435,6 +437,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		parentFolderId: FolderID,
 		filePath: string,
 		password: string,
+		reward: Winston,
 		destFileName?: string
 	): Promise<ArFSUploadPrivateFileResult> {
 		const wallet: JWKWallet = this.wallet as JWKWallet;
@@ -465,7 +468,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const fileDataPrototype = new ArFSPrivateFileDataPrototype(
 			await ArFSPrivateFileDataTransactionData.from(fileData, fileId, driveId, password, wallet.getPrivateKey())
 		);
-		const dataTrx = await this.prepareArFSObjectTransaction(fileDataPrototype);
+		const dataTrx = await this.prepareArFSObjectTransaction(fileDataPrototype, reward);
 
 		// Upload file data
 		const dataUploader = await this.arweave.transactions.getUploader(dataTrx);
@@ -515,15 +518,21 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 	async prepareArFSObjectTransaction(
 		objectMetaData: ArFSObjectMetadataPrototype,
+		reward?: Winston,
 		otherTags: GQLTagInterface[] = []
 	): Promise<Transaction> {
 		const wallet = this.wallet as JWKWallet;
 
 		// Create transaction
-		const transaction = await this.arweave.createTransaction(
-			{ data: objectMetaData.objectData.asTransactionData() },
-			wallet.getPrivateKey()
-		);
+		const trxAttributes: Partial<CreateTransactionInterface> = {
+			data: objectMetaData.objectData.asTransactionData()
+		};
+
+		// If we provided our own reward setting, use it now
+		if (reward) {
+			trxAttributes.reward = reward;
+		}
+		const transaction = await this.arweave.createTransaction(trxAttributes, wallet.getPrivateKey());
 
 		// Add baseline ArFS Tags
 		transaction.addTag('App-Name', this.appName);
