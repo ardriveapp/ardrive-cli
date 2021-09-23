@@ -18,6 +18,10 @@ export interface TipData {
 	txId: TransactionID;
 	recipient: ArweaveAddress;
 	winston: Winston;
+}
+
+export interface TipResult {
+	tipData: TipData;
 	reward: Winston;
 }
 
@@ -62,7 +66,7 @@ export class ArDrive extends ArDriveAnonymous {
 		return fs.statSync(filePath).size;
 	}
 
-	async sendCommunityTip(communityWinstonTip: Winston): Promise<TipData> {
+	async sendCommunityTip(communityWinstonTip: Winston): Promise<TipResult> {
 		const tokenHolder: ArweaveAddress = await this.communityOracle.selectTokenHolder();
 
 		const transferResult = await this.walletDao.sendARToAddress(
@@ -73,9 +77,7 @@ export class ArDrive extends ArDriveAnonymous {
 		);
 
 		return {
-			txId: transferResult.trxID,
-			recipient: tokenHolder,
-			winston: communityWinstonTip,
+			tipData: { txId: transferResult.trxID, recipient: tokenHolder, winston: communityWinstonTip },
 			reward: transferResult.reward
 		};
 	}
@@ -104,7 +106,7 @@ export class ArDrive extends ArDriveAnonymous {
 		// TODO: Add interactive confirmation of AR price estimation
 
 		const uploadFileResult = await this.arFsDao.uploadPublicFile(parentFolderId, filePath, destinationFileName);
-		const communityTipData = await this.sendCommunityTip(communityWinstonTip);
+		const { tipData, reward: communityTipTrxReward } = await this.sendCommunityTip(communityWinstonTip);
 
 		return Promise.resolve({
 			created: [
@@ -115,11 +117,11 @@ export class ArDrive extends ArDriveAnonymous {
 					entityId: uploadFileResult.fileId
 				}
 			],
-			tips: [communityTipData],
+			tips: [tipData],
 			fees: {
 				[uploadFileResult.metaDataTrxId]: +uploadFileResult.metaDataTrxReward,
 				[uploadFileResult.dataTrxId]: +uploadFileResult.dataTrxReward,
-				[communityTipData.txId]: +communityTipData.reward
+				[tipData.txId]: +communityTipTrxReward
 			}
 		});
 	}
@@ -147,7 +149,7 @@ export class ArDrive extends ArDriveAnonymous {
 			destinationFileName
 		);
 
-		const communityTipData = await this.sendCommunityTip(communityWinstonTip);
+		const { tipData, reward: communityTipTrxReward } = await this.sendCommunityTip(communityWinstonTip);
 
 		return Promise.resolve({
 			created: [
@@ -159,11 +161,11 @@ export class ArDrive extends ArDriveAnonymous {
 					key: uploadFileResult.fileKey.toString('hex')
 				}
 			],
-			tips: [communityTipData],
+			tips: [tipData],
 			fees: {
 				[uploadFileResult.metaDataTrxId]: +uploadFileResult.metaDataTrxReward,
 				[uploadFileResult.dataTrxId]: +uploadFileResult.dataTrxReward,
-				[communityTipData.txId]: +communityTipData.reward
+				[tipData.txId]: +communityTipTrxReward
 			}
 		});
 	}
