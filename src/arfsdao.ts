@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
-import * as fs from 'fs';
 import type { JWKWallet, Wallet } from './wallet_new';
 import Arweave from 'arweave';
 import { v4 as uuidv4 } from 'uuid';
@@ -13,12 +12,10 @@ import {
 	driveDecrypt,
 	DrivePrivacy,
 	EntityType,
-	extToMime,
 	GQLEdgeInterface,
 	GQLTagInterface,
 	Utf8ArrayToStr
 } from 'ardrive-core-js';
-import { basename } from 'path';
 import {
 	ArFSPublicFileDataPrototype,
 	ArFSObjectMetadataPrototype,
@@ -195,7 +192,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		parentFolderId?: FolderID,
 		syncParentFolderId = true
 	): Promise<ArFSCreateFolderResult> {
-		if (parentFolderId) {
+		if (parentFolderId && syncParentFolderId) {
 			// Assert that drive ID is consistent with parent folder ID
 			const actualDriveId = await this.getDriveIdForFolderId(parentFolderId);
 
