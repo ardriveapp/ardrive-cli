@@ -7,7 +7,8 @@ import {
 	ArFSDAOAnonymous,
 	ArFSDAOType,
 	ArFSPublicFolder,
-	ArFSPrivateFolder
+	ArFSPrivateFolder,
+	ArFSFolderEntity
 } from './arfsdao';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
@@ -61,6 +62,10 @@ export class ArDriveAnonymous extends ArDriveType {
 
 	async getChildrenTxIds(folderId: FolderID): Promise<string[]> {
 		return this.arFsDao.getChildrenOfFolderTxIds(folderId);
+	}
+
+	async getAllFoldersOfDrive(driveId: DriveID): Promise<ArFSFolderEntity[]> {
+		return this.arFsDao.getAllFoldersOfPublicDrive(driveId);
 	}
 }
 
