@@ -21,6 +21,7 @@ export abstract class ArFSObjectMetadataPrototype {
 	abstract protectedTags: string[];
 	abstract objectData: ArFSObjectTransactionData;
 	abstract addTagsToTransaction(transaction: Transaction): void;
+	abstract addTagsToDataItem(tags: GQLTagInterface[]): void;
 
 	// Implementation should throw if any protected tags are identified
 	assertProtectedTags(tags: GQLTagInterface[]): void {
@@ -49,6 +50,14 @@ export abstract class ArFSDriveMetaDataPrototype extends ArFSObjectMetadataProto
 		transaction.addTag('Unix-Time', this.unixTime.toString());
 		transaction.addTag('Drive-Id', this.driveId);
 		transaction.addTag('Drive-Privacy', this.privacy);
+	}
+
+	addTagsToDataItem(tags: GQLTagInterface[]): void {
+		tags.push({ name: 'Content-Type', value: this.contentType });
+		tags.push({ name: 'Entity-Type', value: 'drive' }),
+			tags.push({ name: 'Unix-Time', value: this.unixTime.toString() }),
+			tags.push({ name: 'Drive-Id', value: this.driveId }),
+			tags.push({ name: 'Drive-Privacy', value: this.privacy });
 	}
 }
 

@@ -38,6 +38,7 @@ import {
 	ArFSPublicFolderTransactionData
 } from './arfs_trx_data_types';
 import { buildQuery } from './query';
+import { ArweaveSigner, createData, DataItem } from 'arbundles';
 
 export const ArFS_O_11 = '0.11';
 
@@ -272,6 +273,8 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	}
 
 	async createPrivateDrive(driveName: string, password: string): Promise<ArFSCreatePrivateDriveResult> {
+		const items: DataItem[] = [];
+
 		// Generate a new drive ID  for the new drive
 		const driveId = uuidv4();
 
@@ -293,6 +296,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		// Create a drive metadata transaction
 		const driveMetaData = new ArFSPrivateDriveMetaDataPrototype(unixTime, driveId, privateDriveData);
+
 		const driveTrx = await this.prepareArFSObjectTransaction(driveMetaData);
 
 		// Create a root folder metadata transaction
@@ -489,6 +493,39 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		// Sign the transaction
 		await this.arweave.transactions.sign(transaction, wallet.getPrivateKey());
 		return transaction;
+	}
+
+	async prepareArFSObjectDataItem(
+		objectMetaData: ArFSObjectMetadataPrototype,
+		appName = 'ArDrive-Core',
+		appVersion = '1.0',
+		arFSVersion = ArFS_O_11,
+		otherTags: GQLTagInterface[] = []
+	): Promise<DataItem> {
+		const wallet = this.wallet as JWKWallet;
+
+		const signer = new ArweaveSigner(wallet.getPrivateKey());
+
+		// Add baseline ArFS Tags
+		const tags: GQLTagInterface[] = [
+			{ name: 'App-Name', value: appName },
+			{ name: 'App-Version', value: appVersion },
+			{ name: 'ArFS', value: arFSVersion }
+		];
+		// Add object-specific tags
+		objectMetaData.addTagsToDataItem(tags);
+
+		// Enforce that other tags are not protected
+		objectMetaData.assertProtectedTags(otherTags);
+		otherTags.forEach((tag) => {
+			tags.push({ name: tag.name, value: tag.value });
+		});
+
+		// Sign the transaction
+		const dataItem = createData(objectMetaData.objectData.asTransactionData(), signer, { tags });
+		await dataItem.sign(signer);
+
+		return dataItem;
 	}
 
 	async getPrivateDrive(driveId: string): Promise<ArFSPrivateDrive> {
