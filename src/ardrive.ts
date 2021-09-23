@@ -95,6 +95,13 @@ export class ArDrive extends ArDriveAnonymous {
 		filePath: string,
 		destinationFileName?: string
 	): Promise<ArFSResult> {
+		// Retrieve drive ID from folder ID and ensure that it is indeed public
+		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
+		const drive = await this.arFsDao.getPublicDrive(driveId);
+		if (!drive) {
+			throw new Error(`Public drive with Drive ID ${driveId} not found!`);
+		}
+
 		const winstonPrice = await this.priceEstimator.getWinstonPriceForByteCount(this.getFileSize(filePath));
 		const communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(winstonPrice.toString());
 		const totalWinstonPrice = (+winstonPrice + +communityWinstonTip).toString();
@@ -105,7 +112,12 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// TODO: Add interactive confirmation of AR price estimation
 
-		const uploadFileResult = await this.arFsDao.uploadPublicFile(parentFolderId, filePath, destinationFileName);
+		const uploadFileResult = await this.arFsDao.uploadPublicFile(
+			parentFolderId,
+			filePath,
+			driveId,
+			destinationFileName
+		);
 		const { tipData, reward: communityTipTrxReward } = await this.sendCommunityTip(communityWinstonTip);
 
 		return Promise.resolve({
@@ -132,6 +144,13 @@ export class ArDrive extends ArDriveAnonymous {
 		password: string,
 		destinationFileName?: string
 	): Promise<ArFSResult> {
+		// Retrieve drive ID from folder ID and ensure that it is indeed a private drive
+		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
+		const drive = await this.arFsDao.getPrivateDrive(driveId, password);
+		if (!drive) {
+			throw new Error(`Private drive with Drive ID ${driveId} not found!`);
+		}
+
 		const winstonPrice = await this.priceEstimator.getWinstonPriceForByteCount(this.getFileSize(filePath));
 		const communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(winstonPrice.toString());
 		const totalWinstonPrice = (+winstonPrice + +communityWinstonTip).toString();
@@ -146,6 +165,7 @@ export class ArDrive extends ArDriveAnonymous {
 			parentFolderId,
 			filePath,
 			password,
+			driveId,
 			destinationFileName
 		);
 

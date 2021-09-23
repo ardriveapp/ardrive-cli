@@ -343,15 +343,9 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	async uploadPublicFile(
 		parentFolderId: FolderID,
 		filePath: string,
+		driveId: DriveID,
 		destFileName?: string
 	): Promise<ArFSUploadFileResult> {
-		// Retrieve drive ID from folder ID and ensure that it is indeed public
-		const driveId = await this.getDriveIdForFolderId(parentFolderId);
-		const drive = await this.getPublicDrive(driveId);
-		if (!drive) {
-			throw new Error(`Public drive with Drive ID ${driveId} not found!`);
-		}
-
 		// Establish destination file name
 		const destinationFileName = destFileName ?? basename(filePath);
 
@@ -415,16 +409,10 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		parentFolderId: FolderID,
 		filePath: string,
 		password: string,
+		driveId: DriveID,
 		destFileName?: string
 	): Promise<ArFSUploadPrivateFileResult> {
 		const wallet: JWKWallet = this.wallet as JWKWallet;
-
-		// Retrieve drive ID from folder ID and ensure that it is indeed a private drive
-		const driveId = await this.getDriveIdForFolderId(parentFolderId);
-		const drive = await this.getPrivateDrive(driveId, password);
-		if (!drive) {
-			throw new Error(`Private drive with Drive ID ${driveId} not found!`);
-		}
 
 		// Establish destination file name
 		const destinationFileName = destFileName ?? basename(filePath);
