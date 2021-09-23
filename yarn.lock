@@ -779,6 +779,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/regression@npm:^2.0.2":
+  version: 2.0.2
+  resolution: "@types/regression@npm:2.0.2"
+  checksum: fa577d48c5a1eae5c9df305622d1104e7d457fb0d2802189d2228f70bf199b287f16201eaac363ba3550ac5fbd67b753217c50b5d286700e69479deb4ca4d72d
+  languageName: node
+  linkType: hard
+
 "@types/sinon-chai@npm:^3.2.4":
   version: 3.2.5
   resolution: "@types/sinon-chai@npm:3.2.5"
@@ -1478,6 +1485,7 @@ __metadata:
     "@types/node-fetch": 2.5.3
     "@types/prompt-sync": ^4.1.0
     "@types/prompts": ^2.0.9
+    "@types/regression": ^2.0.2
     "@types/sinon": ^10.0.2
     "@types/source-map-support": ^0
     "@types/uuid": ^8.3.0
@@ -1506,6 +1514,7 @@ __metadata:
     prompt-password: ^1.2.0
     prompt-sync: ^4.2.0
     prompts: ^2.4.0
+    regression: ^2.0.1
     rimraf: ^3.0.2
     sinon: ^11.1.2
     smartweave: ^0.4.45
@@ -5974,6 +5983,13 @@ __metadata:
   version: 3.1.0
   resolution: "regexpp@npm:3.1.0"
   checksum: 69d0ce6b449cf35d3732d6341a1e70850360ffc619f8eef10629871c462e614853fffb80d3f00fc17cd0bb5b8f34b0cde5be4b434e72c0eb3fbba2360c8b5ac4
+  languageName: node
+  linkType: hard
+
+"regression@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "regression@npm:2.0.1"
+  checksum: 61feb6f23b2715956219b1892ac985e64e47a0c5e2fa9e5361ea02d8b068c3a24637f7b33f9bc5424aac086316d2671b0dfa9a64fa8372200d757c65bc1e953c
   languageName: node
   linkType: hard
 

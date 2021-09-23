@@ -9,7 +9,7 @@ import {
 	GetAllRevisionsParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
-import { arDriveFactory, arweave } from '..';
+import { arDriveFactory, cliArweave, cliWalletDao } from '..';
 
 /* eslint-disable no-console */
 
@@ -23,7 +23,7 @@ new CLICommand({
 		WalletFileParameter
 	],
 	async action(options) {
-		const context = new CommonContext(options);
+		const context = new CommonContext(options, cliWalletDao);
 		const wallet = await context.getWallet().catch(() => null);
 		const result = await (function () {
 			if (wallet) {
@@ -32,7 +32,7 @@ new CLICommand({
 				// const getAllRevisions: boolean = options.getAllRevisions;
 				return arDrive.getPrivateDrive(driveId, options.drivePassword /*, getAllRevisions*/);
 			} else {
-				const arDrive = new ArDriveAnonymous(new ArFSDAOAnonymous(arweave));
+				const arDrive = new ArDriveAnonymous(new ArFSDAOAnonymous(cliArweave));
 				const driveId: string = options.driveId;
 				// const getAllRevisions: boolean = options.getAllRevisions;
 				return arDrive.getPublicDrive(driveId /*, getAllRevisions*/);

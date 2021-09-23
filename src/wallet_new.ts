@@ -4,8 +4,16 @@ import * as crypto from 'crypto';
 import jwkToPem, { JWK } from 'jwk-to-pem';
 import Arweave from 'arweave';
 import * as mnemonicKeys from 'arweave-mnemonic-keys';
-import Transaction from 'arweave/node/lib/transaction';
-import { TransactionID, Winston, NetworkReward, PublicKey, ArweaveAddress, SeedPhrase, Bytes } from './types';
+import {
+	TransactionID,
+	Winston,
+	NetworkReward,
+	PublicKey,
+	ArweaveAddress,
+	SeedPhrase,
+	DEFAULT_APP_NAME,
+	DEFAULT_APP_VERSION
+} from './types';
 
 export type ARTransferResult = {
 	trxID: TransactionID;
@@ -53,7 +61,11 @@ export class JWKWallet implements Wallet {
 }
 
 export class WalletDAO {
-	constructor(private readonly arweave: Arweave) {}
+	constructor(
+		private readonly arweave: Arweave,
+		private readonly appName = DEFAULT_APP_NAME,
+		private readonly appVersion = DEFAULT_APP_VERSION
+	) {}
 
 	async generateSeedPhrase(): Promise<SeedPhrase> {
 		const seedPhrase: SeedPhrase = await mnemonicKeys.generateMnemonic();
@@ -78,22 +90,17 @@ export class WalletDAO {
 		return +walletBalance > +winstonPrice;
 	}
 
-	// TODO: Use price regression methods from price calc when reintegrated with core
-	async getWinstonPriceForBytes(bytes: Bytes): Promise<Winston> {
-		return this.arweave.transactions.getPrice(bytes);
-	}
-
-	async prepareARToAddressTransaction(
+	async sendARToAddress(
 		arAmount: number,
 		fromWallet: Wallet,
 		toAddress: ArweaveAddress,
 		[
-			{ value: appName = 'ArDrive-Core' },
-			{ value: appVersion = '1.0' },
+			{ value: appName = this.appName },
+			{ value: appVersion = this.appVersion },
 			{ value: trxType = 'transfer' },
 			...otherTags
 		]: GQLTagInterface[]
-	): Promise<Transaction> {
+	): Promise<ARTransferResult> {
 		// TODO: Figure out how this works for other wallet types
 		const jwkWallet = fromWallet as JWKWallet;
 		const winston: Winston = this.arweave.ar.arToWinston(arAmount.toString());
@@ -116,14 +123,14 @@ export class WalletDAO {
 		// Sign file
 		await this.arweave.transactions.sign(transaction, jwkWallet.getPrivateKey());
 
-		return transaction;
-	}
-
-	async submitTransaction(transaction: Transaction): Promise<Transaction> {
 		// Submit the transaction
 		const response = await this.arweave.transactions.post(transaction);
 		if (response.status === 200 || response.status === 202) {
-			return Promise.resolve(transaction);
+			return Promise.resolve({
+				trxID: transaction.id,
+				winston,
+				reward: transaction.reward
+			});
 		} else {
 			throw new Error(`Transaction failed. Response: ${response}`);
 		}

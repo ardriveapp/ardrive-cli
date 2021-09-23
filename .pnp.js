@@ -46,6 +46,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/node-fetch", "npm:2.5.3"],
             ["@types/prompt-sync", "npm:4.1.0"],
             ["@types/prompts", "npm:2.4.0"],
+            ["@types/regression", "npm:2.0.2"],
             ["@types/sinon", "npm:10.0.2"],
             ["@types/source-map-support", "npm:0.5.4"],
             ["@types/uuid", "npm:8.3.0"],
@@ -74,6 +75,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["prompt-password", "npm:1.2.0"],
             ["prompt-sync", "npm:4.2.0"],
             ["prompts", "npm:2.4.0"],
+            ["regression", "npm:2.0.1"],
             ["rimraf", "npm:3.0.2"],
             ["sinon", "npm:11.1.2"],
             ["smartweave", "npm:0.4.45"],
@@ -992,6 +994,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD",
         }]
       ]],
+      ["@types/regression", [
+        ["npm:2.0.2", {
+          "packageLocation": "./.yarn/cache/@types-regression-npm-2.0.2-a0bd52194b-fa577d48c5.zip/node_modules/@types/regression/",
+          "packageDependencies": [
+            ["@types/regression", "npm:2.0.2"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
       ["@types/sinon", [
         ["npm:10.0.2", {
           "packageLocation": "./.yarn/cache/@types-sinon-npm-10.0.2-2a54516cee-44d149b0ba.zip/node_modules/@types/sinon/",
@@ -1827,6 +1838,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/node-fetch", "npm:2.5.3"],
             ["@types/prompt-sync", "npm:4.1.0"],
             ["@types/prompts", "npm:2.4.0"],
+            ["@types/regression", "npm:2.0.2"],
             ["@types/sinon", "npm:10.0.2"],
             ["@types/source-map-support", "npm:0.5.4"],
             ["@types/uuid", "npm:8.3.0"],
@@ -1855,6 +1867,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["prompt-password", "npm:1.2.0"],
             ["prompt-sync", "npm:4.2.0"],
             ["prompts", "npm:2.4.0"],
+            ["regression", "npm:2.0.1"],
             ["rimraf", "npm:3.0.2"],
             ["sinon", "npm:11.1.2"],
             ["smartweave", "npm:0.4.45"],
@@ -6906,6 +6919,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/regexpp-npm-3.1.0-94a1868d49-69d0ce6b44.zip/node_modules/regexpp/",
           "packageDependencies": [
             ["regexpp", "npm:3.1.0"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["regression", [
+        ["npm:2.0.1", {
+          "packageLocation": "./.yarn/cache/regression-npm-2.0.1-50bfc2587a-61feb6f23b.zip/node_modules/regression/",
+          "packageDependencies": [
+            ["regression", "npm:2.0.1"]
           ],
           "linkType": "HARD",
         }]

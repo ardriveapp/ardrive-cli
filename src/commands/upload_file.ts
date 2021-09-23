@@ -1,3 +1,4 @@
+import { GatewayOracle } from 'ardrive-core-js';
 import { arDriveFactory } from '..';
 import { CLICommand } from '../CLICommand';
 import {
@@ -10,6 +11,9 @@ import {
 	WalletFileParameter
 } from '../parameter_declarations';
 import { readJWKFile } from '../utils';
+import { ARDataPriceEstimator } from '../utils/ar_data_price_estimator';
+import { ARDataPriceOracleEstimator } from '../utils/ar_data_price_oracle_estimator';
+import { ARDataPriceRegressionEstimator } from '../utils/ar_data_price_regression_estimator';
 
 /* eslint-disable no-console */
 
@@ -74,7 +78,15 @@ new CLICommand({
 		})();
 		if (filesToUpload.length) {
 			const wallet = readJWKFile(options.walletFile);
-			const arDrive = arDriveFactory(wallet);
+			const priceEstimator: ARDataPriceEstimator = (() => {
+				if (filesToUpload.length > ARDataPriceRegressionEstimator.sampleByteVolumes.length) {
+					return new ARDataPriceRegressionEstimator(false, new GatewayOracle());
+				} else {
+					return new ARDataPriceOracleEstimator();
+				}
+			})();
+
+			const arDrive = arDriveFactory(wallet, priceEstimator);
 			await Promise.all(
 				filesToUpload.map(async (fileToUpload) => {
 					if (!fileToUpload.parentFolderId || !fileToUpload.localFilePath) {
