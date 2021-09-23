@@ -7,7 +7,7 @@ import {
 	WalletFileParameter
 } from '../parameter_declarations';
 import { Wallet } from '../wallet_new';
-import { arDriveFactory } from '..';
+import { arDriveFactory, cliWalletDao } from '..';
 
 /* eslint-disable no-console */
 
@@ -15,7 +15,7 @@ new CLICommand({
 	name: 'create-drive',
 	parameters: [WalletFileParameter, SeedPhraseParameter, DriveNameParameter, DrivePasswordParameter],
 	async action(options) {
-		const context = new CommonContext(options);
+		const context = new CommonContext(options, cliWalletDao);
 		const wallet: Wallet = await context.getWallet();
 		const ardrive = arDriveFactory(wallet);
 		const createDriveResult = await (async function () {

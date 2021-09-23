@@ -1,4 +1,4 @@
-import { arweave } from '..';
+import { cliArweave } from '..';
 import { CLICommand } from '../CLICommand';
 import { ConfirmationsParameter, TransactionIdParameter } from '../parameter_declarations';
 import { fetchMempool } from '../utils';
@@ -19,7 +19,7 @@ new CLICommand({
 			process.exit(0);
 		}
 
-		const confStatus = (await arweave.transactions.getStatus(txId)).confirmed;
+		const confStatus = (await cliArweave.transactions.getStatus(txId)).confirmed;
 
 		if (!confStatus?.block_height) {
 			console.log(`${txId}: Not found`);

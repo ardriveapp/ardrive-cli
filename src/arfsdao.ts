@@ -38,10 +38,22 @@ import {
 	ArFSPublicFolderTransactionData
 } from './arfs_trx_data_types';
 import { buildQuery } from './query';
-import { DriveID, FolderID, FileID, DriveKey, TransactionID, Winston, FileKey } from './types';
 import { FsFile } from './fsFile';
 
 export const ArFS_O_11 = '0.11';
+import {
+	DriveID,
+	FolderID,
+	FileID,
+	DriveKey,
+	TransactionID,
+	Winston,
+	FileKey,
+	DEFAULT_APP_NAME,
+	DEFAULT_APP_VERSION,
+	CURRENT_ARFS_VERSION
+} from './types';
+import { CreateTransactionInterface } from 'arweave/node/common';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 export interface ArFSCreateDriveResult {
@@ -77,13 +89,19 @@ export interface ArFSCreatePrivateDriveResult extends ArFSCreateDriveResult {
 
 export abstract class ArFSDAOType {
 	protected abstract readonly arweave: Arweave;
+	protected abstract readonly appName: string;
+	protected abstract readonly appVersion: string;
 }
 
 /**
  * Performs all ArFS spec operations that do NOT require a wallet for signing or decryption
  */
 export class ArFSDAOAnonymous extends ArFSDAOType {
-	constructor(protected readonly arweave: Arweave) {
+	constructor(
+		protected readonly arweave: Arweave,
+		protected appName = DEFAULT_APP_NAME,
+		protected appVersion = DEFAULT_APP_VERSION
+	) {
 		super();
 	}
 
@@ -182,8 +200,13 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 
 export class ArFSDAO extends ArFSDAOAnonymous {
 	// TODO: Can we abstract Arweave type(s)?
-	constructor(private readonly wallet: Wallet, arweave: Arweave) {
-		super(arweave);
+	constructor(
+		private readonly wallet: Wallet,
+		arweave: Arweave,
+		protected appName = DEFAULT_APP_NAME,
+		protected appVersion = DEFAULT_APP_VERSION
+	) {
+		super(arweave, appName, appVersion);
 	}
 
 	async createPublicFolder(
@@ -342,6 +365,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		parentFolderId: FolderID,
 		wrappedFile: FsFile,
 		driveId: DriveID,
+		reward: Winston,
 		destFileName?: string
 	): Promise<ArFSUploadFileResult> {
 		// Establish destination file name
@@ -364,7 +388,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			new ArFSPublicFileDataTransactionData(fileData),
 			dataContentType
 		);
-		const dataTrx = await this.prepareArFSObjectTransaction(fileDataPrototype);
+		const dataTrx = await this.prepareArFSObjectTransaction(fileDataPrototype, reward);
 
 		// Upload file data
 		const dataUploader = await this.arweave.transactions.getUploader(dataTrx);
@@ -408,6 +432,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		wrappedFile: FsFile,
 		password: string,
 		driveId: DriveID,
+		reward: Winston,
 		destFileName?: string
 	): Promise<ArFSUploadPrivateFileResult> {
 		const wallet: JWKWallet = this.wallet as JWKWallet;
@@ -432,7 +457,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const fileDataPrototype = new ArFSPrivateFileDataPrototype(
 			await ArFSPrivateFileDataTransactionData.from(fileData, fileId, driveId, password, wallet.getPrivateKey())
 		);
-		const dataTrx = await this.prepareArFSObjectTransaction(fileDataPrototype);
+		const dataTrx = await this.prepareArFSObjectTransaction(fileDataPrototype, reward);
 
 		// Upload file data
 		const dataUploader = await this.arweave.transactions.getUploader(dataTrx);
@@ -482,23 +507,26 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 	async prepareArFSObjectTransaction(
 		objectMetaData: ArFSObjectMetadataPrototype,
-		appName = 'ArDrive-Core',
-		appVersion = '1.0',
-		arFSVersion = ArFS_O_11,
+		reward?: Winston,
 		otherTags: GQLTagInterface[] = []
 	): Promise<Transaction> {
 		const wallet = this.wallet as JWKWallet;
 
 		// Create transaction
-		const transaction = await this.arweave.createTransaction(
-			{ data: objectMetaData.objectData.asTransactionData() },
-			wallet.getPrivateKey()
-		);
+		const trxAttributes: Partial<CreateTransactionInterface> = {
+			data: objectMetaData.objectData.asTransactionData()
+		};
+
+		// If we provided our own reward setting, use it now
+		if (reward) {
+			trxAttributes.reward = reward;
+		}
+		const transaction = await this.arweave.createTransaction(trxAttributes, wallet.getPrivateKey());
 
 		// Add baseline ArFS Tags
-		transaction.addTag('App-Name', appName);
-		transaction.addTag('App-Version', appVersion);
-		transaction.addTag('ArFS', arFSVersion);
+		transaction.addTag('App-Name', this.appName);
+		transaction.addTag('App-Version', this.appVersion);
+		transaction.addTag('ArFS', CURRENT_ARFS_VERSION);
 
 		// Add object-specific tags
 		objectMetaData.addTagsToTransaction(transaction);
