@@ -965,6 +965,7 @@ export class ArFSPrivateDrive extends ArFSEntity implements ArFSDriveEntity {
 		super(appName, appVersion, arFS, contentType, driveId, entityType, name, 0, txId, unixTime);
 	}
 }
+
 export class ArFSPrivateDriveBuilder {
 	appName?: string;
 	appVersion?: string;
@@ -1037,6 +1038,150 @@ export abstract class ArFSFileOrFolderEntity extends ArFSEntity implements ArFSF
 		unixTime: number
 	) {
 		super(appName, appVersion, arFS, contentType, driveId, entityType, name, 0, txId, unixTime);
+	}
+}
+
+export abstract class ArFSFileEntity extends ArFSFileOrFolderEntity {
+	abstract readonly appName: string;
+	abstract readonly appVersion: string;
+	abstract readonly arFS: string;
+	abstract readonly contentType: string;
+	abstract readonly driveId: string;
+	abstract readonly entityType: string;
+	abstract readonly name: string;
+	abstract readonly txId: string;
+	abstract readonly unixTime: number;
+}
+
+export class ArFSPublicFile extends ArFSFileEntity {
+	constructor(
+		readonly appName: string,
+		readonly appVersion: string,
+		readonly arFS: string,
+		readonly contentType: string,
+		readonly driveId: string,
+		readonly entityType: string,
+		readonly name: string,
+		readonly txId: string,
+		readonly unixTime: number,
+		readonly parentFolderId: string,
+		readonly entityId: string
+	) {
+		super(appName, appVersion, arFS, contentType, driveId, entityType, name, txId, unixTime);
+	}
+}
+
+export class ArFSPublicFileBuilder {
+	appName?: string;
+	appVersion?: string;
+	arFS?: string;
+	contentType?: ContentType;
+	driveId?: DriveID;
+	entityType?: EntityType;
+	name?: string;
+	txId?: TransactionID;
+	unixTime?: number;
+	parentFolderId?: string;
+	entityId?: string;
+
+	build(): ArFSPublicFolder {
+		if (
+			this.appName?.length &&
+			this.appVersion?.length &&
+			this.arFS?.length &&
+			this.contentType?.length &&
+			this.driveId?.length &&
+			this.entityType?.length &&
+			this.name?.length &&
+			this.txId?.length &&
+			this.unixTime &&
+			this.entityId?.length
+		) {
+			return new ArFSPublicFolder(
+				this.appName,
+				this.appVersion,
+				this.arFS,
+				this.contentType,
+				this.driveId,
+				this.entityType,
+				this.name,
+				this.txId,
+				this.unixTime,
+				this.parentFolderId || 'root folder',
+				this.entityId
+			);
+		}
+		throw new Error('Invalid folder state');
+	}
+}
+
+export class ArFSPrivateFile extends ArFSFileEntity {
+	constructor(
+		readonly appName: string,
+		readonly appVersion: string,
+		readonly arFS: string,
+		readonly contentType: string,
+		readonly driveId: string,
+		readonly entityType: string,
+		readonly name: string,
+		readonly txId: string,
+		readonly unixTime: number,
+		readonly parentFolderId: string,
+		readonly entityId: string,
+		readonly cipher: string,
+		readonly cipherIV: string
+	) {
+		super(appName, appVersion, arFS, contentType, driveId, entityType, name, txId, unixTime);
+	}
+}
+
+export class ArFSPrivateFileBuilder {
+	appName?: string;
+	appVersion?: string;
+	arFS?: string;
+	contentType?: ContentType;
+	driveId?: DriveID;
+	entityType?: EntityType;
+	name?: string;
+	txId?: TransactionID;
+	unixTime?: number;
+	parentFolderId?: string;
+	folderId?: string;
+	cipher?: string;
+	cipherIV?: string;
+
+	build(): ArFSPrivateFolder {
+		if (
+			this.appName?.length &&
+			this.appVersion?.length &&
+			this.arFS?.length &&
+			this.contentType?.length &&
+			this.driveId?.length &&
+			this.entityType?.length &&
+			this.name?.length &&
+			this.txId?.length &&
+			this.unixTime &&
+			this.folderId?.length &&
+			this.cipher?.length &&
+			this.cipherIV?.length
+		) {
+			return new ArFSPrivateFolder(
+				this.appName,
+				this.appVersion,
+				this.arFS,
+				this.contentType,
+				this.driveId,
+				this.entityType,
+				this.name,
+				this.txId,
+				this.unixTime,
+				this.parentFolderId || 'root folder',
+				this.folderId,
+				this.cipher,
+				this.cipherIV
+			);
+		}
+		throw new Error('Invalid folder state');
 	}
 }
 
