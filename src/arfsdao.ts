@@ -86,6 +86,9 @@ export interface ArFSUploadPrivateFileResult extends ArFSUploadFileResult {
 export interface ArFSCreatePrivateDriveResult extends ArFSCreateDriveResult {
 	driveKey: DriveKey;
 }
+export interface ArFSCreatePrivateFolderResult extends ArFSCreateFolderResult {
+	driveKey: DriveKey;
+}
 
 export abstract class ArFSDAOType {
 	protected abstract readonly arweave: Arweave;
@@ -269,7 +272,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		drivePassword: string,
 		parentFolderId?: FolderID,
 		syncParentFolderId = true
-	): Promise<ArFSCreateFolderResult> {
+	): Promise<ArFSCreatePrivateFolderResult> {
 		if (parentFolderId && syncParentFolderId) {
 			// Assert that drive ID is consistent with parent folder ID
 			const actualDriveId = await this.getDriveIdForFolderId(parentFolderId);
@@ -317,7 +320,9 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			await folderUploader.uploadChunk();
 		}
 
-		return { folderTrxId: folderTrx.id, folderTrxReward: folderTrx.reward, folderId };
+		const driveKey = folderMetadata.objectData.driveKey;
+
+		return { folderTrxId: folderTrx.id, folderTrxReward: folderTrx.reward, folderId, driveKey };
 	}
 
 	async createPublicDrive(driveName: string): Promise<ArFSCreateDriveResult> {
