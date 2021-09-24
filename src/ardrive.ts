@@ -258,19 +258,106 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// TODO: Add interactive confirmation of AR price estimation
 
-		const uploadFileResult = await this.arFsDao.uploadPrivateFile(
-			parentFolderId,
-			wrappedEntity,
-			password,
-			driveId,
-			winstonPrice.toString(),
-			destinationFileName
-		);
+		let uploadEntityResults: ArFSEntityData[] = [];
+		let uploadEntityFees: ArFSFees = {};
 
+		if (isFolder(wrappedEntity)) {
+			const results = await this.createPrivateFolderAndUploadChildren(
+				wrappedEntity,
+				driveId,
+				parentFolderId,
+				password
+			);
+
+			uploadEntityFees = results.feeResults;
+			uploadEntityResults = results.entityResults;
+		} else {
+			const uploadFileResult = await this.arFsDao.uploadPrivateFile(
+				parentFolderId,
+				wrappedEntity,
+				password,
+				driveId,
+				winstonPrice.toString(),
+				destinationFileName
+			);
+
+			uploadEntityFees = {
+				[uploadFileResult.dataTrxId]: +uploadFileResult.dataTrxReward,
+				[uploadFileResult.metaDataTrxId]: +uploadFileResult.metaDataTrxReward
+			};
+			uploadEntityResults = [
+				{
+					type: 'file',
+					metadataTxId: uploadFileResult.metaDataTrxId,
+					dataTxId: uploadFileResult.dataTrxId,
+					entityId: uploadFileResult.fileId
+				}
+			];
+		}
 		const { tipData, reward: communityTipTrxReward } = await this.sendCommunityTip(communityWinstonTip);
 
 		return Promise.resolve({
-			created: [
+			created: uploadEntityResults,
+			tips: [tipData],
+			fees: { ...uploadEntityFees, [tipData.txId]: +communityTipTrxReward }
+		});
+	}
+
+	async createPrivateFolderAndUploadChildren(
+		wrappedFolder: FsFolder,
+		driveId: DriveID,
+		parentFolderId: FolderID,
+		drivePassword: string
+	): Promise<{
+		entityResults: ArFSEntityData[];
+		feeResults: ArFSFees;
+	}> {
+		let uploadEntityResults: ArFSEntityData[] = [];
+		let uploadEntityFees: ArFSFees = {};
+
+		// Create parent folder
+		const { folderTrxId, folderTrxReward, folderId, driveKey } = await this.arFsDao.createPrivateFolder(
+			wrappedFolder.getBaseFileName(),
+			driveId,
+			parentFolderId,
+			drivePassword,
+			false // Don't check for folders that don't exist yet
+		);
+
+		// Capture results
+		uploadEntityFees = { ...uploadEntityFees, [folderTrxId]: +folderTrxReward };
+		uploadEntityResults = [
+			...uploadEntityResults,
+			{
+				type: 'folder',
+				metadataTxId: folderTrxId,
+				entityId: folderId,
+				key: driveKey.toString('hex')
+			}
+		];
+
+		// Upload all files in the folder
+		for await (const wrappedFile of wrappedFolder.files) {
+			const winstonPrice = (
+				await this.priceEstimator.getBaseWinstonPriceForByteCount(wrappedFile.fileStats.size)
+			).toString();
+
+			const uploadFileResult = await this.arFsDao.uploadPrivateFile(
+				folderId,
+				wrappedFile,
+				drivePassword,
+				driveId,
+				winstonPrice
+			);
+
+			// Capture all file results
+			uploadEntityFees = {
+				...uploadEntityFees,
+				[uploadFileResult.dataTrxId]: +uploadFileResult.dataTrxReward,
+				[uploadFileResult.metaDataTrxId]: +uploadFileResult.metaDataTrxReward
+			};
+			uploadEntityResults = [
+				...uploadEntityResults,
 				{
 					type: 'file',
 					metadataTxId: uploadFileResult.metaDataTrxId,
@@ -278,14 +365,23 @@ export class ArDrive extends ArDriveAnonymous {
 					entityId: uploadFileResult.fileId,
 					key: uploadFileResult.fileKey.toString('hex')
 				}
-			],
-			tips: [tipData],
-			fees: {
-				[uploadFileResult.metaDataTrxId]: +uploadFileResult.metaDataTrxReward,
-				[uploadFileResult.dataTrxId]: +uploadFileResult.dataTrxReward,
-				[tipData.txId]: +communityTipTrxReward
-			}
-		});
+			];
+		}
+
+		// Upload folders, and children of those folders
+		for await (const childFolder of wrappedFolder.folders) {
+			// Recursion alert, will keep creating folders of all nested folders
+			const results = await this.createPublicFolderAndUploadChildren(childFolder, driveId, folderId);
+
+			// Capture all folder results
+			uploadEntityFees = {
+				...uploadEntityFees,
+				...results.feeResults
+			};
+			uploadEntityResults = [...uploadEntityResults, ...results.entityResults];
+		}
+
+		return { entityResults: uploadEntityResults, feeResults: uploadEntityFees };
 	}
 
 	async createPublicFolder(folderName: string, driveId: DriveID, parentFolderId?: FolderID): Promise<ArFSResult> {
@@ -319,7 +415,7 @@ export class ArDrive extends ArDriveAnonymous {
 		parentFolderId?: FolderID
 	): Promise<ArFSResult> {
 		// Create the folder and retrieve its folder ID
-		const { folderTrxId, folderTrxReward, folderId } = await this.arFsDao.createPrivateFolder(
+		const { folderTrxId, folderTrxReward, folderId, driveKey } = await this.arFsDao.createPrivateFolder(
 			folderName,
 			driveId,
 			drivePassword,
@@ -332,7 +428,8 @@ export class ArDrive extends ArDriveAnonymous {
 				{
 					type: 'folder',
 					metadataTxId: folderTrxId,
-					entityId: folderId
+					entityId: folderId,
+					key: driveKey.toString('hex')
 				}
 			],
 			tips: [],
