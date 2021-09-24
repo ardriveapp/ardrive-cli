@@ -52,6 +52,12 @@ export class FsFile {
 	public getBaseFileName(): BaseFileName {
 		return basename(this.filePath);
 	}
+
+	/** Estimates the size of a private file encrypted with a uuid */
+	public encryptedFileSize(): number {
+		// cipherLen = (clearLen/16 + 1) * 16;
+		return (this.fileStats.size / 16 + 1) * 16;
+	}
 }
 
 export class FsFolder extends FsFile {
@@ -82,14 +88,14 @@ export class FsFolder extends FsFile {
 		}
 	}
 
-	getTotalBytes(): Bytes {
+	getTotalBytes(encrypted = false): Bytes {
 		let totalBytes = 0;
 
 		for (const file of this.files) {
-			totalBytes += file.fileStats.size;
+			totalBytes += encrypted ? file.encryptedFileSize() : file.fileStats.size;
 		}
 		for (const folder of this.folders) {
-			totalBytes += folder.getTotalBytes();
+			totalBytes += folder.getTotalBytes(encrypted);
 		}
 
 		return totalBytes;

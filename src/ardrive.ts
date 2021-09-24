@@ -230,12 +230,6 @@ export class ArDrive extends ArDriveAnonymous {
 		return { entityResults: uploadEntityResults, feeResults: uploadEntityFees };
 	}
 
-	/** Estimates the size of a private file encrypted with a uuid */
-	encryptedFileSize(filePath: string): number {
-		// cipherLen = (clearLen/16 + 1) * 16;
-		return (this.getFileSize(filePath) / 16 + 1) * 16;
-	}
-
 	async uploadPrivateFile(
 		parentFolderId: FolderID,
 		wrappedEntity: FsFile | FsFolder,
@@ -251,14 +245,10 @@ export class ArDrive extends ArDriveAnonymous {
 
 		/** Total bytes of all Files that are part of an upload */
 		const totalBytes: Bytes = isFolder(wrappedEntity)
-			? wrappedEntity.getTotalBytes()
+			? wrappedEntity.getTotalBytes(true)
 			: wrappedEntity.fileStats.size;
 
-		console.log(totalBytes, 'IMPLEMENT PRIVATE FILE TOTAL BYTES');
-
-		const winstonPrice = await this.priceEstimator.getBaseWinstonPriceForByteCount(
-			this.encryptedFileSize(wrappedEntity.filePath)
-		);
+		const winstonPrice = await this.priceEstimator.getBaseWinstonPriceForByteCount(totalBytes);
 		const communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(winstonPrice.toString());
 		const totalWinstonPrice = (+winstonPrice + +communityWinstonTip).toString();
 
