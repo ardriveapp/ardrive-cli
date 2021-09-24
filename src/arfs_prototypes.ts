@@ -54,10 +54,10 @@ export abstract class ArFSDriveMetaDataPrototype extends ArFSObjectMetadataProto
 
 	addTagsToDataItem(tags: GQLTagInterface[]): void {
 		tags.push({ name: 'Content-Type', value: this.contentType });
-		tags.push({ name: 'Entity-Type', value: 'drive' }),
-			tags.push({ name: 'Unix-Time', value: this.unixTime.toString() }),
-			tags.push({ name: 'Drive-Id', value: this.driveId }),
-			tags.push({ name: 'Drive-Privacy', value: this.privacy });
+		tags.push({ name: 'Entity-Type', value: 'drive' });
+		tags.push({ name: 'Unix-Time', value: this.unixTime.toString() });
+		tags.push({ name: 'Drive-Id', value: this.driveId });
+		tags.push({ name: 'Drive-Privacy', value: this.privacy });
 	}
 }
 

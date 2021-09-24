@@ -38,7 +38,7 @@ import {
 	ArFSPublicFolderTransactionData
 } from './arfs_trx_data_types';
 import { buildQuery } from './query';
-import { ArweaveSigner, Bundle, bundleAndSignData, createData, DataItem } from 'arbundles';
+import { ArweaveSigner, bundleAndSignData, createData, DataItem } from 'arbundles';
 
 export const ArFS_O_11 = '0.11';
 
@@ -338,8 +338,6 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	}
 
 	async createPrivateDrive(driveName: string, password: string): Promise<ArFSCreatePrivateDriveResult> {
-		const items: DataItem[] = [];
-
 		// Generate a new drive ID  for the new drive
 		const driveId = uuidv4();
 

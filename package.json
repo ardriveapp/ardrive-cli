@@ -11,7 +11,7 @@
 		"@types/node": "^14.14.32",
 		"@types/uuid": "^8.3.0",
 		"arbundles": "^0.2.7",
-		"ardrive-core-js": "0.5.0",
+		"ardrive-core-js": "0.5.1",
 		"arweave": "^1.10.16",
 		"arweave-bundles": "^1.0.3",
 		"arweave-mnemonic-keys": "^0.0.9",
