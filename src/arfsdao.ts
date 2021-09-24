@@ -502,7 +502,6 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const unixTime = Math.round(Date.now() / 1000);
 
 		// Gather file information
-		// Gather file information
 		const fileStats = wrappedFile.fileStats;
 		const fileData = wrappedFile.getFileDataBuffer();
 		const dataContentType = wrappedFile.getContentType();
