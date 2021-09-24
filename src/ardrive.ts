@@ -290,7 +290,8 @@ export class ArDrive extends ArDriveAnonymous {
 					type: 'file',
 					metadataTxId: uploadFileResult.metaDataTrxId,
 					dataTxId: uploadFileResult.dataTrxId,
-					entityId: uploadFileResult.fileId
+					entityId: uploadFileResult.fileId,
+					key: uploadFileResult.fileKey.toString('hex')
 				}
 			];
 		}
