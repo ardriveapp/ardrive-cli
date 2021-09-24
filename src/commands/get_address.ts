@@ -1,3 +1,4 @@
+import { cliWalletDao } from '..';
 import { CLICommand } from '../CLICommand';
 import { CommonContext } from '../CLICommand/common_context';
 import { SeedPhraseParameter, WalletFileParameter } from '../parameter_declarations';
@@ -8,7 +9,7 @@ new CLICommand({
 	name: 'get-address',
 	parameters: [WalletFileParameter, SeedPhraseParameter],
 	async action(options) {
-		const context = new CommonContext(options);
+		const context = new CommonContext(options, cliWalletDao);
 		const address = await context
 			.getWallet()
 			.then((wallet) => {

@@ -8,7 +8,7 @@ import {
 	fileEncrypt,
 	JWKInterface
 } from 'ardrive-core-js';
-import { CipherIV, DataContentType, DriveID, DriveKey, FileID, FolderID, TransactionID } from './arfsdao';
+import { CipherIV, DataContentType, DriveID, DriveKey, FileID, FolderID, TransactionID } from './types';
 
 export interface ArFSObjectTransactionData {
 	asTransactionData(): string | Buffer;
@@ -86,7 +86,8 @@ export class ArFSPrivateFolderTransactionData extends ArFSFolderTransactionData 
 		readonly name: string,
 		readonly cipher: CipherType,
 		readonly cipherIV: CipherIV,
-		readonly encryptedFolderData: Buffer
+		readonly encryptedFolderData: Buffer,
+		readonly driveKey: DriveKey
 	) {
 		super();
 	}
@@ -106,7 +107,7 @@ export class ArFSPrivateFolderTransactionData extends ArFSFolderTransactionData 
 				})
 			)
 		);
-		return new ArFSPrivateFolderTransactionData(name, cipher, cipherIV, data);
+		return new ArFSPrivateFolderTransactionData(name, cipher, cipherIV, data, driveKey);
 	}
 
 	asTransactionData(): Buffer {

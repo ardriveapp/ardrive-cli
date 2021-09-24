@@ -8,33 +8,27 @@ import {
 	SeedPhraseParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
-import { walletDao } from '..';
 
 /**
  * @type {CommonContext}
  * A class representing the context of the parameters
  */
 export class CommonContext {
-	private readonly walletDao: WalletDAO;
-
 	/**
 	 * @returns {CommonContext}
 	 * @param {any} options The object containing the parameterName: value mapping
 	 * An immutable instance of CommonContext holding the parsed values of the parameters
 	 */
-	constructor(private readonly options: any) {
-		this.walletDao = walletDao;
-	}
+	constructor(private readonly options: any, private readonly walletDao: WalletDAO) {}
 
 	/**
 	 * @returns {Promise<boolean>}
-	 * Returns true when a drive password, drive key or wallet file is provided
+	 * Returns true when a drive password or drive key is provided
 	 */
 	public async getIsPrivate(): Promise<boolean> {
-		return !!(
-			this.getParameterValue(DrivePasswordParameter) ||
-			this.getParameterValue(DriveKeyParameter) ||
-			(await this.getWallet().catch(() => false))
+		return (
+			this.getParameterValue(DrivePasswordParameter) !== undefined ||
+			this.getParameterValue(DriveKeyParameter) !== undefined
 		);
 	}
 
