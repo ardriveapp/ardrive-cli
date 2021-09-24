@@ -372,7 +372,12 @@ export class ArDrive extends ArDriveAnonymous {
 		// Upload folders, and children of those folders
 		for await (const childFolder of wrappedFolder.folders) {
 			// Recursion alert, will keep creating folders of all nested folders
-			const results = await this.createPublicFolderAndUploadChildren(childFolder, driveId, folderId);
+			const results = await this.createPrivateFolderAndUploadChildren(
+				childFolder,
+				driveId,
+				folderId,
+				drivePassword
+			);
 
 			// Capture all folder results
 			uploadEntityFees = {
