@@ -39,7 +39,7 @@ export function arDriveFactory(
 	return new ArDrive(
 		wallet,
 		walletDao,
-		new ArFSDAO(wallet, arweave),
+		new ArFSDAO(wallet, arweave, CLI_APP_NAME, CLI_APP_VERSION),
 		new ArDriveCommunityOracle(arweave),
 		CLI_APP_NAME,
 		CLI_APP_VERSION,

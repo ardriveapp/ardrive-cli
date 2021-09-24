@@ -1,16 +1,9 @@
 import { CommunityOracle } from './community/community_oracle';
-import {
-	ArFSEncryptedData,
-	deriveDriveKey,
-	deriveFileKey,
-	fileEncrypt,
-	GQLTagInterface,
-	winstonToAr
-} from 'ardrive-core-js';
+import { GQLTagInterface, winstonToAr } from 'ardrive-core-js';
 import * as fs from 'fs';
-import { ArFSDAOType, ArFSDAOAnonymous, ArFSPublicDrive, ArFSDAO } from './arfsdao';
 import { TransactionID, ArweaveAddress, Winston, DriveID, FolderID, Bytes, TipType, FileID } from './types';
-import { WalletDAO, Wallet, JWKWallet } from './wallet_new';
+import { WalletDAO, Wallet } from './wallet_new';
+import { ArFSDAOType, ArFSDAOAnonymous, ArFSPublicDrive, ArFSDAO, ArFSPrivateDrive } from './arfsdao';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
 import { FsFolder, isFolder, FsFile } from './fsFile';
 import { ARDataPriceEstimator } from './utils/ar_data_price_estimator';
@@ -238,13 +231,10 @@ export class ArDrive extends ArDriveAnonymous {
 		return { entityResults: uploadEntityResults, feeResults: uploadEntityFees };
 	}
 
-	async encryptedFileSize(filePath: string, drivePassword: string, driveId: string, fileId: string): Promise<number> {
-		const wallet = this.wallet as JWKWallet;
-		const driveKey: Buffer = await deriveDriveKey(drivePassword, driveId, JSON.stringify(wallet.getPrivateKey()));
-		const fileKey: Buffer = await deriveFileKey(fileId, driveKey);
-		const fileData = fs.readFileSync(filePath);
-		const encryptedFileData: ArFSEncryptedData = await fileEncrypt(fileKey, fileData);
-		return encryptedFileData.data.byteLength;
+	/** Estimates the size of a private file encrypted with a uuid */
+	encryptedFileSize(filePath: string): number {
+		// cipherLen = (clearLen/16 + 1) * 16;
+		return (this.getFileSize(filePath) / 16 + 1) * 16;
 	}
 
 	async uploadPrivateFile(
@@ -267,10 +257,8 @@ export class ArDrive extends ArDriveAnonymous {
 
 		console.log(totalBytes, 'IMPLEMENT PRIVATE FILE TOTAL BYTES');
 
-		const fakeDriveId = '00000000-0000-0000-0000-000000000000';
-		const fakeFileId = '00000000-0000-0000-0000-000000000000';
 		const winstonPrice = await this.priceEstimator.getBaseWinstonPriceForByteCount(
-			await this.encryptedFileSize(wrappedEntity.filePath, password, fakeDriveId, fakeFileId)
+			this.encryptedFileSize(wrappedEntity.filePath)
 		);
 		const communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(winstonPrice.toString());
 		const totalWinstonPrice = (+winstonPrice + +communityWinstonTip).toString();
@@ -386,7 +374,7 @@ export class ArDrive extends ArDriveAnonymous {
 		});
 	}
 
-	async getPrivateDrive(driveId: DriveID, drivePassword: string): Promise<ArFSPublicDrive> {
+	async getPrivateDrive(driveId: DriveID, drivePassword: string): Promise<ArFSPrivateDrive> {
 		const driveEntity = await this.arFsDao.getPrivateDrive(driveId, drivePassword);
 		return Promise.resolve(driveEntity);
 	}
