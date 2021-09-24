@@ -263,6 +263,63 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return { folderTrxId: folderTrx.id, folderTrxReward: folderTrx.reward, folderId };
 	}
 
+	async createPrivateFolder(
+		folderName: string,
+		driveId: DriveID,
+		drivePassword: string,
+		parentFolderId?: FolderID,
+		syncParentFolderId = true
+	): Promise<ArFSCreateFolderResult> {
+		if (parentFolderId && syncParentFolderId) {
+			// Assert that drive ID is consistent with parent folder ID
+			const actualDriveId = await this.getDriveIdForFolderId(parentFolderId);
+
+			if (actualDriveId !== driveId) {
+				throw new Error(
+					`Drive id: ${driveId} does not match actual drive id: ${actualDriveId} for parent folder id`
+				);
+			}
+		} else if (syncParentFolderId) {
+			// If drive contains a root folder ID, treat this as a subfolder to the root folder
+			const drive = await this.getPrivateDrive(driveId, drivePassword);
+			if (!drive) {
+				throw new Error(`Private drive with Drive ID ${driveId} not found!`);
+			}
+
+			if (drive.rootFolderId) {
+				parentFolderId = drive.rootFolderId;
+			}
+		}
+
+		const wallet = this.wallet as JWKWallet;
+
+		// Generate a new folder ID
+		const folderId = uuidv4();
+
+		// Get the current time so the app can display the "created" data later on
+		const unixTime = Math.round(Date.now() / 1000);
+
+		// Create a folder metadata transaction
+		const folderMetadata = new ArFSPrivateFolderMetaDataPrototype(
+			unixTime,
+			driveId,
+			folderId,
+			await ArFSPrivateFolderTransactionData.from(folderName, driveId, drivePassword, wallet.getPrivateKey()),
+			parentFolderId
+		);
+		const folderTrx = await this.prepareArFSObjectTransaction(folderMetadata);
+
+		// Create the Folder Uploader objects
+		const folderUploader = await this.arweave.transactions.getUploader(folderTrx);
+
+		// Execute the uploads
+		while (!folderUploader.isComplete) {
+			await folderUploader.uploadChunk();
+		}
+
+		return { folderTrxId: folderTrx.id, folderTrxReward: folderTrx.reward, folderId };
+	}
+
 	async createPublicDrive(driveName: string): Promise<ArFSCreateDriveResult> {
 		// Generate a new drive ID  for the new drive
 		const driveId = uuidv4();
