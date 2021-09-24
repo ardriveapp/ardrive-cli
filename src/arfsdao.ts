@@ -12,6 +12,7 @@ import {
 	DrivePrivacy,
 	EntityType,
 	extToMime,
+	getTransactionData,
 	GQLEdgeInterface,
 	GQLTagInterface,
 	Utf8ArrayToStr
@@ -260,7 +261,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		return edges.map((edge: GQLEdgeInterface) => edge.node.id);
 	}
 
-	async getAllPublicChildrenFilesFromFolderIDs(folderIDs: FolderID[]): Promise<ArFSPublicFolder[]> {
+	async getAllPublicChildrenFilesFromFolderIDs(folderIDs: FolderID[]): Promise<ArFSPublicFile[]> {
 		let cursor = '';
 		let hasNextPage = true;
 		const allFiles: ArFSPublicFile[] = [];
@@ -279,7 +280,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 			const { transactions } = data;
 			const { edges } = transactions;
 			hasNextPage = transactions.pageInfo.hasNextPage;
-			const files = edges.map(async (edge: GQLEdgeInterface) => {
+			const files: Promise<ArFSPublicFile>[] = edges.map(async (edge: GQLEdgeInterface) => {
 				// Iterate through each tag and pull out each drive ID as well the drives privacy status
 				const folderBuilder = new ArFSPublicFileBuilder();
 				const { node } = edge;
@@ -313,7 +314,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 						case 'Parent-Folder-Id':
 							folderBuilder.parentFolderId = value;
 							break;
-						case 'Folder-Id':
+						case 'File-Id':
 							folderBuilder.entityId = value;
 							break;
 						default:
@@ -332,7 +333,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 				folderBuilder.name = dataJSON.name;
 				return folderBuilder.build();
 			});
-			allFiles.push(...files);
+			allFiles.push(...(await Promise.all(files)));
 		}
 		return allFiles;
 	}
@@ -356,7 +357,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 			const { transactions } = data;
 			const { edges } = transactions;
 			hasNextPage = transactions.pageInfo.hasNextPage;
-			const folders = edges.map(async (edge: GQLEdgeInterface) => {
+			const folders: Promise<ArFSPublicFolder>[] = edges.map(async (edge: GQLEdgeInterface) => {
 				// Iterate through each tag and pull out each drive ID as well the drives privacy status
 				const folderBuilder = new ArFSPublicFolderBuilder();
 				const { node } = edge;
@@ -409,14 +410,16 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 				folderBuilder.name = dataJSON.name;
 				return folderBuilder.build();
 			});
-			allFolders.push(...folders);
+			allFolders.push(...(await Promise.all(folders)));
 		}
 		return allFolders;
 	}
 
-	// async getChildrenFiles(folderIDs: FolderID[]) {
-
-	// }
+	async getDataOfPublicEntityFromTxId(txId: string): Promise<any> {
+		const rawData = await getTransactionData(txId);
+		const parsedData = JSON.parse(rawData.toString());
+		return parsedData;
+	}
 }
 
 export class ArFSDAO extends ArFSDAOAnonymous {
@@ -811,80 +814,82 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return drive.build();
 	}
 
-	async getAllFoldersOfDrive(driveId: DriveID): Promise<ArFSPrivateFolder[]> {
-		const gqlQuery = buildQuery([
-			{ name: 'Drive-Id', value: driveId },
-			{ name: 'Entity-Type', value: 'folder' }
-		]);
+	async getAllFoldersOfPublicDrive(driveId: DriveID): Promise<ArFSPublicFolder[]> {
+		let cursor = '';
+		let hasNextPage = true;
+		const allFolders: ArFSPublicFolder[] = [];
 
-		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
-		const { data } = response.data;
-		const { transactions } = data;
-		const { edges } = transactions;
+		while (hasNextPage) {
+			const gqlQuery = buildQuery(
+				[
+					{ name: 'Drive-Id', value: driveId },
+					{ name: 'Entity-Type', value: 'folder' }
+				],
+				cursor
+			);
 
-		if (!edges.length) {
-			// throw new Error(`Private folder with ID ${driveId} not found or is not private!`);
-		}
+			const response = await this.arweave.api.post(graphQLURL, gqlQuery);
+			const { data } = response.data;
+			const { transactions } = data;
+			const { edges } = transactions;
+			hasNextPage = transactions.pageInfo.hasNextPage;
 
-		const folders = edges.forEach(async (edge: GQLEdgeInterface) => {
-			// Iterate through each tag and pull out each drive ID as well the drives privacy status
-			const folderBuilder = new ArFSPrivateFolderBuilder();
-			const { node } = edge;
-			const { tags } = node;
-			tags.map((tag: GQLTagInterface) => {
-				const key = tag.name;
-				const { value } = tag;
-				switch (key) {
-					case 'App-Name':
-						folderBuilder.appName = value;
-						break;
-					case 'App-Version':
-						folderBuilder.appVersion = value;
-						break;
-					case 'ArFS':
-						folderBuilder.arFS = value;
-						break;
-					case 'Cipher':
-						folderBuilder.cipher = value;
-						break;
-					case 'Cipher-IV':
-						folderBuilder.cipherIV = value;
-						break;
-					case 'Content-Type':
-						folderBuilder.contentType = value as ContentType;
-						break;
-					case 'Drive-Id':
-						folderBuilder.driveId = value;
-						break;
-					case 'Entity-Type':
-						folderBuilder.entityType = value as EntityType;
-						break;
-					case 'Unix-Time':
-						folderBuilder.unixTime = +value;
-						break;
-					case 'Parent-Folder-Id':
-						folderBuilder.parentFolderId = value;
-						break;
-					case 'Folder-Id':
-						folderBuilder.folderId = value;
-						break;
-					default:
-						break;
-				}
+			const folders: Promise<ArFSPublicFolder>[] = edges.map(async (edge: GQLEdgeInterface) => {
+				// Iterate through each tag and pull out each drive ID as well the drives privacy status
+				const folderBuilder = new ArFSPublicFolderBuilder();
+				const { node } = edge;
+				const { tags } = node;
+				cursor = edge.cursor;
+				tags.map((tag: GQLTagInterface) => {
+					const key = tag.name;
+					const { value } = tag;
+					switch (key) {
+						case 'App-Name':
+							folderBuilder.appName = value;
+							break;
+						case 'App-Version':
+							folderBuilder.appVersion = value;
+							break;
+						case 'ArFS':
+							folderBuilder.arFS = value;
+							break;
+						case 'Content-Type':
+							folderBuilder.contentType = value as ContentType;
+							break;
+						case 'Drive-Id':
+							folderBuilder.driveId = value;
+							break;
+						case 'Entity-Type':
+							folderBuilder.entityType = value as EntityType;
+							break;
+						case 'Unix-Time':
+							folderBuilder.unixTime = +value;
+							break;
+						case 'Parent-Folder-Id':
+							folderBuilder.parentFolderId = value;
+							break;
+						case 'Folder-Id':
+							folderBuilder.entityId = value;
+							break;
+						default:
+							break;
+					}
+				});
+
+				// Get the drives transaction ID
+				folderBuilder.txId = node.id;
+
+				const txData = await this.arweave.transactions.getData(folderBuilder.txId, { decode: true });
+				const dataString = await Utf8ArrayToStr(txData);
+				const dataJSON = await JSON.parse(dataString);
+
+				// Get the drive name and root folder id
+				folderBuilder.name = dataJSON.name;
+				return folderBuilder.build();
 			});
-
-			// Get the drives transaction ID
-			folderBuilder.txId = node.id;
-
-			const txData = await this.arweave.transactions.getData(folderBuilder.txId, { decode: true });
-			const dataString = await Utf8ArrayToStr(txData);
-			const dataJSON = await JSON.parse(dataString);
-
-			// Get the drive name and root folder id
-			folderBuilder.name = dataJSON.name;
-			return folderBuilder.build();
-		});
-		return folders;
+			allFolders.push(...(await Promise.all(folders)));
+		}
+		return allFolders;
 	}
 
 	async getPrivateFolder(folderId: FolderID): Promise<ArFSPrivateFolder> {
@@ -1108,8 +1113,8 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 						case 'Parent-Folder-Id':
 							fileBuilder.parentFolderId = value;
 							break;
-						case 'Folder-Id':
-							fileBuilder.folderId = value;
+						case 'Entity-Id':
+							fileBuilder.entityId = value;
 							break;
 						default:
 							break;
@@ -1378,14 +1383,14 @@ export class ArFSPublicFile extends ArFSFileOrFolderEntity {
 		readonly appName: string,
 		readonly appVersion: string,
 		readonly arFS: string,
-		readonly contentType: string,
-		readonly driveId: string,
-		readonly entityType: string,
+		readonly contentType: ContentType,
+		readonly driveId: DriveID,
+		readonly entityType: EntityType,
 		readonly name: string,
 		readonly txId: string,
 		readonly unixTime: number,
-		readonly parentFolderId: string,
-		readonly entityId: string
+		readonly parentFolderId: FolderID,
+		readonly entityId: FileID
 	) {
 		super(
 			appName,
@@ -1452,14 +1457,14 @@ export class ArFSPrivateFile extends ArFSFileOrFolderEntity {
 		readonly appName: string,
 		readonly appVersion: string,
 		readonly arFS: string,
-		readonly contentType: string,
-		readonly driveId: string,
-		readonly entityType: string,
+		readonly contentType: ContentType,
+		readonly driveId: DriveID,
+		readonly entityType: EntityType,
 		readonly name: string,
-		readonly txId: string,
+		readonly txId: TransactionID,
 		readonly unixTime: number,
-		readonly parentFolderId: string,
-		readonly entityId: string,
+		readonly parentFolderId: FolderID,
+		readonly entityId: FileID,
 		readonly cipher: string,
 		readonly cipherIV: string
 	) {
@@ -1490,7 +1495,7 @@ export class ArFSPrivateFileBuilder {
 	txId?: TransactionID;
 	unixTime?: number;
 	parentFolderId?: string;
-	folderId?: string;
+	entityId?: string;
 	cipher?: string;
 	cipherIV?: string;
 
@@ -1505,7 +1510,7 @@ export class ArFSPrivateFileBuilder {
 			this.name?.length &&
 			this.txId?.length &&
 			this.unixTime &&
-			this.folderId?.length &&
+			this.entityId?.length &&
 			this.cipher?.length &&
 			this.cipherIV?.length
 		) {
@@ -1520,7 +1525,7 @@ export class ArFSPrivateFileBuilder {
 				this.txId,
 				this.unixTime,
 				this.parentFolderId || 'root folder',
-				this.folderId,
+				this.entityId,
 				this.cipher,
 				this.cipherIV
 			);
@@ -1529,31 +1534,19 @@ export class ArFSPrivateFileBuilder {
 	}
 }
 
-export abstract class ArFSFolderEntity extends ArFSFileOrFolderEntity {
-	abstract readonly appName: string;
-	abstract readonly appVersion: string;
-	abstract readonly arFS: string;
-	abstract readonly contentType: string;
-	abstract readonly driveId: string;
-	abstract readonly entityType: string;
-	abstract readonly name: string;
-	abstract readonly txId: string;
-	abstract readonly unixTime: number;
-}
-
-export class ArFSPublicFolder extends ArFSFolderEntity {
+export class ArFSPublicFolder extends ArFSFileOrFolderEntity {
 	constructor(
 		readonly appName: string,
 		readonly appVersion: string,
 		readonly arFS: string,
-		readonly contentType: string,
-		readonly driveId: string,
-		readonly entityType: string,
+		readonly contentType: ContentType,
+		readonly driveId: DriveID,
+		readonly entityType: EntityType,
 		readonly name: string,
-		readonly txId: string,
+		readonly txId: TransactionID,
 		readonly unixTime: number,
-		readonly parentFolderId: string,
-		readonly entityId: string
+		readonly parentFolderId: FolderID,
+		readonly folderId: FolderID
 	) {
 		super(
 			appName,
@@ -1566,7 +1559,7 @@ export class ArFSPublicFolder extends ArFSFolderEntity {
 			txId,
 			unixTime,
 			parentFolderId,
-			entityId
+			folderId
 		);
 	}
 }
@@ -1615,19 +1608,19 @@ export class ArFSPublicFolderBuilder {
 	}
 }
 
-export class ArFSPrivateFolder extends ArFSFolderEntity {
+export class ArFSPrivateFolder extends ArFSFileOrFolderEntity {
 	constructor(
 		readonly appName: string,
 		readonly appVersion: string,
 		readonly arFS: string,
-		readonly contentType: string,
-		readonly driveId: string,
-		readonly entityType: string,
+		readonly contentType: ContentType,
+		readonly driveId: DriveID,
+		readonly entityType: EntityType,
 		readonly name: string,
 		readonly txId: string,
 		readonly unixTime: number,
-		readonly parentFolderId: string,
-		readonly entityId: string,
+		readonly parentFolderId: FolderID,
+		readonly entityId: FolderID,
 		readonly cipher: string,
 		readonly cipherIV: string
 	) {
@@ -1704,14 +1697,14 @@ export class FolderTreeNode {
 		public children: FolderTreeNode[] = []
 	) {}
 
-	public static fromEntity(folderEntity: ArFSFolderEntity): FolderTreeNode {
+	public static fromEntity(folderEntity: ArFSFileOrFolderEntity): FolderTreeNode {
 		const node = new FolderTreeNode(folderEntity.entityId);
 		return node;
 	}
 }
 
 export class FolderHierarchy {
-	private readonly _rootNode?: FolderTreeNode;
+	private _rootNode?: FolderTreeNode;
 
 	constructor(
 		private readonly folderIdToEntityMap: { [k: string]: ArFSFileOrFolderEntity },
@@ -1739,17 +1732,25 @@ export class FolderHierarchy {
 		const folderIdKeyIsPresent = Object.keys(folderIdToNodeMap).includes(entity.entityId);
 		const parentFolderIdKeyIsPresent = Object.keys(folderIdToNodeMap).includes(entity.parentFolderId);
 		if (!folderIdKeyIsPresent) {
-			if (parentFolderIdKeyIsPresent) {
-				const parent = folderIdToNodeMap[entity.parentFolderId];
+			if (!parentFolderIdKeyIsPresent) {
+				const parentFolderEntity = folderIdToEntityMap[entity.parentFolderId];
+				if (parentFolderEntity) {
+					this.setupNodesWithEntity(parentFolderEntity, folderIdToEntityMap, folderIdToNodeMap);
+					const parent = folderIdToNodeMap[entity.parentFolderId];
+					const node = new FolderTreeNode(entity.entityId, parent);
+					parent.children.push(node);
+					folderIdToNodeMap[entity.entityId] = node;
+				}
+			}
+			const parent = folderIdToNodeMap[entity.parentFolderId];
+			if (parent) {
 				const node = new FolderTreeNode(entity.entityId, parent);
 				parent.children.push(node);
 				folderIdToNodeMap[entity.entityId] = node;
 			} else {
-				this.setupNodesWithEntity(
-					folderIdToEntityMap[entity.parentFolderId],
-					folderIdToEntityMap,
-					folderIdToNodeMap
-				);
+				// this one is supposed to be the new root
+				const rootNode = new FolderTreeNode(entity.entityId);
+				folderIdToNodeMap[entity.entityId] = rootNode;
 			}
 		}
 	}
@@ -1759,9 +1760,11 @@ export class FolderHierarchy {
 			return this._rootNode;
 		}
 
-		let tmpNode = this.folderIdToNodeMap[0];
+		const someFolderId = Object.keys(this.folderIdToEntityMap)[0];
+		let tmpNode = this.folderIdToNodeMap[someFolderId];
 		while (tmpNode.parent && this.folderIdToNodeMap[tmpNode.parent.folderId]) {
 			tmpNode = tmpNode.parent;
+			this._rootNode = tmpNode;
 		}
 		return tmpNode;
 	}
@@ -1798,6 +1801,7 @@ export class FolderHierarchy {
 		}
 		let folderNode = this.folderIdToNodeMap[folderId];
 		const nodesInPathToFolder = [folderNode];
+		if (!folderNode) debugger;
 		while (folderNode.parent && folderNode.folderId !== this.rootNode.folderId) {
 			folderNode = folderNode.parent;
 			nodesInPathToFolder.push(folderNode);
@@ -1807,7 +1811,7 @@ export class FolderHierarchy {
 			(n) => this.folderIdToEntityMap[n.folderId].name
 		);
 		const stringPath = olderFirstNamesOfNodesInPath.join('/');
-		return stringPath;
+		return `/${stringPath}`;
 	}
 
 	public entityPathToFolderId(folderId: FolderID): string {
@@ -1823,7 +1827,7 @@ export class FolderHierarchy {
 		const olderFirstNodesInPathToFolder = nodesInPathToFolder.reverse();
 		const olderFirstFolderIDsOfNodesInPath = olderFirstNodesInPathToFolder.map((n) => n.folderId);
 		const stringPath = olderFirstFolderIDsOfNodesInPath.join('/');
-		return stringPath;
+		return `/${stringPath}`;
 	}
 
 	public txPathToFolderId(folderId: FolderID): string {
@@ -1841,6 +1845,6 @@ export class FolderHierarchy {
 			(n) => this.folderIdToEntityMap[n.folderId].txId
 		);
 		const stringPath = olderFirstTxTDsOfNodesInPath.join('/');
-		return stringPath;
+		return `/${stringPath}`;
 	}
 }

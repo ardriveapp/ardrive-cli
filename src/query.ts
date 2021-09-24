@@ -1,4 +1,3 @@
-import { GQLTagInterface } from 'ardrive-core-js';
 import { ArweaveAddress } from './wallet_new';
 
 const nodeFragment = `

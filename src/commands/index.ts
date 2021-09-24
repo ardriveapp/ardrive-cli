@@ -11,6 +11,7 @@ import './get_balance';
 import './get_address';
 import './generate_seedphrase';
 import './generate_wallet';
+import './list_folder';
 
 const program = CLICommand.program;
 

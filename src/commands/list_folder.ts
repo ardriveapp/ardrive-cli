@@ -1,7 +1,13 @@
 /* eslint-disable no-console */
 import { arweave } from '..';
 import { ArDrive, ArDriveAnonymous } from '../ardrive';
-import { ArFSDAO, ArFSDAOAnonymous, FolderHierarchy } from '../arfsdao';
+import {
+	ArFSDAO,
+	ArFSDAOAnonymous,
+	ArFSPrivateFileOrFolderData,
+	ArFSPublicFileOrFolderData,
+	FolderHierarchy
+} from '../arfsdao';
 import { CLICommand } from '../CLICommand';
 import { CommonContext } from '../CLICommand/common_context';
 import { ParentFolderIdParameter, SeedPhraseParameter, WalletFileParameter } from '../parameter_declarations';
@@ -12,34 +18,116 @@ new CLICommand({
 	async action(options) {
 		const context = new CommonContext(options);
 		const wallet = await context.getWallet().catch(() => null);
+		const folderId = context.getParameterValue(ParentFolderIdParameter);
 		let folder;
+		let mergedData: (ArFSPrivateFileOrFolderData | ArFSPublicFileOrFolderData)[];
 
-		const arDrive = wallet
-			? new ArDrive(new ArFSDAO(wallet, arweave))
-			: new ArDriveAnonymous(new ArFSDAOAnonymous(arweave));
-
-		// Fetch the folder to extract the drive
-		if (wallet) {
-			folder = await (arDrive as ArDrive).getPrivateFolder(options.folderId);
-		} else {
-			folder = await arDrive.getPublicFolder(options.folderId);
+		if (!folderId) {
+			console.log(`Folder id not specified! ${folderId}`);
+			process.exit(1);
 		}
 
-		// Fetch all of the folder entities within the drive
-		const driveIdOfFolder = folder.driveId;
-		const allFolderEntitiesOfDrive = await arDrive.getAllFoldersOfPublicDrive(driveIdOfFolder);
+		if (wallet) {
+			const arDrive = new ArDrive(new ArFSDAO(wallet, arweave));
+			// Fetch the folder to extract the drive
+			folder = await arDrive.getPrivateFolder(folderId);
 
-		// Feed entities to FolderHierarchy.setupNodesWithEntity()
-		const hierarchy = FolderHierarchy.newFromEntities(allFolderEntitiesOfDrive);
-		const folderIDs = hierarchy.allFolderIDs();
+			// Fetch all of the folder entities within the drive
+			const driveIdOfFolder = folder.driveId;
+			const allFolderEntitiesOfDrive = await arDrive.getAllFoldersOfPrivateDrive(driveIdOfFolder);
 
-		// Fetch all file entities within all Folders of the drive
-		const allFileEntitiesOfDrive = await arDrive.getAllChildrenFilesFromFolderIDs(folderIDs);
+			// Feed entities to FolderHierarchy.setupNodesWithEntity()
+			const hierarchy = FolderHierarchy.newFromEntities(allFolderEntitiesOfDrive);
+			const folderIDs = hierarchy.allFolderIDs();
 
-		// TODO: show all data
+			// Fetch all file entities within all Folders of the drive
+			const allFileEntitiesOfDrive = await arDrive.getPrivateChildrenFilesFromFolderIDs(folderIDs);
 
-		// console.log(JSON.stringify(folder, null, 4));
-		// console.log(JSON.stringify(childrenTxIds, null, 4));
+			// Fetch all names of each entity
+			const allEntitiesOfDrive = [...allFolderEntitiesOfDrive, ...allFileEntitiesOfDrive].sort(
+				(a, b) => +a.txId - +b.txId
+			);
+
+			mergedData = allEntitiesOfDrive.map((entity) => {
+				const path = `${
+					entity.parentFolderId !== 'root folder' ? hierarchy.pathToFolderId(entity.parentFolderId) : ''
+				}/${entity.name}`;
+				const txPath = `${
+					entity.parentFolderId !== 'root folder' ? hierarchy.txPathToFolderId(entity.parentFolderId) : ''
+				}/${entity.txId}`;
+				const entityIdPath = `${
+					entity.parentFolderId !== 'root folder' ? hierarchy.entityPathToFolderId(entity.parentFolderId) : ''
+				}/${entity.entityId}`;
+				return new ArFSPrivateFileOrFolderData(
+					entity.appName,
+					entity.appVersion,
+					entity.arFS,
+					entity.contentType,
+					entity.driveId,
+					entity.entityType,
+					entity.name,
+					entity.txId,
+					entity.unixTime,
+					entity.parentFolderId,
+					entity.entityId,
+					entity.cipher,
+					entity.cipherIV,
+					path,
+					txPath,
+					entityIdPath
+				);
+			});
+		} else {
+			const arDrive = new ArDriveAnonymous(new ArFSDAOAnonymous(arweave));
+			folder = await arDrive.getPublicFolder(folderId);
+
+			// Fetch all of the folder entities within the drive
+			const driveIdOfFolder = folder.driveId;
+			const allFolderEntitiesOfDrive = await arDrive.getAllFoldersOfPublicDrive(driveIdOfFolder);
+
+			// Feed entities to FolderHierarchy.setupNodesWithEntity()
+			const hierarchy = FolderHierarchy.newFromEntities(allFolderEntitiesOfDrive);
+			const folderIDs = hierarchy.allFolderIDs();
+
+			// Fetch all file entities within all Folders of the drive
+			const allFileEntitiesOfDrive = await arDrive.getPublicChildrenFilesFromFolderIDs(folderIDs);
+
+			// Fetch all names of each entity
+			const allEntitiesOfDrive = [...allFolderEntitiesOfDrive, ...allFileEntitiesOfDrive].sort(
+				(a, b) => +a.txId - +b.txId
+			);
+
+			mergedData = allEntitiesOfDrive.map((entity) => {
+				const path = `${
+					entity.parentFolderId !== 'root folder' ? hierarchy.pathToFolderId(entity.parentFolderId) : ''
+				}/${entity.name}`;
+				const txPath = `${
+					entity.parentFolderId !== 'root folder' ? hierarchy.txPathToFolderId(entity.parentFolderId) : ''
+				}/${entity.txId}`;
+				const entityIdPath = `${
+					entity.parentFolderId !== 'root folder' ? hierarchy.entityPathToFolderId(entity.parentFolderId) : ''
+				}/${entity.entityId}`;
+				return new ArFSPublicFileOrFolderData(
+					entity.appName,
+					entity.appVersion,
+					entity.arFS,
+					entity.contentType,
+					entity.driveId,
+					entity.entityType,
+					entity.name,
+					entity.txId,
+					entity.unixTime,
+					entity.parentFolderId,
+					entity.entityId,
+					path,
+					txPath,
+					entityIdPath
+				);
+			});
+		}
+
+		// Display data
+		console.log(JSON.stringify(mergedData, null, 4));
 		process.exit(0);
 	}
 });
