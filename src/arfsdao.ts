@@ -364,56 +364,49 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		// Generate a new drive ID  for the new drive
 		const driveId = uuidv4();
 
-		// Generate a folder ID for the new drive's root folder
-		const rootFolderId = uuidv4();
-
 		// Get the current time so the app can display the "created" data later on
 		const unixTime = Math.round(Date.now() / 1000);
 
 		const wallet = this.wallet as JWKWallet;
 
-		const privateDriveData = await ArFSPrivateDriveTransactionData.from(
-			driveName,
-			rootFolderId,
-			driveId,
-			password,
-			wallet.getPrivateKey()
-		);
+		// Create root folder
+		const {
+			folderTrxId: rootFolderTrxId,
+			folderTrxReward: rootFolderTrxReward,
+			folderId: rootFolderId
+		} = await this.createPrivateFolder(driveName, driveId, password, undefined, false);
 
 		// Create a drive metadata transaction
-		const driveMetaData = new ArFSPrivateDriveMetaDataPrototype(unixTime, driveId, privateDriveData);
-		const driveTrx = await this.prepareArFSObjectTransaction(driveMetaData);
-
-		// Create a root folder metadata transaction
-		const rootFolderMetadata = new ArFSPrivateFolderMetaDataPrototype(
+		const driveMetaData = new ArFSPrivateDriveMetaDataPrototype(
 			unixTime,
 			driveId,
-			rootFolderId,
-			await ArFSPrivateFolderTransactionData.from(driveName, driveId, password, wallet.getPrivateKey())
+			await ArFSPrivateDriveTransactionData.from(
+				driveName,
+				rootFolderId,
+				driveId,
+				password,
+				wallet.getPrivateKey()
+			)
 		);
-		const rootFolderTrx = await this.prepareArFSObjectTransaction(rootFolderMetadata);
+		const driveTrx = await this.prepareArFSObjectTransaction(driveMetaData);
 
-		// Create the Drive and Folder Uploader objects
+		// Create the Drive Uploader object
 		const driveUploader = await this.arweave.transactions.getUploader(driveTrx);
-		const folderUploader = await this.arweave.transactions.getUploader(rootFolderTrx);
 
-		// Execute the uploads
+		// Execute the upload
 		while (!driveUploader.isComplete) {
 			await driveUploader.uploadChunk();
 		}
-		while (!folderUploader.isComplete) {
-			await folderUploader.uploadChunk();
-		}
 
-		const driveKey = privateDriveData.driveKey;
+		const driveKey = driveMetaData.objectData.driveKey;
 
 		return {
 			driveTrxId: driveTrx.id,
 			driveTrxReward: driveTrx.reward,
-			rootFolderTrxId: rootFolderTrx.id,
-			rootFolderTrxReward: rootFolderTrx.reward,
-			driveId: driveId,
-			rootFolderId: rootFolderId,
+			rootFolderTrxId,
+			rootFolderTrxReward,
+			driveId,
+			rootFolderId,
 			driveKey
 		};
 	}
