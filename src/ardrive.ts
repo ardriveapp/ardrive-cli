@@ -288,11 +288,41 @@ export class ArDrive extends ArDriveAnonymous {
 		});
 	}
 
-	async createPublicFolder(folderName: string, driveId: string, parentFolderId?: FolderID): Promise<ArFSResult> {
+	async createPublicFolder(folderName: string, driveId: DriveID, parentFolderId?: FolderID): Promise<ArFSResult> {
 		// Create the folder and retrieve its folder ID
 		const { folderTrxId, folderTrxReward, folderId } = await this.arFsDao.createPublicFolder(
 			folderName,
 			driveId,
+			parentFolderId
+		);
+
+		// IN THE FUTURE WE'LL SEND A COMMUNITY TIP HERE
+		return Promise.resolve({
+			created: [
+				{
+					type: 'folder',
+					metadataTxId: folderTrxId,
+					entityId: folderId
+				}
+			],
+			tips: [],
+			fees: {
+				[folderTrxId]: +folderTrxReward
+			}
+		});
+	}
+
+	async createPrivateFolder(
+		folderName: string,
+		driveId: DriveID,
+		drivePassword: string,
+		parentFolderId?: FolderID
+	): Promise<ArFSResult> {
+		// Create the folder and retrieve its folder ID
+		const { folderTrxId, folderTrxReward, folderId } = await this.arFsDao.createPrivateFolder(
+			folderName,
+			driveId,
+			drivePassword,
 			parentFolderId
 		);
 
