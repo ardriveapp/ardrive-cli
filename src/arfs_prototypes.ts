@@ -79,7 +79,12 @@ export class ArFSPublicDriveMetaDataPrototype extends ArFSDriveMetaDataPrototype
 
 	addTagsToTransaction(transaction: Transaction): void {
 		super.addTagsToTransaction(transaction);
-		transaction.addTag('Content-Type', 'application/json');
+		// transaction.addTag('Content-Type', 'application/json');
+	}
+
+	addTagsToDataItem(tags: GQLTagInterface[]): void {
+		super.addTagsToDataItem(tags);
+		// tags.push({ name: 'Content-Type', value: 'application/json' });
 	}
 }
 
@@ -105,6 +110,13 @@ export class ArFSPrivateDriveMetaDataPrototype extends ArFSDriveMetaDataPrototyp
 		transaction.addTag('Cipher-IV', this.objectData.cipherIV);
 		transaction.addTag('Drive-Auth-Mode', this.objectData.driveAuthMode);
 	}
+
+	addTagsToDataItem(tags: GQLTagInterface[]): void {
+		super.addTagsToDataItem(tags);
+		tags.push({ name: 'Cipher', value: this.objectData.cipher });
+		tags.push({ name: 'Cipher-IV', value: this.objectData.cipherIV });
+		tags.push({ name: 'Drive-Auth-Mode', value: this.objectData.driveAuthMode });
+	}
 }
 
 export abstract class ArFSFolderMetaDataPrototype extends ArFSObjectMetadataPrototype {
@@ -128,6 +140,18 @@ export abstract class ArFSFolderMetaDataPrototype extends ArFSObjectMetadataProt
 		if (this.parentFolderId) {
 			// Root folder transactions do not have Parent-Folder-Id
 			transaction.addTag('Parent-Folder-Id', this.parentFolderId);
+		}
+	}
+
+	addTagsToDataItem(tags: GQLTagInterface[]): void {
+		tags.push({ name: 'Content-Type', value: this.contentType });
+		tags.push({ name: 'Entity-Type', value: 'folder' });
+		tags.push({ name: 'Unix-Time', value: this.unixTime.toString() });
+		tags.push({ name: 'Drive-Id', value: this.driveId });
+		tags.push({ name: 'Folder-Id', value: this.folderId });
+		if (this.parentFolderId) {
+			// Root folder transactions do not have Parent-Folder-Id
+			tags.push({ name: 'Parent-Folder-Id', value: this.parentFolderId });
 		}
 	}
 }
@@ -169,6 +193,12 @@ export class ArFSPrivateFolderMetaDataPrototype extends ArFSFolderMetaDataProtot
 		transaction.addTag('Cipher', this.objectData.cipher);
 		transaction.addTag('Cipher-IV', this.objectData.cipherIV);
 	}
+
+	addTagsToDataItem(tags: GQLTagInterface[]): void {
+		super.addTagsToDataItem(tags);
+		tags.push({ name: 'Cipher', value: this.objectData.cipher });
+		tags.push({ name: 'Cipher-IV', value: this.objectData.cipherIV });
+	}
 }
 
 export abstract class ArFSFileMetaDataPrototype extends ArFSObjectMetadataPrototype {
@@ -190,6 +220,15 @@ export abstract class ArFSFileMetaDataPrototype extends ArFSObjectMetadataProtot
 		transaction.addTag('Drive-Id', this.driveId);
 		transaction.addTag('File-Id', this.fileId);
 		transaction.addTag('Parent-Folder-Id', this.parentFolderId);
+	}
+
+	addTagsToDataItem(tags: GQLTagInterface[]): void {
+		tags.push({ name: 'Content-Type', value: this.contentType });
+		tags.push({ name: 'Entity-Type', value: 'file' });
+		tags.push({ name: 'Unix-Time', value: this.unixTime.toString() });
+		tags.push({ name: 'Drive-Id', value: this.driveId });
+		tags.push({ name: 'File-Id', value: this.fileId });
+		tags.push({ name: 'Parent-Folder-Id', value: this.parentFolderId });
 	}
 }
 export class ArFSPublicFileMetaDataPrototype extends ArFSFileMetaDataPrototype {
@@ -228,6 +267,12 @@ export class ArFSPrivateFileMetaDataPrototype extends ArFSFileMetaDataPrototype 
 		transaction.addTag('Cipher', this.objectData.cipher);
 		transaction.addTag('Cipher-IV', this.objectData.cipherIV);
 	}
+
+	addTagsToDataItem(tags: GQLTagInterface[]): void {
+		super.addTagsToDataItem(tags);
+		tags.push({ name: 'Cipher', value: this.objectData.cipher });
+		tags.push({ name: 'Cipher-IV', value: this.objectData.cipherIV });
+	}
 }
 
 export abstract class ArFSFileDataPrototype extends ArFSObjectMetadataPrototype {
@@ -240,6 +285,10 @@ export abstract class ArFSFileDataPrototype extends ArFSObjectMetadataPrototype 
 
 	addTagsToTransaction(transaction: Transaction): void {
 		transaction.addTag('Content-Type', this.contentType);
+	}
+
+	addTagsToDataItem(tags: GQLTagInterface[]): void {
+		tags.push({ name: 'Content-Type', value: this.contentType });
 	}
 }
 
