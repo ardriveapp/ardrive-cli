@@ -1,4 +1,4 @@
-import { ArweaveAddress } from './wallet_new';
+import { ArweaveAddress } from './types';
 
 const nodeFragment = `
 	node {

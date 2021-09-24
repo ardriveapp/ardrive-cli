@@ -4,13 +4,16 @@ import * as crypto from 'crypto';
 import jwkToPem, { JWK } from 'jwk-to-pem';
 import Arweave from 'arweave';
 import * as mnemonicKeys from 'arweave-mnemonic-keys';
-
-type PublicKey = string;
-export type ArweaveAddress = string;
-type SeedPhrase = string;
-type TransactionID = string;
-type Winston = string;
-type NetworkReward = Winston;
+import {
+	TransactionID,
+	Winston,
+	NetworkReward,
+	PublicKey,
+	ArweaveAddress,
+	SeedPhrase,
+	DEFAULT_APP_NAME,
+	DEFAULT_APP_VERSION
+} from './types';
 
 export type ARTransferResult = {
 	trxID: TransactionID;
@@ -58,7 +61,11 @@ export class JWKWallet implements Wallet {
 }
 
 export class WalletDAO {
-	constructor(private readonly arweave: Arweave) {}
+	constructor(
+		private readonly arweave: Arweave,
+		private readonly appName = DEFAULT_APP_NAME,
+		private readonly appVersion = DEFAULT_APP_VERSION
+	) {}
 
 	async generateSeedPhrase(): Promise<SeedPhrase> {
 		const seedPhrase: SeedPhrase = await mnemonicKeys.generateMnemonic();
@@ -78,13 +85,18 @@ export class WalletDAO {
 		return Promise.resolve(+(await this.arweave.wallets.getBalance(address)));
 	}
 
+	async walletHasBalance(wallet: Wallet, winstonPrice: Winston): Promise<boolean> {
+		const walletBalance = await this.getWalletWinstonBalance(wallet);
+		return +walletBalance > +winstonPrice;
+	}
+
 	async sendARToAddress(
 		arAmount: number,
 		fromWallet: Wallet,
 		toAddress: ArweaveAddress,
 		[
-			{ value: appName = 'ArDrive-Core' },
-			{ value: appVersion = '1.0' },
+			{ value: appName = this.appName },
+			{ value: appVersion = this.appVersion },
 			{ value: trxType = 'transfer' },
 			...otherTags
 		]: GQLTagInterface[]
@@ -111,16 +123,14 @@ export class WalletDAO {
 		// Sign file
 		await this.arweave.transactions.sign(transaction, jwkWallet.getPrivateKey());
 
-		const ret = {
-			trxID: transaction.id,
-			winston: winston,
-			reward: transaction.reward
-		};
-
 		// Submit the transaction
 		const response = await this.arweave.transactions.post(transaction);
 		if (response.status === 200 || response.status === 202) {
-			return Promise.resolve(ret);
+			return Promise.resolve({
+				trxID: transaction.id,
+				winston,
+				reward: transaction.reward
+			});
 		} else {
 			throw new Error(`Transaction failed. Response: ${response}`);
 		}

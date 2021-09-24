@@ -1,39 +1,47 @@
+import { CommunityOracle } from './community/community_oracle';
+import { GQLTagInterface, winstonToAr } from 'ardrive-core-js';
+import * as fs from 'fs';
 import {
-	ArFSDAO,
-	ArFSPublicDrive,
-	FolderID,
-	TransactionID,
-	DriveID,
-	ArFSDAOAnonymous,
 	ArFSDAOType,
+	ArFSDAOAnonymous,
+	ArFSPublicDrive,
+	ArFSDAO,
+	ArFSPrivateDrive,
 	ArFSPublicFolder,
 	ArFSPrivateFolder,
 	ArFSPublicFile,
 	ArFSPrivateFile,
 	ArFSFileOrFolderEntity
 } from './arfsdao';
+import { TransactionID, ArweaveAddress, Winston, DriveID, FolderID, Bytes, TipType } from './types';
+import { WalletDAO, Wallet } from './wallet_new';
+import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
+import { ARDataPriceEstimator } from './utils/ar_data_price_estimator';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
-export type ArFSTipType = 'drive' | 'folder';
 
 export interface ArFSEntityData {
 	type: ArFSEntityDataType;
-	metadataTxId: TransactionID; // TODO: make a type that checks lengths
+	metadataTxId: TransactionID;
 	key?: string;
 }
 
-// TODO: Is this really in the ArFS domain?
-export interface ArFSTipData {
-	type: ArFSTipType;
-	txId: TransactionID; // TODO: make a type that checks lengths
-	winston: number; // TODO: make a type that checks validity
+export interface TipData {
+	txId: TransactionID;
+	recipient: ArweaveAddress;
+	winston: Winston;
+}
+
+export interface TipResult {
+	tipData: TipData;
+	reward: Winston;
 }
 
 export type ArFSFees = { [key: string]: number };
 
 export interface ArFSResult {
 	created: ArFSEntityData[];
-	tips: ArFSTipData[];
+	tips: TipData[];
 	fees: ArFSFees;
 }
 
@@ -80,8 +88,45 @@ export class ArDriveAnonymous extends ArDriveType {
 }
 
 export class ArDrive extends ArDriveAnonymous {
-	constructor(protected readonly arFsDao: ArFSDAO) {
+	constructor(
+		private readonly wallet: Wallet,
+		private readonly walletDao: WalletDAO,
+		protected readonly arFsDao: ArFSDAO,
+		private readonly communityOracle: CommunityOracle,
+		private readonly appName: string,
+		private readonly appVersion: string,
+		private readonly priceEstimator: ARDataPriceEstimator = new ARDataPriceRegressionEstimator(true)
+	) {
 		super(arFsDao);
+	}
+
+	// TODO: FS shouldn't be reading the files more than once and doesn't belong in this class
+	getFileSize(filePath: string): Bytes {
+		return fs.statSync(filePath).size;
+	}
+
+	async sendCommunityTip(communityWinstonTip: Winston): Promise<TipResult> {
+		const tokenHolder: ArweaveAddress = await this.communityOracle.selectTokenHolder();
+
+		const transferResult = await this.walletDao.sendARToAddress(
+			winstonToAr(+communityWinstonTip),
+			this.wallet,
+			tokenHolder,
+			this.getTipTags()
+		);
+
+		return {
+			tipData: { txId: transferResult.trxID, recipient: tokenHolder, winston: communityWinstonTip },
+			reward: transferResult.reward
+		};
+	}
+
+	getTipTags(tipType: TipType = 'data upload'): GQLTagInterface[] {
+		return [
+			{ name: 'App-Name', value: this.appName },
+			{ name: 'App-Version', value: this.appVersion },
+			{ name: 'Tip-Type', value: tipType }
+		];
 	}
 
 	async uploadPublicFile(
@@ -89,29 +134,46 @@ export class ArDrive extends ArDriveAnonymous {
 		filePath: string,
 		destinationFileName?: string
 	): Promise<ArFSResult> {
-		const { dataTrx, metaDataTrx, fileId } = await this.arFsDao.uploadPublicFile(
+		const winstonPrice = await this.priceEstimator.getBaseWinstonPriceForByteCount(this.getFileSize(filePath));
+		const communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(winstonPrice.toString());
+		const totalWinstonPrice = (+winstonPrice + +communityWinstonTip).toString();
+
+		if (!this.walletDao.walletHasBalance(this.wallet, totalWinstonPrice)) {
+			throw new Error('Not enough AR for file upload..');
+		}
+
+		// TODO: Add interactive confirmation of AR price estimation
+
+		const uploadFileResult = await this.arFsDao.uploadPublicFile(
 			parentFolderId,
 			filePath,
+			winstonPrice.toString(),
 			destinationFileName
 		);
+		const { tipData, reward: communityTipTrxReward } = await this.sendCommunityTip(communityWinstonTip);
 
-		// TODO: send community tip
 		return Promise.resolve({
 			created: [
 				{
 					type: 'file',
-					metadataTxId: metaDataTrx.id,
-					dataTxId: dataTrx.id,
-					entityId: fileId
+					metadataTxId: uploadFileResult.metaDataTrxId,
+					dataTxId: uploadFileResult.dataTrxId,
+					entityId: uploadFileResult.fileId
 				}
 			],
-			tips: [],
+			tips: [tipData],
 			fees: {
-				[metaDataTrx.id]: +metaDataTrx.reward,
-				[dataTrx.id]: +dataTrx.reward
-				// qGr1BIVWQwdPMuQxJ9MmwMM8CBmZTIj9powGxJSZyi0: 344523
+				[uploadFileResult.metaDataTrxId]: +uploadFileResult.metaDataTrxReward,
+				[uploadFileResult.dataTrxId]: +uploadFileResult.dataTrxReward,
+				[tipData.txId]: +communityTipTrxReward
 			}
 		});
+	}
+
+	/** Estimates the size of a private file encrypted with a uuid */
+	encryptedFileSize(filePath: string): number {
+		// cipherLen = (clearLen/16 + 1) * 16;
+		return (this.getFileSize(filePath) / 16 + 1) * 16;
 	}
 
 	async uploadPrivateFile(
@@ -120,125 +182,120 @@ export class ArDrive extends ArDriveAnonymous {
 		password: string,
 		destinationFileName?: string
 	): Promise<ArFSResult> {
-		// Retrieve drive ID from folder ID and ensure that it is indeed a private drive
-		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
-		const drive = await this.arFsDao.getPrivateDrive(driveId, password);
-		if (!drive) {
-			throw new Error(`Private drive with Drive ID ${driveId} not found!`);
+		const winstonPrice = await this.priceEstimator.getBaseWinstonPriceForByteCount(
+			this.encryptedFileSize(filePath)
+		);
+		const communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(winstonPrice.toString());
+		const totalWinstonPrice = (+winstonPrice + +communityWinstonTip).toString();
+
+		if (!this.walletDao.walletHasBalance(this.wallet, totalWinstonPrice)) {
+			throw new Error('Not enough AR for file upload..');
 		}
 
-		const { dataTrx, metaDataTrx, fileId } = await this.arFsDao.preparePrivateFileTransactions(
+		// TODO: Add interactive confirmation of AR price estimation
+
+		const uploadFileResult = await this.arFsDao.uploadPrivateFile(
 			parentFolderId,
 			filePath,
 			password,
+			winstonPrice.toString(),
 			destinationFileName
 		);
 
-		// TODO: send community tip
+		const { tipData, reward: communityTipTrxReward } = await this.sendCommunityTip(communityWinstonTip);
+
 		return Promise.resolve({
 			created: [
 				{
 					type: 'file',
-					metadataTxId: metaDataTrx.id,
-					dataTxId: dataTrx.id,
-					entityId: fileId
+					metadataTxId: uploadFileResult.metaDataTrxId,
+					dataTxId: uploadFileResult.dataTrxId,
+					entityId: uploadFileResult.fileId,
+					key: uploadFileResult.fileKey.toString('hex')
 				}
 			],
-			tips: [],
+			tips: [tipData],
 			fees: {
-				[metaDataTrx.id]: +metaDataTrx.reward,
-				[dataTrx.id]: +dataTrx.reward
-				// qGr1BIVWQwdPMuQxJ9MmwMM8CBmZTIj9powGxJSZyi0: 344523
+				[uploadFileResult.metaDataTrxId]: +uploadFileResult.metaDataTrxReward,
+				[uploadFileResult.dataTrxId]: +uploadFileResult.dataTrxReward,
+				[tipData.txId]: +communityTipTrxReward
 			}
 		});
 	}
 
 	async createPublicFolder(folderName: string, driveId: string, parentFolderId?: FolderID): Promise<ArFSResult> {
-		// TODO: Fetch drive ID for parent folder ID
-
-		// Generate a new drive ID
-		const { folderTrx, folderId } = await this.arFsDao.createPublicFolder(folderName, driveId, parentFolderId);
+		// Create the folder and retrieve its folder ID
+		const { folderTrxId, folderTrxReward, folderId } = await this.arFsDao.createPublicFolder(
+			folderName,
+			driveId,
+			parentFolderId
+		);
 
 		// IN THE FUTURE WE'LL SEND A COMMUNITY TIP HERE
 		return Promise.resolve({
 			created: [
 				{
 					type: 'folder',
-					metadataTxId: folderTrx.id,
-					entityId: folderId,
-					key: ''
+					metadataTxId: folderTrxId,
+					entityId: folderId
 				}
 			],
 			tips: [],
 			fees: {
-				[folderTrx.id]: +folderTrx.reward
+				[folderTrxId]: +folderTrxReward
 			}
 		});
 	}
 
 	async createPublicDrive(driveName: string): Promise<ArFSResult> {
-		// Generate a new drive ID
-		const { driveTrx, rootFolderTrx, driveId, rootFolderId } = await this.arFsDao.createPublicDrive(driveName);
-
-		// IN THE FUTURE WE'LL SEND A COMMUNITY TIP HERE
+		const createDriveResult = await this.arFsDao.createPublicDrive(driveName);
 		return Promise.resolve({
 			created: [
 				{
 					type: 'drive',
-					metadataTxId: driveTrx.id,
-					entityId: driveId,
-					key: ''
+					metadataTxId: createDriveResult.driveTrxId,
+					entityId: createDriveResult.driveId
 				},
 				{
 					type: 'folder',
-					metadataTxId: rootFolderTrx.id,
-					entityId: rootFolderId,
-					key: ''
+					metadataTxId: createDriveResult.rootFolderTrxId,
+					entityId: createDriveResult.rootFolderId
 				}
 			],
 			tips: [],
 			fees: {
-				[driveTrx.id]: +driveTrx.reward,
-				[rootFolderTrx.id]: +rootFolderTrx.reward
+				[createDriveResult.driveTrxId]: +createDriveResult.driveTrxReward,
+				[createDriveResult.rootFolderTrxId]: +createDriveResult.rootFolderTrxReward
 			}
 		});
 	}
 
 	async createPrivateDrive(driveName: string, password: string): Promise<ArFSResult> {
 		// Generate a new drive ID
-		const { driveTrx, rootFolderTrx, driveId, rootFolderId, driveKey } = await this.arFsDao.createPrivateDrive(
-			driveName,
-			password
-		);
+		const createDriveResult = await this.arFsDao.createPrivateDrive(driveName, password);
 
 		// IN THE FUTURE WE'LL SEND A COMMUNITY TIP HERE
 		return Promise.resolve({
 			created: [
 				{
 					type: 'drive',
-					metadataTxId: driveTrx.id,
-					entityId: driveId,
-					key: driveKey.toString('hex')
+					metadataTxId: createDriveResult.driveTrxId,
+					entityId: createDriveResult.driveId,
+					key: createDriveResult.driveKey.toString('hex')
 				},
 				{
 					type: 'folder',
-					metadataTxId: rootFolderTrx.id,
-					entityId: rootFolderId,
-					key: driveKey.toString('hex')
+					metadataTxId: createDriveResult.rootFolderTrxId,
+					entityId: createDriveResult.rootFolderId,
+					key: createDriveResult.driveKey.toString('hex')
 				}
 			],
 			tips: [],
 			fees: {
-				[driveTrx.id]: +driveTrx.reward,
-				[rootFolderTrx.id]: +rootFolderTrx.reward
+				[createDriveResult.driveTrxId]: +createDriveResult.driveTrxReward,
+				[createDriveResult.rootFolderTrxId]: +createDriveResult.rootFolderTrxReward
 			}
 		});
-	}
-
-<<<<<<< HEAD
-	async getPrivateDrive(driveId: DriveID): Promise<ArFSPublicDrive> {
-		const driveEntity = await this.arFsDao.getPrivateDrive(driveId);
-		return driveEntity;
 	}
 
 	async getPrivateFolder(folderId: FolderID): Promise<ArFSPrivateFolder> {
@@ -252,10 +309,10 @@ export class ArDrive extends ArDriveAnonymous {
 
 	async getPrivateChildrenFilesFromFolderIDs(folderIDs: FolderID[]): Promise<ArFSPrivateFile[]> {
 		return this.arFsDao.getAllPrivateChildrenFilesFromFolderIDs(folderIDs);
-=======
-	async getPrivateDrive(driveId: DriveID, drivePassword: string): Promise<ArFSPublicDrive> {
+	}
+
+	async getPrivateDrive(driveId: DriveID, drivePassword: string): Promise<ArFSPrivateDrive> {
 		const driveEntity = await this.arFsDao.getPrivateDrive(driveId, drivePassword);
 		return Promise.resolve(driveEntity);
->>>>>>> 9e2118d (fix(get private drive): Decrypt data and properly build private drive PE-315)
 	}
 }
