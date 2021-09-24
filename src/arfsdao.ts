@@ -38,7 +38,7 @@ import {
 	ArFSPublicFolderTransactionData
 } from './arfs_trx_data_types';
 import { buildQuery } from './query';
-import { ArweaveSigner, createData, DataItem } from 'arbundles';
+import { ArweaveSigner, Bundle, bundleAndSignData, createData, DataItem } from 'arbundles';
 
 export const ArFS_O_11 = '0.11';
 
@@ -58,8 +58,21 @@ export interface ArFSCreateDriveResult {
 	rootFolderId: FolderID;
 }
 
+export interface ArFSCreateDriveBundleResult {
+	bundleTrx: Transaction;
+	driveDataItem: DataItem;
+	rootFolderDataItem: DataItem;
+	driveId: DriveID;
+	rootFolderId: FolderID;
+}
+
 export interface ArFSCreateFolderResult {
 	folderTrx: Transaction;
+	folderId: FolderID;
+}
+
+export interface ArFSCreateFolderDataItemResult {
+	folderDataItem: DataItem;
 	folderId: FolderID;
 }
 
@@ -238,12 +251,59 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return { folderTrx, folderId };
 	}
 
-	async createPublicDrive(driveName: string): Promise<ArFSCreateDriveResult> {
+	async createPublicFolderDataItem(
+		folderName: string,
+		driveId: DriveID,
+		parentFolderId?: FolderID,
+		syncParentFolderId = true
+	): Promise<ArFSCreateFolderDataItemResult> {
+		if (parentFolderId) {
+			// Assert that drive ID is consistent with parent folder ID
+			const actualDriveId = await this.getDriveIdForFolderId(parentFolderId);
+
+			if (actualDriveId !== driveId) {
+				throw new Error(
+					`Drive id: ${driveId} does not match actual drive id: ${actualDriveId} for parent folder id`
+				);
+			}
+		} else if (syncParentFolderId) {
+			// If drive contains a root folder ID, treat this as a subfolder to the root folder
+			const drive = await this.getPublicDrive(driveId);
+			if (!drive) {
+				throw new Error(`Public drive with Drive ID ${driveId} not found!`);
+			}
+
+			if (drive.rootFolderId) {
+				parentFolderId = drive.rootFolderId;
+			}
+		}
+
+		// Generate a new folder ID
+		const folderId = uuidv4();
+
+		// Get the current time so the app can display the "created" data later on
+		const unixTime = Math.round(Date.now() / 1000);
+
+		// Create a root folder metadata transaction
+		const folderMetadata = new ArFSPublicFolderMetaDataPrototype(
+			new ArFSPublicFolderTransactionData(folderName),
+			unixTime,
+			driveId,
+			folderId,
+			parentFolderId
+		);
+
+		const folderDataItem = await this.prepareArFSObjectDataItem(folderMetadata);
+
+		return { folderDataItem, folderId };
+	}
+
+	async createPublicDrive(driveName: string): Promise<ArFSCreateDriveBundleResult> {
 		// Generate a new drive ID  for the new drive
 		const driveId = uuidv4();
 
 		// Create root folder
-		const { folderTrx: rootFolderTrx, folderId: rootFolderId } = await this.createPublicFolder(
+		const { folderDataItem: rootFolderDataItem, folderId: rootFolderId } = await this.createPublicFolderDataItem(
 			driveName,
 			driveId,
 			undefined,
@@ -259,17 +319,22 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			unixTime,
 			driveId
 		);
-		const driveTrx = await this.prepareArFSObjectTransaction(driveMetaData);
+
+		const driveDataItem = await this.prepareArFSObjectDataItem(driveMetaData);
+
+		const dataItems: DataItem[] = [rootFolderDataItem, driveDataItem];
+
+		const bundleTrx: Transaction = await this.prepareArFSObjectBundle(dataItems);
 
 		// Create the Drive and Folder Uploader objects
-		const driveUploader = await this.arweave.transactions.getUploader(driveTrx);
+		const driveUploader = await this.arweave.transactions.getUploader(bundleTrx);
 
 		// Execute the uploads
 		while (!driveUploader.isComplete) {
 			await driveUploader.uploadChunk();
 		}
 
-		return { driveTrx, rootFolderTrx, driveId, rootFolderId };
+		return { bundleTrx, driveDataItem, rootFolderDataItem, driveId, rootFolderId };
 	}
 
 	async createPrivateDrive(driveName: string, password: string): Promise<ArFSCreatePrivateDriveResult> {
@@ -521,11 +586,34 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			tags.push({ name: tag.name, value: tag.value });
 		});
 
-		// Sign the transaction
+		// Sign the data item
 		const dataItem = createData(objectMetaData.objectData.asTransactionData(), signer, { tags });
 		await dataItem.sign(signer);
 
 		return dataItem;
+	}
+
+	async prepareArFSObjectBundle(
+		dataItems: DataItem[],
+		appName = 'ArDrive-Core',
+		appVersion = '1.0',
+		otherTags: GQLTagInterface[] = []
+	): Promise<Transaction> {
+		const wallet = this.wallet as JWKWallet;
+		const signer = new ArweaveSigner(wallet.getPrivateKey());
+		const bundle = await bundleAndSignData(dataItems, signer);
+		const bundledDataTx = await bundle.toTransaction(this.arweave, wallet.getPrivateKey());
+
+		bundledDataTx.addTag('App-Name', appName);
+		bundledDataTx.addTag('App-Version', appVersion);
+
+		otherTags.forEach((tag) => {
+			bundledDataTx.addTag(tag.name, tag.value);
+		});
+
+		await this.arweave.transactions.sign(bundledDataTx, wallet.getPrivateKey());
+
+		return bundledDataTx;
 	}
 
 	async getPrivateDrive(driveId: string): Promise<ArFSPrivateDrive> {

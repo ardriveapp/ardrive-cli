@@ -1,6 +1,6 @@
 import { ArFSDAO, ArFSPublicDrive, FolderID, TransactionID, DriveID, ArFSDAOAnonymous, ArFSDAOType } from './arfsdao';
 
-export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
+export type ArFSEntityDataType = 'bundle' | 'drive' | 'folder' | 'file';
 export type ArFSTipType = 'drive' | 'folder';
 
 export interface ArFSEntityData {
@@ -19,6 +19,12 @@ export interface ArFSTipData {
 export type ArFSFees = { [key: string]: number };
 
 export interface ArFSResult {
+	created: ArFSEntityData[];
+	tips: ArFSTipData[];
+	fees: ArFSFees;
+}
+
+export interface ArFSBundleResult {
 	created: ArFSEntityData[];
 	tips: ArFSTipData[];
 	fees: ArFSFees;
@@ -131,28 +137,39 @@ export class ArDrive extends ArDriveAnonymous {
 
 	async createPublicDrive(driveName: string): Promise<ArFSResult> {
 		// Generate a new drive ID
-		const { driveTrx, rootFolderTrx, driveId, rootFolderId } = await this.arFsDao.createPublicDrive(driveName);
+		const {
+			bundleTrx,
+			driveDataItem,
+			rootFolderDataItem,
+			driveId,
+			rootFolderId
+		} = await this.arFsDao.createPublicDrive(driveName);
 
 		// IN THE FUTURE WE'LL SEND A COMMUNITY TIP HERE
 		return Promise.resolve({
 			created: [
 				{
+					type: 'bundle',
+					metadataTxId: bundleTrx.id,
+					entityId: '',
+					key: ''
+				},
+				{
 					type: 'drive',
-					metadataTxId: driveTrx.id,
+					metadataTxId: driveDataItem.id,
 					entityId: driveId,
 					key: ''
 				},
 				{
 					type: 'folder',
-					metadataTxId: rootFolderTrx.id,
+					metadataTxId: rootFolderDataItem.id,
 					entityId: rootFolderId,
 					key: ''
 				}
 			],
 			tips: [],
 			fees: {
-				[driveTrx.id]: +driveTrx.reward,
-				[rootFolderTrx.id]: +rootFolderTrx.reward
+				[bundleTrx.id]: +bundleTrx.reward
 			}
 		});
 	}
