@@ -191,12 +191,11 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Upload all files in the folder
 		for await (const wrappedFile of wrappedFolder.files) {
-			const uploadFileResult = await this.arFsDao.uploadPublicFile(
-				folderId,
-				wrappedFile,
-				driveId,
-				'IMPLEMENT ME'
-			);
+			const winstonPrice = (
+				await this.priceEstimator.getBaseWinstonPriceForByteCount(wrappedFile.fileStats.size)
+			).toString();
+
+			const uploadFileResult = await this.arFsDao.uploadPublicFile(folderId, wrappedFile, driveId, winstonPrice);
 
 			// Capture all file results
 			uploadEntityFees = {
@@ -220,7 +219,7 @@ export class ArDrive extends ArDriveAnonymous {
 			// Recursion alert, will keep creating folders of all nested folders
 			const results = await this.createPublicFolderAndUploadChildren(childFolder, driveId, folderId);
 
-			// Capture all results
+			// Capture all folder results
 			uploadEntityFees = {
 				...uploadEntityFees,
 				...results.feeResults
