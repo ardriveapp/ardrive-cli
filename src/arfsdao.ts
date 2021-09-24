@@ -897,8 +897,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	async getPrivateFolder(folderId: FolderID): Promise<ArFSPrivateFolder> {
 		const gqlQuery = buildQuery([
 			{ name: 'Folder-Id', value: folderId },
-			{ name: 'Entity-Type', value: 'folder' },
-			{ name: 'Drive-Privacy', value: 'private' }
+			{ name: 'Entity-Type', value: 'folder' }
 		]);
 
 		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
