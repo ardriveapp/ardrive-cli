@@ -1278,9 +1278,7 @@ export class ArFSPrivateDriveBuilder {
 	}
 }
 
-export abstract class ArFSFileOrFolderEntity extends ArFSEntity implements ArFSFileFolderEntity {
-	abstract readonly parentFolderId: string;
-	abstract readonly entityId: string;
+export class ArFSFileOrFolderEntity extends ArFSEntity implements ArFSFileFolderEntity {
 	lastModifiedDate!: never;
 
 	constructor(
@@ -1292,25 +1290,90 @@ export abstract class ArFSFileOrFolderEntity extends ArFSEntity implements ArFSF
 		entityType: string,
 		name: string,
 		txId: string,
-		unixTime: number
+		unixTime: number,
+		readonly parentFolderId: string,
+		readonly entityId: string
 	) {
 		super(appName, appVersion, arFS, contentType, driveId, entityType, name, 0, txId, unixTime);
 	}
 }
 
-export abstract class ArFSFileEntity extends ArFSFileOrFolderEntity {
-	abstract readonly appName: string;
-	abstract readonly appVersion: string;
-	abstract readonly arFS: string;
-	abstract readonly contentType: string;
-	abstract readonly driveId: string;
-	abstract readonly entityType: string;
-	abstract readonly name: string;
-	abstract readonly txId: string;
-	abstract readonly unixTime: number;
+export interface ArFSWithPath {
+	readonly path: string;
+	readonly txIdPath: string;
+	readonly entityIdPath: string;
 }
 
-export class ArFSPublicFile extends ArFSFileEntity {
+// TODO: replace all 'FileOrFolder' ocurrencies with 'Directory' (?)
+export class ArFSPublicFileOrFolderData extends ArFSFileOrFolderEntity implements ArFSWithPath {
+	constructor(
+		appName: string,
+		appVersion: string,
+		arFS: string,
+		contentType: string,
+		driveId: string,
+		entityType: string,
+		name: string,
+		txId: string,
+		unixTime: number,
+		parentFolderId: string,
+		entityId: string,
+		readonly path: string,
+		readonly txIdPath: string,
+		readonly entityIdPath: string
+	) {
+		super(
+			appName,
+			appVersion,
+			arFS,
+			contentType,
+			driveId,
+			entityType,
+			name,
+			txId,
+			unixTime,
+			parentFolderId,
+			entityId
+		);
+	}
+}
+
+export class ArFSPrivateFileOrFolderData extends ArFSFileOrFolderEntity implements ArFSWithPath {
+	constructor(
+		appName: string,
+		appVersion: string,
+		arFS: string,
+		contentType: ContentType,
+		driveId: DriveID,
+		entityType: EntityType,
+		name: string,
+		txId: TransactionID,
+		unixTime: number,
+		parentFolderId: FolderID,
+		entityId: string,
+		readonly cipher: string,
+		readonly cipherIV: CipherIV,
+		readonly path: string,
+		readonly txIdPath: string,
+		readonly entityIdPath: string
+	) {
+		super(
+			appName,
+			appVersion,
+			arFS,
+			contentType,
+			driveId,
+			entityType,
+			name,
+			txId,
+			unixTime,
+			parentFolderId,
+			entityId
+		);
+	}
+}
+
+export class ArFSPublicFile extends ArFSFileOrFolderEntity {
 	constructor(
 		readonly appName: string,
 		readonly appVersion: string,
@@ -1324,7 +1387,19 @@ export class ArFSPublicFile extends ArFSFileEntity {
 		readonly parentFolderId: string,
 		readonly entityId: string
 	) {
-		super(appName, appVersion, arFS, contentType, driveId, entityType, name, txId, unixTime);
+		super(
+			appName,
+			appVersion,
+			arFS,
+			contentType,
+			driveId,
+			entityType,
+			name,
+			txId,
+			unixTime,
+			parentFolderId,
+			entityId
+		);
 	}
 }
 
@@ -1341,7 +1416,7 @@ export class ArFSPublicFileBuilder {
 	parentFolderId?: string;
 	entityId?: string;
 
-	build(): ArFSPublicFolder {
+	build(): ArFSPublicFile {
 		if (
 			this.appName?.length &&
 			this.appVersion?.length &&
@@ -1372,7 +1447,7 @@ export class ArFSPublicFileBuilder {
 	}
 }
 
-export class ArFSPrivateFile extends ArFSFileEntity {
+export class ArFSPrivateFile extends ArFSFileOrFolderEntity {
 	constructor(
 		readonly appName: string,
 		readonly appVersion: string,
@@ -1388,7 +1463,19 @@ export class ArFSPrivateFile extends ArFSFileEntity {
 		readonly cipher: string,
 		readonly cipherIV: string
 	) {
-		super(appName, appVersion, arFS, contentType, driveId, entityType, name, txId, unixTime);
+		super(
+			appName,
+			appVersion,
+			arFS,
+			contentType,
+			driveId,
+			entityType,
+			name,
+			txId,
+			unixTime,
+			parentFolderId,
+			entityId
+		);
 	}
 }
 
@@ -1468,7 +1555,19 @@ export class ArFSPublicFolder extends ArFSFolderEntity {
 		readonly parentFolderId: string,
 		readonly entityId: string
 	) {
-		super(appName, appVersion, arFS, contentType, driveId, entityType, name, txId, unixTime);
+		super(
+			appName,
+			appVersion,
+			arFS,
+			contentType,
+			driveId,
+			entityType,
+			name,
+			txId,
+			unixTime,
+			parentFolderId,
+			entityId
+		);
 	}
 }
 
@@ -1532,7 +1631,19 @@ export class ArFSPrivateFolder extends ArFSFolderEntity {
 		readonly cipher: string,
 		readonly cipherIV: string
 	) {
-		super(appName, appVersion, arFS, contentType, driveId, entityType, name, txId, unixTime);
+		super(
+			appName,
+			appVersion,
+			arFS,
+			contentType,
+			driveId,
+			entityType,
+			name,
+			txId,
+			unixTime,
+			parentFolderId,
+			entityId
+		);
 	}
 }
 
@@ -1649,7 +1760,7 @@ export class FolderHierarchy {
 		}
 
 		let tmpNode = this.folderIdToNodeMap[0];
-		while (tmpNode.parent) {
+		while (tmpNode.parent && this.folderIdToNodeMap[tmpNode.parent.folderId]) {
 			tmpNode = tmpNode.parent;
 		}
 		return tmpNode;
@@ -1679,5 +1790,57 @@ export class FolderHierarchy {
 		subTreeEntities.push(...node.children);
 
 		return subTreeEntities;
+	}
+
+	public pathToFolderId(folderId: FolderID): string {
+		if (this.rootNode.parent) {
+			throw new Error(`Can't compute paths from sub-tree`);
+		}
+		let folderNode = this.folderIdToNodeMap[folderId];
+		const nodesInPathToFolder = [folderNode];
+		while (folderNode.parent && folderNode.folderId !== this.rootNode.folderId) {
+			folderNode = folderNode.parent;
+			nodesInPathToFolder.push(folderNode);
+		}
+		const olderFirstNodesInPathToFolder = nodesInPathToFolder.reverse();
+		const olderFirstNamesOfNodesInPath = olderFirstNodesInPathToFolder.map(
+			(n) => this.folderIdToEntityMap[n.folderId].name
+		);
+		const stringPath = olderFirstNamesOfNodesInPath.join('/');
+		return stringPath;
+	}
+
+	public entityPathToFolderId(folderId: FolderID): string {
+		if (this.rootNode.parent) {
+			throw new Error(`Can't compute paths from sub-tree`);
+		}
+		let folderNode = this.folderIdToNodeMap[folderId];
+		const nodesInPathToFolder = [folderNode];
+		while (folderNode.parent && folderNode.folderId !== this.rootNode.folderId) {
+			folderNode = folderNode.parent;
+			nodesInPathToFolder.push(folderNode);
+		}
+		const olderFirstNodesInPathToFolder = nodesInPathToFolder.reverse();
+		const olderFirstFolderIDsOfNodesInPath = olderFirstNodesInPathToFolder.map((n) => n.folderId);
+		const stringPath = olderFirstFolderIDsOfNodesInPath.join('/');
+		return stringPath;
+	}
+
+	public txPathToFolderId(folderId: FolderID): string {
+		if (this.rootNode.parent) {
+			throw new Error(`Can't compute paths from sub-tree`);
+		}
+		let folderNode = this.folderIdToNodeMap[folderId];
+		const nodesInPathToFolder = [folderNode];
+		while (folderNode.parent && folderNode.folderId !== this.rootNode.folderId) {
+			folderNode = folderNode.parent;
+			nodesInPathToFolder.push(folderNode);
+		}
+		const olderFirstNodesInPathToFolder = nodesInPathToFolder.reverse();
+		const olderFirstTxTDsOfNodesInPath = olderFirstNodesInPathToFolder.map(
+			(n) => this.folderIdToEntityMap[n.folderId].txId
+		);
+		const stringPath = olderFirstTxTDsOfNodesInPath.join('/');
+		return stringPath;
 	}
 }
