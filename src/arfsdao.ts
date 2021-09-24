@@ -9,6 +9,7 @@ import {
 	ArFSEntity,
 	ArFSFileFolderEntity,
 	ContentType,
+	DriveAuthMode,
 	DrivePrivacy,
 	EntityType,
 	extToMime,
@@ -42,6 +43,7 @@ import {
 import { buildQuery } from './query';
 
 export const ArFS_O_11 = '0.11';
+export const ROOT_FOLDER_PARENT = 'root folder';
 
 export type CipherIV = string;
 export type FolderID = string;
@@ -781,7 +783,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 						drive.contentType = value as ContentType;
 						break;
 					case 'Drive-Auth-Mode':
-						drive.driveAuthMode = value;
+						drive.driveAuthMode = value as DriveAuthMode;
 						break;
 					case 'Drive-Id':
 						drive.driveId = value;
@@ -1148,14 +1150,14 @@ export class ArFSPublicDrive extends ArFSEntity implements ArFSDriveEntity {
 		readonly appName: string,
 		readonly appVersion: string,
 		readonly arFS: string,
-		readonly contentType: string,
-		readonly driveId: string,
-		readonly entityType: string,
+		readonly contentType: ContentType,
+		readonly driveId: DriveID,
+		readonly entityType: EntityType,
 		readonly name: string,
-		readonly txId: string,
+		readonly txId: TransactionID,
 		readonly unixTime: number,
-		readonly drivePrivacy: string,
-		readonly rootFolderId: string
+		readonly drivePrivacy: DrivePrivacy,
+		readonly rootFolderId: FolderID
 	) {
 		super(appName, appVersion, arFS, contentType, driveId, entityType, name, 0, txId, unixTime);
 	}
@@ -1212,17 +1214,17 @@ export class ArFSPrivateDrive extends ArFSEntity implements ArFSDriveEntity {
 		readonly appName: string,
 		readonly appVersion: string,
 		readonly arFS: string,
-		readonly contentType: string,
-		readonly driveId: string,
-		readonly entityType: string,
+		readonly contentType: ContentType,
+		readonly driveId: DriveID,
+		readonly entityType: EntityType,
 		readonly name: string,
-		readonly txId: string,
+		readonly txId: TransactionID,
 		readonly unixTime: number,
-		readonly drivePrivacy: string,
-		readonly rootFolderId: string,
-		readonly driveAuthMode: string,
+		readonly drivePrivacy: DrivePrivacy,
+		readonly rootFolderId: FolderID,
+		readonly driveAuthMode: DriveAuthMode,
 		readonly cipher: string,
-		readonly cipherIV: string
+		readonly cipherIV: CipherIV
 	) {
 		super(appName, appVersion, arFS, contentType, driveId, entityType, name, 0, txId, unixTime);
 	}
@@ -1240,7 +1242,7 @@ export class ArFSPrivateDriveBuilder {
 	unixTime?: number;
 	drivePrivacy?: DrivePrivacy;
 	rootFolderId?: FolderID;
-	driveAuthMode?: string;
+	driveAuthMode?: DriveAuthMode;
 	cipher?: string;
 	cipherIV?: string;
 
@@ -1814,6 +1816,7 @@ export class FolderHierarchy {
 	}
 
 	public entityPathToFolderId(folderId: FolderID): string {
+		if (folderId === 'root folder') return '/';
 		if (this.rootNode.parent) {
 			throw new Error(`Can't compute paths from sub-tree`);
 		}
