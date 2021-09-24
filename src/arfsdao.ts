@@ -1801,7 +1801,6 @@ export class FolderHierarchy {
 		}
 		let folderNode = this.folderIdToNodeMap[folderId];
 		const nodesInPathToFolder = [folderNode];
-		if (!folderNode) debugger;
 		while (folderNode.parent && folderNode.folderId !== this.rootNode.folderId) {
 			folderNode = folderNode.parent;
 			nodesInPathToFolder.push(folderNode);
