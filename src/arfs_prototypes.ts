@@ -313,4 +313,10 @@ export class ArFSPrivateFileDataPrototype extends ArFSFileDataPrototype {
 		transaction.addTag('Cipher', this.objectData.cipher);
 		transaction.addTag('Cipher-IV', this.objectData.cipherIV);
 	}
+
+	addTagsToDataItem(tags: GQLTagInterface[]): void {
+		super.addTagsToDataItem(tags);
+		tags.push({ name: 'Cipher', value: this.objectData.cipher });
+		tags.push({ name: 'Cipher-IV', value: this.objectData.cipherIV });
+	}
 }
