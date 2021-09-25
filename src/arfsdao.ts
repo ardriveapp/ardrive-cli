@@ -673,9 +673,6 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 	async prepareArFSObjectDataItem(
 		objectMetaData: ArFSObjectMetadataPrototype,
-		appName = 'ArDrive-Core',
-		appVersion = '1.0',
-		arFSVersion = ArFS_O_11,
 		otherTags: GQLTagInterface[] = []
 	): Promise<DataItem> {
 		const wallet = this.wallet as JWKWallet;
@@ -684,10 +681,11 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		// Add baseline ArFS Tags
 		const tags: GQLTagInterface[] = [
-			{ name: 'App-Name', value: appName },
-			{ name: 'App-Version', value: appVersion },
-			{ name: 'ArFS', value: arFSVersion }
+			{ name: 'App-Name', value: this.appName },
+			{ name: 'App-Version', value: this.appVersion },
+			{ name: 'ArFS', value: CURRENT_ARFS_VERSION }
 		];
+
 		// Add object-specific tags
 		objectMetaData.addTagsToDataItem(tags);
 
@@ -704,19 +702,14 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return dataItem;
 	}
 
-	async prepareArFSObjectBundle(
-		dataItems: DataItem[],
-		appName = 'ArDrive-Core',
-		appVersion = '1.0',
-		otherTags: GQLTagInterface[] = []
-	): Promise<Transaction> {
+	async prepareArFSObjectBundle(dataItems: DataItem[], otherTags: GQLTagInterface[] = []): Promise<Transaction> {
 		const wallet = this.wallet as JWKWallet;
 		const signer = new ArweaveSigner(wallet.getPrivateKey());
 		const bundle = await bundleAndSignData(dataItems, signer);
 		const bundledDataTx = await bundle.toTransaction(this.arweave, wallet.getPrivateKey());
 
-		bundledDataTx.addTag('App-Name', appName);
-		bundledDataTx.addTag('App-Version', appVersion);
+		bundledDataTx.addTag('App-Name', this.appName);
+		bundledDataTx.addTag('App-Version', this.appVersion);
 
 		otherTags.forEach((tag) => {
 			bundledDataTx.addTag(tag.name, tag.value);
