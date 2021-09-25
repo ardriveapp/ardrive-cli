@@ -132,9 +132,8 @@ export class ArDrive extends ArDriveAnonymous {
 		});
 	}
 
-	/** Estimates the size of a private file encrypted with a uuid */
+	/** Computes the size of a private file encrypted with AES256-GCM */
 	encryptedFileSize(filePath: string): number {
-		// cipherLen = (clearLen/16 + 1) * 16;
 		return (this.getFileSize(filePath) / 16 + 1) * 16;
 	}
 
