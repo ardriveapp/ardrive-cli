@@ -1,5 +1,5 @@
 import { CommunityOracle } from './community/community_oracle';
-import { GQLTagInterface, winstonToAr } from 'ardrive-core-js';
+import { DrivePrivacy, GQLTagInterface, winstonToAr } from 'ardrive-core-js';
 import * as fs from 'fs';
 import { ArFSDAOType, ArFSDAOAnonymous, ArFSPublicDrive, ArFSDAO, ArFSPrivateDrive } from './arfsdao';
 import { TransactionID, ArweaveAddress, Winston, DriveID, FolderID, Bytes, TipType } from './types';
@@ -33,6 +33,8 @@ export interface ArFSResult {
 	tips: TipData[];
 	fees: ArFSFees;
 }
+
+export type FileUploadCosts = { winstonPrice: Winston; communityWinstonTip: Winston };
 
 export abstract class ArDriveType {
 	protected abstract readonly arFsDao: ArFSDAOType;
@@ -68,6 +70,8 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	async sendCommunityTip(communityWinstonTip: Winston): Promise<TipResult> {
+		// TODO: Assert that there's enough AR available in the wallet
+
 		const tokenHolder: ArweaveAddress = await this.communityOracle.selectTokenHolder();
 
 		const transferResult = await this.walletDao.sendARToAddress(
@@ -96,13 +100,11 @@ export class ArDrive extends ArDriveAnonymous {
 		filePath: string,
 		destinationFileName?: string
 	): Promise<ArFSResult> {
-		const winstonPrice = await this.priceEstimator.getBaseWinstonPriceForByteCount(this.getFileSize(filePath));
-		const communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(winstonPrice.toString());
-		const totalWinstonPrice = (+winstonPrice + +communityWinstonTip).toString();
-
-		if (!this.walletDao.walletHasBalance(this.wallet, totalWinstonPrice)) {
-			throw new Error('Not enough AR for file upload..');
-		}
+		// TODO: Hoist this elsewhere for bulk uploads
+		const { winstonPrice, communityWinstonTip } = await this.estimateAndAssertCostOfUploadSize(
+			this.getFileSize(filePath),
+			'public'
+		);
 
 		// TODO: Add interactive confirmation of AR price estimation
 
@@ -133,8 +135,8 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	/** Computes the size of a private file encrypted with AES256-GCM */
-	encryptedFileSize(filePath: string): number {
-		return (this.getFileSize(filePath) / 16 + 1) * 16;
+	encryptedDataSize(dataSize: number): number {
+		return (dataSize / 16 + 1) * 16;
 	}
 
 	async uploadPrivateFile(
@@ -143,15 +145,11 @@ export class ArDrive extends ArDriveAnonymous {
 		password: string,
 		destinationFileName?: string
 	): Promise<ArFSResult> {
-		const winstonPrice = await this.priceEstimator.getBaseWinstonPriceForByteCount(
-			this.encryptedFileSize(filePath)
+		// TODO: Hoist this elsewhere for bulk uploads
+		const { winstonPrice, communityWinstonTip } = await this.estimateAndAssertCostOfUploadSize(
+			this.getFileSize(filePath),
+			'private'
 		);
-		const communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(winstonPrice.toString());
-		const totalWinstonPrice = (+winstonPrice + +communityWinstonTip).toString();
-
-		if (!this.walletDao.walletHasBalance(this.wallet, totalWinstonPrice)) {
-			throw new Error('Not enough AR for file upload..');
-		}
 
 		// TODO: Add interactive confirmation of AR price estimation
 
@@ -185,6 +183,8 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	async createPublicFolder(folderName: string, driveId: string, parentFolderId?: FolderID): Promise<ArFSResult> {
+		// TODO: Assert that there's enough AR available in the wallet
+
 		// Create the folder and retrieve its folder ID
 		const { folderTrxId, folderTrxReward, folderId } = await this.arFsDao.createPublicFolder(
 			folderName,
@@ -209,6 +209,7 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	async createPublicDrive(driveName: string): Promise<ArFSResult> {
+		// TODO: Assert that there's enough AR available in the wallet
 		const createDriveResult = await this.arFsDao.createPublicDrive(driveName);
 		return Promise.resolve({
 			created: [
@@ -232,6 +233,7 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	async createPrivateDrive(driveName: string, password: string): Promise<ArFSResult> {
+		// TODO: Assert that there's enough AR available in the wallet
 		// Generate a new drive ID
 		const createDriveResult = await this.arFsDao.createPrivateDrive(driveName, password);
 
@@ -262,5 +264,30 @@ export class ArDrive extends ArDriveAnonymous {
 	async getPrivateDrive(driveId: DriveID, drivePassword: string): Promise<ArFSPrivateDrive> {
 		const driveEntity = await this.arFsDao.getPrivateDrive(driveId, drivePassword);
 		return Promise.resolve(driveEntity);
+	}
+
+	async estimateAndAssertCostOfUploadSize(fileSize: number, drivePrivacy: DrivePrivacy): Promise<FileUploadCosts> {
+		if (fileSize < 1) {
+			throw new Error('File size should be non-negative number!');
+		}
+
+		if (drivePrivacy === 'private') {
+			fileSize = this.encryptedDataSize(fileSize);
+		}
+
+		// TODO: Consider metadata JSON size
+		const totalSize = fileSize;
+
+		const winstonPrice = await this.priceEstimator.getBaseWinstonPriceForByteCount(totalSize);
+
+		// TODO: Consider tip reward via oracle that issues request to https://arweave.net/price/0/{target}
+		const communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(winstonPrice.toString());
+		const totalWinstonPrice = (+winstonPrice + +communityWinstonTip).toString();
+
+		if (!this.walletDao.walletHasBalance(this.wallet, totalWinstonPrice)) {
+			throw new Error(`Not enough AR for data upload of size ${totalSize} bytes!`);
+		}
+
+		return { winstonPrice: winstonPrice.toString(), communityWinstonTip };
 	}
 }
