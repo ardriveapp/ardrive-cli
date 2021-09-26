@@ -16,6 +16,7 @@ export const LocalFilePathParameter = 'localFilePath';
 export const DestinationFileNameParameter = 'destFileName';
 export const LocalFilesParameter = 'localFiles';
 export const GetAllRevisionsParameter = 'getAllRevisions';
+export const BoostParameter = 'boost';
 
 /**
  * Note: importing this file will declare all the above parameters
@@ -135,4 +136,11 @@ Parameter.declare({
 	aliases: ['--get-all-revisions'],
 	description: '(OPTIONAL) gets every revision',
 	type: 'boolean'
+});
+
+Parameter.declare({
+	name: BoostParameter,
+	aliases: ['--boost'],
+	description:
+		'(OPTIONAL) a multiple of the base transaction data fee that can be used to accelerate transaction mining. A multiple of 2.5 would boost a 100 Winston transaction fee to 250 Winston.'
 });

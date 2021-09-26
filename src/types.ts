@@ -30,3 +30,9 @@ export interface ArDriveCommunityTip {
 }
 
 export type TipType = 'data upload';
+
+export type FeeMultiple = number; // TODO: assert always >= 1.0
+export type RewardSettings = {
+	reward?: Winston;
+	feeMultiple?: FeeMultiple;
+};
