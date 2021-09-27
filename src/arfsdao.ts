@@ -1100,11 +1100,9 @@ export class ArFSPublicDriveBuilder {
 			this.contentType?.length &&
 			this.driveId?.length &&
 			this.entityType?.length &&
-			this.name?.length &&
 			this.txId?.length &&
 			this.unixTime &&
-			this.drivePrivacy?.length &&
-			this.rootFolderId?.length
+			this.drivePrivacy?.length
 		) {
 			if (this.txId) {
 				const txData = await arweave.transactions.getData(this.txId, { decode: true });
@@ -1117,21 +1115,21 @@ export class ArFSPublicDriveBuilder {
 				if (!this.name || !this.rootFolderId) {
 					throw new Error('Invalid drive state');
 				}
-			}
 
-			return new ArFSPublicDrive(
-				this.appName,
-				this.appVersion,
-				this.arFS,
-				this.contentType,
-				this.driveId,
-				this.entityType,
-				this.name,
-				this.txId,
-				this.unixTime,
-				this.drivePrivacy,
-				this.rootFolderId
-			);
+				return new ArFSPublicDrive(
+					this.appName,
+					this.appVersion,
+					this.arFS,
+					this.contentType,
+					this.driveId,
+					this.entityType,
+					this.name,
+					this.txId,
+					this.unixTime,
+					this.drivePrivacy,
+					this.rootFolderId
+				);
+			}
 		}
 		throw new Error('Invalid drive state');
 	}
@@ -1455,7 +1453,6 @@ export class ArFSPrivateFileBuilder {
 			this.contentType?.length &&
 			this.driveId?.length &&
 			this.entityType?.length &&
-			this.name?.length &&
 			this.txId?.length &&
 			this.unixTime &&
 			this.folderId?.length &&
@@ -1543,7 +1540,6 @@ export class ArFSPublicFolderBuilder {
 			this.contentType?.length &&
 			this.driveId?.length &&
 			this.entityType?.length &&
-			this.name?.length &&
 			this.txId?.length &&
 			this.unixTime &&
 			this.entityId?.length
