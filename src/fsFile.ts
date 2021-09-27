@@ -53,9 +53,8 @@ export class FsFile {
 		return basename(this.filePath);
 	}
 
-	/** Estimates the size of a private file encrypted with a uuid */
-	public encryptedFileSize(): number {
-		// cipherLen = (clearLen/16 + 1) * 16;
+	/** Computes the size of a private file encrypted with AES256-GCM */
+	public encryptedDataSize(): number {
 		return (this.fileStats.size / 16 + 1) * 16;
 	}
 }
@@ -91,7 +90,7 @@ export class FsFolder {
 		let totalBytes = 0;
 
 		for (const file of this.files) {
-			totalBytes += encrypted ? file.encryptedFileSize() : file.fileStats.size;
+			totalBytes += encrypted ? file.encryptedDataSize() : file.fileStats.size;
 		}
 		for (const folder of this.folders) {
 			totalBytes += folder.getTotalBytes(encrypted);

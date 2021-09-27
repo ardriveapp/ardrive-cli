@@ -114,12 +114,21 @@ new CLICommand({
 					}
 					const result = await (async () => {
 						if (options.drivePassword) {
-							return arDrive.uploadPrivateFile(
-								fileToUpload.parentFolderId,
-								fileToUpload.wrappedEntity,
-								options.drivePassword,
-								fileToUpload.destinationFileName
-							);
+							if (isFolder(fileToUpload.wrappedEntity)) {
+								return arDrive.createPrivateFolderAndUploadChildren({
+									parentFolderId: fileToUpload.parentFolderId,
+									wrappedFolder: fileToUpload.wrappedEntity,
+									parentFolderName: fileToUpload.destinationFileName,
+									drivePassword: options.drivePassword
+								});
+							} else {
+								return arDrive.uploadPrivateFile(
+									fileToUpload.parentFolderId,
+									fileToUpload.wrappedEntity,
+									options.drivePassword,
+									fileToUpload.destinationFileName
+								);
+							}
 						} else {
 							if (isFolder(fileToUpload.wrappedEntity)) {
 								return arDrive.createPublicFolderAndUploadChildren({
