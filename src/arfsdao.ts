@@ -91,7 +91,6 @@ export abstract class ArFSDAOType {
 	protected abstract readonly arweave: Arweave;
 	protected abstract readonly appName: string;
 	protected abstract readonly appVersion: string;
-	protected abstract readonly dryRun: boolean;
 }
 
 export interface CreatePublicFolderSettings {
@@ -108,7 +107,6 @@ export interface CreatePublicFolderSettings {
 export class ArFSDAOAnonymous extends ArFSDAOType {
 	constructor(
 		protected readonly arweave: Arweave,
-		protected readonly dryRun: boolean = false,
 		protected appName = DEFAULT_APP_NAME,
 		protected appVersion = DEFAULT_APP_VERSION
 	) {
@@ -213,11 +211,11 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	constructor(
 		private readonly wallet: Wallet,
 		arweave: Arweave,
-		dryRun = false,
+		private readonly dryRun = false,
 		protected appName = DEFAULT_APP_NAME,
 		protected appVersion = DEFAULT_APP_VERSION
 	) {
-		super(arweave, dryRun, appName, appVersion);
+		super(arweave, appName, appVersion);
 	}
 
 	async createPublicFolder({
