@@ -37,6 +37,7 @@ export interface ArDriveSettings {
 	walletDao?: WalletDAO;
 	arweave?: Arweave;
 	feeMultiple?: FeeMultiple;
+	dryRun?: boolean;
 }
 
 export function arDriveFactory({
@@ -44,16 +45,18 @@ export function arDriveFactory({
 	priceEstimator = new ARDataPriceRegressionEstimator(),
 	walletDao = cliWalletDao,
 	arweave = cliArweave,
-	feeMultiple
+	feeMultiple,
+	dryRun = false
 }: ArDriveSettings): ArDrive {
 	return new ArDrive(
 		wallet,
 		walletDao,
-		new ArFSDAO(wallet, arweave, CLI_APP_NAME, CLI_APP_VERSION),
+		new ArFSDAO(wallet, arweave, dryRun, CLI_APP_NAME, CLI_APP_VERSION),
 		new ArDriveCommunityOracle(arweave),
 		CLI_APP_NAME,
 		CLI_APP_VERSION,
 		priceEstimator,
-		feeMultiple
+		feeMultiple,
+		dryRun
 	);
 }

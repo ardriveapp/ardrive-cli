@@ -4,6 +4,7 @@ import {
 	BoostParameter,
 	DriveNameParameter,
 	DrivePasswordParameter,
+	DryRunParameter,
 	SeedPhraseParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
@@ -15,13 +16,21 @@ import { FeeMultiple } from '../types';
 
 new CLICommand({
 	name: 'create-drive',
-	parameters: [WalletFileParameter, SeedPhraseParameter, DriveNameParameter, DrivePasswordParameter, BoostParameter],
+	parameters: [
+		WalletFileParameter,
+		SeedPhraseParameter,
+		DriveNameParameter,
+		DrivePasswordParameter,
+		BoostParameter,
+		DryRunParameter
+	],
 	async action(options) {
 		const context = new CommonContext(options, cliWalletDao);
 		const wallet: Wallet = await context.getWallet();
 		const ardrive = arDriveFactory({
 			wallet: wallet,
-			feeMultiple: options.boost as FeeMultiple
+			feeMultiple: options.boost as FeeMultiple,
+			dryRun: options.dryRun
 		});
 		const createDriveResult = await (async function () {
 			if (await context.getIsPrivate()) {

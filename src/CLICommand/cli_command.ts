@@ -48,7 +48,6 @@ function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliA
 		}
 	});
 	command = command.action((options) => {
-		console.log(`command opts: ${JSON.stringify(options)}`);
 		commandDescriptor.action(options);
 	});
 }

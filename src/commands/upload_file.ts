@@ -6,6 +6,7 @@ import {
 	DestinationFileNameParameter,
 	DriveKeyParameter,
 	DrivePasswordParameter,
+	DryRunParameter,
 	LocalFilePathParameter,
 	LocalFilesParameter,
 	ParentFolderIdParameter,
@@ -37,7 +38,8 @@ new CLICommand({
 		DrivePasswordParameter,
 		DriveKeyParameter,
 		WalletFileParameter,
-		BoostParameter
+		BoostParameter,
+		DryRunParameter
 	],
 	async action(options) {
 		const filesToUpload: UploadFileParameter[] = (function (): UploadFileParameter[] {
@@ -92,7 +94,8 @@ new CLICommand({
 			const arDrive = arDriveFactory({
 				wallet: wallet,
 				priceEstimator: priceEstimator,
-				feeMultiple: options.boost as FeeMultiple
+				feeMultiple: options.boost as FeeMultiple,
+				dryRun: options.dryRun
 			});
 			await Promise.all(
 				filesToUpload.map(async (fileToUpload) => {

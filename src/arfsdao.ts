@@ -91,6 +91,7 @@ export abstract class ArFSDAOType {
 	protected abstract readonly arweave: Arweave;
 	protected abstract readonly appName: string;
 	protected abstract readonly appVersion: string;
+	protected abstract readonly dryRun: boolean;
 }
 
 export interface CreatePublicFolderSettings {
@@ -107,6 +108,7 @@ export interface CreatePublicFolderSettings {
 export class ArFSDAOAnonymous extends ArFSDAOType {
 	constructor(
 		protected readonly arweave: Arweave,
+		protected readonly dryRun: boolean = false,
 		protected appName = DEFAULT_APP_NAME,
 		protected appVersion = DEFAULT_APP_VERSION
 	) {
@@ -211,10 +213,11 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	constructor(
 		private readonly wallet: Wallet,
 		arweave: Arweave,
+		dryRun = false,
 		protected appName = DEFAULT_APP_NAME,
 		protected appVersion = DEFAULT_APP_VERSION
 	) {
-		super(arweave, appName, appVersion);
+		super(arweave, dryRun, appName, appVersion);
 	}
 
 	async createPublicFolder({
@@ -261,12 +264,12 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		);
 		const folderTrx = await this.prepareArFSObjectTransaction(folderMetadata, rewardSettings);
 
-		// Create the Folder Uploader objects
-		const folderUploader = await this.arweave.transactions.getUploader(folderTrx);
-
-		// Execute the uploads
-		while (!folderUploader.isComplete) {
-			await folderUploader.uploadChunk();
+		// Execute the upload
+		if (!this.dryRun) {
+			const folderUploader = await this.arweave.transactions.getUploader(folderTrx);
+			while (!folderUploader.isComplete) {
+				await folderUploader.uploadChunk();
+			}
 		}
 
 		return { folderTrxId: folderTrx.id, folderTrxReward: folderTrx.reward, folderId };
@@ -304,12 +307,12 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		);
 		const driveTrx = await this.prepareArFSObjectTransaction(driveMetaData, driveRewardSettings);
 
-		// Create the Drive and Folder Uploader objects
-		const driveUploader = await this.arweave.transactions.getUploader(driveTrx);
-
-		// Execute the uploads
-		while (!driveUploader.isComplete) {
-			await driveUploader.uploadChunk();
+		// Execute the upload
+		if (!this.dryRun) {
+			const driveUploader = await this.arweave.transactions.getUploader(driveTrx);
+			while (!driveUploader.isComplete) {
+				await driveUploader.uploadChunk();
+			}
 		}
 
 		return {
@@ -360,16 +363,16 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		);
 		const rootFolderTrx = await this.prepareArFSObjectTransaction(rootFolderMetadata, rootFolderRewardSettings);
 
-		// Create the Drive and Folder Uploader objects
-		const driveUploader = await this.arweave.transactions.getUploader(driveTrx);
-		const folderUploader = await this.arweave.transactions.getUploader(rootFolderTrx);
-
 		// Execute the uploads
-		while (!driveUploader.isComplete) {
-			await driveUploader.uploadChunk();
-		}
-		while (!folderUploader.isComplete) {
-			await folderUploader.uploadChunk();
+		if (!this.dryRun) {
+			const driveUploader = await this.arweave.transactions.getUploader(driveTrx);
+			const folderUploader = await this.arweave.transactions.getUploader(rootFolderTrx);
+			while (!driveUploader.isComplete) {
+				await driveUploader.uploadChunk();
+			}
+			while (!folderUploader.isComplete) {
+				await folderUploader.uploadChunk();
+			}
 		}
 
 		const driveKey = privateDriveData.driveKey;
@@ -422,9 +425,11 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const dataTrx = await this.prepareArFSObjectTransaction(fileDataPrototype, fileDataRewardSettings);
 
 		// Upload file data
-		const dataUploader = await this.arweave.transactions.getUploader(dataTrx);
-		while (!dataUploader.isComplete) {
-			await dataUploader.uploadChunk();
+		if (!this.dryRun) {
+			const dataUploader = await this.arweave.transactions.getUploader(dataTrx);
+			while (!dataUploader.isComplete) {
+				await dataUploader.uploadChunk();
+			}
 		}
 
 		// Prepare meta data transaction
@@ -444,9 +449,11 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const metaDataTrx = await this.prepareArFSObjectTransaction(fileMetadata, metadataRewardSettings);
 
 		// Upload meta data
-		const metaDataUploader = await this.arweave.transactions.getUploader(metaDataTrx);
-		while (!metaDataUploader.isComplete) {
-			await metaDataUploader.uploadChunk();
+		if (!this.dryRun) {
+			const metaDataUploader = await this.arweave.transactions.getUploader(metaDataTrx);
+			while (!metaDataUploader.isComplete) {
+				await metaDataUploader.uploadChunk();
+			}
 		}
 
 		return {
@@ -497,9 +504,11 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const dataTrx = await this.prepareArFSObjectTransaction(fileDataPrototype, fileDataRewardSettings);
 
 		// Upload file data
-		const dataUploader = await this.arweave.transactions.getUploader(dataTrx);
-		while (!dataUploader.isComplete) {
-			await dataUploader.uploadChunk();
+		if (!this.dryRun) {
+			const dataUploader = await this.arweave.transactions.getUploader(dataTrx);
+			while (!dataUploader.isComplete) {
+				await dataUploader.uploadChunk();
+			}
 		}
 
 		// Prepare meta data transaction
@@ -525,9 +534,11 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const metaDataTrx = await this.prepareArFSObjectTransaction(fileMetadataPrototype, metadataRewardSettings);
 
 		// Upload meta data
-		const metaDataUploader = await this.arweave.transactions.getUploader(metaDataTrx);
-		while (!metaDataUploader.isComplete) {
-			await metaDataUploader.uploadChunk();
+		if (!this.dryRun) {
+			const metaDataUploader = await this.arweave.transactions.getUploader(metaDataTrx);
+			while (!metaDataUploader.isComplete) {
+				await metaDataUploader.uploadChunk();
+			}
 		}
 
 		return {
