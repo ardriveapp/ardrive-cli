@@ -416,7 +416,7 @@ export class ArDrive extends ArDriveAnonymous {
 				type: 'folder',
 				metadataTxId: folderTrxId,
 				entityId: folderId,
-				key: driveKey.toString('hex')
+				key: urlEncodeHashKey(driveKey)
 			}
 		];
 
