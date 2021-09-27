@@ -88,7 +88,8 @@ export class ArDrive extends ArDriveAnonymous {
 		private readonly appName: string,
 		private readonly appVersion: string,
 		private readonly priceEstimator: ARDataPriceEstimator = new ARDataPriceRegressionEstimator(true),
-		private readonly feeMultiple: FeeMultiple = 1.0
+		private readonly feeMultiple: FeeMultiple = 1.0,
+		private readonly dryRun: boolean = false
 	) {
 		super(arFsDao);
 	}
@@ -108,6 +109,7 @@ export class ArDrive extends ArDriveAnonymous {
 			this.wallet,
 			tokenHolder,
 			{ reward: arTransferBaseFee.toString(), feeMultiple: this.feeMultiple },
+			this.dryRun,
 			this.getTipTags()
 		);
 

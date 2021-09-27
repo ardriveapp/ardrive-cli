@@ -97,6 +97,7 @@ export class WalletDAO {
 		fromWallet: Wallet,
 		toAddress: ArweaveAddress,
 		rewardSettings: RewardSettings = {},
+		dryRun = false,
 		[
 			{ value: appName = this.appName },
 			{ value: appVersion = this.appVersion },
@@ -138,7 +139,13 @@ export class WalletDAO {
 		await this.arweave.transactions.sign(transaction, jwkWallet.getPrivateKey());
 
 		// Submit the transaction
-		const response = await this.arweave.transactions.post(transaction);
+		const response = await (async () => {
+			if (dryRun) {
+				return { status: 200, statusText: 'OK', data: '' };
+			} else {
+				return this.arweave.transactions.post(transaction);
+			}
+		})();
 		if (response.status === 200 || response.status === 202) {
 			return Promise.resolve({
 				trxID: transaction.id,

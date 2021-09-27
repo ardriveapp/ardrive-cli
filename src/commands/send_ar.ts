@@ -5,6 +5,7 @@ import {
 	ArAmountParameter,
 	BoostParameter,
 	DestinationAddressParameter,
+	DryRunParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
 
@@ -12,7 +13,7 @@ import {
 
 new CLICommand({
 	name: 'send-ar',
-	parameters: [ArAmountParameter, DestinationAddressParameter, WalletFileParameter, BoostParameter],
+	parameters: [ArAmountParameter, DestinationAddressParameter, WalletFileParameter, BoostParameter, DryRunParameter],
 	async action(options) {
 		const context = new CommonContext(options, cliWalletDao);
 		const wallet = await context.getWallet();
@@ -26,6 +27,7 @@ new CLICommand({
 			wallet,
 			options.destAddress,
 			options.boost,
+			options.dryRun,
 			[
 				{ name: 'appName', value: 'ArDrive-CLI' },
 				{ name: 'appVersion', value: '2.0' },

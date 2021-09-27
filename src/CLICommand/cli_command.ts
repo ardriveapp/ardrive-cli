@@ -28,15 +28,19 @@ function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliA
 	commandDescriptor.parameters.forEach((parameterName) => {
 		const parameter = new Parameter(parameterName);
 		const aliasesAsString = parameter.aliases.join(' ');
-		const paramType = (function () {
+		const paramTypeString = (function () {
 			if (parameter.type === 'array') {
-				return `<${parameterName}...>`;
+				return ` <${parameterName}...>`;
 			} else if (parameter.type === 'boolean') {
 				return '';
 			}
-			return `<${parameterName}>`;
+			return ` <${parameterName}>`;
 		})();
-		const optionArguments = [`${aliasesAsString} ${paramType}`, parameter.description, parameter.default] as const;
+		const optionArguments = [
+			`${aliasesAsString}${paramTypeString}`,
+			parameter.description,
+			parameter.default
+		] as const;
 		if (parameter.required) {
 			command.requiredOption(...optionArguments);
 		} else {
