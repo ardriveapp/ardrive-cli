@@ -304,13 +304,13 @@ export class ArDrive extends ArDriveAnonymous {
 		return Promise.resolve(driveEntity);
 	}
 
-	async getPrivateFolder(folderId: FolderID): Promise<ArFSPrivateFolder> {
-		const folderEntity = await this.arFsDao.getPrivateFolder(folderId);
+	async getPrivateFolder(folderId: FolderID, drivePassword: string): Promise<ArFSPrivateFolder> {
+		const folderEntity = await this.arFsDao.getPrivateFolder(folderId, drivePassword);
 		return folderEntity;
 	}
 
-	async getAllFoldersOfPrivateDrive(driveId: DriveID): Promise<ArFSPrivateFolder[]> {
-		return this.arFsDao.getAllFoldersOfPrivateDrive(driveId);
+	async getAllFoldersOfPrivateDrive(driveId: DriveID, drivePassword: string): Promise<ArFSPrivateFolder[]> {
+		return this.arFsDao.getAllFoldersOfPrivateDrive(driveId, drivePassword);
 	}
 
 	async getPrivateChildrenFilesFromFolderIDs(folderIDs: FolderID[]): Promise<ArFSPrivateFile[]> {
