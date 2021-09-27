@@ -60,20 +60,15 @@ export class FsFile {
 	}
 }
 
-export class FsFolder extends FsFile {
+export class FsFolder {
 	files: FsFile[] = [];
 	folders: FsFolder[] = [];
 
 	constructor(public readonly filePath: FilePath, public readonly fileStats: fs.Stats) {
-		super(filePath, fileStats);
-
 		const entitiesInFolder = fs.readdirSync(this.filePath);
 
 		for (const entityPath of entitiesInFolder) {
-			// Join paths for absolute file path of entity
 			const absoluteEntityPath = join(this.filePath, entityPath);
-
-			// Get stats to determine whether a folder or a file
 			const entityStats = fs.statSync(absoluteEntityPath);
 
 			if (entityStats.isDirectory()) {
@@ -86,6 +81,10 @@ export class FsFolder extends FsFile {
 				this.files.push(childFile);
 			}
 		}
+	}
+
+	public getBaseFileName(): BaseFileName {
+		return basename(this.filePath);
 	}
 
 	getTotalBytes(encrypted = false): Bytes {
