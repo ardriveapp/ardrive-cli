@@ -78,7 +78,7 @@ new CLICommand({
 					entity.txId,
 					entity.unixTime,
 					entity.parentFolderId,
-					entity.folderId,
+					entity.entityId,
 					entity.cipher,
 					entity.cipherIV,
 					path,
@@ -121,7 +121,7 @@ new CLICommand({
 					entity.txId,
 					entity.unixTime,
 					entity.parentFolderId,
-					entity.folderId,
+					entity.entityId,
 					path,
 					txPath,
 					entityIdPath

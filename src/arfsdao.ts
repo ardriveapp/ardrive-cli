@@ -1270,7 +1270,7 @@ export class ArFSPrivateDriveBuilder {
 
 export class ArFSFileOrFolderEntity extends ArFSEntity implements ArFSFileFolderEntity {
 	lastModifiedDate!: never;
-	folderId!: string;
+	folderId?: string;
 
 	constructor(
 		appName: string,
@@ -1283,7 +1283,7 @@ export class ArFSFileOrFolderEntity extends ArFSEntity implements ArFSFileFolder
 		txId: string,
 		unixTime: number,
 		readonly parentFolderId: string,
-		readonly folderId: string
+		readonly entityId: string
 	) {
 		super(appName, appVersion, arFS, contentType, driveId, entityType, name, 0, txId, unixTime);
 	}
@@ -1532,7 +1532,7 @@ export class ArFSPublicFolder extends ArFSFileOrFolderEntity {
 		readonly txId: TransactionID,
 		readonly unixTime: number,
 		readonly parentFolderId: FolderID,
-		readonly folderId: FolderID
+		readonly entityId: FolderID
 	) {
 		super(
 			appName,
@@ -1545,7 +1545,7 @@ export class ArFSPublicFolder extends ArFSFileOrFolderEntity {
 			txId,
 			unixTime,
 			parentFolderId,
-			folderId
+			entityId
 		);
 	}
 }
@@ -1606,7 +1606,7 @@ export class ArFSPrivateFolder extends ArFSFileOrFolderEntity {
 		readonly txId: string,
 		readonly unixTime: number,
 		readonly parentFolderId: FolderID,
-		readonly folderId: FolderID,
+		readonly entityId: FolderID,
 		readonly cipher: string,
 		readonly cipherIV: string
 	) {
@@ -1621,7 +1621,7 @@ export class ArFSPrivateFolder extends ArFSFileOrFolderEntity {
 			txId,
 			unixTime,
 			parentFolderId,
-			folderId
+			entityId
 		);
 	}
 }
@@ -1701,7 +1701,7 @@ export class FolderTreeNode {
 	) {}
 
 	public static fromEntity(folderEntity: ArFSFileOrFolderEntity): FolderTreeNode {
-		const node = new FolderTreeNode(folderEntity.folderId);
+		const node = new FolderTreeNode(folderEntity.entityId);
 		return node;
 	}
 }
@@ -1716,7 +1716,7 @@ export class FolderHierarchy {
 
 	static newFromEntities(entities: ArFSFileOrFolderEntity[]): FolderHierarchy {
 		const folderIdToEntityMap = entities.reduce((accumulator, entity) => {
-			return Object.assign(accumulator, { [entity.folderId]: entity });
+			return Object.assign(accumulator, { [entity.entityId]: entity });
 		}, {});
 		const folderIdToNodeMap: { [k: string]: FolderTreeNode } = {};
 
@@ -1732,7 +1732,7 @@ export class FolderHierarchy {
 		folderIdToEntityMap: { [k: string]: ArFSFileOrFolderEntity },
 		folderIdToNodeMap: { [k: string]: FolderTreeNode }
 	): void {
-		const folderIdKeyIsPresent = Object.keys(folderIdToNodeMap).includes(entity.folderId);
+		const folderIdKeyIsPresent = Object.keys(folderIdToNodeMap).includes(entity.entityId);
 		const parentFolderIdKeyIsPresent = Object.keys(folderIdToNodeMap).includes(entity.parentFolderId);
 		if (!folderIdKeyIsPresent) {
 			if (!parentFolderIdKeyIsPresent) {
@@ -1740,20 +1740,20 @@ export class FolderHierarchy {
 				if (parentFolderEntity) {
 					this.setupNodesWithEntity(parentFolderEntity, folderIdToEntityMap, folderIdToNodeMap);
 					const parent = folderIdToNodeMap[entity.parentFolderId];
-					const node = new FolderTreeNode(entity.folderId, parent);
+					const node = new FolderTreeNode(entity.entityId, parent);
 					parent.children.push(node);
-					folderIdToNodeMap[entity.folderId] = node;
+					folderIdToNodeMap[entity.entityId] = node;
 				}
 			}
 			const parent = folderIdToNodeMap[entity.parentFolderId];
 			if (parent) {
-				const node = new FolderTreeNode(entity.folderId, parent);
+				const node = new FolderTreeNode(entity.entityId, parent);
 				parent.children.push(node);
-				folderIdToNodeMap[entity.folderId] = node;
+				folderIdToNodeMap[entity.entityId] = node;
 			} else {
 				// this one is supposed to be the new root
-				const rootNode = new FolderTreeNode(entity.folderId);
-				folderIdToNodeMap[entity.folderId] = rootNode;
+				const rootNode = new FolderTreeNode(entity.entityId);
+				folderIdToNodeMap[entity.entityId] = rootNode;
 			}
 		}
 	}
