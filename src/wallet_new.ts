@@ -12,8 +12,10 @@ import {
 	ArweaveAddress,
 	SeedPhrase,
 	DEFAULT_APP_NAME,
-	DEFAULT_APP_VERSION
+	DEFAULT_APP_VERSION,
+	RewardSettings
 } from './types';
+import { CreateTransactionInterface } from 'arweave/node/common';
 
 export type ARTransferResult = {
 	trxID: TransactionID;
@@ -94,6 +96,8 @@ export class WalletDAO {
 		arAmount: number,
 		fromWallet: Wallet,
 		toAddress: ArweaveAddress,
+		rewardSettings: RewardSettings = {},
+		dryRun = false,
 		[
 			{ value: appName = this.appName },
 			{ value: appVersion = this.appVersion },
@@ -105,15 +109,26 @@ export class WalletDAO {
 		const jwkWallet = fromWallet as JWKWallet;
 		const winston: Winston = this.arweave.ar.arToWinston(arAmount.toString());
 
-		const transaction = await this.arweave.createTransaction(
-			{ target: toAddress, quantity: winston },
-			jwkWallet.getPrivateKey()
-		);
+		// Create transaction
+		const trxAttributes: Partial<CreateTransactionInterface> = { target: toAddress, quantity: winston };
+
+		// If we provided our own reward settings, use them now
+		if (rewardSettings.reward) {
+			trxAttributes.reward = rewardSettings.reward;
+		}
+		const transaction = await this.arweave.createTransaction(trxAttributes, jwkWallet.getPrivateKey());
+		if (rewardSettings.feeMultiple && rewardSettings.feeMultiple > 1.0) {
+			// Round up with ceil because fractional Winston will cause an Arweave API failure
+			transaction.reward = Math.ceil(+transaction.reward * rewardSettings.feeMultiple).toString();
+		}
 
 		// Tag file with data upload Tipping metadata
 		transaction.addTag('App-Name', appName);
 		transaction.addTag('App-Version', appVersion);
 		transaction.addTag('Type', trxType);
+		if (rewardSettings.feeMultiple && rewardSettings.feeMultiple > 1.0) {
+			transaction.addTag('Boost', rewardSettings.feeMultiple.toString());
+		}
 		otherTags?.forEach((tag) => {
 			transaction.addTag(tag.name, tag.value);
 		});
@@ -124,7 +139,13 @@ export class WalletDAO {
 		await this.arweave.transactions.sign(transaction, jwkWallet.getPrivateKey());
 
 		// Submit the transaction
-		const response = await this.arweave.transactions.post(transaction);
+		const response = await (async () => {
+			if (dryRun) {
+				return { status: 200, statusText: 'OK', data: '' };
+			} else {
+				return this.arweave.transactions.post(transaction);
+			}
+		})();
 		if (response.status === 200 || response.status === 202) {
 			return Promise.resolve({
 				trxID: transaction.id,
