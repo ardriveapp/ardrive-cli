@@ -103,7 +103,6 @@ export class ArDrive extends ArDriveAnonymous {
 		const tokenHolder: ArweaveAddress = await this.communityOracle.selectTokenHolder();
 		const arTransferBaseFee = await this.priceEstimator.getBaseWinstonPriceForByteCount(0);
 
-		// TODO: DRY RUN
 		const transferResult = await this.walletDao.sendARToAddress(
 			winstonToAr(+communityWinstonTip),
 			this.wallet,
