@@ -186,7 +186,7 @@ export class ArFSPrivateFileMetadataTransactionData extends ArFSFileMetadataTran
 				})
 			)
 		);
-		return new ArFSPrivateFileMetadataTransactionData(cipher, cipherIV, fileKey, data);
+		return new ArFSPrivateFileMetadataTransactionData(cipher, cipherIV, data, fileKey);
 	}
 
 	asTransactionData(): Buffer {
