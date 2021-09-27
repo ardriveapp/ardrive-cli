@@ -49,7 +49,7 @@ function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliA
 }
 
 export class CLICommand {
-	private static _doneSettingCommands = false;
+	// private static _doneSettingCommands = false;
 	private static _argv?: string[]; // Custom argv vector for testing purposes
 
 	/**
@@ -81,21 +81,21 @@ export class CLICommand {
 	}
 
 	private setCommand(): void {
-		if (CLICommand._doneSettingCommands) {
-			throw new Error(
-				`Won't set a command after parameters are parsed! \n${JSON.stringify(this.commandDescription, null, 4)}`
-			);
-		}
+		// if (CLICommand._doneSettingCommands) {
+		// 	throw new Error(
+		// 		`Won't set a command after parameters are parsed! \n${JSON.stringify(this.commandDescription, null, 4)}`
+		// 	);
+		// }
 		// CLICommand.parameters.push(...this.commandDescription.parameters);
 		setCommanderCommand(this.commandDescription, this.program);
 	}
 
 	public static parse(
 		program: CliApiObject = this.program,
-		argv = CLICommand.argv,
-		doneSettingCommands = true
+		argv = CLICommand.argv
+		// doneSettingCommands = true
 	): void {
 		program.parse(argv);
-		this._doneSettingCommands = doneSettingCommands;
+		// this._doneSettingCommands = doneSettingCommands;
 	}
 }
