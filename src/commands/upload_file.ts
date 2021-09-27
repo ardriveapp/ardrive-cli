@@ -121,11 +121,19 @@ new CLICommand({
 								fileToUpload.destinationFileName
 							);
 						} else {
-							return arDrive.uploadPublicFile(
-								fileToUpload.parentFolderId,
-								fileToUpload.wrappedEntity,
-								fileToUpload.destinationFileName
-							);
+							if (isFolder(fileToUpload.wrappedEntity)) {
+								return arDrive.createPublicFolderAndUploadChildren({
+									parentFolderId: fileToUpload.parentFolderId,
+									wrappedFolder: fileToUpload.wrappedEntity,
+									parentFolderName: fileToUpload.destinationFileName
+								});
+							} else {
+								return arDrive.uploadPublicFile(
+									fileToUpload.parentFolderId,
+									fileToUpload.wrappedEntity,
+									fileToUpload.destinationFileName
+								);
+							}
 						}
 					})();
 					console.log(JSON.stringify(result, null, 4));
