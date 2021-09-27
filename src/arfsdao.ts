@@ -1270,6 +1270,7 @@ export class ArFSPrivateDriveBuilder {
 
 export class ArFSFileOrFolderEntity extends ArFSEntity implements ArFSFileFolderEntity {
 	lastModifiedDate!: never;
+	entityId!: never;
 
 	constructor(
 		appName: string,
