@@ -64,15 +64,9 @@ new CLICommand({
 			);
 
 			mergedData = allEntitiesOfDrive.map((entity) => {
-				const path = `${
-					entity.parentFolderId !== 'root folder' ? hierarchy.pathToFolderId(entity.parentFolderId) : ''
-				}/${entity.name}`;
-				const txPath = `${
-					entity.parentFolderId !== 'root folder' ? hierarchy.txPathToFolderId(entity.parentFolderId) : ''
-				}/${entity.txId}`;
-				const entityIdPath = `${
-					entity.parentFolderId !== 'root folder' ? hierarchy.entityPathToFolderId(entity.parentFolderId) : ''
-				}/${entity.folderId}`;
+				const path = `${hierarchy.pathToFolderId(entity.parentFolderId)}/${entity.name}`;
+				const txPath = `${hierarchy.txPathToFolderId(entity.parentFolderId)}/${entity.txId}`;
+				const entityIdPath = `${hierarchy.entityPathToFolderId(entity.parentFolderId)}/${entity.entityId}`;
 				return new ArFSPrivateFileOrFolderData(
 					entity.appName,
 					entity.appVersion,
@@ -113,15 +107,9 @@ new CLICommand({
 			);
 
 			mergedData = allEntitiesOfDrive.map((entity) => {
-				const path = `${
-					entity.parentFolderId !== 'root folder' ? hierarchy.pathToFolderId(entity.parentFolderId) : ''
-				}/${entity.name}`;
-				const txPath = `${
-					entity.parentFolderId !== 'root folder' ? hierarchy.txPathToFolderId(entity.parentFolderId) : ''
-				}/${entity.txId}`;
-				const entityIdPath = `${
-					entity.parentFolderId !== 'root folder' ? hierarchy.entityPathToFolderId(entity.parentFolderId) : ''
-				}/${entity.folderId}`;
+				const path = `${hierarchy.pathToFolderId(entity.parentFolderId)}/${entity.name}`;
+				const txPath = `${hierarchy.txPathToFolderId(entity.parentFolderId)}/${entity.txId}`;
+				const entityIdPath = `${hierarchy.entityPathToFolderId(entity.parentFolderId)}/${entity.entityId}`;
 				return new ArFSPublicFileOrFolderData(
 					entity.appName,
 					entity.appVersion,

@@ -334,7 +334,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 							folderBuilder.parentFolderId = value;
 							break;
 						case 'File-Id':
-							folderBuilder.entityId = value;
+							folderBuilder.fileId = value;
 							break;
 						default:
 							break;
@@ -1027,7 +1027,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return allFolders;
 	}
 
-	async getAllPrivateChildrenFilesFromFolderIDs(folderIDs: FolderID[]): Promise<ArFSPrivateFolder[]> {
+	async getAllPrivateChildrenFilesFromFolderIDs(folderIDs: FolderID[]): Promise<ArFSPrivateFile[]> {
 		let cursor = '';
 		let hasNextPage = true;
 		const allFiles: ArFSPrivateFile[] = [];
@@ -1270,7 +1270,7 @@ export class ArFSPrivateDriveBuilder {
 
 export class ArFSFileOrFolderEntity extends ArFSEntity implements ArFSFileFolderEntity {
 	lastModifiedDate!: never;
-	entityId!: never;
+	folderId!: string;
 
 	constructor(
 		appName: string,
@@ -1308,7 +1308,7 @@ export class ArFSPublicFileOrFolderData extends ArFSFileOrFolderEntity implement
 		txId: string,
 		unixTime: number,
 		parentFolderId: string,
-		entityId: string,
+		readonly entityId: string,
 		readonly path: string,
 		readonly txIdPath: string,
 		readonly entityIdPath: string
@@ -1341,7 +1341,7 @@ export class ArFSPrivateFileOrFolderData extends ArFSFileOrFolderEntity implemen
 		txId: TransactionID,
 		unixTime: number,
 		parentFolderId: FolderID,
-		entityId: string,
+		readonly entityId: string,
 		readonly cipher: string,
 		readonly cipherIV: CipherIV,
 		readonly path: string,
@@ -1376,7 +1376,7 @@ export class ArFSPublicFile extends ArFSFileOrFolderEntity {
 		readonly txId: string,
 		readonly unixTime: number,
 		readonly parentFolderId: FolderID,
-		readonly folderId: FileID
+		readonly fileId: FileID
 	) {
 		super(
 			appName,
@@ -1389,7 +1389,7 @@ export class ArFSPublicFile extends ArFSFileOrFolderEntity {
 			txId,
 			unixTime,
 			parentFolderId,
-			folderId
+			fileId
 		);
 	}
 }
@@ -1405,7 +1405,7 @@ export class ArFSPublicFileBuilder {
 	txId?: TransactionID;
 	unixTime?: number;
 	parentFolderId?: string;
-	entityId?: string;
+	fileId?: string;
 
 	build(): ArFSPublicFile {
 		if (
@@ -1418,9 +1418,9 @@ export class ArFSPublicFileBuilder {
 			this.name?.length &&
 			this.txId?.length &&
 			this.unixTime &&
-			this.entityId?.length
+			this.fileId?.length
 		) {
-			return new ArFSPublicFolder(
+			return new ArFSPublicFile(
 				this.appName,
 				this.appVersion,
 				this.arFS,
@@ -1431,7 +1431,7 @@ export class ArFSPublicFileBuilder {
 				this.txId,
 				this.unixTime,
 				this.parentFolderId || 'root folder',
-				this.entityId
+				this.fileId
 			);
 		}
 		throw new Error('Invalid folder state');
@@ -1450,7 +1450,7 @@ export class ArFSPrivateFile extends ArFSFileOrFolderEntity {
 		readonly txId: TransactionID,
 		readonly unixTime: number,
 		readonly parentFolderId: FolderID,
-		readonly folderId: FileID,
+		readonly fileId: FileID,
 		readonly cipher: string,
 		readonly cipherIV: string
 	) {
@@ -1465,7 +1465,7 @@ export class ArFSPrivateFile extends ArFSFileOrFolderEntity {
 			txId,
 			unixTime,
 			parentFolderId,
-			folderId
+			fileId
 		);
 	}
 }
@@ -1801,6 +1801,9 @@ export class FolderHierarchy {
 	public pathToFolderId(folderId: FolderID): string {
 		if (this.rootNode.parent) {
 			throw new Error(`Can't compute paths from sub-tree`);
+		}
+		if (folderId === 'root folder') {
+			return '/';
 		}
 		let folderNode = this.folderIdToNodeMap[folderId];
 		const nodesInPathToFolder = [folderNode];
