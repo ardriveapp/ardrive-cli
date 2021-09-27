@@ -18,6 +18,7 @@ import {
 	ArFSPublicFolderTransactionData
 } from './arfs_trx_data_types';
 import { basename } from 'path';
+import { urlEncodeHashKey } from './utils';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 
@@ -210,7 +211,7 @@ export class ArDrive extends ArDriveAnonymous {
 					metadataTxId: uploadFileResult.metaDataTrxId,
 					dataTxId: uploadFileResult.dataTrxId,
 					entityId: uploadFileResult.fileId,
-					key: uploadFileResult.fileKey.toString('base64')
+					key: urlEncodeHashKey(uploadFileResult.fileKey)
 				}
 			],
 			tips: [tipData],
@@ -331,13 +332,13 @@ export class ArDrive extends ArDriveAnonymous {
 					type: 'drive',
 					metadataTxId: createDriveResult.driveTrxId,
 					entityId: createDriveResult.driveId,
-					key: createDriveResult.driveKey.toString('base64')
+					key: urlEncodeHashKey(createDriveResult.driveKey)
 				},
 				{
 					type: 'folder',
 					metadataTxId: createDriveResult.rootFolderTrxId,
 					entityId: createDriveResult.rootFolderId,
-					key: createDriveResult.driveKey.toString('base64')
+					key: urlEncodeHashKey(createDriveResult.driveKey)
 				}
 			],
 			tips: [],
