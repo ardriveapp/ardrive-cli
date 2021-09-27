@@ -212,7 +212,7 @@ export class ArDrive extends ArDriveAnonymous {
 					metadataTxId: uploadFileResult.metaDataTrxId,
 					dataTxId: uploadFileResult.dataTrxId,
 					entityId: uploadFileResult.fileId,
-					key: uploadFileResult.fileKey.toString('hex')
+					key: uploadFileResult.fileKey.toString('base64')
 				}
 			],
 			tips: [tipData],
@@ -333,13 +333,13 @@ export class ArDrive extends ArDriveAnonymous {
 					type: 'drive',
 					metadataTxId: createDriveResult.driveTrxId,
 					entityId: createDriveResult.driveId,
-					key: createDriveResult.driveKey.toString('hex')
+					key: createDriveResult.driveKey.toString('base64')
 				},
 				{
 					type: 'folder',
 					metadataTxId: createDriveResult.rootFolderTrxId,
 					entityId: createDriveResult.rootFolderId,
-					key: createDriveResult.driveKey.toString('hex')
+					key: createDriveResult.driveKey.toString('base64')
 				}
 			],
 			tips: [],
