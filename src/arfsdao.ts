@@ -186,18 +186,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 
 		// Get the drives transaction ID
 		driveBuilder.txId = node.id;
-
-		if (driveBuilder.txId) {
-			const txData = await this.arweave.transactions.getData(driveBuilder.txId, { decode: true });
-			const dataString = await Utf8ArrayToStr(txData);
-			const dataJSON = await JSON.parse(dataString);
-
-			// Get the drive name and root folder id
-			driveBuilder.name = dataJSON.name;
-			driveBuilder.rootFolderId = dataJSON.rootFolderId;
-		}
-
-		return driveBuilder.build();
+		return driveBuilder.build(this.arweave);
 	}
 
 	async getPublicFolder(folderId: string): Promise<ArFSPublicFolder> {
@@ -255,16 +244,6 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 
 		// Get the drives transaction ID
 		folderBuilder.txId = node.id;
-
-		if (folderBuilder.txId) {
-			const txData = await this.arweave.transactions.getData(folderBuilder.txId, { decode: true });
-			const dataString = await Utf8ArrayToStr(txData);
-			const dataJSON = await JSON.parse(dataString);
-
-			// Get the drive name and root folder id
-			folderBuilder.name = dataJSON.name;
-		}
-
 		return await folderBuilder.build(this.arweave);
 	}
 
@@ -923,13 +902,6 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 			// Get the drives transaction ID
 			folderBuilder.txId = node.id;
-
-			const txData = await this.arweave.transactions.getData(folderBuilder.txId, { decode: true });
-			const dataString = await Utf8ArrayToStr(txData);
-			const dataJSON = await JSON.parse(dataString);
-
-			// Get the drive name and root folder id
-			folderBuilder.name = dataJSON.name;
 		});
 		return await folderBuilder.build(this.wallet as JWKWallet, drivePassword, this.arweave);
 	}
@@ -1120,7 +1092,7 @@ export class ArFSPublicDriveBuilder {
 	drivePrivacy?: DrivePrivacy;
 	rootFolderId?: FolderID;
 
-	build(): ArFSPublicDrive {
+	async build(arweave: Arweave): Promise<ArFSPublicDrive> {
 		if (
 			this.appName?.length &&
 			this.appVersion?.length &&
@@ -1134,6 +1106,19 @@ export class ArFSPublicDriveBuilder {
 			this.drivePrivacy?.length &&
 			this.rootFolderId?.length
 		) {
+			if (this.txId) {
+				const txData = await arweave.transactions.getData(this.txId, { decode: true });
+				const dataString = await Utf8ArrayToStr(txData);
+				const dataJSON = await JSON.parse(dataString);
+
+				// Get the drive name and root folder id
+				this.name = dataJSON.name;
+				this.rootFolderId = dataJSON.rootFolderId;
+				if (!this.name || !this.rootFolderId) {
+					throw new Error('Invalid drive state');
+				}
+			}
+
 			return new ArFSPublicDrive(
 				this.appName,
 				this.appVersion,
@@ -1148,7 +1133,6 @@ export class ArFSPublicDriveBuilder {
 				this.rootFolderId
 			);
 		}
-
 		throw new Error('Invalid drive state');
 	}
 }
