@@ -57,7 +57,6 @@ import {
 	CipherIV
 } from './types';
 import { CreateTransactionInterface } from 'arweave/node/common';
-import { cliArweave } from '.';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 export interface ArFSCreateDriveResult {
@@ -939,7 +938,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			// Get the drive name and root folder id
 			folderBuilder.name = dataJSON.name;
 		});
-		return folderBuilder.build(this.wallet as JWKWallet, drivePassword, cliArweave);
+		return folderBuilder.build(this.wallet as JWKWallet, drivePassword, this.arweave);
 	}
 
 	async getAllFoldersOfPrivateDrive(driveId: FolderID, drivePassword: string): Promise<ArFSPrivateFolder[]> {
@@ -1019,7 +1018,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 				// Get the drive name and root folder id
 				folderBuilder.name = dataJSON.name;
-				return folderBuilder.build(this.wallet as JWKWallet, drivePassword, cliArweave);
+				return folderBuilder.build(this.wallet as JWKWallet, drivePassword, this.arweave);
 			});
 			allFolders.push(...folders);
 		}

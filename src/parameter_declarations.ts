@@ -112,7 +112,8 @@ Parameter.declare({
 Parameter.declare({
 	name: FolderIdParameter,
 	aliases: ['-f', '--folder-id'],
-	description: `the ArFS folder ID for the folder to query`
+	description: `the ArFS folder ID for the folder to query`,
+	required: true
 });
 
 Parameter.declare({
