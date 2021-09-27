@@ -276,10 +276,6 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		const { transactions } = data;
 		const { edges } = transactions;
 
-		// if (!edges.length) {
-		// 	throw new Error(`Public folder with Folder ID ${folderId} not found!`);
-		// }
-
 		return edges.map((edge: GQLEdgeInterface) => edge.node.id);
 	}
 
@@ -1192,11 +1188,6 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return allFiles;
 	}
 }
-
-// abstract class EntityBuilder<T extends ArFSEntity> {
-// 	hydratateFromTags(tags: GQLTagInterface): void {}
-// 	abstract build(): T;
-// }
 
 export class ArFSPublicDrive extends ArFSEntity implements ArFSDriveEntity {
 	constructor(
