@@ -186,18 +186,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 
 		// Get the drives transaction ID
 		driveBuilder.txId = node.id;
-
-		if (driveBuilder.txId) {
-			const txData = await this.arweave.transactions.getData(driveBuilder.txId, { decode: true });
-			const dataString = await Utf8ArrayToStr(txData);
-			const dataJSON = await JSON.parse(dataString);
-
-			// Get the drive name and root folder id
-			driveBuilder.name = dataJSON.name;
-			driveBuilder.rootFolderId = dataJSON.rootFolderId;
-		}
-
-		return driveBuilder.build();
+		return driveBuilder.build(this.arweave);
 	}
 
 	async getPublicFolder(folderId: string): Promise<ArFSPublicFolder> {
@@ -255,17 +244,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 
 		// Get the drives transaction ID
 		folderBuilder.txId = node.id;
-
-		if (folderBuilder.txId) {
-			const txData = await this.arweave.transactions.getData(folderBuilder.txId, { decode: true });
-			const dataString = await Utf8ArrayToStr(txData);
-			const dataJSON = await JSON.parse(dataString);
-
-			// Get the drive name and root folder id
-			folderBuilder.name = dataJSON.name;
-		}
-
-		return folderBuilder.build();
+		return await folderBuilder.build(this.arweave);
 	}
 
 	async getChildrenOfFolderTxIds(folderId: FolderID): Promise<string[]> {
@@ -419,14 +398,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 
 				// Get the drives transaction ID
 				folderBuilder.txId = node.id;
-
-				const txData = await this.arweave.transactions.getData(folderBuilder.txId, { decode: true });
-				const dataString = await Utf8ArrayToStr(txData);
-				const dataJSON = await JSON.parse(dataString);
-
-				// Get the drive name and root folder id
-				folderBuilder.name = dataJSON.name;
-				return folderBuilder.build();
+				return await folderBuilder.build(this.arweave);
 			});
 			allFolders.push(...(await Promise.all(folders)));
 		}
@@ -862,92 +834,13 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			// Get the drives transaction ID
 			drive.txId = node.id;
 		}
-		return drive.build(this.wallet as JWKWallet, drivePassword, this.arweave);
+		return await drive.build(this.wallet as JWKWallet, drivePassword, this.arweave);
 	}
 
-	async getAllFoldersOfPublicDrive(driveId: DriveID): Promise<ArFSPublicFolder[]> {
-		let cursor = '';
-		let hasNextPage = true;
-		const allFolders: ArFSPublicFolder[] = [];
-
-		while (hasNextPage) {
-			const gqlQuery = buildQuery(
-				[
-					{ name: 'Drive-Id', value: driveId },
-					{ name: 'Entity-Type', value: 'folder' }
-				],
-				cursor
-			);
-
-			const response = await this.arweave.api.post(graphQLURL, gqlQuery);
-			const { data } = response.data;
-			const { transactions } = data;
-			const { edges } = transactions;
-			hasNextPage = transactions.pageInfo.hasNextPage;
-
-			const folders: Promise<ArFSPublicFolder>[] = edges.map(async (edge: GQLEdgeInterface) => {
-				// Iterate through each tag and pull out each drive ID as well the drives privacy status
-				const folderBuilder = new ArFSPublicFolderBuilder();
-				const { node } = edge;
-				const { tags } = node;
-				cursor = edge.cursor;
-				tags.map((tag: GQLTagInterface) => {
-					const key = tag.name;
-					const { value } = tag;
-					switch (key) {
-						case 'App-Name':
-							folderBuilder.appName = value;
-							break;
-						case 'App-Version':
-							folderBuilder.appVersion = value;
-							break;
-						case 'ArFS':
-							folderBuilder.arFS = value;
-							break;
-						case 'Content-Type':
-							folderBuilder.contentType = value as ContentType;
-							break;
-						case 'Drive-Id':
-							folderBuilder.driveId = value;
-							break;
-						case 'Entity-Type':
-							folderBuilder.entityType = value as EntityType;
-							break;
-						case 'Unix-Time':
-							folderBuilder.unixTime = +value;
-							break;
-						case 'Parent-Folder-Id':
-							folderBuilder.parentFolderId = value;
-							break;
-						case 'Folder-Id':
-							folderBuilder.entityId = value;
-							break;
-						default:
-							break;
-					}
-				});
-
-				// Get the drives transaction ID
-				folderBuilder.txId = node.id;
-
-				const txData = await this.arweave.transactions.getData(folderBuilder.txId, { decode: true });
-				const dataString = await Utf8ArrayToStr(txData);
-				const dataJSON = await JSON.parse(dataString);
-
-				// Get the drive name and root folder id
-				folderBuilder.name = dataJSON.name;
-				return folderBuilder.build();
-			});
-			allFolders.push(...(await Promise.all(folders)));
-		}
-		return allFolders;
-	}
-
-	async getPrivateFolder(folderId: FolderID): Promise<ArFSPrivateFolder> {
+	async getPrivateFolder(folderId: FolderID, drivePassword: string): Promise<ArFSPrivateFolder> {
 		const gqlQuery = buildQuery([
 			{ name: 'Folder-Id', value: folderId },
-			{ name: 'Entity-Type', value: 'folder' },
-			{ name: 'Drive-Privacy', value: 'private' }
+			{ name: 'Entity-Type', value: 'folder' }
 		]);
 
 		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
@@ -1000,7 +893,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 						folderBuilder.parentFolderId = value;
 						break;
 					case 'Folder-Id':
-						folderBuilder.folderId = value;
+						folderBuilder.entityId = value;
 						break;
 					default:
 						break;
@@ -1009,18 +902,11 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 			// Get the drives transaction ID
 			folderBuilder.txId = node.id;
-
-			const txData = await this.arweave.transactions.getData(folderBuilder.txId, { decode: true });
-			const dataString = await Utf8ArrayToStr(txData);
-			const dataJSON = await JSON.parse(dataString);
-
-			// Get the drive name and root folder id
-			folderBuilder.name = dataJSON.name;
 		});
-		return folderBuilder.build();
+		return await folderBuilder.build(this.wallet as JWKWallet, drivePassword, this.arweave);
 	}
 
-	async getAllFoldersOfPrivateDrive(driveId: FolderID): Promise<ArFSPrivateFolder[]> {
+	async getAllFoldersOfPrivateDrive(driveId: FolderID, drivePassword: string): Promise<ArFSPrivateFolder[]> {
 		let cursor = '';
 		let hasNextPage = true;
 		const allFolders: ArFSPrivateFolder[] = [];
@@ -1081,7 +967,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 							folderBuilder.parentFolderId = value;
 							break;
 						case 'Folder-Id':
-							folderBuilder.folderId = value;
+							folderBuilder.entityId = value;
 							break;
 						default:
 							break;
@@ -1090,14 +976,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 				// Get the drives transaction ID
 				folderBuilder.txId = node.id;
-
-				const txData = await this.arweave.transactions.getData(folderBuilder.txId, { decode: true });
-				const dataString = await Utf8ArrayToStr(txData);
-				const dataJSON = await JSON.parse(dataString);
-
-				// Get the drive name and root folder id
-				folderBuilder.name = dataJSON.name;
-				return folderBuilder.build();
+				return await folderBuilder.build(this.wallet as JWKWallet, drivePassword, this.arweave);
 			});
 			allFolders.push(...folders);
 		}
@@ -1165,7 +1044,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 							fileBuilder.parentFolderId = value;
 							break;
 						case 'Entity-Id':
-							fileBuilder.entityId = value;
+							fileBuilder.folderId = value;
 							break;
 						default:
 							break;
@@ -1174,14 +1053,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 				// Get the drives transaction ID
 				fileBuilder.txId = node.id;
-
-				const txData = await this.arweave.transactions.getData(fileBuilder.txId, { decode: true });
-				const dataString = await Utf8ArrayToStr(txData);
-				const dataJSON = await JSON.parse(dataString);
-
-				// Get the drive name and root folder id
-				fileBuilder.name = dataJSON.name;
-				return fileBuilder.build();
+				return await fileBuilder.build(this.arweave);
 			});
 			allFiles.push(...files);
 		}
@@ -1220,7 +1092,7 @@ export class ArFSPublicDriveBuilder {
 	drivePrivacy?: DrivePrivacy;
 	rootFolderId?: FolderID;
 
-	build(): ArFSPublicDrive {
+	async build(arweave: Arweave): Promise<ArFSPublicDrive> {
 		if (
 			this.appName?.length &&
 			this.appVersion?.length &&
@@ -1228,27 +1100,37 @@ export class ArFSPublicDriveBuilder {
 			this.contentType?.length &&
 			this.driveId?.length &&
 			this.entityType?.length &&
-			this.name?.length &&
 			this.txId?.length &&
 			this.unixTime &&
-			this.drivePrivacy?.length &&
-			this.rootFolderId?.length
+			this.drivePrivacy?.length
 		) {
-			return new ArFSPublicDrive(
-				this.appName,
-				this.appVersion,
-				this.arFS,
-				this.contentType,
-				this.driveId,
-				this.entityType,
-				this.name,
-				this.txId,
-				this.unixTime,
-				this.drivePrivacy,
-				this.rootFolderId
-			);
-		}
+			if (this.txId) {
+				const txData = await arweave.transactions.getData(this.txId, { decode: true });
+				const dataString = await Utf8ArrayToStr(txData);
+				const dataJSON = await JSON.parse(dataString);
 
+				// Get the drive name and root folder id
+				this.name = dataJSON.name;
+				this.rootFolderId = dataJSON.rootFolderId;
+				if (!this.name || !this.rootFolderId) {
+					throw new Error('Invalid drive state');
+				}
+
+				return new ArFSPublicDrive(
+					this.appName,
+					this.appVersion,
+					this.arFS,
+					this.contentType,
+					this.driveId,
+					this.entityType,
+					this.name,
+					this.txId,
+					this.unixTime,
+					this.drivePrivacy,
+					this.rootFolderId
+				);
+			}
+		}
 		throw new Error('Invalid drive state');
 	}
 }
@@ -1348,7 +1230,7 @@ export class ArFSPrivateDriveBuilder {
 
 export class ArFSFileOrFolderEntity extends ArFSEntity implements ArFSFileFolderEntity {
 	lastModifiedDate!: never;
-	folderId!: string;
+	folderId?: string;
 
 	constructor(
 		appName: string,
@@ -1559,11 +1441,11 @@ export class ArFSPrivateFileBuilder {
 	txId?: TransactionID;
 	unixTime?: number;
 	parentFolderId?: string;
-	entityId?: string;
+	folderId?: string;
 	cipher?: string;
 	cipherIV?: string;
 
-	build(): ArFSPrivateFolder {
+	async build(arweave: Arweave): Promise<ArFSPrivateFile> {
 		if (
 			this.appName?.length &&
 			this.appVersion?.length &&
@@ -1571,14 +1453,23 @@ export class ArFSPrivateFileBuilder {
 			this.contentType?.length &&
 			this.driveId?.length &&
 			this.entityType?.length &&
-			this.name?.length &&
 			this.txId?.length &&
 			this.unixTime &&
-			this.entityId?.length &&
+			this.folderId?.length &&
 			this.cipher?.length &&
 			this.cipherIV?.length
 		) {
-			return new ArFSPrivateFolder(
+			const txData = await arweave.transactions.getData(this.txId, { decode: true });
+			const dataString = await Utf8ArrayToStr(txData);
+			const dataJSON = await JSON.parse(dataString);
+
+			// Get the drive name and root folder id
+			this.name = dataJSON.name;
+			if (!this.name) {
+				throw new Error('Invalid folder state');
+			}
+
+			return new ArFSPrivateFile(
 				this.appName,
 				this.appVersion,
 				this.arFS,
@@ -1589,7 +1480,7 @@ export class ArFSPrivateFileBuilder {
 				this.txId,
 				this.unixTime,
 				this.parentFolderId || 'root folder',
-				this.entityId,
+				this.folderId,
 				this.cipher,
 				this.cipherIV
 			);
@@ -1610,7 +1501,7 @@ export class ArFSPublicFolder extends ArFSFileOrFolderEntity {
 		readonly txId: TransactionID,
 		readonly unixTime: number,
 		readonly parentFolderId: FolderID,
-		readonly folderId: FolderID
+		readonly entityId: FolderID
 	) {
 		super(
 			appName,
@@ -1623,7 +1514,7 @@ export class ArFSPublicFolder extends ArFSFileOrFolderEntity {
 			txId,
 			unixTime,
 			parentFolderId,
-			folderId
+			entityId
 		);
 	}
 }
@@ -1641,7 +1532,7 @@ export class ArFSPublicFolderBuilder {
 	parentFolderId?: string;
 	entityId?: string;
 
-	build(): ArFSPublicFolder {
+	async build(arweave: Arweave): Promise<ArFSPublicFolder> {
 		if (
 			this.appName?.length &&
 			this.appVersion?.length &&
@@ -1649,11 +1540,20 @@ export class ArFSPublicFolderBuilder {
 			this.contentType?.length &&
 			this.driveId?.length &&
 			this.entityType?.length &&
-			this.name?.length &&
 			this.txId?.length &&
 			this.unixTime &&
 			this.entityId?.length
 		) {
+			const txData = await arweave.transactions.getData(this.txId, { decode: true });
+			const dataString = await Utf8ArrayToStr(txData);
+			const dataJSON = await JSON.parse(dataString);
+
+			// Get the drive name and root folder id
+			this.name = dataJSON.name;
+			if (!this.name) {
+				throw new Error('Invalid folder state');
+			}
+
 			return new ArFSPublicFolder(
 				this.appName,
 				this.appVersion,
@@ -1684,7 +1584,7 @@ export class ArFSPrivateFolder extends ArFSFileOrFolderEntity {
 		readonly txId: string,
 		readonly unixTime: number,
 		readonly parentFolderId: FolderID,
-		readonly folderId: FolderID,
+		readonly entityId: FolderID,
 		readonly cipher: string,
 		readonly cipherIV: string
 	) {
@@ -1699,7 +1599,7 @@ export class ArFSPrivateFolder extends ArFSFileOrFolderEntity {
 			txId,
 			unixTime,
 			parentFolderId,
-			folderId
+			entityId
 		);
 	}
 }
@@ -1715,11 +1615,11 @@ export class ArFSPrivateFolderBuilder {
 	txId?: TransactionID;
 	unixTime?: number;
 	parentFolderId?: string;
-	folderId?: string;
+	entityId?: string;
 	cipher?: string;
 	cipherIV?: string;
 
-	build(): ArFSPrivateFolder {
+	async build(wallet: JWKWallet, drivePassword: string, arweave: Arweave): Promise<ArFSPrivateFolder> {
 		if (
 			this.appName?.length &&
 			this.appVersion?.length &&
@@ -1727,13 +1627,30 @@ export class ArFSPrivateFolderBuilder {
 			this.contentType?.length &&
 			this.driveId?.length &&
 			this.entityType?.length &&
-			this.name?.length &&
 			this.txId?.length &&
 			this.unixTime &&
-			this.folderId?.length &&
+			this.entityId?.length &&
 			this.cipher?.length &&
 			this.cipherIV?.length
 		) {
+			const txData = await arweave.transactions.getData(this.txId, { decode: true });
+			const dataBuffer = Buffer.from(txData);
+			const driveKey: Buffer = await deriveDriveKey(
+				drivePassword,
+				this.driveId,
+				JSON.stringify(wallet.getPrivateKey())
+			);
+
+			const decryptedFolderBuffer: Buffer = await driveDecrypt(this.cipherIV, driveKey, dataBuffer);
+			const decryptedFolderString: string = await Utf8ArrayToStr(decryptedFolderBuffer);
+			const decryptedFolderJSON = await JSON.parse(decryptedFolderString);
+
+			// Get the folder name
+			this.name = decryptedFolderJSON.name;
+			if (!this.name) {
+				throw new Error('Invalid folder state');
+			}
+
 			return new ArFSPrivateFolder(
 				this.appName,
 				this.appVersion,
@@ -1745,7 +1662,7 @@ export class ArFSPrivateFolderBuilder {
 				this.txId,
 				this.unixTime,
 				this.parentFolderId || 'root folder',
-				this.folderId,
+				this.entityId,
 				this.cipher,
 				this.cipherIV
 			);
@@ -1762,7 +1679,7 @@ export class FolderTreeNode {
 	) {}
 
 	public static fromEntity(folderEntity: ArFSFileOrFolderEntity): FolderTreeNode {
-		const node = new FolderTreeNode(folderEntity.folderId);
+		const node = new FolderTreeNode(folderEntity.entityId);
 		return node;
 	}
 }
@@ -1777,7 +1694,7 @@ export class FolderHierarchy {
 
 	static newFromEntities(entities: ArFSFileOrFolderEntity[]): FolderHierarchy {
 		const folderIdToEntityMap = entities.reduce((accumulator, entity) => {
-			return Object.assign(accumulator, { [entity.folderId]: entity });
+			return Object.assign(accumulator, { [entity.entityId]: entity });
 		}, {});
 		const folderIdToNodeMap: { [k: string]: FolderTreeNode } = {};
 
@@ -1793,7 +1710,7 @@ export class FolderHierarchy {
 		folderIdToEntityMap: { [k: string]: ArFSFileOrFolderEntity },
 		folderIdToNodeMap: { [k: string]: FolderTreeNode }
 	): void {
-		const folderIdKeyIsPresent = Object.keys(folderIdToNodeMap).includes(entity.folderId);
+		const folderIdKeyIsPresent = Object.keys(folderIdToNodeMap).includes(entity.entityId);
 		const parentFolderIdKeyIsPresent = Object.keys(folderIdToNodeMap).includes(entity.parentFolderId);
 		if (!folderIdKeyIsPresent) {
 			if (!parentFolderIdKeyIsPresent) {
@@ -1801,20 +1718,20 @@ export class FolderHierarchy {
 				if (parentFolderEntity) {
 					this.setupNodesWithEntity(parentFolderEntity, folderIdToEntityMap, folderIdToNodeMap);
 					const parent = folderIdToNodeMap[entity.parentFolderId];
-					const node = new FolderTreeNode(entity.folderId, parent);
+					const node = new FolderTreeNode(entity.entityId, parent);
 					parent.children.push(node);
-					folderIdToNodeMap[entity.folderId] = node;
+					folderIdToNodeMap[entity.entityId] = node;
 				}
 			}
 			const parent = folderIdToNodeMap[entity.parentFolderId];
 			if (parent) {
-				const node = new FolderTreeNode(entity.folderId, parent);
+				const node = new FolderTreeNode(entity.entityId, parent);
 				parent.children.push(node);
-				folderIdToNodeMap[entity.folderId] = node;
+				folderIdToNodeMap[entity.entityId] = node;
 			} else {
 				// this one is supposed to be the new root
-				const rootNode = new FolderTreeNode(entity.folderId);
-				folderIdToNodeMap[entity.folderId] = rootNode;
+				const rootNode = new FolderTreeNode(entity.entityId);
+				folderIdToNodeMap[entity.entityId] = rootNode;
 			}
 		}
 	}

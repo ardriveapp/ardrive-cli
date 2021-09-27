@@ -12,14 +12,20 @@ import {
 import { CLICommand } from '../CLICommand';
 import { CommonContext } from '../CLICommand/common_context';
 import { ArDriveCommunityOracle } from '../community/ardrive_community_oracle';
-import { ParentFolderIdParameter, SeedPhraseParameter, WalletFileParameter } from '../parameter_declarations';
+import {
+	DrivePasswordParameter,
+	ParentFolderIdParameter,
+	SeedPhraseParameter,
+	WalletFileParameter
+} from '../parameter_declarations';
 
 new CLICommand({
 	name: 'list-folder',
-	parameters: [ParentFolderIdParameter, SeedPhraseParameter, WalletFileParameter],
+	parameters: [ParentFolderIdParameter, SeedPhraseParameter, WalletFileParameter, DrivePasswordParameter],
 	async action(options) {
 		const context = new CommonContext(options, cliWalletDao);
 		const wallet = await context.getWallet().catch(() => null);
+		const password = context.getParameterValue(DrivePasswordParameter);
 		const folderId = context.getParameterValue(ParentFolderIdParameter);
 		let folder;
 		let mergedData: (ArFSPrivateFileOrFolderData | ArFSPublicFileOrFolderData)[];
@@ -29,7 +35,7 @@ new CLICommand({
 			process.exit(1);
 		}
 
-		if (wallet) {
+		if (wallet && password) {
 			const arDrive = new ArDrive(
 				wallet,
 				cliWalletDao,
@@ -39,11 +45,11 @@ new CLICommand({
 				CLI_APP_VERSION
 			);
 			// Fetch the folder to extract the drive
-			folder = await arDrive.getPrivateFolder(folderId);
+			folder = await arDrive.getPrivateFolder(folderId, password);
 
 			// Fetch all of the folder entities within the drive
 			const driveIdOfFolder = folder.driveId;
-			const allFolderEntitiesOfDrive = await arDrive.getAllFoldersOfPrivateDrive(driveIdOfFolder);
+			const allFolderEntitiesOfDrive = await arDrive.getAllFoldersOfPrivateDrive(driveIdOfFolder, password);
 
 			// Feed entities to FolderHierarchy.setupNodesWithEntity()
 			const hierarchy = FolderHierarchy.newFromEntities(allFolderEntitiesOfDrive);

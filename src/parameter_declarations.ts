@@ -11,6 +11,7 @@ export const ArAmountParameter = 'arAmount';
 export const DestinationAddressParameter = 'destAddres';
 export const TransactionIdParameter = 'txId';
 export const ConfirmationsParameter = 'confirmations';
+export const FolderIdParameter = 'folderId';
 export const ParentFolderIdParameter = 'parentFolderId';
 export const LocalFilePathParameter = 'localFilePath';
 export const DestinationFileNameParameter = 'destFileName';
@@ -105,18 +106,29 @@ Parameter.declare({
 	name: ParentFolderIdParameter,
 	aliases: ['-f', '--parent-folder-id'],
 	description: `the ArFS folder ID for the folder in which this file will reside (i.e. its parent folder)
-		• To upload the file to the root of a drive, use the root folder ID of the drive`
+		• To upload the file to the root of a drive, use the root folder ID of the drive`,
+	required: true
 });
+
+Parameter.declare({
+	name: FolderIdParameter,
+	aliases: ['-f', '--folder-id'],
+	description: `the ArFS folder ID for the folder to query`,
+	required: true
+});
+
 Parameter.declare({
 	name: LocalFilePathParameter,
 	aliases: ['-l', '--local-file-path'],
 	description: `the path on the local filesystem for the file that will be uploaded`
 });
+
 Parameter.declare({
 	name: DestinationFileNameParameter,
 	aliases: ['-d', '--dest-file-name'],
 	description: `(OPTIONAL) a destination file name to use when uploaded to ArDrive`
 });
+
 Parameter.declare({
 	name: LocalFilesParameter,
 	aliases: ['--local-files'],
