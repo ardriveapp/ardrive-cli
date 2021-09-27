@@ -786,28 +786,8 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 			// Get the drives transaction ID
 			drive.txId = node.id;
-
-			const txData = await this.arweave.transactions.getData(drive.txId, { decode: true });
-
-			const wallet = this.wallet as JWKWallet;
-
-			const dataBuffer = Buffer.from(txData);
-			const driveKey: Buffer = await deriveDriveKey(
-				drivePassword,
-				driveId,
-				JSON.stringify(wallet.getPrivateKey())
-			);
-
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			const decryptedDriveBuffer: Buffer = await driveDecrypt(drive.cipherIV!, driveKey, dataBuffer);
-			const decryptedDriveString: string = await Utf8ArrayToStr(decryptedDriveBuffer);
-			const decryptedDriveJSON = await JSON.parse(decryptedDriveString);
-
-			// Get the drive name and root folder id
-			drive.name = decryptedDriveJSON.name;
-			drive.rootFolderId = decryptedDriveJSON.rootFolderId;
 		}
-		return drive.build();
+		return drive.build(this.wallet as JWKWallet, drivePassword, this.arweave);
 	}
 }
 
@@ -911,7 +891,7 @@ export class ArFSPrivateDriveBuilder {
 	cipher?: string;
 	cipherIV?: string;
 
-	build(): ArFSPrivateDrive {
+	async build(wallet: JWKWallet, drivePassword: string, arweave: Arweave): Promise<ArFSPrivateDrive> {
 		if (
 			this.appName?.length &&
 			this.appVersion?.length &&
@@ -919,15 +899,32 @@ export class ArFSPrivateDriveBuilder {
 			this.contentType?.length &&
 			this.driveId?.length &&
 			this.entityType?.length &&
-			this.name?.length &&
 			this.txId?.length &&
 			this.unixTime &&
 			this.drivePrivacy?.length &&
-			this.rootFolderId?.length &&
 			this.driveAuthMode?.length &&
 			this.cipher?.length &&
 			this.cipherIV?.length
 		) {
+			const txData = await arweave.transactions.getData(this.txId, { decode: true });
+			const dataBuffer = Buffer.from(txData);
+			const driveKey: Buffer = await deriveDriveKey(
+				drivePassword,
+				this.driveId,
+				JSON.stringify(wallet.getPrivateKey())
+			);
+
+			const decryptedDriveBuffer: Buffer = await driveDecrypt(this.cipherIV, driveKey, dataBuffer);
+			const decryptedDriveString: string = await Utf8ArrayToStr(decryptedDriveBuffer);
+			const decryptedDriveJSON = await JSON.parse(decryptedDriveString);
+
+			// Get the drive name and root folder id
+			this.name = decryptedDriveJSON.name;
+			this.rootFolderId = decryptedDriveJSON.rootFolderId;
+			if (!this.name || !this.rootFolderId) {
+				throw new Error('Invalid drive state');
+			}
+
 			return new ArFSPrivateDrive(
 				this.appName,
 				this.appVersion,
