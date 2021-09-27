@@ -8,7 +8,7 @@ import {
 	fileEncrypt,
 	JWKInterface
 } from 'ardrive-core-js';
-import { CipherIV, DataContentType, DriveID, DriveKey, FileID, FolderID, TransactionID } from './arfsdao';
+import { CipherIV, DataContentType, DriveID, DriveKey, FileID, FolderID, TransactionID } from './types';
 
 export interface ArFSObjectTransactionData {
 	asTransactionData(): string | Buffer;

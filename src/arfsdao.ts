@@ -8,6 +8,9 @@ import {
 	ArFSDriveEntity,
 	ArFSEntity,
 	ContentType,
+	deriveDriveKey,
+	deriveFileKey,
+	driveDecrypt,
 	DrivePrivacy,
 	EntityType,
 	extToMime,
@@ -38,34 +41,46 @@ import {
 	ArFSPublicFolderTransactionData
 } from './arfs_trx_data_types';
 import { buildQuery } from './query';
-
-export const ArFS_O_11 = '0.11';
-
-export type CipherIV = string;
-export type FolderID = string;
-export type FileID = string;
-export type DriveID = string;
-export type DriveKey = Buffer;
-export type DataContentType = string;
-export type TransactionID = string;
+import {
+	DriveID,
+	FolderID,
+	FileID,
+	DriveKey,
+	TransactionID,
+	Winston,
+	FileKey,
+	DEFAULT_APP_NAME,
+	DEFAULT_APP_VERSION,
+	CURRENT_ARFS_VERSION
+} from './types';
+import { CreateTransactionInterface } from 'arweave/node/common';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 export interface ArFSCreateDriveResult {
-	driveTrx: Transaction;
-	rootFolderTrx: Transaction;
+	driveTrxId: TransactionID;
+	driveTrxReward: Winston;
+	rootFolderTrxId: TransactionID;
+	rootFolderTrxReward: Winston;
 	driveId: DriveID;
 	rootFolderId: FolderID;
 }
 
 export interface ArFSCreateFolderResult {
-	folderTrx: Transaction;
+	folderTrxId: TransactionID;
+	folderTrxReward: Winston;
 	folderId: FolderID;
 }
 
 export interface ArFSUploadFileResult {
-	dataTrx: Transaction;
-	metaDataTrx: Transaction;
+	dataTrxId: TransactionID;
+	dataTrxReward: Winston;
+	metaDataTrxId: TransactionID;
+	metaDataTrxReward: TransactionID;
 	fileId: FileID;
+}
+
+export interface ArFSUploadPrivateFileResult extends ArFSUploadFileResult {
+	fileKey: FileKey;
 }
 
 export interface ArFSCreatePrivateDriveResult extends ArFSCreateDriveResult {
@@ -74,13 +89,19 @@ export interface ArFSCreatePrivateDriveResult extends ArFSCreateDriveResult {
 
 export abstract class ArFSDAOType {
 	protected abstract readonly arweave: Arweave;
+	protected abstract readonly appName: string;
+	protected abstract readonly appVersion: string;
 }
 
 /**
  * Performs all ArFS spec operations that do NOT require a wallet for signing or decryption
  */
 export class ArFSDAOAnonymous extends ArFSDAOType {
-	constructor(protected readonly arweave: Arweave) {
+	constructor(
+		protected readonly arweave: Arweave,
+		protected appName = DEFAULT_APP_NAME,
+		protected appVersion = DEFAULT_APP_VERSION
+	) {
 		super();
 	}
 
@@ -179,8 +200,13 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 
 export class ArFSDAO extends ArFSDAOAnonymous {
 	// TODO: Can we abstract Arweave type(s)?
-	constructor(private readonly wallet: Wallet, arweave: Arweave) {
-		super(arweave);
+	constructor(
+		private readonly wallet: Wallet,
+		arweave: Arweave,
+		protected appName = DEFAULT_APP_NAME,
+		protected appVersion = DEFAULT_APP_VERSION
+	) {
+		super(arweave, appName, appVersion);
 	}
 
 	async createPublicFolder(
@@ -234,7 +260,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			await folderUploader.uploadChunk();
 		}
 
-		return { folderTrx, folderId };
+		return { folderTrxId: folderTrx.id, folderTrxReward: folderTrx.reward, folderId };
 	}
 
 	async createPublicDrive(driveName: string): Promise<ArFSCreateDriveResult> {
@@ -242,12 +268,11 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const driveId = uuidv4();
 
 		// Create root folder
-		const { folderTrx: rootFolderTrx, folderId: rootFolderId } = await this.createPublicFolder(
-			driveName,
-			driveId,
-			undefined,
-			false
-		);
+		const {
+			folderTrxId: rootFolderTrxId,
+			folderTrxReward: rootFolderTrxReward,
+			folderId: rootFolderId
+		} = await this.createPublicFolder(driveName, driveId, undefined, false);
 
 		// Get the current time so the app can display the "created" data later on
 		const unixTime = Math.round(Date.now() / 1000);
@@ -268,7 +293,14 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			await driveUploader.uploadChunk();
 		}
 
-		return { driveTrx, rootFolderTrx, driveId, rootFolderId };
+		return {
+			driveTrxId: driveTrx.id,
+			driveTrxReward: driveTrx.reward,
+			rootFolderTrxId: rootFolderTrxId,
+			rootFolderTrxReward: rootFolderTrxReward,
+			driveId: driveId,
+			rootFolderId: rootFolderId
+		};
 	}
 
 	async createPrivateDrive(driveName: string, password: string): Promise<ArFSCreatePrivateDriveResult> {
@@ -318,12 +350,21 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		const driveKey = privateDriveData.driveKey;
 
-		return { driveTrx, rootFolderTrx, driveId, rootFolderId, driveKey };
+		return {
+			driveTrxId: driveTrx.id,
+			driveTrxReward: driveTrx.reward,
+			rootFolderTrxId: rootFolderTrx.id,
+			rootFolderTrxReward: rootFolderTrx.reward,
+			driveId: driveId,
+			rootFolderId: rootFolderId,
+			driveKey
+		};
 	}
 
 	async uploadPublicFile(
 		parentFolderId: FolderID,
 		filePath: string,
+		reward: Winston,
 		destFileName?: string
 	): Promise<ArFSUploadFileResult> {
 		// Retrieve drive ID from folder ID and ensure that it is indeed public
@@ -353,7 +394,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			new ArFSPublicFileDataTransactionData(fileData),
 			dataContentType
 		);
-		const dataTrx = await this.prepareArFSObjectTransaction(fileDataPrototype);
+		const dataTrx = await this.prepareArFSObjectTransaction(fileDataPrototype, reward);
 
 		// Upload file data
 		const dataUploader = await this.arweave.transactions.getUploader(dataTrx);
@@ -383,20 +424,27 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			await metaDataUploader.uploadChunk();
 		}
 
-		return { dataTrx, metaDataTrx, fileId };
+		return {
+			dataTrxId: dataTrx.id,
+			dataTrxReward: dataTrx.reward,
+			metaDataTrxId: metaDataTrx.id,
+			metaDataTrxReward: metaDataTrx.reward,
+			fileId
+		};
 	}
 
 	async uploadPrivateFile(
 		parentFolderId: FolderID,
 		filePath: string,
 		password: string,
+		reward: Winston,
 		destFileName?: string
-	): Promise<ArFSUploadFileResult> {
+	): Promise<ArFSUploadPrivateFileResult> {
 		const wallet: JWKWallet = this.wallet as JWKWallet;
 
 		// Retrieve drive ID from folder ID and ensure that it is indeed a private drive
 		const driveId = await this.getDriveIdForFolderId(parentFolderId);
-		const drive = await this.getPrivateDrive(driveId);
+		const drive = await this.getPrivateDrive(driveId, password);
 		if (!drive) {
 			throw new Error(`Private drive with Drive ID ${driveId} not found!`);
 		}
@@ -420,7 +468,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const fileDataPrototype = new ArFSPrivateFileDataPrototype(
 			await ArFSPrivateFileDataTransactionData.from(fileData, fileId, driveId, password, wallet.getPrivateKey())
 		);
-		const dataTrx = await this.prepareArFSObjectTransaction(fileDataPrototype);
+		const dataTrx = await this.prepareArFSObjectTransaction(fileDataPrototype, reward);
 
 		// Upload file data
 		const dataUploader = await this.arweave.transactions.getUploader(dataTrx);
@@ -454,28 +502,42 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			await metaDataUploader.uploadChunk();
 		}
 
-		return { dataTrx, metaDataTrx, fileId };
+		// TODO: Get fileKey from ArFSPrivateFileMetadataTransactionData somehow
+		return {
+			dataTrxId: dataTrx.id,
+			dataTrxReward: dataTrx.reward,
+			metaDataTrxId: metaDataTrx.id,
+			metaDataTrxReward: metaDataTrx.reward,
+			fileId,
+			fileKey: await deriveFileKey(
+				fileId,
+				await deriveDriveKey(password, driveId, JSON.stringify(wallet.getPrivateKey()))
+			)
+		};
 	}
 
 	async prepareArFSObjectTransaction(
 		objectMetaData: ArFSObjectMetadataPrototype,
-		appName = 'ArDrive-Core',
-		appVersion = '1.0',
-		arFSVersion = ArFS_O_11,
+		reward?: Winston,
 		otherTags: GQLTagInterface[] = []
 	): Promise<Transaction> {
 		const wallet = this.wallet as JWKWallet;
 
 		// Create transaction
-		const transaction = await this.arweave.createTransaction(
-			{ data: objectMetaData.objectData.asTransactionData() },
-			wallet.getPrivateKey()
-		);
+		const trxAttributes: Partial<CreateTransactionInterface> = {
+			data: objectMetaData.objectData.asTransactionData()
+		};
+
+		// If we provided our own reward setting, use it now
+		if (reward) {
+			trxAttributes.reward = reward;
+		}
+		const transaction = await this.arweave.createTransaction(trxAttributes, wallet.getPrivateKey());
 
 		// Add baseline ArFS Tags
-		transaction.addTag('App-Name', appName);
-		transaction.addTag('App-Version', appVersion);
-		transaction.addTag('ArFS', arFSVersion);
+		transaction.addTag('App-Name', this.appName);
+		transaction.addTag('App-Version', this.appVersion);
+		transaction.addTag('ArFS', CURRENT_ARFS_VERSION);
 
 		// Add object-specific tags
 		objectMetaData.addTagsToTransaction(transaction);
@@ -491,7 +553,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return transaction;
 	}
 
-	async getPrivateDrive(driveId: string): Promise<ArFSPrivateDrive> {
+	async getPrivateDrive(driveId: DriveID, drivePassword: string): Promise<ArFSPrivateDrive> {
 		const gqlQuery = buildQuery([
 			{ name: 'Drive-Id', value: driveId },
 			{ name: 'Entity-Type', value: 'drive' },
@@ -501,7 +563,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 		const { data } = response.data;
 		const { transactions } = data;
-		const { edges } = transactions;
+		const edges: GQLEdgeInterface[] = transactions.edges;
 
 		if (!edges.length) {
 			throw new Error(`Private drive with Drive ID ${driveId} not found or is not private!`);
@@ -509,7 +571,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		const drive = new ArFSPrivateDriveBuilder();
 
-		edges.forEach(async (edge: GQLEdgeInterface) => {
+		for await (const edge of edges) {
 			// Iterate through each tag and pull out each drive ID as well the drives privacy status
 			const { node } = edge;
 			const { tags } = node;
@@ -557,16 +619,8 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 			// Get the drives transaction ID
 			drive.txId = node.id;
-
-			const txData = await this.arweave.transactions.getData(drive.txId, { decode: true });
-			const dataString = await Utf8ArrayToStr(txData);
-			const dataJSON = await JSON.parse(dataString);
-
-			// Get the drive name and root folder id
-			drive.name = dataJSON.name;
-			drive.rootFolderId = dataJSON.rootFolderId;
-		});
-		return drive.build();
+		}
+		return drive.build(this.wallet as JWKWallet, drivePassword, this.arweave);
 	}
 }
 
@@ -670,7 +724,7 @@ export class ArFSPrivateDriveBuilder {
 	cipher?: string;
 	cipherIV?: string;
 
-	build(): ArFSPrivateDrive {
+	async build(wallet: JWKWallet, drivePassword: string, arweave: Arweave): Promise<ArFSPrivateDrive> {
 		if (
 			this.appName?.length &&
 			this.appVersion?.length &&
@@ -678,15 +732,32 @@ export class ArFSPrivateDriveBuilder {
 			this.contentType?.length &&
 			this.driveId?.length &&
 			this.entityType?.length &&
-			this.name?.length &&
 			this.txId?.length &&
 			this.unixTime &&
 			this.drivePrivacy?.length &&
-			this.rootFolderId?.length &&
 			this.driveAuthMode?.length &&
 			this.cipher?.length &&
 			this.cipherIV?.length
 		) {
+			const txData = await arweave.transactions.getData(this.txId, { decode: true });
+			const dataBuffer = Buffer.from(txData);
+			const driveKey: Buffer = await deriveDriveKey(
+				drivePassword,
+				this.driveId,
+				JSON.stringify(wallet.getPrivateKey())
+			);
+
+			const decryptedDriveBuffer: Buffer = await driveDecrypt(this.cipherIV, driveKey, dataBuffer);
+			const decryptedDriveString: string = await Utf8ArrayToStr(decryptedDriveBuffer);
+			const decryptedDriveJSON = await JSON.parse(decryptedDriveString);
+
+			// Get the drive name and root folder id
+			this.name = decryptedDriveJSON.name;
+			this.rootFolderId = decryptedDriveJSON.rootFolderId;
+			if (!this.name || !this.rootFolderId) {
+				throw new Error('Invalid drive state');
+			}
+
 			return new ArFSPrivateDrive(
 				this.appName,
 				this.appVersion,

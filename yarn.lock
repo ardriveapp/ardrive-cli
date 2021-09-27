@@ -779,6 +779,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/regression@npm:^2.0.2":
+  version: 2.0.2
+  resolution: "@types/regression@npm:2.0.2"
+  checksum: fa577d48c5a1eae5c9df305622d1104e7d457fb0d2802189d2228f70bf199b287f16201eaac363ba3550ac5fbd67b753217c50b5d286700e69479deb4ca4d72d
+  languageName: node
+  linkType: hard
+
 "@types/sinon-chai@npm:^3.2.4":
   version: 3.2.5
   resolution: "@types/sinon-chai@npm:3.2.5"
@@ -1456,6 +1463,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"arconnect@npm:^0.2.8":
+  version: 0.2.9
+  resolution: "arconnect@npm:0.2.9"
+  dependencies:
+    arweave: ^1.10.13
+  checksum: 7871621da205358f3acaba2845ce8df261b9b8d55a6d8d4c247cd4494fbaa6b222285a09b5216429bc25c63b14f09d2859b292253d74db05ac29c127ad60aa6e
+  languageName: node
+  linkType: hard
+
 "ardrive-cli@workspace:.":
   version: 0.0.0-use.local
   resolution: "ardrive-cli@workspace:."
@@ -1469,13 +1485,14 @@ __metadata:
     "@types/node-fetch": 2.5.3
     "@types/prompt-sync": ^4.1.0
     "@types/prompts": ^2.0.9
+    "@types/regression": ^2.0.2
     "@types/sinon": ^10.0.2
     "@types/source-map-support": ^0
     "@types/uuid": ^8.3.0
     "@typescript-eslint/eslint-plugin": ^4.18.0
     "@typescript-eslint/parser": ^4.18.0
-    ardrive-core-js: 0.5.0
-    arweave: 1.10.11
+    ardrive-core-js: 0.5.1
+    arweave: ^1.10.16
     arweave-bundles: ^1.0.3
     arweave-mnemonic-keys: ^0.0.9
     base64-js: ^1.5.1
@@ -1497,8 +1514,10 @@ __metadata:
     prompt-password: ^1.2.0
     prompt-sync: ^4.2.0
     prompts: ^2.4.0
+    regression: ^2.0.1
     rimraf: ^3.0.2
     sinon: ^11.1.2
+    smartweave: ^0.4.45
     source-map-support: ^0.5.20
     ts-node: ^10.2.1
     ts-sinon: ^2.0.1
@@ -1510,11 +1529,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"ardrive-core-js@npm:0.5.0":
-  version: 0.5.0
-  resolution: "ardrive-core-js@npm:0.5.0"
+"ardrive-core-js@npm:0.5.1":
+  version: 0.5.1
+  resolution: "ardrive-core-js@npm:0.5.1"
   dependencies:
-    arweave: ^1.10.11
+    arweave: ^1.10.16
     arweave-bundles: ^1.0.3
     axios: ^0.21.1
     better-sqlite3: ^7.1.2
@@ -1530,11 +1549,11 @@ __metadata:
     prompt-password: ^1.2.0
     prompt-sync: ^4.2.0
     prompts: ^2.4.0
-    smartweave: 0.4.27
+    smartweave: ^0.4.45
     typescript: ^4.2.3
     utf8: ^3.0.0
     uuid: ^8.3.2
-  checksum: 3f877a369a9be6afba6973bc9c1ca9cb338ea32c1c9bfe9fcf01b0869c1ac8859d4d0ae6fd11c4f6865faf76e78293ef70d5297253855f0bc57faa7fc4c092d5
+  checksum: da4d2d7539f55d8d2f6150761c42f158b55c6682b6546cf062d3201071a460fb885a831f111ca40e2f0e472f688b9b8aa7f5724b5b7f9a5c36b1dc5773577de8
   languageName: node
   linkType: hard
 
@@ -1620,18 +1639,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"arweave@npm:1.10.11":
-  version: 1.10.11
-  resolution: "arweave@npm:1.10.11"
-  dependencies:
-    asn1.js: ^5.4.1
-    axios: ^0.21.1
-    base64-js: ^1.3.1
-    bignumber.js: ^9.0.1
-  checksum: 40d32d1a683c8d0595650e20acfc780233e4de62f051c2dfca76cd0e4a230650e2d6b6246c4fb792787e1e51ab6655861bbfd3aad50287226a1d06c2f19e1d05
-  languageName: node
-  linkType: hard
-
 "arweave@npm:^1.10.11, arweave@npm:^1.10.5":
   version: 1.10.13
   resolution: "arweave@npm:1.10.13"
@@ -1641,6 +1648,19 @@ __metadata:
     base64-js: ^1.3.1
     bignumber.js: ^9.0.1
   checksum: 5da8a3f5cc70aca4bde5eb5fcdd6eee56ed66d07f0fd7c41ef9b6c56b6aaf9c30c88e331d51472995e58e597a9c7f6e5fcd1de9669489a289fe262d50cf9e3de
+  languageName: node
+  linkType: hard
+
+"arweave@npm:^1.10.13, arweave@npm:^1.10.16":
+  version: 1.10.16
+  resolution: "arweave@npm:1.10.16"
+  dependencies:
+    arconnect: ^0.2.8
+    asn1.js: ^5.4.1
+    axios: ^0.21.1
+    base64-js: ^1.3.1
+    bignumber.js: ^9.0.1
+  checksum: 2baa240095f85a03c6cd29c8f9094347571362ccd2a9dc946dc0299c2d2e94af7e8ce3ea3ef9dcad9ee7fe1c2e3463fb3e55d110697e6fff80ae2ea74a92aeba
   languageName: node
   linkType: hard
 
@@ -1793,7 +1813,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bl@npm:^4.0.3":
+"bl@npm:^4.0.3, bl@npm:^4.1.0":
   version: 4.1.0
   resolution: "bl@npm:4.1.0"
   dependencies:
@@ -1995,6 +2015,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"chalk@npm:^4.1.2":
+  version: 4.1.2
+  resolution: "chalk@npm:4.1.2"
+  dependencies:
+    ansi-styles: ^4.1.0
+    supports-color: ^7.1.0
+  checksum: e3901b97d953991712bf0b941d586175be7ca5da56a97d25187e07453c6b26cae0ac8d9c7aa9e87e7c5c986fff870771b3a8e2705b3becda868829e2e12c2a65
+  languageName: node
+  linkType: hard
+
 "chardet@npm:^0.7.0":
   version: 0.7.0
   resolution: "chardet@npm:0.7.0"
@@ -2110,6 +2140,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cli-spinners@npm:^2.5.0":
+  version: 2.6.0
+  resolution: "cli-spinners@npm:2.6.0"
+  checksum: 653ba6818e0091d4ad7aa052022f6c6a0df0d4674ff6069f6ae366e6130c1eb91a6c332ddfdd2029d234411632ff6428950aa3311872daf515ce54da498c1357
+  languageName: node
+  linkType: hard
+
 "cli-truncate@npm:^2.1.0":
   version: 2.1.0
   resolution: "cli-truncate@npm:2.1.0"
@@ -2169,6 +2206,13 @@ __metadata:
     kind-of: ^6.0.2
     shallow-clone: ^3.0.0
   checksum: b0146d66cabc7e609d23d10155dcc88e2f74b03539b3b65f8a05f889500e2a78b6c6265a744445d009d512a1afa16836f62aa5737d462027142984c2d41130c8
+  languageName: node
+  linkType: hard
+
+"clone@npm:^1.0.2":
+  version: 1.0.4
+  resolution: "clone@npm:1.0.4"
+  checksum: aaaa58f9906002d9c07630682536cb00581ee02d7a76cfa8573ad59784add4d5d6d4afe894c21899b974044f153f8c5c6419ffc8b1cdde61bf104ad52e3a185d
   languageName: node
   linkType: hard
 
@@ -2562,6 +2606,15 @@ __metadata:
   dependencies:
     strip-bom: ^4.0.0
   checksum: c53a7ddfa11c731f503ec99a40c7955802982ba06d8503f25a22bbc84aec8b1a976d4f431fe0c6378c3c862d6da2f38c0dfbb0b3951b2e3aa72778ed70d7a56c
+  languageName: node
+  linkType: hard
+
+"defaults@npm:^1.0.3":
+  version: 1.0.3
+  resolution: "defaults@npm:1.0.3"
+  dependencies:
+    clone: ^1.0.2
+  checksum: 974f63dd0acb79d14e94ac0f2ea69a880ab2a6e4b341bb9bdc2409b4091b928abe2709a4e140528948d02f29c286efdef22851d1dc972636eed2ce8e1c5b7465
   languageName: node
   linkType: hard
 
@@ -3154,6 +3207,13 @@ __metadata:
   version: 1.5.0
   resolution: "figlet@npm:1.5.0"
   checksum: 49839d8179dc0a7b6f105f13348e233df79cc2959088316560c1a85af0e99466b3e85d417de2a1f87d4dd4f42c7a734b01b8290aaf1c04c80f6fcffdf7c86bde
+  languageName: node
+  linkType: hard
+
+"figlet@npm:^1.5.2":
+  version: 1.5.2
+  resolution: "figlet@npm:1.5.2"
+  checksum: 64b6932ac1600f5d3a40a06964f420cffe3386312bfe05a128942320cbb9c78a67d421c670f2ee3e46ac323d986c37b8d7e27e0bdeebbbfcf532c90cee401f67
   languageName: node
   linkType: hard
 
@@ -3841,6 +3901,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"inquirer@npm:^8.1.2":
+  version: 8.1.3
+  resolution: "inquirer@npm:8.1.3"
+  dependencies:
+    ansi-escapes: ^4.2.1
+    chalk: ^4.1.1
+    cli-cursor: ^3.1.0
+    cli-width: ^3.0.0
+    external-editor: ^3.0.3
+    figures: ^3.0.0
+    lodash: ^4.17.21
+    mute-stream: 0.0.8
+    ora: ^5.4.1
+    run-async: ^2.4.0
+    rxjs: ^7.2.0
+    string-width: ^4.1.0
+    strip-ansi: ^6.0.0
+    through: ^2.3.6
+  checksum: 55c44bdf858dcab4ca93a76dc7d7c389d8f98823b451989c8d8a2e4c99137067293dbd8025987fc334a28c2287da27c748dc8e14be91888809276f34bb3349cf
+  languageName: node
+  linkType: hard
+
 "is-accessor-descriptor@npm:^0.1.6":
   version: 0.1.6
   resolution: "is-accessor-descriptor@npm:0.1.6"
@@ -3974,6 +4056,13 @@ __metadata:
   dependencies:
     is-extglob: ^2.1.1
   checksum: 98cd4f715f0fb81da34aa6c8be4a5ef02d8cfac3ebc885153012abc2a0410df5a572f9d0393134fcba9192c7a845da96142c5f74a3c02787efe178ed798615e6
+  languageName: node
+  linkType: hard
+
+"is-interactive@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "is-interactive@npm:1.0.0"
+  checksum: d79b435e5134ccd60dfe035117b1cddd5c5100e90b2d33428adfe1667e26f0114cc1bc7b3ff84a1b107de8ef27f155e3ecc3bb08c0e502a15c66300b4a45d9e5
   languageName: node
   linkType: hard
 
@@ -5281,6 +5370,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ora@npm:^5.4.1":
+  version: 5.4.1
+  resolution: "ora@npm:5.4.1"
+  dependencies:
+    bl: ^4.1.0
+    chalk: ^4.1.0
+    cli-cursor: ^3.1.0
+    cli-spinners: ^2.5.0
+    is-interactive: ^1.0.0
+    is-unicode-supported: ^0.1.0
+    log-symbols: ^4.1.0
+    strip-ansi: ^6.0.0
+    wcwidth: ^1.0.1
+  checksum: 589ac687d6dfbac970f1bf4ec94f3e1cfc9e2a4dd4727a0c60dfcdef138f59b5de5694447881fa5a2793a91f0b2619a96bdd3d5425be30d155540abbe1df95b9
+  languageName: node
+  linkType: hard
+
 "os-tmpdir@npm:~1.0.2":
   version: 1.0.2
   resolution: "os-tmpdir@npm:1.0.2"
@@ -5880,6 +5986,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"regression@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "regression@npm:2.0.1"
+  checksum: 61feb6f23b2715956219b1892ac985e64e47a0c5e2fa9e5361ea02d8b068c3a24637f7b33f9bc5424aac086316d2671b0dfa9a64fa8372200d757c65bc1e953c
+  languageName: node
+  linkType: hard
+
 "release-zalgo@npm:^1.0.0":
   version: 1.0.0
   resolution: "release-zalgo@npm:1.0.0"
@@ -6012,6 +6125,15 @@ __metadata:
   dependencies:
     tslib: ^1.9.0
   checksum: 1146975cbd5388ee5e61450235dc5670931e43cce71813f567977d334acc4d75c6e8d9d293df67e1fb31510b99fc8957943d4a9b550d109e4dc69967a8471543
+  languageName: node
+  linkType: hard
+
+"rxjs@npm:^7.2.0":
+  version: 7.3.0
+  resolution: "rxjs@npm:7.3.0"
+  dependencies:
+    tslib: ~2.1.0
+  checksum: 148b28cdc6701e5d5011079523d1f2475c82b94b6945654b5045050dd4b2e1290de26f53e8e253a9392b57d08ba7b83d97b141bb25bec124c202cd0c24f9d1e5
   languageName: node
   linkType: hard
 
@@ -6276,7 +6398,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"smartweave@npm:0.4.27, smartweave@npm:^0.4.27":
+"smartweave@npm:^0.4.27":
   version: 0.4.27
   resolution: "smartweave@npm:0.4.27"
   dependencies:
@@ -6297,6 +6419,30 @@ __metadata:
     smartweave: lib/bin/smartweave.js
     smartweave-cli: lib/bin/smartweave-cli.js
   checksum: ea910348e0400ed7b3cd7122f56fd6f3caebb32ad7d195f64b4e49f5b540aca66fa03c5f696a63c0852b081a3aaa50339006661377319d515387e2ba1aba3b8f
+  languageName: node
+  linkType: hard
+
+"smartweave@npm:^0.4.45":
+  version: 0.4.45
+  resolution: "smartweave@npm:0.4.45"
+  dependencies:
+    "@types/clui": ^0.3.0
+    "@types/inquirer": ^7.3.1
+    "@weavery/clarity": ^0.1.5
+    arweave: ^1.10.16
+    bignumber.js: ^9.0.1
+    chalk: ^4.1.2
+    clui: ^0.3.6
+    figlet: ^1.5.2
+    inquirer: ^8.1.2
+    json-beautify: ^1.1.1
+    loglevel: ^1.7.0
+    sentencer: ^0.2.1
+    yargs: ^17.1.1
+  bin:
+    smartweave: lib/bin/smartweave.js
+    smartweave-cli: lib/bin/smartweave-cli.js
+  checksum: d8d925df0b976bc7334a3211b42d5b16e4447eb6a54c74db2c6bf0d26839481348b15990619e77ac5e57d3420021eec4a0cad0a2f89a63b1a9d31abc2d59e8ae
   languageName: node
   linkType: hard
 
@@ -6791,6 +6937,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tslib@npm:~2.1.0":
+  version: 2.1.0
+  resolution: "tslib@npm:2.1.0"
+  checksum: d8f5bdd067611651c6b846c2388f4dc8ba1f5af124e66105f5263d1ad56da17f4b8c6566887ca2f205c5a9758451871ceca87d5d06087af2dca1699c5e33db69
+  languageName: node
+  linkType: hard
+
 "tsutils@npm:^3.17.1":
   version: 3.21.0
   resolution: "tsutils@npm:3.21.0"
@@ -7005,6 +7158,15 @@ typescript@^4.2.3:
   languageName: node
   linkType: hard
 
+"wcwidth@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "wcwidth@npm:1.0.1"
+  dependencies:
+    defaults: ^1.0.3
+  checksum: abf8ba432dd19a95af63895de6af932900a9451e175745551aeca0fd2d46604bc72ff80aa83adc3f67fb8389191329340e2864aefcf20655ffe91f0dbee5d953
+  languageName: node
+  linkType: hard
+
 "which-module@npm:^2.0.0":
   version: 2.0.0
   resolution: "which-module@npm:2.0.0"
@@ -7194,6 +7356,21 @@ typescript@^4.2.3:
     y18n: ^4.0.0
     yargs-parser: ^18.1.2
   checksum: dbf687d6b938f01bbf11e158dde6df906282b70cd9295af0217ee8cefbd83ad09d49fa9458d0d5325b0e66f03df954a38986db96f91e5b46ccdbbaf9a0157b23
+  languageName: node
+  linkType: hard
+
+"yargs@npm:^17.1.1":
+  version: 17.1.1
+  resolution: "yargs@npm:17.1.1"
+  dependencies:
+    cliui: ^7.0.2
+    escalade: ^3.1.1
+    get-caller-file: ^2.0.5
+    require-directory: ^2.1.1
+    string-width: ^4.2.0
+    y18n: ^5.0.5
+    yargs-parser: ^20.2.2
+  checksum: c2a16b61eb0db8882becd0aa382a5c59b87afcd17b35dd7077b3c9d83f77a3ad3de1526e4f1cf940f9481d7ce537e883af7c16879c33258724a09bc43a04e8ea
   languageName: node
   linkType: hard
 
