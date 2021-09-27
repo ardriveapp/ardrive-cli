@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
-import { arweave } from '..';
+import { arweave } from 'ardrive-core-js';
+import { cliWalletDao, CLI_APP_NAME, CLI_APP_VERSION } from '..';
 import { ArDrive, ArDriveAnonymous } from '../ardrive';
 import {
 	ArFSDAO,
@@ -10,13 +11,14 @@ import {
 } from '../arfsdao';
 import { CLICommand } from '../CLICommand';
 import { CommonContext } from '../CLICommand/common_context';
+import { ArDriveCommunityOracle } from '../community/ardrive_community_oracle';
 import { ParentFolderIdParameter, SeedPhraseParameter, WalletFileParameter } from '../parameter_declarations';
 
 new CLICommand({
 	name: 'list-folder',
 	parameters: [ParentFolderIdParameter, SeedPhraseParameter, WalletFileParameter],
 	async action(options) {
-		const context = new CommonContext(options);
+		const context = new CommonContext(options, cliWalletDao);
 		const wallet = await context.getWallet().catch(() => null);
 		const folderId = context.getParameterValue(ParentFolderIdParameter);
 		let folder;
@@ -28,7 +30,14 @@ new CLICommand({
 		}
 
 		if (wallet) {
-			const arDrive = new ArDrive(new ArFSDAO(wallet, arweave));
+			const arDrive = new ArDrive(
+				wallet,
+				cliWalletDao,
+				new ArFSDAO(wallet, arweave),
+				new ArDriveCommunityOracle(arweave),
+				CLI_APP_NAME,
+				CLI_APP_VERSION
+			);
 			// Fetch the folder to extract the drive
 			folder = await arDrive.getPrivateFolder(folderId);
 
