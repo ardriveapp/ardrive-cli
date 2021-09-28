@@ -716,14 +716,19 @@ export class ArDrive extends ArDriveAnonymous {
 
 		const totalWinstonPrice = totalPrice.toString();
 
-		if (isParentFolder && !this.walletDao.walletHasBalance(this.wallet, totalWinstonPrice)) {
+		if (isParentFolder) {
 			// Check and assert balance of the total bulk upload if this folder is the parent folder
-			const walletBalance = this.walletDao.getWalletWinstonBalance(this.wallet);
-			throw new Error(
-				`Wallet balance of ${walletBalance} Winston is not enough (${totalWinstonPrice}) for data upload of size ${folderToUpload.getTotalBytes(
-					drivePrivacy === 'private'
-				)} bytes!`
-			);
+			const walletHasBalance = await this.walletDao.walletHasBalance(this.wallet, totalWinstonPrice);
+
+			if (!walletHasBalance) {
+				const walletBalance = await this.walletDao.getWalletWinstonBalance(this.wallet);
+
+				throw new Error(
+					`Wallet balance of ${walletBalance} Winston is not enough (${totalWinstonPrice}) for data upload of size ${folderToUpload.getTotalBytes(
+						drivePrivacy === 'private'
+					)} bytes!`
+				);
+			}
 		}
 
 		return totalPrice;
@@ -759,8 +764,11 @@ export class ArDrive extends ArDriveAnonymous {
 
 		const totalWinstonPrice = totalPrice.toString();
 
-		const walletBalance = this.walletDao.getWalletWinstonBalance(this.wallet);
-		if (!this.walletDao.walletHasBalance(this.wallet, totalWinstonPrice)) {
+		const walletHasBalance = await this.walletDao.walletHasBalance(this.wallet, totalWinstonPrice);
+
+		if (!walletHasBalance) {
+			const walletBalance = await this.walletDao.getWalletWinstonBalance(this.wallet);
+
 			throw new Error(
 				`Wallet balance of ${walletBalance} Winston is not enough (${totalWinstonPrice}) for data upload of size ${fileSize} bytes!`
 			);
@@ -777,8 +785,11 @@ export class ArDrive extends ArDriveAnonymous {
 		const metaDataBaseReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(metaData.sizeOf());
 		const totalWinstonPrice = metaDataBaseReward.toString();
 
-		const walletBalance = this.walletDao.getWalletWinstonBalance(this.wallet);
-		if (!this.walletDao.walletHasBalance(this.wallet, totalWinstonPrice)) {
+		const walletHasBalance = await this.walletDao.walletHasBalance(this.wallet, totalWinstonPrice);
+
+		if (!walletHasBalance) {
+			const walletBalance = await this.walletDao.getWalletWinstonBalance(this.wallet);
+
 			throw new Error(
 				`Wallet balance of ${walletBalance} Winston is not enough (${totalWinstonPrice}) for folder creation!`
 			);
@@ -805,8 +816,11 @@ export class ArDrive extends ArDriveAnonymous {
 
 		const totalWinstonPrice = totalPrice.toString();
 
-		if (!this.walletDao.walletHasBalance(this.wallet, totalWinstonPrice)) {
-			const walletBalance = this.walletDao.getWalletWinstonBalance(this.wallet);
+		const walletHasBalance = await this.walletDao.walletHasBalance(this.wallet, totalWinstonPrice);
+
+		if (!walletHasBalance) {
+			const walletBalance = await this.walletDao.getWalletWinstonBalance(this.wallet);
+
 			throw new Error(
 				`Wallet balance of ${walletBalance} Winston is not enough (${totalPrice}) for drive creation!`
 			);
