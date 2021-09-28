@@ -14,6 +14,7 @@ export type NetworkReward = Winston;
 export type FolderID = string;
 export type FileID = string;
 export type DriveID = string;
+export type EntityID = DriveID | FolderID | FileID;
 
 export type CipherIV = string;
 export type DriveKey = Buffer;
