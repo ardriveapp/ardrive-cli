@@ -50,13 +50,12 @@ new CLICommand({
 			// Fetch all of the folder entities within the drive
 			const driveIdOfFolder = folder.driveId;
 			const allFolderEntitiesOfDrive = await arDrive.getAllFoldersOfPrivateDrive(driveIdOfFolder, password);
-
 			// Feed entities to FolderHierarchy.setupNodesWithEntity()
 			const hierarchy = FolderHierarchy.newFromEntities(allFolderEntitiesOfDrive);
 			const folderIDs = hierarchy.allFolderIDs();
 
 			// Fetch all file entities within all Folders of the drive
-			const allFileEntitiesOfDrive = await arDrive.getPrivateChildrenFilesFromFolderIDs(folderIDs);
+			const allFileEntitiesOfDrive = await arDrive.getPrivateChildrenFilesFromFolderIDs(folderIDs, password);
 
 			// Fetch all names of each entity
 			const allEntitiesOfDrive = [...allFolderEntitiesOfDrive, ...allFileEntitiesOfDrive].sort(

@@ -15,6 +15,7 @@ import {
 	DrivePrivacy,
 	EntityType,
 	extToMime,
+	fileDecrypt,
 	getTransactionData,
 	GQLEdgeInterface,
 	GQLTagInterface,
@@ -926,7 +927,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			const { edges } = transactions;
 			hasNextPage = transactions.pageInfo.hasNextPage;
 
-			const folders = edges.map(async (edge: GQLEdgeInterface) => {
+			const folders: Promise<ArFSPrivateFolder>[] = edges.map(async (edge: GQLEdgeInterface) => {
 				// Iterate through each tag and pull out each drive ID as well the drives privacy status
 				const folderBuilder = new ArFSPrivateFolderBuilder();
 				const { node } = edge;
@@ -978,13 +979,16 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 				folderBuilder.txId = node.id;
 				return await folderBuilder.build(this.wallet as JWKWallet, drivePassword, this.arweave);
 			});
-			allFolders.push(...folders);
+			allFolders.push(...(await Promise.all(folders)));
 		}
 
 		return allFolders;
 	}
 
-	async getAllPrivateChildrenFilesFromFolderIDs(folderIDs: FolderID[]): Promise<ArFSPrivateFile[]> {
+	async getAllPrivateChildrenFilesFromFolderIDs(
+		folderIDs: FolderID[],
+		drivePassword: string
+	): Promise<ArFSPrivateFile[]> {
 		let cursor = '';
 		let hasNextPage = true;
 		const allFiles: ArFSPrivateFile[] = [];
@@ -1003,13 +1007,13 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			const { transactions } = data;
 			const { edges } = transactions;
 			hasNextPage = transactions.pageInfo.hasNextPage;
-			const files = edges.map(async (edge: GQLEdgeInterface) => {
+			const files: Promise<ArFSPrivateFile>[] = edges.map(async (edge: GQLEdgeInterface) => {
 				// Iterate through each tag and pull out each drive ID as well the drives privacy status
 				const fileBuilder = new ArFSPrivateFileBuilder();
 				const { node } = edge;
 				const { tags } = node;
 				cursor = edge.cursor;
-				tags.map((tag: GQLTagInterface) => {
+				tags.map(async (tag: GQLTagInterface) => {
 					const key = tag.name;
 					const { value } = tag;
 					switch (key) {
@@ -1043,8 +1047,8 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 						case 'Parent-Folder-Id':
 							fileBuilder.parentFolderId = value;
 							break;
-						case 'Entity-Id':
-							fileBuilder.folderId = value;
+						case 'File-Id':
+							fileBuilder.fileId = value;
 							break;
 						default:
 							break;
@@ -1053,9 +1057,9 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 				// Get the drives transaction ID
 				fileBuilder.txId = node.id;
-				return await fileBuilder.build(this.arweave);
+				return await fileBuilder.build(this.wallet as JWKWallet, drivePassword, this.arweave);
 			});
-			allFiles.push(...files);
+			allFiles.push(...(await Promise.all(files)));
 		}
 		return allFiles;
 	}
@@ -1394,7 +1398,7 @@ export class ArFSPublicFileBuilder {
 				this.fileId
 			);
 		}
-		throw new Error('Invalid folder state');
+		throw new Error('Invalid file state');
 	}
 }
 
@@ -1441,11 +1445,11 @@ export class ArFSPrivateFileBuilder {
 	txId?: TransactionID;
 	unixTime?: number;
 	parentFolderId?: string;
-	folderId?: string;
+	fileId?: string;
 	cipher?: string;
 	cipherIV?: string;
 
-	async build(arweave: Arweave): Promise<ArFSPrivateFile> {
+	async build(wallet: JWKWallet, drivePassword: string, arweave: Arweave): Promise<ArFSPrivateFile> {
 		if (
 			this.appName?.length &&
 			this.appVersion?.length &&
@@ -1455,18 +1459,26 @@ export class ArFSPrivateFileBuilder {
 			this.entityType?.length &&
 			this.txId?.length &&
 			this.unixTime &&
-			this.folderId?.length &&
+			this.fileId?.length &&
 			this.cipher?.length &&
 			this.cipherIV?.length
 		) {
 			const txData = await arweave.transactions.getData(this.txId, { decode: true });
-			const dataString = await Utf8ArrayToStr(txData);
-			const dataJSON = await JSON.parse(dataString);
+			const dataBuffer = Buffer.from(txData);
+			const driveKey: Buffer = await deriveDriveKey(
+				drivePassword,
+				this.driveId,
+				JSON.stringify(wallet.getPrivateKey())
+			);
+			const fileKey: Buffer = await deriveFileKey(this.fileId, driveKey);
+			const decryptedFileBuffer: Buffer = await fileDecrypt(this.cipherIV, fileKey, dataBuffer);
+			const decryptedFileString: string = await Utf8ArrayToStr(decryptedFileBuffer);
+			const decryptedFileJSON = await JSON.parse(decryptedFileString);
 
-			// Get the drive name and root folder id
-			this.name = dataJSON.name;
+			// Get the folder name
+			this.name = decryptedFileJSON.name;
 			if (!this.name) {
-				throw new Error('Invalid folder state');
+				throw new Error(`Invalid file state`);
 			}
 
 			return new ArFSPrivateFile(
@@ -1480,12 +1492,12 @@ export class ArFSPrivateFileBuilder {
 				this.txId,
 				this.unixTime,
 				this.parentFolderId || 'root folder',
-				this.folderId,
+				this.fileId,
 				this.cipher,
 				this.cipherIV
 			);
 		}
-		throw new Error('Invalid folder state');
+		throw new Error('Invalid file state');
 	}
 }
 
@@ -1717,10 +1729,10 @@ export class FolderHierarchy {
 				const parentFolderEntity = folderIdToEntityMap[entity.parentFolderId];
 				if (parentFolderEntity) {
 					this.setupNodesWithEntity(parentFolderEntity, folderIdToEntityMap, folderIdToNodeMap);
-					const parent = folderIdToNodeMap[entity.parentFolderId];
-					const node = new FolderTreeNode(entity.entityId, parent);
-					parent.children.push(node);
-					folderIdToNodeMap[entity.entityId] = node;
+					// const parent = folderIdToNodeMap[entity.parentFolderId];
+					// const node = new FolderTreeNode(entity.entityId, parent);
+					// parent.children.push(node);
+					// folderIdToNodeMap[entity.entityId] = node;
 				}
 			}
 			const parent = folderIdToNodeMap[entity.parentFolderId];
@@ -1801,6 +1813,9 @@ export class FolderHierarchy {
 		if (this.rootNode.parent) {
 			throw new Error(`Can't compute paths from sub-tree`);
 		}
+		if (folderId === 'root folder') {
+			return '/';
+		}
 		let folderNode = this.folderIdToNodeMap[folderId];
 		const nodesInPathToFolder = [folderNode];
 		while (folderNode.parent && folderNode.folderId !== this.rootNode.folderId) {
@@ -1816,6 +1831,9 @@ export class FolderHierarchy {
 	public txPathToFolderId(folderId: FolderID): string {
 		if (this.rootNode.parent) {
 			throw new Error(`Can't compute paths from sub-tree`);
+		}
+		if (folderId === 'root folder') {
+			return '/';
 		}
 		let folderNode = this.folderIdToNodeMap[folderId];
 		const nodesInPathToFolder = [folderNode];
