@@ -313,8 +313,11 @@ export class ArDrive extends ArDriveAnonymous {
 		return this.arFsDao.getAllFoldersOfPrivateDrive(driveId, drivePassword);
 	}
 
-	async getPrivateChildrenFilesFromFolderIDs(folderIDs: FolderID[]): Promise<ArFSPrivateFile[]> {
-		return this.arFsDao.getAllPrivateChildrenFilesFromFolderIDs(folderIDs);
+	async getPrivateChildrenFilesFromFolderIDs(
+		folderIDs: FolderID[],
+		drivePassword: string
+	): Promise<ArFSPrivateFile[]> {
+		return this.arFsDao.getAllPrivateChildrenFilesFromFolderIDs(folderIDs, drivePassword);
 	}
 
 	async estimateAndAssertCostOfUploadSize(fileSize: number, drivePrivacy: DrivePrivacy): Promise<FileUploadCosts> {
