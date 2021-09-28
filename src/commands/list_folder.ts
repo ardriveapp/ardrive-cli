@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { arweave } from 'ardrive-core-js';
+import { cliArweave } from '..';
 import { cliWalletDao, CLI_APP_NAME, CLI_APP_VERSION } from '..';
 import { ArDrive, ArDriveAnonymous } from '../ardrive';
 import {
@@ -39,17 +39,19 @@ new CLICommand({
 			const arDrive = new ArDrive(
 				wallet,
 				cliWalletDao,
-				new ArFSDAO(wallet, arweave),
-				new ArDriveCommunityOracle(arweave),
+				new ArFSDAO(wallet, cliArweave),
+				new ArDriveCommunityOracle(cliArweave),
 				CLI_APP_NAME,
 				CLI_APP_VERSION
 			);
 			// Fetch the folder to extract the drive
-			folder = await arDrive.getPrivateFolder(folderId, password);
+			const folderBuilder = await arDrive.getPrivateFolderMetaData(folderId);
+			const driveKey = await context.getDriveKey(folderBuilder.driveId!);
+			folder = await folderBuilder.build(driveKey, cliArweave);
 
 			// Fetch all of the folder entities within the drive
 			const driveIdOfFolder = folder.driveId;
-			const allFolderEntitiesOfDrive = await arDrive.getAllFoldersOfPrivateDrive(driveIdOfFolder, password);
+			const allFolderEntitiesOfDrive = await arDrive.getAllFoldersOfPrivateDrive(driveIdOfFolder, driveKey);
 
 			// Feed entities to FolderHierarchy.setupNodesWithEntity()
 			const hierarchy = FolderHierarchy.newFromEntities(allFolderEntitiesOfDrive);
@@ -87,7 +89,7 @@ new CLICommand({
 				);
 			});
 		} else {
-			const arDrive = new ArDriveAnonymous(new ArFSDAOAnonymous(arweave));
+			const arDrive = new ArDriveAnonymous(new ArFSDAOAnonymous(cliArweave));
 			folder = await arDrive.getPublicFolder(folderId);
 
 			// Fetch all of the folder entities within the drive

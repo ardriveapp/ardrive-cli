@@ -8,7 +8,9 @@ import {
 	ArFSPublicFile,
 	ArFSPrivateFile,
 	ArFSFileOrFolderEntity,
-	ArFSPrivateDrive
+	ArFSPrivateDrive,
+	ArFSPrivateFolderBuilder,
+	ArFSPublicFolderBuilder
 } from './arfsdao';
 import { CommunityOracle } from './community/community_oracle';
 import { DrivePrivacy, GQLTagInterface, winstonToAr } from 'ardrive-core-js';
@@ -64,6 +66,10 @@ export class ArDriveAnonymous extends ArDriveType {
 	async getPublicFolder(folderId: string): Promise<ArFSPublicFolder> {
 		const folder = await this.arFsDao.getPublicFolder(folderId);
 		return folder;
+	}
+
+	async getPublicFolderMetaData(folderId: FolderID): Promise<ArFSPublicFolderBuilder> {
+		return this.arFsDao.getPublicFolderMetaData(folderId);
 	}
 
 	async getRootFolderIdOfPublicDrive(driveId: DriveID): Promise<FolderID> {
@@ -180,7 +186,7 @@ export class ArDrive extends ArDriveAnonymous {
 	async uploadPrivateFile(
 		parentFolderId: FolderID,
 		filePath: string,
-		password: string,
+		driveKey: Buffer,
 		destinationFileName?: string
 	): Promise<ArFSResult> {
 		// TODO: Hoist this elsewhere for bulk uploads
@@ -194,7 +200,7 @@ export class ArDrive extends ArDriveAnonymous {
 		const uploadFileResult = await this.arFsDao.uploadPrivateFile(
 			parentFolderId,
 			filePath,
-			password,
+			driveKey,
 			winstonPrice.toString(),
 			destinationFileName
 		);
@@ -270,10 +276,10 @@ export class ArDrive extends ArDriveAnonymous {
 		});
 	}
 
-	async createPrivateDrive(driveName: string, password: string): Promise<ArFSResult> {
+	async createPrivateDrive(driveName: string, driveKey: Buffer): Promise<ArFSResult> {
 		// TODO: Assert that there's enough AR available in the wallet
 		// Generate a new drive ID
-		const createDriveResult = await this.arFsDao.createPrivateDrive(driveName, password);
+		const createDriveResult = await this.arFsDao.createPrivateDrive(driveName, driveKey);
 
 		// IN THE FUTURE WE'LL SEND A COMMUNITY TIP HERE
 		return Promise.resolve({
@@ -299,18 +305,22 @@ export class ArDrive extends ArDriveAnonymous {
 		});
 	}
 
-	async getPrivateDrive(driveId: DriveID, drivePassword: string): Promise<ArFSPrivateDrive> {
-		const driveEntity = await this.arFsDao.getPrivateDrive(driveId, drivePassword);
+	async getPrivateDrive(driveId: DriveID, driveKey: Buffer): Promise<ArFSPrivateDrive> {
+		const driveEntity = await this.arFsDao.getPrivateDrive(driveId, driveKey);
 		return Promise.resolve(driveEntity);
 	}
 
-	async getPrivateFolder(folderId: FolderID, drivePassword: string): Promise<ArFSPrivateFolder> {
-		const folderEntity = await this.arFsDao.getPrivateFolder(folderId, drivePassword);
+	async getPrivateFolder(folderId: FolderID, driveKey: Buffer): Promise<ArFSPrivateFolder> {
+		const folderEntity = await this.arFsDao.getPrivateFolder(folderId, driveKey);
 		return folderEntity;
 	}
 
-	async getAllFoldersOfPrivateDrive(driveId: DriveID, drivePassword: string): Promise<ArFSPrivateFolder[]> {
-		return this.arFsDao.getAllFoldersOfPrivateDrive(driveId, drivePassword);
+	async getPrivateFolderMetaData(folderId: FolderID): Promise<ArFSPrivateFolderBuilder> {
+		return this.arFsDao.getPrivateFolderMetaData(folderId);
+	}
+
+	async getAllFoldersOfPrivateDrive(driveId: DriveID, driveKey: Buffer): Promise<ArFSPrivateFolder[]> {
+		return this.arFsDao.getAllFoldersOfPrivateDrive(driveId, driveKey);
 	}
 
 	async getPrivateChildrenFilesFromFolderIDs(folderIDs: FolderID[]): Promise<ArFSPrivateFile[]> {
