@@ -9,7 +9,7 @@ export interface ParameterData {
 	default?: string;
 	required?: boolean;
 	forbiddenConjunctionParameters?: ParameterName[];
-	requireedConjunctionParameters?: ParameterName[];
+	requiredConjunctionParameters?: ParameterName[];
 }
 
 export class Parameter implements ParameterData {
@@ -38,6 +38,18 @@ export class Parameter implements ParameterData {
 
 	public get required(): boolean {
 		return !!this.parameterData.required;
+	}
+
+	public get forbiddenParametersInConjunction(): ParameterName[] {
+		return Array.isArray(this.parameterData.forbiddenConjunctionParameters)
+			? this.parameterData.forbiddenConjunctionParameters.slice()
+			: [];
+	}
+
+	public get requiredParametersInConjunction(): ParameterName[] {
+		return Array.isArray(this.parameterData.requiredConjunctionParameters)
+			? this.parameterData.requiredConjunctionParameters.slice()
+			: [];
 	}
 
 	public static declare(parameter: ParameterData): void {

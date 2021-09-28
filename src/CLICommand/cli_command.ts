@@ -44,7 +44,36 @@ function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliA
 		}
 	});
 	command = command.action((options) => {
+		assertConjunctionParameters(commandDescriptor, options);
 		commandDescriptor.action(options);
+	});
+}
+
+function assertConjunctionParameters(commandDescriptor: CommandDescriptor, options: any): void {
+	const parameters = commandDescriptor.parameters;
+	parameters.forEach((parameterName) => {
+		const parameterValue = options[parameterName];
+		if (parameterValue) {
+			const parameter = new Parameter(parameterName);
+			const forbidden = parameter.forbiddenParametersInConjunction;
+			forbidden.forEach((forbiddenParameterName) => {
+				const forbiddenParameterValue = options[forbiddenParameterName];
+				if (forbiddenParameterValue) {
+					throw new Error(
+						`Parameter ${parameterName} cannot be used in conjunction with ${forbiddenParameterName}`
+					);
+				}
+			});
+			const required = parameter.requiredParametersInConjunction;
+			required.forEach((requiredParameterName) => {
+				const requiredParameterValue = options[requiredParameterName];
+				if (!requiredParameterValue) {
+					throw new Error(
+						`Parameter ${parameterName} requires ${requiredParameterName} but it wasn't provided`
+					);
+				}
+			});
+		}
 	});
 }
 
