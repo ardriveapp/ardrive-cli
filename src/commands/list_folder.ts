@@ -19,6 +19,10 @@ import {
 	WalletFileParameter
 } from '../parameter_declarations';
 
+function alphabeticalOrder(a: string, b: string) {
+	return a.localeCompare(b);
+}
+
 new CLICommand({
 	name: 'list-folder',
 	parameters: [ParentFolderIdParameter, SeedPhraseParameter, WalletFileParameter, DrivePasswordParameter],
@@ -58,9 +62,7 @@ new CLICommand({
 			const allFileEntitiesOfDrive = await arDrive.getPrivateChildrenFilesFromFolderIDs(folderIDs, password);
 
 			// Fetch all names of each entity
-			const allEntitiesOfDrive = [...allFolderEntitiesOfDrive, ...allFileEntitiesOfDrive].sort(
-				(a, b) => +a.txId - +b.txId
-			);
+			const allEntitiesOfDrive = [...allFolderEntitiesOfDrive, ...allFileEntitiesOfDrive];
 
 			mergedData = allEntitiesOfDrive.map((entity) => {
 				const path = `${hierarchy.pathToFolderId(entity.parentFolderId)}/${entity.name}`;
@@ -101,9 +103,7 @@ new CLICommand({
 			const allFileEntitiesOfDrive = await arDrive.getPublicChildrenFilesFromFolderIDs(folderIDs);
 
 			// Fetch all names of each entity
-			const allEntitiesOfDrive = [...allFolderEntitiesOfDrive, ...allFileEntitiesOfDrive].sort(
-				(a, b) => +a.txId - +b.txId
-			);
+			const allEntitiesOfDrive = [...allFolderEntitiesOfDrive, ...allFileEntitiesOfDrive];
 
 			mergedData = allEntitiesOfDrive.map((entity) => {
 				const path = `${hierarchy.pathToFolderId(entity.parentFolderId)}/${entity.name}`;
@@ -129,7 +129,13 @@ new CLICommand({
 		}
 
 		// Display data
-		console.log(JSON.stringify(mergedData, null, 4));
+		console.log(
+			JSON.stringify(
+				mergedData.sort((a, b) => alphabeticalOrder(a.path, b.path)),
+				null,
+				4
+			)
+		);
 		process.exit(0);
 	}
 });
