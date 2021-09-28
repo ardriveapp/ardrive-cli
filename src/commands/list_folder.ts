@@ -47,7 +47,7 @@ new CLICommand({
 			// Fetch the folder to extract the drive
 			const folderBuilder = await arDrive.getPrivateFolderMetaData(folderId);
 			const driveKey = await context.getDriveKey(folderBuilder.driveId!);
-			folder = await folderBuilder.build(driveKey, cliArweave);
+			folder = await folderBuilder.build(driveKey);
 
 			// Fetch all of the folder entities within the drive
 			const driveIdOfFolder = folder.driveId;
@@ -58,7 +58,7 @@ new CLICommand({
 			const folderIDs = hierarchy.allFolderIDs();
 
 			// Fetch all file entities within all Folders of the drive
-			const allFileEntitiesOfDrive = await arDrive.getPrivateChildrenFilesFromFolderIDs(folderIDs);
+			const allFileEntitiesOfDrive = await arDrive.getPrivateChildrenFilesFromFolderIDs(folderIDs, password);
 
 			// Fetch all names of each entity
 			const allEntitiesOfDrive = [...allFolderEntitiesOfDrive, ...allFileEntitiesOfDrive].sort(

@@ -8,9 +8,7 @@ import {
 	ArFSPublicFile,
 	ArFSPrivateFile,
 	ArFSFileOrFolderEntity,
-	ArFSPrivateDrive,
-	ArFSPrivateFolderBuilder,
-	ArFSPublicFolderBuilder
+	ArFSPrivateDrive
 } from './arfsdao';
 import { CommunityOracle } from './community/community_oracle';
 import { DrivePrivacy, GQLTagInterface, winstonToAr } from 'ardrive-core-js';
@@ -19,6 +17,7 @@ import { TransactionID, ArweaveAddress, Winston, DriveID, FolderID, Bytes, TipTy
 import { WalletDAO, Wallet } from './wallet_new';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
 import { ARDataPriceEstimator } from './utils/ar_data_price_estimator';
+import { ArFSPrivateFolderBuilder, ArFSPublicFolderBuilder } from './utils/arfs_builders/arfs_folder_builders';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 
@@ -323,8 +322,11 @@ export class ArDrive extends ArDriveAnonymous {
 		return this.arFsDao.getAllFoldersOfPrivateDrive(driveId, driveKey);
 	}
 
-	async getPrivateChildrenFilesFromFolderIDs(folderIDs: FolderID[]): Promise<ArFSPrivateFile[]> {
-		return this.arFsDao.getAllPrivateChildrenFilesFromFolderIDs(folderIDs);
+	async getPrivateChildrenFilesFromFolderIDs(
+		folderIDs: FolderID[],
+		drivePassword: string
+	): Promise<ArFSPrivateFile[]> {
+		return this.arFsDao.getAllPrivateChildrenFilesFromFolderIDs(folderIDs, drivePassword);
 	}
 
 	async estimateAndAssertCostOfUploadSize(fileSize: number, drivePrivacy: DrivePrivacy): Promise<FileUploadCosts> {
