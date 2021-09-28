@@ -12,14 +12,12 @@ export interface CommandDescriptor {
 const program: CliApiObject = new Command() as CliApiObject;
 
 // Set up command line option parsing
-//const validActions = ['create-drive', 'rename-drive', 'upload-file'];
 program.option('-h, --help', 'Get help');
-//program.option('create-drive', 'action to create a new drive (and its corresponding root folder)');
 program.addHelpCommand(false);
 
 /**
  * @name serCommanderCommand
- * @param {CommandDescriptor} commandDescriptor the descripton of the command to be set
+ * @param {CommandDescriptor} commandDescriptor the description of the command to be set
  * @param {CliApiObject} program the instance of the commander class
  * This function is the responsible to tell the third party library to declare a command
  */
@@ -49,7 +47,6 @@ function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliA
 }
 
 export class CLICommand {
-	// private static _doneSettingCommands = false;
 	private static _argv?: string[]; // Custom argv vector for testing purposes
 
 	/**
@@ -81,21 +78,10 @@ export class CLICommand {
 	}
 
 	private setCommand(): void {
-		// if (CLICommand._doneSettingCommands) {
-		// 	throw new Error(
-		// 		`Won't set a command after parameters are parsed! \n${JSON.stringify(this.commandDescription, null, 4)}`
-		// 	);
-		// }
-		// CLICommand.parameters.push(...this.commandDescription.parameters);
 		setCommanderCommand(this.commandDescription, this.program);
 	}
 
-	public static parse(
-		program: CliApiObject = this.program,
-		argv = CLICommand.argv
-		// doneSettingCommands = true
-	): void {
+	public static parse(program: CliApiObject = this.program, argv = CLICommand.argv): void {
 		program.parse(argv);
-		// this._doneSettingCommands = doneSettingCommands;
 	}
 }
