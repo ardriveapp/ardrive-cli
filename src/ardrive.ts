@@ -204,8 +204,6 @@ export class ArDrive extends ArDriveAnonymous {
 			if (!drive) {
 				throw new Error(`Public drive with Drive ID ${driveId} not found!`);
 			}
-
-			// driveId won't exist only on the parent folder, recursing children folders will have driveId
 		}
 
 		const parentFolderData = new ArFSPublicFolderTransactionData(
@@ -506,7 +504,7 @@ export class ArDrive extends ArDriveAnonymous {
 			parentFolderId
 		});
 
-		// IN THE FUTURE WE'LL SEND A COMMUNITY TIP HERE
+		// IN THE FUTURE WE MIGHT SEND A COMMUNITY TIP HERE
 		return Promise.resolve({
 			created: [
 				{
