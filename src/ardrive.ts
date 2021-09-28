@@ -193,9 +193,9 @@ export class ArDrive extends ArDriveAnonymous {
 		entityResults: ArFSEntityData[];
 		feeResults: ArFSFees;
 	}> {
-		const parentFolderData = new ArFSPublicFolderTransactionData(
-			parentFolderName ?? wrappedFolder.getBaseFileName()
-		);
+		// DriveID will not exist if this folder is the parent folder
+		// Recursing children folder will have driveId assigned
+		const isParentFolder: boolean = driveId === undefined;
 
 		if (!driveId) {
 			// Retrieve drive ID from folder ID and ensure that it is indeed public
@@ -206,6 +206,13 @@ export class ArDrive extends ArDriveAnonymous {
 			}
 
 			// driveId won't exist only on the parent folder, recursing children folders will have driveId
+		}
+
+		const parentFolderData = new ArFSPublicFolderTransactionData(
+			parentFolderName ?? wrappedFolder.getBaseFileName()
+		);
+
+		if (isParentFolder) {
 			// Estimate and assert the cost of the entire bulk upload
 			await this.estimateAndAssertCostOfBulkUpload(wrappedFolder, 'public', parentFolderData);
 		}
@@ -366,11 +373,16 @@ export class ArDrive extends ArDriveAnonymous {
 		wrappedFolder,
 		driveId,
 		parentFolderId,
-		drivePassword
+		drivePassword,
+		parentFolderName
 	}: CreatePrivateFolderAndUploadChildrenParams): Promise<{
 		entityResults: ArFSEntityData[];
 		feeResults: ArFSFees;
 	}> {
+		// DriveID will not exist if this folder is the parent folder
+		// Recursing children folder will have driveId assigned
+		const isParentFolder: boolean = driveId === undefined;
+
 		if (!driveId) {
 			// Retrieve drive ID from folder ID and ensure that it is indeed private
 			driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
@@ -380,17 +392,35 @@ export class ArDrive extends ArDriveAnonymous {
 			}
 		}
 
+		const wallet = this.wallet as JWKWallet;
+
+		const parentFolderData = await ArFSPrivateFolderTransactionData.from(
+			parentFolderName ?? wrappedFolder.getBaseFileName(),
+			driveId,
+			drivePassword,
+			wallet.getPrivateKey()
+		);
+
+		if (isParentFolder) {
+			// Estimate and assert the cost of the entire bulk upload
+			await this.estimateAndAssertCostOfBulkUpload(wrappedFolder, 'private', parentFolderData);
+		}
+
 		let uploadEntityResults: ArFSEntityData[] = [];
 		let uploadEntityFees: ArFSFees = {};
 
 		// Create parent folder
-		const { folderTrxId, folderTrxReward, folderId, driveKey } = await this.arFsDao.createPrivateFolder(
-			wrappedFolder.getBaseFileName(),
+		const { folderTrxId, folderTrxReward, folderId, driveKey } = await this.arFsDao.createPrivateFolder({
+			folderData: parentFolderData,
 			driveId,
+			rewardSettings: {
+				reward: wrappedFolder.getBaseCosts().metaDataBaseReward,
+				feeMultiple: this.feeMultiple
+			},
 			parentFolderId,
 			drivePassword,
-			false // Don't check for folders that don't exist yet
-		);
+			syncParentFolderId: false
+		});
 
 		// Capture results
 		uploadEntityFees = { ...uploadEntityFees, [folderTrxId]: +folderTrxReward };
@@ -406,19 +436,12 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Upload all files in the folder
 		for await (const wrappedFile of wrappedFolder.files) {
-			// TODO: Lift and implement estimateAndAssertCostOfBulkUpload that will
-			// assign the estimated rewards to each wrapped file/folder
-			const uploadBaseCosts = await this.estimateAndAssertCostOfFileUpload(
-				wrappedFile.fileStats.size,
-				this.stubPublicFileMetadata(wrappedFile, wrappedFile.getBaseFileName()),
-				'private'
-			);
 			const fileDataRewardSettings = {
-				reward: uploadBaseCosts.fileDataBaseReward,
+				reward: wrappedFile.getBaseCosts().fileDataBaseReward,
 				feeMultiple: this.feeMultiple
 			};
 			const metadataRewardSettings = {
-				reward: uploadBaseCosts.metaDataBaseReward,
+				reward: wrappedFile.getBaseCosts().metaDataBaseReward,
 				feeMultiple: this.feeMultiple
 			};
 
@@ -505,13 +528,24 @@ export class ArDrive extends ArDriveAnonymous {
 		drivePassword: string,
 		parentFolderId?: FolderID
 	): Promise<ArFSResult> {
-		// Create the folder and retrieve its folder ID
-		const { folderTrxId, folderTrxReward, folderId, driveKey } = await this.arFsDao.createPrivateFolder(
+		// Assert that there's enough AR available in the wallet
+		const folderData = await ArFSPrivateFolderTransactionData.from(
 			folderName,
 			driveId,
 			drivePassword,
-			parentFolderId
+			(this.wallet as JWKWallet).getPrivateKey()
 		);
+
+		const { metaDataBaseReward } = await this.estimateAndAssertCostOfFolderUpload(folderData);
+
+		// Create the folder and retrieve its folder ID
+		const { folderTrxId, folderTrxReward, folderId, driveKey } = await this.arFsDao.createPrivateFolder({
+			folderData,
+			driveId,
+			rewardSettings: { reward: metaDataBaseReward, feeMultiple: this.feeMultiple },
+			drivePassword,
+			parentFolderId
+		});
 
 		// IN THE FUTURE WE MIGHT SEND A COMMUNITY TIP HERE
 		return Promise.resolve({
@@ -637,10 +671,13 @@ export class ArDrive extends ArDriveAnonymous {
 		drivePrivacy: DrivePrivacy,
 		parentFolderMetaData?: ArFSObjectTransactionData
 	): Promise<number> {
-		const folderMetaData =
-			parentFolderMetaData ?? new ArFSPublicFolderTransactionData(folderToUpload.getBaseFileName());
+		// parentFolderMetaData will only exist if this folder is the parent folder
+		// Recursing children folders will not have meta data  assigned
+		const isParentFolder: boolean = parentFolderMetaData !== undefined;
 
-		const metaDataBaseReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(folderMetaData.sizeOf());
+		const metaDataBaseReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(
+			(parentFolderMetaData ?? new ArFSPublicFolderTransactionData(folderToUpload.getBaseFileName())).sizeOf()
+		);
 		const parentFolderWinstonPrice = metaDataBaseReward.toString();
 
 		// Assign base costs to folder
@@ -681,9 +718,8 @@ export class ArDrive extends ArDriveAnonymous {
 
 		const totalWinstonPrice = totalPrice.toString();
 
-		if (parentFolderMetaData && !this.walletDao.walletHasBalance(this.wallet, totalWinstonPrice)) {
-			// parentFolderMetaData only exists on parent folder, and not when recursing children folders
-			// Check and assert balance of the total bulk upload
+		if (isParentFolder && !this.walletDao.walletHasBalance(this.wallet, totalWinstonPrice)) {
+			// Check and assert balance of the total bulk upload if this folder is the parent folder
 			const walletBalance = this.walletDao.getWalletWinstonBalance(this.wallet);
 			throw new Error(
 				`Wallet balance of ${walletBalance} Winston is not enough (${totalWinstonPrice}) for data upload of size ${folderToUpload.getTotalBytes(
