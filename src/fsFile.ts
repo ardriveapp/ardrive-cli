@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import { extToMime } from 'ardrive-core-js';
 import { basename, join } from 'path';
 import { Bytes } from './types';
+import { FileUploadBaseCosts, FolderUploadBaseCosts } from './ardrive';
 
 type ContentType = string;
 type BaseFileName = string;
@@ -41,6 +42,15 @@ export function isFolder(fileOrFolder: FsFile | FsFolder): fileOrFolder is FsFol
 export class FsFile {
 	constructor(public readonly filePath: FilePath, public readonly fileStats: fs.Stats) {}
 
+	baseCosts?: FileUploadBaseCosts;
+
+	public getBaseCosts(): FileUploadBaseCosts {
+		if (!this.baseCosts) {
+			throw new Error('Base costs on file were never set!');
+		}
+		return this.baseCosts;
+	}
+
 	public getFileDataBuffer(): Buffer {
 		return fs.readFileSync(this.filePath);
 	}
@@ -63,6 +73,8 @@ export class FsFolder {
 	files: FsFile[] = [];
 	folders: FsFolder[] = [];
 
+	baseCosts?: FolderUploadBaseCosts;
+
 	constructor(public readonly filePath: FilePath, public readonly fileStats: fs.Stats) {
 		const entitiesInFolder = fs.readdirSync(this.filePath);
 
@@ -80,6 +92,13 @@ export class FsFolder {
 				this.files.push(childFile);
 			}
 		}
+	}
+
+	public getBaseCosts(): FolderUploadBaseCosts {
+		if (!this.baseCosts) {
+			throw new Error('Base costs on folder were never set!');
+		}
+		return this.baseCosts;
 	}
 
 	public getBaseFileName(): BaseFileName {

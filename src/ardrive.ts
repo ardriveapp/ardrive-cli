@@ -1,17 +1,6 @@
 import { CommunityOracle } from './community/community_oracle';
-import { DrivePrivacy, extToMime, GQLTagInterface, winstonToAr } from 'ardrive-core-js';
-import * as fs from 'fs';
-import {
-	TransactionID,
-	ArweaveAddress,
-	Winston,
-	DriveID,
-	FolderID,
-	Bytes,
-	TipType,
-	FileID,
-	FeeMultiple
-} from './types';
+import { DrivePrivacy, GQLTagInterface, winstonToAr } from 'ardrive-core-js';
+import { TransactionID, ArweaveAddress, Winston, DriveID, FolderID, TipType, FileID, FeeMultiple } from './types';
 import { ArFSDAOType, ArFSDAOAnonymous, ArFSPublicDrive, ArFSDAO, ArFSPrivateDrive } from './arfsdao';
 import { WalletDAO, Wallet, JWKWallet } from './wallet_new';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
@@ -28,7 +17,6 @@ import {
 	ArFSPublicFileMetadataTransactionData,
 	ArFSPublicFolderTransactionData
 } from './arfs_trx_data_types';
-import { basename } from 'path';
 import { urlEncodeHashKey } from './utils';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
@@ -117,11 +105,6 @@ export class ArDrive extends ArDriveAnonymous {
 		super(arFsDao);
 	}
 
-	// TODO: FS shouldn't be reading the files more than once and doesn't belong in this class
-	getFileSize(filePath: string): Bytes {
-		return fs.statSync(filePath).size;
-	}
-
 	// NOTE: Presumes that there's a sufficient wallet balance
 	async sendCommunityTip(communityWinstonTip: Winston): Promise<TipResult> {
 		const tokenHolder: ArweaveAddress = await this.communityOracle.selectTokenHolder();
@@ -163,8 +146,8 @@ export class ArDrive extends ArDriveAnonymous {
 		}
 
 		const uploadBaseCosts = await this.estimateAndAssertCostOfFileUpload(
-			this.getFileSize(wrappedEntity.filePath),
-			this.stubPublicFileMetadata(wrappedEntity.filePath, destinationFileName),
+			wrappedEntity.fileStats.size,
+			this.stubPublicFileMetadata(wrappedEntity, destinationFileName),
 			'public'
 		);
 		const fileDataRewardSettings = { reward: uploadBaseCosts.fileDataBaseReward, feeMultiple: this.feeMultiple };
@@ -210,6 +193,10 @@ export class ArDrive extends ArDriveAnonymous {
 		entityResults: ArFSEntityData[];
 		feeResults: ArFSFees;
 	}> {
+		const parentFolderData = new ArFSPublicFolderTransactionData(
+			parentFolderName ?? wrappedFolder.getBaseFileName()
+		);
+
 		if (!driveId) {
 			// Retrieve drive ID from folder ID and ensure that it is indeed public
 			driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
@@ -217,20 +204,23 @@ export class ArDrive extends ArDriveAnonymous {
 			if (!drive) {
 				throw new Error(`Public drive with Drive ID ${driveId} not found!`);
 			}
+
+			// driveId won't exist only on the parent folder, recursing children folders will have driveId
+			// Estimate and assert the cost of the entire bulk upload
+			await this.estimateAndAssertCostOfBulkUpload(wrappedFolder, 'public', parentFolderData);
 		}
 
 		let uploadEntityResults: ArFSEntityData[] = [];
 		let uploadEntityFees: ArFSFees = {};
 
-		// Assert that there's enough AR available in the wallet
-		const folderData = new ArFSPublicFolderTransactionData(parentFolderName ?? wrappedFolder.getBaseFileName());
-		const { metaDataBaseReward } = await this.estimateAndAssertCostOfFolderUpload(folderData);
-
 		// Create the parent folder
 		const { folderTrxId, folderTrxReward, folderId } = await this.arFsDao.createPublicFolder({
-			folderData,
+			folderData: parentFolderData,
 			driveId,
-			rewardSettings: { reward: metaDataBaseReward, feeMultiple: this.feeMultiple },
+			rewardSettings: {
+				reward: wrappedFolder.getBaseCosts().metaDataBaseReward,
+				feeMultiple: this.feeMultiple
+			},
 			parentFolderId,
 			syncParentFolderId: false
 		});
@@ -248,19 +238,13 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Upload all files in the folder
 		for await (const wrappedFile of wrappedFolder.files) {
-			// TODO: Lift and implement estimateAndAssertCostOfBulkUpload that will
-			// assign the estimated rewards to each wrapped file/folder
-			const uploadBaseCosts = await this.estimateAndAssertCostOfFileUpload(
-				this.getFileSize(wrappedFile.filePath),
-				this.stubPublicFileMetadata(wrappedFile.filePath, wrappedFile.getBaseFileName()),
-				'public'
-			);
 			const fileDataRewardSettings = {
-				reward: uploadBaseCosts.fileDataBaseReward,
+				reward: wrappedFile.getBaseCosts().fileDataBaseReward,
 				feeMultiple: this.feeMultiple
 			};
+
 			const metadataRewardSettings = {
-				reward: uploadBaseCosts.metaDataBaseReward,
+				reward: wrappedFile.getBaseCosts().metaDataBaseReward,
 				feeMultiple: this.feeMultiple
 			};
 
@@ -330,7 +314,7 @@ export class ArDrive extends ArDriveAnonymous {
 		// TODO: Hoist this elsewhere for bulk uploads
 		const uploadBaseCosts = await this.estimateAndAssertCostOfFileUpload(
 			wrappedFile.fileStats.size,
-			await this.stubPrivateFileMetadata(wrappedFile.filePath, destinationFileName),
+			await this.stubPrivateFileMetadata(wrappedFile, destinationFileName),
 			'private'
 		);
 
@@ -425,8 +409,8 @@ export class ArDrive extends ArDriveAnonymous {
 			// TODO: Lift and implement estimateAndAssertCostOfBulkUpload that will
 			// assign the estimated rewards to each wrapped file/folder
 			const uploadBaseCosts = await this.estimateAndAssertCostOfFileUpload(
-				this.getFileSize(wrappedFile.filePath),
-				this.stubPublicFileMetadata(wrappedFile.filePath, wrappedFile.getBaseFileName()),
+				wrappedFile.fileStats.size,
+				this.stubPublicFileMetadata(wrappedFile, wrappedFile.getBaseFileName()),
 				'private'
 			);
 			const fileDataRewardSettings = {
@@ -648,6 +632,69 @@ export class ArDrive extends ArDriveAnonymous {
 		return Promise.resolve(driveEntity);
 	}
 
+	async estimateAndAssertCostOfBulkUpload(
+		folderToUpload: FsFolder,
+		drivePrivacy: DrivePrivacy,
+		parentFolderMetaData?: ArFSObjectTransactionData
+	): Promise<number> {
+		const folderMetaData =
+			parentFolderMetaData ?? new ArFSPublicFolderTransactionData(folderToUpload.getBaseFileName());
+
+		const metaDataBaseReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(folderMetaData.sizeOf());
+		const parentFolderWinstonPrice = metaDataBaseReward.toString();
+
+		// Assign base costs to folder
+		folderToUpload.baseCosts = { metaDataBaseReward: parentFolderWinstonPrice };
+
+		let totalPrice = +parentFolderWinstonPrice;
+
+		for await (const file of folderToUpload.files) {
+			const fileSize = drivePrivacy === 'private' ? file.encryptedDataSize() : file.fileStats.size;
+
+			const fileDataBaseReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(fileSize);
+			const communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(
+				fileDataBaseReward.toString()
+			);
+			const tipReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(0);
+
+			const stubFileMetaData = this.stubPublicFileMetadata(file, file.getBaseFileName());
+			const metaDataBaseReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(
+				stubFileMetaData.sizeOf()
+			);
+
+			totalPrice += fileDataBaseReward;
+			totalPrice += +communityWinstonTip;
+			totalPrice += tipReward;
+			totalPrice += metaDataBaseReward;
+
+			// Assign base costs to the file
+			file.baseCosts = {
+				fileDataBaseReward: fileDataBaseReward.toString(),
+				communityWinstonTip,
+				metaDataBaseReward: metaDataBaseReward.toString()
+			};
+		}
+
+		for await (const folder of folderToUpload.folders) {
+			totalPrice += await this.estimateAndAssertCostOfBulkUpload(folder, drivePrivacy);
+		}
+
+		const totalWinstonPrice = totalPrice.toString();
+
+		if (parentFolderMetaData && !this.walletDao.walletHasBalance(this.wallet, totalWinstonPrice)) {
+			// parentFolderMetaData only exists on parent folder, and not when recursing children folders
+			// Check and assert balance of the total bulk upload
+			const walletBalance = this.walletDao.getWalletWinstonBalance(this.wallet);
+			throw new Error(
+				`Wallet balance of ${walletBalance} Winston is not enough (${totalWinstonPrice}) for data upload of size ${folderToUpload.getTotalBytes(
+					drivePrivacy === 'private'
+				)} bytes!`
+			);
+		}
+
+		return totalPrice;
+	}
+
 	async estimateAndAssertCostOfFileUpload(
 		decryptedFileSize: number,
 		metaData: ArFSObjectTransactionData,
@@ -739,14 +786,15 @@ export class ArDrive extends ArDriveAnonymous {
 
 	// Provides for stubbing metadata during cost estimations since the data trx ID won't yet be known
 	private stubPublicFileMetadata(
-		filePath: string,
+		wrappedFile: FsFile,
 		destinationFileName?: string
 	): ArFSPublicFileMetadataTransactionData {
-		const fileStats = fs.statSync(filePath);
-		const dataContentType = extToMime(filePath);
+		const fileStats = wrappedFile.fileStats;
+		const dataContentType = wrappedFile.getContentType();
 		const lastModifiedDateMS = Math.floor(fileStats.mtimeMs);
+
 		return new ArFSPublicFileMetadataTransactionData(
-			destinationFileName ?? basename(filePath),
+			destinationFileName ?? wrappedFile.getBaseFileName(),
 			fileStats.size,
 			lastModifiedDateMS,
 			stubTransactionID,
@@ -756,14 +804,15 @@ export class ArDrive extends ArDriveAnonymous {
 
 	// Provides for stubbing metadata during cost estimations since the data trx and File IDs won't yet be known
 	private async stubPrivateFileMetadata(
-		filePath: string,
+		wrappedFile: FsFile,
 		destinationFileName?: string
 	): Promise<ArFSPrivateFileMetadataTransactionData> {
-		const fileStats = fs.statSync(filePath);
-		const dataContentType = extToMime(filePath);
+		const fileStats = wrappedFile.fileStats;
+		const dataContentType = wrappedFile.getContentType();
 		const lastModifiedDateMS = Math.floor(fileStats.mtimeMs);
+
 		return await ArFSPrivateFileMetadataTransactionData.from(
-			destinationFileName ?? basename(filePath),
+			destinationFileName ?? wrappedFile.getBaseFileName(),
 			fileStats.size,
 			lastModifiedDateMS,
 			stubTransactionID,
