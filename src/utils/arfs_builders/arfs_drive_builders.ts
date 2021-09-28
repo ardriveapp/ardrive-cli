@@ -1,7 +1,7 @@
 import { driveDecrypt, DrivePrivacy, GQLTagInterface, Utf8ArrayToStr } from 'ardrive-core-js';
 import Arweave from 'arweave';
 import { ArFSPrivateDrive, ArFSPublicDrive } from '../../arfsdao';
-import { DriveID, FolderID } from '../../types';
+import { DriveID, DriveKey, FolderID } from '../../types';
 import { ArFSMetadataEntityBuilder } from './arfs_builders';
 
 export class ArFSPublicDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPublicDrive> {
@@ -122,7 +122,7 @@ export class ArFSPrivateDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPriva
 		return unparsedTags;
 	}
 
-	protected async buildEntity(driveKey: Buffer): Promise<ArFSPrivateDrive> {
+	protected async buildEntity(driveKey: DriveKey): Promise<ArFSPrivateDrive> {
 		if (
 			this.appName?.length &&
 			this.appVersion?.length &&

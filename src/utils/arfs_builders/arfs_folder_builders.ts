@@ -88,7 +88,7 @@ export class ArFSPrivateFolderBuilder extends ArFSFolderBuilder<ArFSPrivateFolde
 		return unparsedTags;
 	}
 
-	protected async buildEntity(driveKey: Buffer): Promise<ArFSPrivateFolder> {
+	protected async buildEntity(driveKey: DriveKey): Promise<ArFSPrivateFolder> {
 		if (
 			this.appName?.length &&
 			this.appVersion?.length &&

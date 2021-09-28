@@ -8,7 +8,7 @@ import {
 	SeedPhraseParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
-import { DriveID } from '../types';
+import { DriveID, DriveKey } from '../types';
 
 /**
  * @type {CommonContext}
@@ -51,7 +51,7 @@ export class CommonContext {
 		throw new Error('No wallet file neither seed phrase provided!');
 	}
 
-	public async getDriveKey(driveId: DriveID): Promise<Buffer> {
+	public async getDriveKey(driveId: DriveID): Promise<DriveKey> {
 		const driveKey = this.getParameterValue(DriveKeyParameter);
 		if (driveKey) {
 			return Buffer.from(driveKey);
@@ -59,7 +59,7 @@ export class CommonContext {
 		const drivePassword = this.getParameterValue(DrivePasswordParameter);
 		if (drivePassword) {
 			const wallet: JWKWallet = (await this.getWallet()) as JWKWallet;
-			const derivedDriveKey: Buffer = await deriveDriveKey(
+			const derivedDriveKey: DriveKey = await deriveDriveKey(
 				drivePassword,
 				driveId,
 				JSON.stringify(wallet.getPrivateKey())

@@ -442,7 +442,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		};
 	}
 
-	async createPrivateDrive(driveName: string, driveKey: Buffer): Promise<ArFSCreatePrivateDriveResult> {
+	async createPrivateDrive(driveName: string, driveKey: DriveKey): Promise<ArFSCreatePrivateDriveResult> {
 		// Generate a new drive ID  for the new drive
 		const driveId = uuidv4();
 
@@ -565,7 +565,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	async uploadPrivateFile(
 		parentFolderId: FolderID,
 		filePath: string,
-		driveKey: Buffer,
+		driveKey: DriveKey,
 		reward: Winston,
 		destFileName?: string
 	): Promise<ArFSUploadPrivateFileResult> {
@@ -705,7 +705,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return await drive;
 	}
 
-	async getPrivateFolder(folderId: FolderID, driveKey: Buffer): Promise<ArFSPrivateFolder> {
+	async getPrivateFolder(folderId: FolderID, driveKey: DriveKey): Promise<ArFSPrivateFolder> {
 		const folderBuilder = await this.getPrivateFolderMetaData(folderId);
 		return folderBuilder.build(driveKey);
 	}
@@ -715,7 +715,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return await folderBuilder;
 	}
 
-	async getAllFoldersOfPrivateDrive(driveId: DriveID, driveKey: Buffer): Promise<ArFSPrivateFolder[]> {
+	async getAllFoldersOfPrivateDrive(driveId: DriveID, driveKey: DriveKey): Promise<ArFSPrivateFolder[]> {
 		let cursor = '';
 		let hasNextPage = true;
 		const allFolders: ArFSPrivateFolder[] = [];

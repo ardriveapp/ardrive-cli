@@ -42,7 +42,7 @@ export class ArFSPrivateDriveTransactionData extends ArFSDriveTransactionData {
 	static async from(
 		name: string,
 		rootFolderId: FolderID,
-		driveKey: Buffer
+		driveKey: DriveKey
 	): Promise<ArFSPrivateDriveTransactionData> {
 		const { cipher, cipherIV, data } = await driveEncrypt(
 			driveKey,
@@ -86,7 +86,7 @@ export class ArFSPrivateFolderTransactionData extends ArFSFolderTransactionData 
 		super();
 	}
 
-	static async from(name: string, driveKey: Buffer): Promise<ArFSPrivateFolderTransactionData> {
+	static async from(name: string, driveKey: DriveKey): Promise<ArFSPrivateFolderTransactionData> {
 		const { cipher, cipherIV, data }: ArFSEncryptedData = await fileEncrypt(
 			driveKey,
 			Buffer.from(
@@ -146,7 +146,7 @@ export class ArFSPrivateFileMetadataTransactionData extends ArFSFileMetadataTran
 		dataTxId: TransactionID,
 		dataContentType: DataContentType,
 		fileId: FileID,
-		driveKey: Buffer
+		driveKey: DriveKey
 	): Promise<ArFSPrivateFileMetadataTransactionData> {
 		const fileKey: Buffer = await deriveFileKey(fileId, driveKey);
 		const { cipher, cipherIV, data }: ArFSEncryptedData = await fileEncrypt(
@@ -192,7 +192,11 @@ export class ArFSPrivateFileDataTransactionData extends ArFSFileDataTransactionD
 		super();
 	}
 
-	static async from(fileData: Buffer, fileId: FileID, driveKey: Buffer): Promise<ArFSPrivateFileDataTransactionData> {
+	static async from(
+		fileData: Buffer,
+		fileId: FileID,
+		driveKey: DriveKey
+	): Promise<ArFSPrivateFileDataTransactionData> {
 		const fileKey: Buffer = await deriveFileKey(fileId, driveKey);
 		const { cipher, cipherIV, data }: ArFSEncryptedData = await fileEncrypt(fileKey, fileData);
 		return new ArFSPrivateFileDataTransactionData(cipher, cipherIV, data);

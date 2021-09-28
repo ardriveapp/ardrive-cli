@@ -8,7 +8,7 @@ import {
 } from 'ardrive-core-js';
 import Arweave from 'arweave';
 import { ArFSPrivateFile, ArFSPublicFile } from '../../arfsdao';
-import { FileID, TransactionID } from '../../types';
+import { DriveKey, FileID, TransactionID } from '../../types';
 import { JWKWallet } from '../../wallet_new';
 import { ArFSFileOrFolderBuilder } from './arfs_builders';
 
@@ -127,7 +127,7 @@ export class ArFSPrivateFileBuilder extends ArFSFileBuilder<ArFSPrivateFile> {
 		) {
 			const txData = await this.arweave.transactions.getData(this.txId, { decode: true });
 			const dataBuffer = Buffer.from(txData);
-			const driveKey: Buffer = await deriveDriveKey(
+			const driveKey: DriveKey = await deriveDriveKey(
 				this.drivePassword,
 				this.driveId,
 				JSON.stringify(this.wallet.getPrivateKey())
