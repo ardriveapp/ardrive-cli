@@ -1115,7 +1115,6 @@ export class FolderHierarchy {
 	}
 
 	public entityPathToFolderId(folderId: FolderID): string {
-		if (folderId === 'root folder') return '/';
 		if (this.rootNode.parent) {
 			throw new Error(`Can't compute paths from sub-tree`);
 		}
