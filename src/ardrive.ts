@@ -394,9 +394,9 @@ export class ArDrive extends ArDriveAnonymous {
 		const allChildrenOfFolder = allEntitiesOfDrive.filter(childrenAndFolderOfFilterFactory(childrenFolderIDs));
 
 		const mergedData = allChildrenOfFolder.map((entity) => {
-			const path = `${hierarchy.pathToFolderId(entity.parentFolderId)}/${entity.name}`;
-			const txPath = `${hierarchy.txPathToFolderId(entity.parentFolderId)}/${entity.txId}`;
-			const entityIdPath = `${hierarchy.entityPathToFolderId(entity.parentFolderId)}/${entity.entityId}`;
+			const path = `${hierarchy.pathToFolderId(entity.parentFolderId)}${entity.name}`;
+			const txPath = `${hierarchy.txPathToFolderId(entity.parentFolderId)}${entity.txId}`;
+			const entityIdPath = `${hierarchy.entityPathToFolderId(entity.parentFolderId)}${entity.entityId}`;
 			return new ArFSPrivateFileOrFolderData(
 				entity.appName,
 				entity.appVersion,
