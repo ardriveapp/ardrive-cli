@@ -117,7 +117,7 @@ export class ArDriveAnonymous extends ArDriveType {
 		);
 
 		// Fetch all names of each entity
-		const allEntitiesOfDrive = [...allFolderEntitiesOfDrive, ...allFileEntitiesOfDrive];
+		const allEntitiesOfDrive = [folder, ...allFolderEntitiesOfDrive, ...allFileEntitiesOfDrive];
 
 		const mergedData = allEntitiesOfDrive.map((entity) => {
 			const path = `${hierarchy.pathToFolderId(entity.parentFolderId)}${entity.name}`;
@@ -383,7 +383,7 @@ export class ArDrive extends ArDriveAnonymous {
 		).filter(lastFileRevisionFilter);
 
 		// Fetch all names of each entity
-		const allEntitiesOfDrive = [...allFolderEntitiesOfDrive, ...allFileEntitiesOfDrive];
+		const allEntitiesOfDrive = [folder, ...allFolderEntitiesOfDrive, ...allFileEntitiesOfDrive];
 
 		const mergedData = allEntitiesOfDrive.map((entity) => {
 			const path = `${hierarchy.pathToFolderId(entity.parentFolderId)}/${entity.name}`;
