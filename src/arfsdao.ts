@@ -13,6 +13,7 @@ import {
 	EntityType,
 	GQLEdgeInterface,
 	GQLTagInterface,
+	uploadDataChunk,
 	Utf8ArrayToStr
 } from 'ardrive-core-js';
 import {
@@ -487,10 +488,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		// Upload file data
 		if (!this.dryRun) {
-			const dataUploader = await this.arweave.transactions.getUploader(dataTrx);
-			while (!dataUploader.isComplete) {
-				await dataUploader.uploadChunk();
-			}
+			await this.sendChunkedUploadWithProgress(dataTrx);
 		}
 
 		// Prepare meta data transaction
@@ -535,8 +533,6 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		metadataRewardSettings: RewardSettings,
 		destFileName?: string
 	): Promise<ArFSUploadPrivateFileResult> {
-		const wallet: JWKWallet = this.wallet as JWKWallet;
-
 		// Establish destination file name
 		const destinationFileName = destFileName ?? wrappedFile.getBaseFileName();
 
@@ -552,6 +548,8 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const dataContentType = wrappedFile.getContentType();
 		const lastModifiedDateMS = Math.floor(wrappedFile.fileStats.mtimeMs);
 
+		const wallet: JWKWallet = this.wallet as JWKWallet;
+
 		// Build file data transaction
 		const fileDataPrototype = new ArFSPrivateFileDataPrototype(
 			await ArFSPrivateFileDataTransactionData.from(fileData, fileId, driveId, password, wallet.getPrivateKey())
@@ -560,10 +558,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		// Upload file data
 		if (!this.dryRun) {
-			const dataUploader = await this.arweave.transactions.getUploader(dataTrx);
-			while (!dataUploader.isComplete) {
-				await dataUploader.uploadChunk();
-			}
+			await this.sendChunkedUploadWithProgress(dataTrx);
 		}
 
 		// Prepare meta data transaction
@@ -604,6 +599,27 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			fileId,
 			fileKey: fileMetaData.fileKey
 		};
+	}
+
+	/**
+	 * Uploads a v2 transaction in chunks with progress logging
+	 *
+	 * @example await this.sendChunkedUpload(myTransaction);
+	 */
+	async sendChunkedUploadWithProgress(trx: Transaction): Promise<void> {
+		const dataUploader = await this.arweave.transactions.getUploader(trx);
+
+		while (!dataUploader.isComplete) {
+			const nextChunk = await uploadDataChunk(dataUploader);
+			if (nextChunk === null) {
+				break;
+			} else {
+				// TODO: Add custom logger function that produces various levels of detail
+				console.log(
+					`${dataUploader.pctComplete}% complete, ${dataUploader.uploadedChunks}/${dataUploader.totalChunks}`
+				);
+			}
+		}
 	}
 
 	async prepareArFSObjectTransaction(
