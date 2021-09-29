@@ -9,12 +9,11 @@ import {
 	FolderHierarchy,
 	ArFSPrivateFileOrFolderData,
 	ArFSPublicFileOrFolderData,
-	ArFSFileOrFolderEntity,
 	ArFSPublicFile,
 	ArFSPrivateFile
 } from './arfsdao';
 import { CommunityOracle } from './community/community_oracle';
-import { ArFSEntity, DrivePrivacy, GQLTagInterface, winstonToAr } from 'ardrive-core-js';
+import { DrivePrivacy, GQLTagInterface, winstonToAr } from 'ardrive-core-js';
 import * as fs from 'fs';
 import { TransactionID, ArweaveAddress, Winston, DriveID, FolderID, Bytes, TipType } from './types';
 import { WalletDAO, Wallet } from './wallet_new';
@@ -52,7 +51,7 @@ export type FileUploadCosts = { winstonPrice: Winston; communityWinstonTip: Wins
 
 export function lastFolderRevisionFilter(
 	entity: ArFSPublicFolder | ArFSPrivateFolder,
-	index: number,
+	_index: number,
 	allEntities: (ArFSPublicFolder | ArFSPrivateFolder)[]
 ): boolean {
 	const allRevisions = allEntities.filter((e) => e.folderId === entity.folderId);
@@ -62,7 +61,7 @@ export function lastFolderRevisionFilter(
 
 export function lastFileRevisionFilter(
 	entity: ArFSPublicFile | ArFSPrivateFile,
-	index: number,
+	_index: number,
 	allEntities: (ArFSPublicFile | ArFSPrivateFile)[]
 ): boolean {
 	const allRevisions = allEntities.filter((e) => e.fileId === entity.fileId);
