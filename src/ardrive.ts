@@ -43,7 +43,7 @@ import {
 } from './arfs_trx_data_types';
 import { basename } from 'path';
 import { urlEncodeHashKey } from './utils';
-import { ArFSPrivateFolderBuilder, ArFSPublicFolderBuilder } from './utils/arfs_builders/arfs_folder_builders';
+import { ArFSPrivateFolderBuilder } from './utils/arfs_builders/arfs_folder_builders';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 
@@ -131,20 +131,6 @@ export class ArDriveAnonymous extends ArDriveType {
 	async getPublicFolder(folderId: string): Promise<ArFSPublicFolder> {
 		const folder = await this.arFsDao.getPublicFolder(folderId);
 		return folder;
-	}
-
-	async getPublicFolderMetaData(folderId: FolderID): Promise<ArFSPublicFolderBuilder> {
-		return this.arFsDao.getPublicFolderMetaData(folderId);
-	}
-
-	async getRootFolderIdOfPublicDrive(driveId: DriveID): Promise<FolderID> {
-		const drive = await this.getPublicDrive(driveId);
-		const rootFolderId = drive.rootFolderId;
-		return rootFolderId;
-	}
-
-	async getChildrenTxIds(folderId: FolderID): Promise<string[]> {
-		return this.arFsDao.getChildrenOfFolderTxIds(folderId);
 	}
 
 	async getChildrenOfPublicFolder(folderId: FolderID): Promise<ArFSPublicFileOrFolderData[]> {
