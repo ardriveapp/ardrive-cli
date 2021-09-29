@@ -1801,7 +1801,7 @@ export class FolderHierarchy {
 			(n) => this.folderIdToEntityMap[n.folderId].name
 		);
 		const stringPath = olderFirstNamesOfNodesInPath.join('/');
-		return `/${stringPath}`;
+		return `/${stringPath}/`;
 	}
 
 	public entityPathToFolderId(folderId: FolderID): string {
@@ -1820,7 +1820,7 @@ export class FolderHierarchy {
 		const olderFirstNodesInPathToFolder = nodesInPathToFolder.reverse();
 		const olderFirstFolderIDsOfNodesInPath = olderFirstNodesInPathToFolder.map((n) => n.folderId);
 		const stringPath = olderFirstFolderIDsOfNodesInPath.join('/');
-		return `/${stringPath}`;
+		return `/${stringPath}/`;
 	}
 
 	public txPathToFolderId(folderId: FolderID): string {
@@ -1841,6 +1841,6 @@ export class FolderHierarchy {
 			(n) => this.folderIdToEntityMap[n.folderId].txId
 		);
 		const stringPath = olderFirstTxTDsOfNodesInPath.join('/');
-		return `/${stringPath}`;
+		return `/${stringPath}/`;
 	}
 }
