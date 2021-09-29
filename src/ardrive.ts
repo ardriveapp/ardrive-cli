@@ -10,7 +10,8 @@ import {
 	ArFSPrivateFileOrFolderData,
 	ArFSPublicFileOrFolderData,
 	ArFSPublicFile,
-	ArFSPrivateFile
+	ArFSPrivateFile,
+	ArFSFileOrFolderEntity
 } from './arfsdao';
 import { CommunityOracle } from './community/community_oracle';
 import { DrivePrivacy, GQLTagInterface, winstonToAr } from 'ardrive-core-js';
@@ -54,7 +55,7 @@ export function lastFolderRevisionFilter(
 	_index: number,
 	allEntities: (ArFSPublicFolder | ArFSPrivateFolder)[]
 ): boolean {
-	const allRevisions = allEntities.filter((e) => e.folderId === entity.folderId);
+	const allRevisions = allEntities.filter((e) => e.entityId === entity.entityId);
 	const lastRevision = allRevisions[allRevisions.length - 1];
 	return entity.txId === lastRevision.txId;
 }
@@ -64,10 +65,15 @@ export function lastFileRevisionFilter(
 	_index: number,
 	allEntities: (ArFSPublicFile | ArFSPrivateFile)[]
 ): boolean {
-	const allRevisions = allEntities.filter((e) => e.fileId === entity.fileId);
+	const allRevisions = allEntities.filter((e) => e.entityId === entity.entityId);
 	const lastRevision = allRevisions[allRevisions.length - 1];
 	return entity.txId === lastRevision.txId;
 }
+
+export const childrenAndFolderOfFilterFactory = (folderIDs: FolderID[]) =>
+	function (entity: ArFSFileOrFolderEntity): boolean {
+		return folderIDs.includes(entity.parentFolderId) || folderIDs.includes(entity.entityId);
+	};
 
 export abstract class ArDriveType {
 	protected abstract readonly arFsDao: ArFSDAOType;
@@ -116,10 +122,11 @@ export class ArDriveAnonymous extends ArDriveType {
 			lastFileRevisionFilter
 		);
 
-		// Fetch all names of each entity
-		const allEntitiesOfDrive = [folder, ...allFolderEntitiesOfDrive, ...allFileEntitiesOfDrive];
+		const allEntitiesOfDrive = [...allFolderEntitiesOfDrive, ...allFileEntitiesOfDrive];
+		const childrenFolderIDs = hierarchy.subTreeOf(folderId).allFolderIDs();
+		const allChildrenOfFolder = allEntitiesOfDrive.filter(childrenAndFolderOfFilterFactory(childrenFolderIDs));
 
-		const mergedData = allEntitiesOfDrive.map((entity) => {
+		const mergedData = allChildrenOfFolder.map((entity) => {
 			const path = `${hierarchy.pathToFolderId(entity.parentFolderId)}${entity.name}`;
 			const txPath = `${hierarchy.txPathToFolderId(entity.parentFolderId)}${entity.txId}`;
 			const entityIdPath = `${hierarchy.entityPathToFolderId(entity.parentFolderId)}${entity.entityId}`;
@@ -382,10 +389,11 @@ export class ArDrive extends ArDriveAnonymous {
 			await this.arFsDao.getAllPrivateChildrenFilesFromFolderIDs(folderIDs, password)
 		).filter(lastFileRevisionFilter);
 
-		// Fetch all names of each entity
-		const allEntitiesOfDrive = [folder, ...allFolderEntitiesOfDrive, ...allFileEntitiesOfDrive];
+		const allEntitiesOfDrive = [...allFolderEntitiesOfDrive, ...allFileEntitiesOfDrive];
+		const childrenFolderIDs = hierarchy.subTreeOf(folderId).allFolderIDs();
+		const allChildrenOfFolder = allEntitiesOfDrive.filter(childrenAndFolderOfFilterFactory(childrenFolderIDs));
 
-		const mergedData = allEntitiesOfDrive.map((entity) => {
+		const mergedData = allChildrenOfFolder.map((entity) => {
 			const path = `${hierarchy.pathToFolderId(entity.parentFolderId)}/${entity.name}`;
 			const txPath = `${hierarchy.txPathToFolderId(entity.parentFolderId)}/${entity.txId}`;
 			const entityIdPath = `${hierarchy.entityPathToFolderId(entity.parentFolderId)}/${entity.entityId}`;
