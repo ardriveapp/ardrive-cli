@@ -27,7 +27,9 @@ new CLICommand({
 		const wallet = await context.getWallet().catch(() => null);
 		const result = await (function () {
 			if (wallet) {
-				const arDrive = arDriveFactory(wallet);
+				const arDrive = arDriveFactory({
+					wallet: wallet
+				});
 				const driveId: string = options.driveId;
 				// const getAllRevisions: boolean = options.getAllRevisions;
 				return arDrive.getPrivateDrive(driveId, options.drivePassword /*, getAllRevisions*/);
