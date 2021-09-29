@@ -3,14 +3,17 @@ import { arDriveFactory } from '..';
 import { CLICommand } from '../CLICommand';
 import { FsFile, FsFolder, isFolder, wrapFileOrFolder } from '../fsFile';
 import {
+	BoostParameter,
 	DestinationFileNameParameter,
 	DriveKeyParameter,
 	DrivePasswordParameter,
+	DryRunParameter,
 	LocalFilePathParameter,
 	LocalFilesParameter,
 	ParentFolderIdParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
+import { FeeMultiple } from '../types';
 import { readJWKFile } from '../utils';
 import { ARDataPriceEstimator } from '../utils/ar_data_price_estimator';
 import { ARDataPriceOracleEstimator } from '../utils/ar_data_price_oracle_estimator';
@@ -35,7 +38,9 @@ new CLICommand({
 		LocalFilesParameter,
 		DrivePasswordParameter,
 		DriveKeyParameter,
-		WalletFileParameter
+		WalletFileParameter,
+		BoostParameter,
+		DryRunParameter
 	],
 	async action(options) {
 		const filesToUpload: UploadFileParameter[] = (function (): UploadFileParameter[] {
@@ -95,7 +100,12 @@ new CLICommand({
 				}
 			})();
 
-			const arDrive = arDriveFactory(wallet, priceEstimator);
+			const arDrive = arDriveFactory({
+				wallet: wallet,
+				priceEstimator: priceEstimator,
+				feeMultiple: options.boost as FeeMultiple,
+				dryRun: options.dryRun
+			});
 			await Promise.all(
 				filesToUpload.map(async (fileToUpload) => {
 					if (!fileToUpload.parentFolderId || !fileToUpload.wrappedEntity) {
@@ -104,18 +114,35 @@ new CLICommand({
 					}
 					const result = await (async () => {
 						if (options.drivePassword) {
-							return arDrive.uploadPrivateFile(
-								fileToUpload.parentFolderId,
-								fileToUpload.wrappedEntity,
-								options.drivePassword,
-								fileToUpload.destinationFileName
-							);
+							if (isFolder(fileToUpload.wrappedEntity)) {
+								return arDrive.createPrivateFolderAndUploadChildren({
+									parentFolderId: fileToUpload.parentFolderId,
+									wrappedFolder: fileToUpload.wrappedEntity,
+									parentFolderName: fileToUpload.destinationFileName,
+									drivePassword: options.drivePassword
+								});
+							} else {
+								return arDrive.uploadPrivateFile(
+									fileToUpload.parentFolderId,
+									fileToUpload.wrappedEntity,
+									options.drivePassword,
+									fileToUpload.destinationFileName
+								);
+							}
 						} else {
-							return arDrive.uploadPublicFile(
-								fileToUpload.parentFolderId,
-								fileToUpload.wrappedEntity,
-								fileToUpload.destinationFileName
-							);
+							if (isFolder(fileToUpload.wrappedEntity)) {
+								return arDrive.createPublicFolderAndUploadChildren({
+									parentFolderId: fileToUpload.parentFolderId,
+									wrappedFolder: fileToUpload.wrappedEntity,
+									parentFolderName: fileToUpload.destinationFileName
+								});
+							} else {
+								return arDrive.uploadPublicFile(
+									fileToUpload.parentFolderId,
+									fileToUpload.wrappedEntity,
+									fileToUpload.destinationFileName
+								);
+							}
 						}
 					})();
 					console.log(JSON.stringify(result, null, 4));

@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import { extToMime } from 'ardrive-core-js';
 import { basename, join } from 'path';
 import { Bytes } from './types';
+import { FileUploadBaseCosts, FolderUploadBaseCosts } from './ardrive';
 
 type ContentType = string;
 type BaseFileName = string;
@@ -41,6 +42,15 @@ export function isFolder(fileOrFolder: FsFile | FsFolder): fileOrFolder is FsFol
 export class FsFile {
 	constructor(public readonly filePath: FilePath, public readonly fileStats: fs.Stats) {}
 
+	baseCosts?: FileUploadBaseCosts;
+
+	public getBaseCosts(): FileUploadBaseCosts {
+		if (!this.baseCosts) {
+			throw new Error('Base costs on file were never set!');
+		}
+		return this.baseCosts;
+	}
+
 	public getFileDataBuffer(): Buffer {
 		return fs.readFileSync(this.filePath);
 	}
@@ -53,27 +63,23 @@ export class FsFile {
 		return basename(this.filePath);
 	}
 
-	/** Estimates the size of a private file encrypted with a uuid */
-	public encryptedFileSize(): number {
-		// cipherLen = (clearLen/16 + 1) * 16;
+	/** Computes the size of a private file encrypted with AES256-GCM */
+	public encryptedDataSize(): number {
 		return (this.fileStats.size / 16 + 1) * 16;
 	}
 }
 
-export class FsFolder extends FsFile {
+export class FsFolder {
 	files: FsFile[] = [];
 	folders: FsFolder[] = [];
 
-	constructor(public readonly filePath: FilePath, public readonly fileStats: fs.Stats) {
-		super(filePath, fileStats);
+	baseCosts?: FolderUploadBaseCosts;
 
+	constructor(public readonly filePath: FilePath, public readonly fileStats: fs.Stats) {
 		const entitiesInFolder = fs.readdirSync(this.filePath);
 
 		for (const entityPath of entitiesInFolder) {
-			// Join paths for absolute file path of entity
 			const absoluteEntityPath = join(this.filePath, entityPath);
-
-			// Get stats to determine whether a folder or a file
 			const entityStats = fs.statSync(absoluteEntityPath);
 
 			if (entityStats.isDirectory()) {
@@ -88,11 +94,22 @@ export class FsFolder extends FsFile {
 		}
 	}
 
+	public getBaseCosts(): FolderUploadBaseCosts {
+		if (!this.baseCosts) {
+			throw new Error('Base costs on folder were never set!');
+		}
+		return this.baseCosts;
+	}
+
+	public getBaseFileName(): BaseFileName {
+		return basename(this.filePath);
+	}
+
 	getTotalBytes(encrypted = false): Bytes {
 		let totalBytes = 0;
 
 		for (const file of this.files) {
-			totalBytes += encrypted ? file.encryptedFileSize() : file.fileStats.size;
+			totalBytes += encrypted ? file.encryptedDataSize() : file.fileStats.size;
 		}
 		for (const folder of this.folders) {
 			totalBytes += folder.getTotalBytes(encrypted);
