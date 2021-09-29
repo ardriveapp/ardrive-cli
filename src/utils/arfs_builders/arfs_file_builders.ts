@@ -3,6 +3,7 @@ import {
 	deriveDriveKey,
 	deriveFileKey,
 	fileDecrypt,
+	GQLNodeInterface,
 	GQLTagInterface,
 	Utf8ArrayToStr
 } from 'ardrive-core-js';
@@ -27,6 +28,16 @@ export abstract class ArFSFileBuilder<T extends ArFSPublicFile | ArFSPrivateFile
 }
 
 export class ArFSPublicFileBuilder extends ArFSFileBuilder<ArFSPublicFile> {
+	static fromArweaveNode(node: GQLNodeInterface, arweave: Arweave): ArFSPublicFileBuilder {
+		const { tags } = node;
+		const fileId = tags.find((tag) => tag.name === 'File-Id')?.value;
+		if (!fileId) {
+			throw new Error('File-ID tag missing!');
+		}
+		const fileBuilder = new ArFSPublicFileBuilder(fileId, arweave);
+		return fileBuilder;
+	}
+
 	protected async buildEntity(): Promise<ArFSPublicFile> {
 		if (
 			this.appName?.length &&
@@ -81,17 +92,32 @@ export class ArFSPrivateFileBuilder extends ArFSFileBuilder<ArFSPrivateFile> {
 	cipherIV?: string;
 
 	constructor(
-		readonly fileID: FileID,
+		readonly fileId: FileID,
 		readonly arweave: Arweave,
 		protected readonly wallet: JWKWallet,
 		protected readonly drivePassword: string
 	) {
-		super(fileID, arweave);
+		super(fileId, arweave);
 	}
 
-	protected async parseFromArweave(): Promise<GQLTagInterface[]> {
+	static fromArweaveNode(
+		node: GQLNodeInterface,
+		arweave: Arweave,
+		wallet: JWKWallet,
+		drivePassword: string
+	): ArFSPrivateFileBuilder {
+		const { tags } = node;
+		const fileId = tags.find((tag) => tag.name === 'File-Id')?.value;
+		if (!fileId) {
+			throw new Error('File-ID tag missing!');
+		}
+		const fileBuilder = new ArFSPrivateFileBuilder(fileId, arweave, wallet, drivePassword);
+		return fileBuilder;
+	}
+
+	protected async parseFromArweaveNode(node?: GQLNodeInterface): Promise<GQLTagInterface[]> {
 		const unparsedTags: GQLTagInterface[] = [];
-		const tags = await super.parseFromArweave();
+		const tags = await super.parseFromArweaveNode(node);
 		tags.forEach((tag: GQLTagInterface) => {
 			const key = tag.name;
 			const { value } = tag;
@@ -132,7 +158,7 @@ export class ArFSPrivateFileBuilder extends ArFSFileBuilder<ArFSPrivateFile> {
 				this.driveId,
 				JSON.stringify(this.wallet.getPrivateKey())
 			);
-			const fileKey = await deriveFileKey(this.fileID, driveKey);
+			const fileKey = await deriveFileKey(this.fileId, driveKey);
 
 			const decryptedFileBuffer: Buffer = await fileDecrypt(this.cipherIV, fileKey, dataBuffer);
 			const decryptedFileString: string = await Utf8ArrayToStr(decryptedFileBuffer);

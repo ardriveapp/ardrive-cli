@@ -1,4 +1,4 @@
-import { deriveDriveKey, fileDecrypt, GQLTagInterface, Utf8ArrayToStr } from 'ardrive-core-js';
+import { deriveDriveKey, fileDecrypt, GQLNodeInterface, GQLTagInterface, Utf8ArrayToStr } from 'ardrive-core-js';
 import Arweave from 'arweave';
 import { ArFSPrivateFolder, ArFSPublicFolder } from '../../arfsdao';
 import { FolderID } from '../../types';
@@ -17,6 +17,16 @@ export abstract class ArFSFolderBuilder<
 }
 
 export class ArFSPublicFolderBuilder extends ArFSFolderBuilder<ArFSPublicFolder> {
+	static fromArweaveNode(node: GQLNodeInterface, arweave: Arweave): ArFSPublicFolderBuilder {
+		const { tags } = node;
+		const folderId = tags.find((tag) => tag.name === 'Folder-Id')?.value;
+		if (!folderId) {
+			throw new Error('Folder-ID tag missing!');
+		}
+		const folderBuilder = new ArFSPublicFolderBuilder(folderId, arweave);
+		return folderBuilder;
+	}
+
 	protected async buildEntity(): Promise<ArFSPublicFolder> {
 		if (
 			this.appName?.length &&
@@ -73,9 +83,24 @@ export class ArFSPrivateFolderBuilder extends ArFSFolderBuilder<ArFSPrivateFolde
 		super(folderId, arweave);
 	}
 
-	protected async parseFromArweave(): Promise<GQLTagInterface[]> {
+	static fromArweaveNode(
+		node: GQLNodeInterface,
+		arweave: Arweave,
+		wallet: JWKWallet,
+		drivePassword: string
+	): ArFSPrivateFolderBuilder {
+		const { tags } = node;
+		const folderId = tags.find((tag) => tag.name === 'Folder-Id')?.value;
+		if (!folderId) {
+			throw new Error('Folder-ID tag missing!');
+		}
+		const folderBuilder = new ArFSPrivateFolderBuilder(folderId, arweave, wallet, drivePassword);
+		return folderBuilder;
+	}
+
+	protected async parseFromArweaveNode(node?: GQLNodeInterface): Promise<GQLTagInterface[]> {
 		const unparsedTags: GQLTagInterface[] = [];
-		const tags = await super.parseFromArweave();
+		const tags = await super.parseFromArweaveNode(node);
 		tags.forEach((tag: GQLTagInterface) => {
 			const key = tag.name;
 			const { value } = tag;

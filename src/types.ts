@@ -31,3 +31,5 @@ export interface ArDriveCommunityTip {
 }
 
 export type TipType = 'data upload';
+
+export type GQLCursor = string;

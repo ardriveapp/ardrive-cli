@@ -1,4 +1,11 @@
-import { deriveDriveKey, driveDecrypt, DrivePrivacy, GQLTagInterface, Utf8ArrayToStr } from 'ardrive-core-js';
+import {
+	deriveDriveKey,
+	driveDecrypt,
+	DrivePrivacy,
+	GQLNodeInterface,
+	GQLTagInterface,
+	Utf8ArrayToStr
+} from 'ardrive-core-js';
 import Arweave from 'arweave';
 import { ArFSPrivateDrive, ArFSPublicDrive } from '../../arfsdao';
 import { DriveID, FolderID } from '../../types';
@@ -17,9 +24,9 @@ export class ArFSPublicDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPublic
 		];
 	}
 
-	protected async parseFromArweave(): Promise<GQLTagInterface[]> {
+	protected async parseFromArweaveNode(node?: GQLNodeInterface): Promise<GQLTagInterface[]> {
 		const unparsedTags: GQLTagInterface[] = [];
-		const tags = await super.parseFromArweave();
+		const tags = await super.parseFromArweaveNode(node);
 		tags.forEach((tag: GQLTagInterface) => {
 			const key = tag.name;
 			const { value } = tag;
@@ -101,9 +108,9 @@ export class ArFSPrivateDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPriva
 		];
 	}
 
-	protected async parseFromArweave(): Promise<GQLTagInterface[]> {
+	protected async parseFromArweaveNode(node?: GQLNodeInterface): Promise<GQLTagInterface[]> {
 		const unparsedTags: GQLTagInterface[] = [];
-		const tags = await super.parseFromArweave();
+		const tags = await super.parseFromArweaveNode(node);
 		tags.forEach((tag: GQLTagInterface) => {
 			const key = tag.name;
 			const { value } = tag;
