@@ -1375,6 +1375,7 @@ export class ArFSPublicFileBuilder {
 			this.name?.length &&
 			this.txId?.length &&
 			this.unixTime &&
+			this.parentFolderId?.length &&
 			this.fileId?.length
 		) {
 			return new ArFSPublicFile(
@@ -1387,7 +1388,7 @@ export class ArFSPublicFileBuilder {
 				this.name,
 				this.txId,
 				this.unixTime,
-				this.parentFolderId || 'root folder',
+				this.parentFolderId,
 				this.fileId
 			);
 		}
@@ -1452,6 +1453,7 @@ export class ArFSPrivateFileBuilder {
 			this.entityType?.length &&
 			this.txId?.length &&
 			this.unixTime &&
+			this.parentFolderId?.length &&
 			this.fileId?.length &&
 			this.cipher?.length &&
 			this.cipherIV?.length
@@ -1484,7 +1486,7 @@ export class ArFSPrivateFileBuilder {
 				this.name,
 				this.txId,
 				this.unixTime,
-				this.parentFolderId || 'root folder',
+				this.parentFolderId,
 				this.fileId,
 				this.cipher,
 				this.cipherIV
