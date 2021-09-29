@@ -796,7 +796,6 @@ export interface ArFSWithPath {
 	readonly entityIdPath: string;
 }
 
-// TODO: replace all 'FileOrFolder' ocurrencies with 'Directory' (?)
 export class ArFSPublicFileOrFolderData extends ArFSFileOrFolderEntity implements ArFSWithPath {
 	constructor(
 		appName: string,
