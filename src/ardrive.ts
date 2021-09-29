@@ -194,7 +194,7 @@ export class ArDrive extends ArDriveAnonymous {
 		feeResults: ArFSFees;
 	}> {
 		// DriveID will not exist if this folder is the parent folder
-		// Recursing children folder will have driveId assigned
+		// Recursing children folders will have driveId assigned by the parent folder
 		const isParentFolder: boolean = driveId === undefined;
 
 		if (!driveId) {
@@ -212,6 +212,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		if (isParentFolder) {
 			// Estimate and assert the cost of the entire bulk upload
+			// This will assign the calculated base costs to each wrapped file and folder
 			await this.estimateAndAssertCostOfBulkUpload(wrappedFolder, 'public', parentFolderData);
 		}
 
@@ -230,7 +231,7 @@ export class ArDrive extends ArDriveAnonymous {
 			syncParentFolderId: false
 		});
 
-		// Capture results
+		// Capture parent folder results
 		uploadEntityFees = { ...uploadEntityFees, [folderTrxId]: +folderTrxReward };
 		uploadEntityResults = [
 			...uploadEntityResults,
@@ -378,7 +379,7 @@ export class ArDrive extends ArDriveAnonymous {
 		feeResults: ArFSFees;
 	}> {
 		// DriveID will not exist if this folder is the parent folder
-		// Recursing children folder will have driveId assigned
+		// Recursing children folders will have driveId assigned by the parent folder
 		const isParentFolder: boolean = driveId === undefined;
 
 		if (!driveId) {
@@ -401,6 +402,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		if (isParentFolder) {
 			// Estimate and assert the cost of the entire bulk upload
+			// This will assign the calculated base costs to each wrapped file and folder
 			await this.estimateAndAssertCostOfBulkUpload(wrappedFolder, 'private', parentFolderData);
 		}
 
@@ -420,7 +422,7 @@ export class ArDrive extends ArDriveAnonymous {
 			syncParentFolderId: false
 		});
 
-		// Capture results
+		// Capture parent folder results
 		uploadEntityFees = { ...uploadEntityFees, [folderTrxId]: +folderTrxReward };
 		uploadEntityResults = [
 			...uploadEntityResults,
@@ -670,7 +672,7 @@ export class ArDrive extends ArDriveAnonymous {
 		parentFolderMetaData?: ArFSObjectTransactionData
 	): Promise<number> {
 		// parentFolderMetaData will only exist if this folder is the parent folder
-		// Recursing children folders will not have meta data  assigned
+		// Recursing children folders will not have meta data assigned
 		const isParentFolder: boolean = parentFolderMetaData !== undefined;
 
 		const metaDataBaseReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(
