@@ -174,17 +174,6 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		return await folderBuilder.build();
 	}
 
-	async getChildrenOfFolderTxIds(folderId: FolderID): Promise<string[]> {
-		const gqlQuery = buildQuery([{ name: 'Parent-Folder-Id', value: folderId }]);
-		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
-
-		const { data } = response.data;
-		const { transactions } = data;
-		const { edges } = transactions;
-
-		return edges.map((edge: GQLEdgeInterface) => edge.node.id);
-	}
-
 	async getAllPublicChildrenFilesFromFolderIDs(folderIDs: FolderID[]): Promise<ArFSPublicFile[]> {
 		let cursor = '';
 		let hasNextPage = true;
