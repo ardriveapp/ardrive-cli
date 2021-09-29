@@ -1,5 +1,6 @@
 import {
 	deriveDriveKey,
+	DriveAuthMode,
 	driveDecrypt,
 	DrivePrivacy,
 	GQLNodeInterface,
@@ -8,7 +9,7 @@ import {
 } from 'ardrive-core-js';
 import Arweave from 'arweave';
 import { ArFSPrivateDrive, ArFSPublicDrive } from '../../arfsdao';
-import { DriveID, FolderID } from '../../types';
+import { CipherIV, DriveID, FolderID } from '../../types';
 import { JWKWallet } from '../../wallet_new';
 import { ArFSMetadataEntityBuilder } from './arfs_builders';
 
@@ -87,9 +88,9 @@ export class ArFSPublicDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPublic
 export class ArFSPrivateDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPrivateDrive> {
 	drivePrivacy?: DrivePrivacy;
 	rootFolderId?: FolderID;
-	driveAuthMode?: string;
+	driveAuthMode?: DriveAuthMode;
 	cipher?: string;
-	cipherIV?: string;
+	cipherIV?: CipherIV;
 
 	constructor(
 		driveId: DriveID,
@@ -122,7 +123,7 @@ export class ArFSPrivateDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPriva
 					this.cipherIV = value;
 					break;
 				case 'Drive-Auth-Mode':
-					this.driveAuthMode = value;
+					this.driveAuthMode = value as DriveAuthMode;
 					break;
 				case 'Drive-Privacy':
 					this.drivePrivacy = value as DrivePrivacy;

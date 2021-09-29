@@ -11,10 +11,7 @@ import {
 	SeedPhraseParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
-
-function alphabeticalOrder(a: string, b: string) {
-	return a.localeCompare(b);
-}
+import { alphabeticalOrder } from '../utils/sort_functions';
 
 new CLICommand({
 	name: 'list-folder',
