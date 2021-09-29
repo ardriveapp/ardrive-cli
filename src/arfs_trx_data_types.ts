@@ -6,14 +6,19 @@ import {
 	driveEncrypt,
 	fileEncrypt
 } from 'ardrive-core-js';
-import { CipherIV, DataContentType, DriveKey, FileID, FolderID, TransactionID } from './types';
+import { CipherIV, DataContentType, DriveKey, FileID, FileKey, FolderID, TransactionID } from './types';
 
 export interface ArFSObjectTransactionData {
 	asTransactionData(): string | Buffer;
+	sizeOf(): number;
 }
 
 export abstract class ArFSDriveTransactionData implements ArFSObjectTransactionData {
 	abstract asTransactionData(): string | Buffer;
+	// TODO: Share repeated sizeOf() function to all classes
+	sizeOf(): number {
+		return this.asTransactionData().length;
+	}
 }
 
 export class ArFSPublicDriveTransactionData extends ArFSDriveTransactionData {
@@ -63,6 +68,9 @@ export class ArFSPrivateDriveTransactionData extends ArFSDriveTransactionData {
 
 export abstract class ArFSFolderTransactionData implements ArFSObjectTransactionData {
 	abstract asTransactionData(): string | Buffer;
+	sizeOf(): number {
+		return this.asTransactionData().length;
+	}
 }
 
 export class ArFSPublicFolderTransactionData extends ArFSFolderTransactionData {
@@ -105,6 +113,9 @@ export class ArFSPrivateFolderTransactionData extends ArFSFolderTransactionData 
 
 export abstract class ArFSFileMetadataTransactionData implements ArFSObjectTransactionData {
 	abstract asTransactionData(): string | Buffer;
+	sizeOf(): number {
+		return this.asTransactionData().length;
+	}
 }
 
 export class ArFSPublicFileMetadataTransactionData extends ArFSFileMetadataTransactionData {
@@ -134,6 +145,7 @@ export class ArFSPrivateFileMetadataTransactionData extends ArFSFileMetadataTran
 		readonly cipher: CipherType,
 		readonly cipherIV: CipherIV,
 		readonly encryptedFileMetadata: Buffer,
+		readonly fileKey: FileKey,
 		readonly driveAuthMode: DriveAuthMode = 'password'
 	) {
 		super();
@@ -161,7 +173,7 @@ export class ArFSPrivateFileMetadataTransactionData extends ArFSFileMetadataTran
 				})
 			)
 		);
-		return new ArFSPrivateFileMetadataTransactionData(cipher, cipherIV, data);
+		return new ArFSPrivateFileMetadataTransactionData(cipher, cipherIV, data, fileKey);
 	}
 
 	asTransactionData(): Buffer {
@@ -171,6 +183,9 @@ export class ArFSPrivateFileMetadataTransactionData extends ArFSFileMetadataTran
 
 export abstract class ArFSFileDataTransactionData implements ArFSObjectTransactionData {
 	abstract asTransactionData(): string | Buffer;
+	sizeOf(): number {
+		return this.asTransactionData().length;
+	}
 }
 export class ArFSPublicFileDataTransactionData extends ArFSFileDataTransactionData {
 	constructor(private readonly fileData: Buffer) {

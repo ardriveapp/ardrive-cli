@@ -18,6 +18,10 @@ export async function fetchMempool(): Promise<string[]> {
 	return response.json();
 }
 
+export function urlEncodeHashKey(keyBuffer: Buffer): string {
+	return keyBuffer.toString('base64').replace('=', '');
+}
+
 export function showHelp(): void {
 	console.log(`
 Usage: <this script> <action> <options>
