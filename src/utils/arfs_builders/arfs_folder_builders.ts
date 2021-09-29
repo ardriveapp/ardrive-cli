@@ -28,6 +28,11 @@ export class ArFSPublicFolderBuilder extends ArFSFolderBuilder<ArFSPublicFolder>
 	}
 
 	protected async buildEntity(): Promise<ArFSPublicFolder> {
+		if (!this.parentFolderId) {
+			// Root folders do not have a Parent-Folder-Id tag
+			this.parentFolderId = 'root folder';
+		}
+
 		if (
 			this.appName?.length &&
 			this.appVersion?.length &&
@@ -120,6 +125,11 @@ export class ArFSPrivateFolderBuilder extends ArFSFolderBuilder<ArFSPrivateFolde
 	}
 
 	protected async buildEntity(): Promise<ArFSPrivateFolder> {
+		if (!this.parentFolderId) {
+			// Root folders do not have a Parent-Folder-Id tag
+			this.parentFolderId = 'root folder';
+		}
+
 		if (
 			this.appName?.length &&
 			this.appVersion?.length &&
