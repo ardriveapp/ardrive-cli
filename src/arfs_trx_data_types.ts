@@ -17,6 +17,7 @@ export interface ArFSObjectTransactionData {
 
 export abstract class ArFSDriveTransactionData implements ArFSObjectTransactionData {
 	abstract asTransactionData(): string | Buffer;
+	// TODO: Share repeated sizeOf() function to all classes
 	sizeOf(): number {
 		return this.asTransactionData().length;
 	}
