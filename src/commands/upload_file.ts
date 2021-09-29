@@ -2,14 +2,17 @@ import { GatewayOracle } from 'ardrive-core-js';
 import { arDriveFactory } from '..';
 import { CLICommand } from '../CLICommand';
 import {
+	BoostParameter,
 	DestinationFileNameParameter,
 	DriveKeyParameter,
 	DrivePasswordParameter,
+	DryRunParameter,
 	LocalFilePathParameter,
 	LocalFilesParameter,
 	ParentFolderIdParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
+import { FeeMultiple } from '../types';
 import { readJWKFile } from '../utils';
 import { ARDataPriceEstimator } from '../utils/ar_data_price_estimator';
 import { ARDataPriceOracleEstimator } from '../utils/ar_data_price_oracle_estimator';
@@ -34,7 +37,9 @@ new CLICommand({
 		LocalFilesParameter,
 		DrivePasswordParameter,
 		DriveKeyParameter,
-		WalletFileParameter
+		WalletFileParameter,
+		BoostParameter,
+		DryRunParameter
 	],
 	async action(options) {
 		const filesToUpload: UploadFileParameter[] = (function (): UploadFileParameter[] {
@@ -86,7 +91,12 @@ new CLICommand({
 				}
 			})();
 
-			const arDrive = arDriveFactory(wallet, priceEstimator);
+			const arDrive = arDriveFactory({
+				wallet: wallet,
+				priceEstimator: priceEstimator,
+				feeMultiple: options.boost as FeeMultiple,
+				dryRun: options.dryRun
+			});
 			await Promise.all(
 				filesToUpload.map(async (fileToUpload) => {
 					if (!fileToUpload.parentFolderId || !fileToUpload.localFilePath) {
