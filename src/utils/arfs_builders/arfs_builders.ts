@@ -1,4 +1,11 @@
-import { ArFSEntity, ContentType, EntityType, GQLTagInterface, GQLTransactionsResultInterface } from 'ardrive-core-js';
+import {
+	ArFSEntity,
+	ContentType,
+	EntityType,
+	GQLNodeInterface,
+	GQLTagInterface,
+	GQLTransactionsResultInterface
+} from 'ardrive-core-js';
 import Arweave from 'arweave';
 import { ArFSFileOrFolderEntity, graphQLURL } from '../../arfsdao';
 import { buildQuery } from '../../query';
@@ -20,22 +27,31 @@ export abstract class ArFSMetadataEntityBuilder<T extends ArFSEntity> {
 	abstract getGqlQueryParameters(): GQLTagInterface[];
 	protected abstract buildEntity(driveKey?: DriveKey): Promise<T>;
 
-	// Returns any unparsed tags
-	protected async parseFromArweave(): Promise<GQLTagInterface[]> {
+	/**
+	 * Parses data for builder fields from either the provided GQL tags, or from a fresh request to Arweave for tag data
+	 *
+	 * @param tags (optional) a pre-fetched GQL node containing the txID and tags that will be parsed out of the on-chain data
+	 *
+	 * @returns an array of unparsed tags
+	 */
+	protected async parseFromArweaveNode(node?: GQLNodeInterface): Promise<GQLTagInterface[]> {
 		const unparsedTags: GQLTagInterface[] = [];
-		const gqlQuery = buildQuery(this.getGqlQueryParameters());
+		if (!node) {
+			const gqlQuery = buildQuery(this.getGqlQueryParameters());
 
-		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
+			const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 
-		const { data } = response.data;
-		const transactions: GQLTransactionsResultInterface = data.transactions;
-		const { edges } = transactions;
+			const { data } = response.data;
+			const transactions: GQLTransactionsResultInterface = data.transactions;
+			const { edges } = transactions;
 
-		if (!edges.length) {
-			throw new Error(`Entity with ID ${this.entityId} not found!`);
+			if (!edges.length) {
+				throw new Error(`Entity with ID ${this.entityId} not found!`);
+			}
+
+			node = edges[0].node;
 		}
-
-		const { node } = edges[0];
+		this.txId = node.id;
 		const { tags } = node;
 		tags.forEach((tag: GQLTagInterface) => {
 			const key = tag.name;
@@ -68,14 +84,12 @@ export abstract class ArFSMetadataEntityBuilder<T extends ArFSEntity> {
 			}
 		});
 
-		// Get the entity's transaction ID
-		this.txId = node.id;
 		return unparsedTags;
 	}
 
-	async build(drivekey?: DriveKey): Promise<T> {
-		await this.parseFromArweave();
-		return this.buildEntity(drivekey);
+	async build(driveKey?: DriveKey, node?: GQLNodeInterface): Promise<T> {
+		await this.parseFromArweaveNode(node);
+		return this.buildEntity(driveKey);
 	}
 }
 
@@ -86,9 +100,9 @@ export abstract class ArFSFileOrFolderBuilder<T extends ArFSFileOrFolderEntity> 
 		super(entityId, arweave);
 	}
 
-	protected async parseFromArweave(): Promise<GQLTagInterface[]> {
+	protected async parseFromArweaveNode(node?: GQLNodeInterface): Promise<GQLTagInterface[]> {
 		const unparsedTags: GQLTagInterface[] = [];
-		const tags = await super.parseFromArweave();
+		const tags = await super.parseFromArweaveNode(node);
 		tags.forEach((tag: GQLTagInterface) => {
 			const key = tag.name;
 			const { value } = tag;
