@@ -40,7 +40,15 @@ export function isFolder(fileOrFolder: FsFile | FsFolder): fileOrFolder is FsFol
 }
 
 export class FsFile {
-	constructor(public readonly filePath: FilePath, public readonly fileStats: fs.Stats) {}
+	constructor(public readonly filePath: FilePath, public readonly fileStats: fs.Stats) {
+		if (this.fileStats.size >= 2147483647) {
+			// Fs/Node file limitations
+			// Public : 2147483647 bytes
+			// Private: 2147483646 bytes
+
+			throw new Error('Files greater than `2147483646` Bytes are not yet supported!');
+		}
+	}
 
 	baseCosts?: FileUploadBaseCosts;
 
