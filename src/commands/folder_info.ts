@@ -3,10 +3,10 @@ import { ArFSDAOAnonymous } from '../arfsdao';
 import { CLICommand } from '../CLICommand';
 import { CommonContext } from '../CLICommand/common_context';
 import {
-	DriveIdParameter,
 	DriveKeyParameter,
 	DrivePasswordParameter,
 	GetAllRevisionsParameter,
+	FolderIdParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
 import { arDriveFactory, cliArweave, cliWalletDao } from '..';
@@ -14,9 +14,9 @@ import { arDriveFactory, cliArweave, cliWalletDao } from '..';
 /* eslint-disable no-console */
 
 new CLICommand({
-	name: 'drive-info',
+	name: 'folder-info',
 	parameters: [
-		DriveIdParameter,
+		FolderIdParameter,
 		GetAllRevisionsParameter,
 		DrivePasswordParameter,
 		DriveKeyParameter,
@@ -27,17 +27,15 @@ new CLICommand({
 		const wallet = await context.getWallet().catch(() => null);
 		const result = await (function () {
 			if (wallet) {
-				const arDrive = arDriveFactory({
-					wallet: wallet
-				});
-				const driveId: string = options.driveId;
+				const arDrive = arDriveFactory({ wallet: wallet });
+				const folderId: string = options.folderId;
 				// const getAllRevisions: boolean = options.getAllRevisions;
-				return arDrive.getPrivateDrive(driveId, options.drivePassword /*, getAllRevisions*/);
+				return arDrive.getPrivateFolder(folderId, options.drivePassword /*, getAllRevisions*/);
 			} else {
 				const arDrive = new ArDriveAnonymous(new ArFSDAOAnonymous(cliArweave));
-				const driveId: string = options.driveId;
+				const folderId: string = options.folderId;
 				// const getAllRevisions: boolean = options.getAllRevisions;
-				return arDrive.getPublicDrive(driveId /*, getAllRevisions*/);
+				return arDrive.getPublicFolder(folderId /*, getAllRevisions*/);
 			}
 		})();
 		console.log(JSON.stringify(result, null, 4));

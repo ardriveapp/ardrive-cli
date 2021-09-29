@@ -11,11 +11,14 @@ export const ArAmountParameter = 'arAmount';
 export const DestinationAddressParameter = 'destAddres';
 export const TransactionIdParameter = 'txId';
 export const ConfirmationsParameter = 'confirmations';
+export const FolderIdParameter = 'folderId';
 export const ParentFolderIdParameter = 'parentFolderId';
 export const LocalFilePathParameter = 'localFilePath';
 export const DestinationFileNameParameter = 'destFileName';
 export const LocalFilesParameter = 'localFiles';
 export const GetAllRevisionsParameter = 'getAllRevisions';
+export const BoostParameter = 'boost';
+export const DryRunParameter = 'dryRun';
 
 /**
  * Note: importing this file will declare all the above parameters
@@ -105,18 +108,29 @@ Parameter.declare({
 	name: ParentFolderIdParameter,
 	aliases: ['-f', '--parent-folder-id'],
 	description: `the ArFS folder ID for the folder in which this file will reside (i.e. its parent folder)
-		• To upload the file to the root of a drive, use the root folder ID of the drive`
+		• To upload the file to the root of a drive, use the root folder ID of the drive`,
+	required: true
 });
+
+Parameter.declare({
+	name: FolderIdParameter,
+	aliases: ['-f', '--folder-id'],
+	description: `the ArFS folder ID for the folder to query`,
+	required: true
+});
+
 Parameter.declare({
 	name: LocalFilePathParameter,
 	aliases: ['-l', '--local-file-path'],
 	description: `the path on the local filesystem for the file that will be uploaded`
 });
+
 Parameter.declare({
 	name: DestinationFileNameParameter,
 	aliases: ['-d', '--dest-file-name'],
 	description: `(OPTIONAL) a destination file name to use when uploaded to ArDrive`
 });
+
 Parameter.declare({
 	name: LocalFilesParameter,
 	aliases: ['--local-files'],
@@ -134,5 +148,20 @@ Parameter.declare({
 	name: GetAllRevisionsParameter,
 	aliases: ['--get-all-revisions'],
 	description: '(OPTIONAL) gets every revision',
+	type: 'boolean'
+});
+
+Parameter.declare({
+	name: BoostParameter,
+	aliases: ['--boost'],
+	description:
+		'(OPTIONAL) a multiple of the base transaction data fee that can be used to accelerate transaction mining. A multiple of 2.5 would boost a 100 Winston transaction fee to 250 Winston.'
+});
+
+Parameter.declare({
+	name: DryRunParameter,
+	aliases: ['--dry-run'],
+	description:
+		'(OPTIONAL) Print the results of the transactions that would occur, and their potential fees, without sending the transactions.',
 	type: 'boolean'
 });
