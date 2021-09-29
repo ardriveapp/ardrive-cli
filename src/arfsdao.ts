@@ -68,9 +68,10 @@ export interface ArFSCreateDriveResult {
 }
 
 export interface ArFSCreateDriveBundleResult {
-	bundleTrx: Transaction;
-	driveDataItem: DataItem;
-	rootFolderDataItem: DataItem;
+	bundleTrxId: TransactionID;
+	bundleTrxReward: Winston;
+	driveTrxId: TransactionID;
+	rootFolderTrxId: TransactionID;
 	driveId: DriveID;
 	rootFolderId: FolderID;
 }
@@ -403,56 +404,31 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return { folderDataItem, folderId };
 	}
 
-	async createPublicDrive(
-		driveName: string,
-		driveRewardSettings: RewardSettings,
-		rootFolderRewardSettings: RewardSettings
-	): Promise<ArFSCreateDriveBundleResult> {
+	async createPublicBundledDrive(driveName: string): Promise<ArFSCreateDriveBundleResult> {
 		// Generate a new drive ID  for the new drive
 		const driveId = uuidv4();
 
-		console.log('IMPLEMENT driveRewardSettings for BUNDLES', driveRewardSettings);
-		console.log('IMPLEMENT rootFolderRewardSettings for BUNDLES', rootFolderRewardSettings);
+		// Get the current time so the app can display the "created" data later on
+		const unixTime = Math.round(Date.now() / 1000);
 
-		// Create root folder
+		// Create root folder data item
 		const { folderDataItem: rootFolderDataItem, folderId: rootFolderId } = await this.createPublicFolderDataItem(
 			driveName,
 			driveId,
 			undefined,
 			false
 		);
-
-		// const folderData = new ArFSPublicFolderTransactionData(driveName);
-		// const {
-		// 	folderTrxId: rootFolderTrxId,
-		// 	folderTrxReward: rootFolderTrxReward,
-		// 	folderId: rootFolderId
-		// } = await this.createPublicFolder({
-		// 	folderData,
-		// 	driveId,
-		// 	rewardSettings: rootFolderRewardSettings,
-		// 	syncParentFolderId: false
-		// });
-
-		// Get the current time so the app can display the "created" data later on
-		const unixTime = Math.round(Date.now() / 1000);
-
 		// Create a drive metadata transaction
 		const driveMetaData = new ArFSPublicDriveMetaDataPrototype(
 			new ArFSPublicDriveTransactionData(driveName, rootFolderId),
 			unixTime,
 			driveId
 		);
-
 		const driveDataItem = await this.prepareArFSObjectDataItem(driveMetaData);
 
 		const dataItems: DataItem[] = [rootFolderDataItem, driveDataItem];
 
-		const bundleTrx: Transaction = await this.prepareArFSObjectBundle(dataItems);
-
-		// Create the Drive and Folder Uploader objects
-		// const driveUploader = await this.arweave.transactions.getUploader(bundleTrx);
-		// const driveTrx = await this.prepareArFSObjectTransaction(driveMetaData, driveRewardSettings);
+		const bundleTrx = await this.prepareArFSObjectBundle(dataItems);
 
 		// Execute the upload
 		if (!this.dryRun) {
@@ -462,16 +438,64 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			}
 		}
 
-		return { bundleTrx, driveDataItem, rootFolderDataItem, driveId, rootFolderId };
+		return {
+			bundleTrxId: bundleTrx.id,
+			bundleTrxReward: bundleTrx.reward,
+			driveTrxId: driveDataItem.id,
+			rootFolderTrxId: rootFolderDataItem.id,
+			driveId,
+			rootFolderId
+		};
+	}
 
-		// return {
-		// 	driveTrxId: driveTrx.id,
-		// 	driveTrxReward: driveTrx.reward,
-		// 	rootFolderTrxId: rootFolderTrxId,
-		// 	rootFolderTrxReward: rootFolderTrxReward,
-		// 	driveId: driveId,
-		// 	rootFolderId: rootFolderId
-		// };
+	async createPublicDrive(
+		driveName: string,
+		driveRewardSettings: RewardSettings,
+		rootFolderRewardSettings: RewardSettings
+	): Promise<ArFSCreateDriveResult> {
+		// Generate a new drive ID  for the new drive
+		const driveId = uuidv4();
+
+		// Get the current time so the app can display the "created" data later on
+		const unixTime = Math.round(Date.now() / 1000);
+
+		// Create root folder
+		const folderData = new ArFSPublicFolderTransactionData(driveName);
+		const {
+			folderTrxId: rootFolderTrxId,
+			folderTrxReward: rootFolderTrxReward,
+			folderId: rootFolderId
+		} = await this.createPublicFolder({
+			folderData,
+			driveId,
+			rewardSettings: rootFolderRewardSettings,
+			syncParentFolderId: false
+		});
+
+		// Create a drive metadata transaction
+		const driveMetaData = new ArFSPublicDriveMetaDataPrototype(
+			new ArFSPublicDriveTransactionData(driveName, rootFolderId),
+			unixTime,
+			driveId
+		);
+		const driveTrx = await this.prepareArFSObjectTransaction(driveMetaData, driveRewardSettings);
+
+		// Execute the upload
+		if (!this.dryRun) {
+			const driveUploader = await this.arweave.transactions.getUploader(driveTrx);
+			while (!driveUploader.isComplete) {
+				await driveUploader.uploadChunk();
+			}
+		}
+
+		return {
+			driveTrxId: driveTrx.id,
+			driveTrxReward: driveTrx.reward,
+			rootFolderTrxId: rootFolderTrxId,
+			rootFolderTrxReward: rootFolderTrxReward,
+			driveId: driveId,
+			rootFolderId: rootFolderId
+		};
 	}
 
 	async createPrivateDrive(

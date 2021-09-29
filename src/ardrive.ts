@@ -105,7 +105,9 @@ export class ArDrive extends ArDriveAnonymous {
 		private readonly appVersion: string,
 		private readonly priceEstimator: ARDataPriceEstimator = new ARDataPriceRegressionEstimator(true),
 		private readonly feeMultiple: FeeMultiple = 1.0,
-		private readonly dryRun: boolean = false
+		private readonly dryRun: boolean = false,
+		// TODO: --no-bundles option or --bundles option?
+		private readonly bundles: boolean = true
 	) {
 		super(arFsDao);
 	}
@@ -574,44 +576,77 @@ export class ArDrive extends ArDriveAnonymous {
 		const stubRootFolderData = new ArFSPublicFolderTransactionData(driveName);
 		const stubDriveData = new ArFSPublicDriveTransactionData(driveName, stubEntityID);
 		const driveUploadCosts = await this.estimateAndAssertCostOfDriveCreation(stubDriveData, stubRootFolderData);
-		const driveRewardSettings = {
-			reward: driveUploadCosts.driveMetaDataBaseReward,
-			feeMultiple: this.feeMultiple
-		};
-		const rootFolderRewardSettings = {
-			reward: driveUploadCosts.rootFolderMetaDataBaseReward,
-			feeMultiple: this.feeMultiple
-		};
-		const createDriveResult = await this.arFsDao.createPublicDrive(
-			driveName,
-			driveRewardSettings,
-			rootFolderRewardSettings
-		);
-		return Promise.resolve({
-			created: [
+
+		let createDriveEntityResults: ArFSEntityData[] = [];
+		let createDriveFees: ArFSFees = {};
+
+		if (this.bundles) {
+			const createDriveResult = await this.arFsDao.createPublicBundledDrive(driveName);
+
+			createDriveEntityResults = [
 				{
 					type: 'bundle',
-					metadataTxId: createDriveResult.bundleTrx.id,
+					metadataTxId: createDriveResult.bundleTrxId,
 					entityId: '',
 					key: ''
 				},
 				{
 					type: 'drive',
-					metadataTxId: createDriveResult.driveDataItem.id,
+					metadataTxId: createDriveResult.driveTrxId,
 					entityId: createDriveResult.driveId,
 					key: ''
 				},
 				{
 					type: 'folder',
-					metadataTxId: createDriveResult.rootFolderDataItem.id,
+					metadataTxId: createDriveResult.rootFolderTrxId,
 					entityId: createDriveResult.rootFolderId,
 					key: ''
 				}
-			],
+			];
+
+			createDriveFees = {
+				[createDriveResult.bundleTrxId]: +createDriveResult.bundleTrxReward
+			};
+		} else {
+			const driveRewardSettings = {
+				reward: driveUploadCosts.driveMetaDataBaseReward,
+				feeMultiple: this.feeMultiple
+			};
+			const rootFolderRewardSettings = {
+				reward: driveUploadCosts.rootFolderMetaDataBaseReward,
+				feeMultiple: this.feeMultiple
+			};
+			const createDriveResult = await this.arFsDao.createPublicDrive(
+				driveName,
+				driveRewardSettings,
+				rootFolderRewardSettings
+			);
+
+			createDriveEntityResults = [
+				{
+					type: 'drive',
+					metadataTxId: createDriveResult.driveTrxId,
+					entityId: createDriveResult.driveId,
+					key: ''
+				},
+				{
+					type: 'folder',
+					metadataTxId: createDriveResult.rootFolderTrxId,
+					entityId: createDriveResult.rootFolderId,
+					key: ''
+				}
+			];
+
+			createDriveFees = {
+				[createDriveResult.rootFolderTrxId]: +createDriveResult.rootFolderTrxReward,
+				[createDriveResult.driveTrxId]: +createDriveResult.driveTrxReward
+			};
+		}
+
+		return Promise.resolve({
+			created: createDriveEntityResults,
 			tips: [],
-			fees: {
-				[createDriveResult.bundleTrx.id]: +createDriveResult.bundleTrx.reward
-			}
+			fees: createDriveFees
 		});
 	}
 
