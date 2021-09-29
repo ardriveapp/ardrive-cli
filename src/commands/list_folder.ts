@@ -28,7 +28,7 @@ new CLICommand({
 		let children: (ArFSPrivateFileOrFolderData | ArFSPublicFileOrFolderData)[];
 
 		if (!folderId) {
-			console.log(`Folder id not specified! ${folderId}`);
+			console.log(`Folder id not specified!`);
 			process.exit(1);
 		}
 
