@@ -406,6 +406,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		return allFolders;
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	async getDataOfPublicEntityFromTxId(txId: string): Promise<any> {
 		const rawData = await getTransactionData(txId);
 		const parsedData = JSON.parse(rawData.toString());
