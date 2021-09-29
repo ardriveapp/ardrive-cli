@@ -16,7 +16,6 @@ import {
 	EntityType,
 	extToMime,
 	fileDecrypt,
-	getTransactionData,
 	GQLEdgeInterface,
 	GQLTagInterface,
 	Utf8ArrayToStr
@@ -404,13 +403,6 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 			allFolders.push(...(await Promise.all(folders)));
 		}
 		return allFolders;
-	}
-
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	async getDataOfPublicEntityFromTxId(txId: string): Promise<any> {
-		const rawData = await getTransactionData(txId);
-		const parsedData = JSON.parse(rawData.toString());
-		return parsedData;
 	}
 }
 

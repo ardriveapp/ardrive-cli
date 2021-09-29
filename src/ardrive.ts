@@ -142,10 +142,6 @@ export class ArDriveAnonymous extends ArDriveType {
 		});
 		return mergedData;
 	}
-
-	async getPublicEntityNameFromTxId(txId: string): Promise<string> {
-		return (await this.arFsDao.getDataOfPublicEntityFromTxId(txId)).name;
-	}
 }
 
 export class ArDrive extends ArDriveAnonymous {
