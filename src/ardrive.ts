@@ -5,13 +5,16 @@ import {
 	ArFSDAOType,
 	ArFSPublicFolder,
 	ArFSPrivateFolder,
-	ArFSPublicFile,
-	ArFSPrivateFile,
+	ArFSPrivateDrive,
+	FolderHierarchy,
+	ArFSPrivateFileOrFolderData,
+	ArFSPublicFileOrFolderData,
 	ArFSFileOrFolderEntity,
-	ArFSPrivateDrive
+	ArFSPublicFile,
+	ArFSPrivateFile
 } from './arfsdao';
 import { CommunityOracle } from './community/community_oracle';
-import { DrivePrivacy, GQLTagInterface, winstonToAr } from 'ardrive-core-js';
+import { ArFSEntity, DrivePrivacy, GQLTagInterface, winstonToAr } from 'ardrive-core-js';
 import * as fs from 'fs';
 import { TransactionID, ArweaveAddress, Winston, DriveID, FolderID, Bytes, TipType } from './types';
 import { WalletDAO, Wallet } from './wallet_new';
@@ -47,6 +50,26 @@ export interface ArFSResult {
 
 export type FileUploadCosts = { winstonPrice: Winston; communityWinstonTip: Winston };
 
+export function lastFolderRevisionFilter(
+	entity: ArFSPublicFolder | ArFSPrivateFolder,
+	index: number,
+	allEntities: (ArFSPublicFolder | ArFSPrivateFolder)[]
+): boolean {
+	const allRevisions = allEntities.filter((e) => e.folderId === entity.folderId);
+	const lastRevision = allRevisions[allRevisions.length - 1];
+	return entity.txId === lastRevision.txId;
+}
+
+export function lastFileRevisionFilter(
+	entity: ArFSPublicFile | ArFSPrivateFile,
+	index: number,
+	allEntities: (ArFSPublicFile | ArFSPrivateFile)[]
+): boolean {
+	const allRevisions = allEntities.filter((e) => e.fileId === entity.fileId);
+	const lastRevision = allRevisions[allRevisions.length - 1];
+	return entity.txId === lastRevision.txId;
+}
+
 export abstract class ArDriveType {
 	protected abstract readonly arFsDao: ArFSDAOType;
 }
@@ -76,12 +99,49 @@ export class ArDriveAnonymous extends ArDriveType {
 		return this.arFsDao.getChildrenOfFolderTxIds(folderId);
 	}
 
-	async getAllFoldersOfPublicDrive(driveId: DriveID): Promise<ArFSFileOrFolderEntity[]> {
-		return this.arFsDao.getAllFoldersOfPublicDrive(driveId);
-	}
+	async getChildrenOfPublicFolder(folderId: FolderID): Promise<ArFSPublicFileOrFolderData[]> {
+		const folder = await this.arFsDao.getPublicFolder(folderId);
 
-	async getPublicChildrenFilesFromFolderIDs(folderIDs: FolderID[]): Promise<ArFSPublicFile[]> {
-		return this.arFsDao.getAllPublicChildrenFilesFromFolderIDs(folderIDs);
+		// Fetch all of the folder entities within the drive
+		const driveIdOfFolder = folder.driveId;
+		const allFolderEntitiesOfDrive = (await this.arFsDao.getAllFoldersOfPublicDrive(driveIdOfFolder)).filter(
+			lastFolderRevisionFilter
+		);
+
+		// Feed entities to FolderHierarchy.setupNodesWithEntity()
+		const hierarchy = FolderHierarchy.newFromEntities(allFolderEntitiesOfDrive);
+		const folderIDs = hierarchy.allFolderIDs();
+
+		// Fetch all file entities within all Folders of the drive
+		const allFileEntitiesOfDrive = (await this.arFsDao.getAllPublicChildrenFilesFromFolderIDs(folderIDs)).filter(
+			lastFileRevisionFilter
+		);
+
+		// Fetch all names of each entity
+		const allEntitiesOfDrive = [...allFolderEntitiesOfDrive, ...allFileEntitiesOfDrive];
+
+		const mergedData = allEntitiesOfDrive.map((entity) => {
+			const path = `${hierarchy.pathToFolderId(entity.parentFolderId)}/${entity.name}`;
+			const txPath = `${hierarchy.txPathToFolderId(entity.parentFolderId)}/${entity.txId}`;
+			const entityIdPath = `${hierarchy.entityPathToFolderId(entity.parentFolderId)}/${entity.entityId}`;
+			return new ArFSPublicFileOrFolderData(
+				entity.appName,
+				entity.appVersion,
+				entity.arFS,
+				entity.contentType,
+				entity.driveId,
+				entity.entityType,
+				entity.name,
+				entity.txId,
+				entity.unixTime,
+				entity.parentFolderId,
+				entity.entityId,
+				path,
+				txPath,
+				entityIdPath
+			);
+		});
+		return mergedData;
 	}
 
 	async getPublicEntityNameFromTxId(txId: string): Promise<string> {
@@ -309,15 +369,51 @@ export class ArDrive extends ArDriveAnonymous {
 		return folderEntity;
 	}
 
-	async getAllFoldersOfPrivateDrive(driveId: DriveID, drivePassword: string): Promise<ArFSPrivateFolder[]> {
-		return this.arFsDao.getAllFoldersOfPrivateDrive(driveId, drivePassword);
-	}
+	async getChildrenOfPrivateFolder(folderId: FolderID, password: string): Promise<ArFSPrivateFileOrFolderData[]> {
+		const folder = await this.arFsDao.getPrivateFolder(folderId, password);
 
-	async getPrivateChildrenFilesFromFolderIDs(
-		folderIDs: FolderID[],
-		drivePassword: string
-	): Promise<ArFSPrivateFile[]> {
-		return this.arFsDao.getAllPrivateChildrenFilesFromFolderIDs(folderIDs, drivePassword);
+		// Fetch all of the folder entities within the drive
+		const driveIdOfFolder = folder.driveId;
+		const allFolderEntitiesOfDrive = (
+			await this.arFsDao.getAllFoldersOfPrivateDrive(driveIdOfFolder, password)
+		).filter(lastFolderRevisionFilter);
+
+		// Feed entities to FolderHierarchy.setupNodesWithEntity()
+		const hierarchy = FolderHierarchy.newFromEntities(allFolderEntitiesOfDrive);
+		const folderIDs = hierarchy.allFolderIDs();
+
+		// Fetch all file entities within all Folders of the drive
+		const allFileEntitiesOfDrive = (
+			await this.arFsDao.getAllPrivateChildrenFilesFromFolderIDs(folderIDs, password)
+		).filter(lastFileRevisionFilter);
+
+		// Fetch all names of each entity
+		const allEntitiesOfDrive = [...allFolderEntitiesOfDrive, ...allFileEntitiesOfDrive];
+
+		const mergedData = allEntitiesOfDrive.map((entity) => {
+			const path = `${hierarchy.pathToFolderId(entity.parentFolderId)}/${entity.name}`;
+			const txPath = `${hierarchy.txPathToFolderId(entity.parentFolderId)}/${entity.txId}`;
+			const entityIdPath = `${hierarchy.entityPathToFolderId(entity.parentFolderId)}/${entity.entityId}`;
+			return new ArFSPrivateFileOrFolderData(
+				entity.appName,
+				entity.appVersion,
+				entity.arFS,
+				entity.contentType,
+				entity.driveId,
+				entity.entityType,
+				entity.name,
+				entity.txId,
+				entity.unixTime,
+				entity.parentFolderId,
+				entity.entityId,
+				entity.cipher,
+				entity.cipherIV,
+				path,
+				txPath,
+				entityIdPath
+			);
+		});
+		return mergedData;
 	}
 
 	async estimateAndAssertCostOfUploadSize(fileSize: number, drivePrivacy: DrivePrivacy): Promise<FileUploadCosts> {

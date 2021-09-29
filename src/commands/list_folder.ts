@@ -2,13 +2,7 @@
 import { arweave } from 'ardrive-core-js';
 import { cliWalletDao, CLI_APP_NAME, CLI_APP_VERSION } from '..';
 import { ArDrive, ArDriveAnonymous } from '../ardrive';
-import {
-	ArFSDAO,
-	ArFSDAOAnonymous,
-	ArFSPrivateFileOrFolderData,
-	ArFSPublicFileOrFolderData,
-	FolderHierarchy
-} from '../arfsdao';
+import { ArFSDAO, ArFSDAOAnonymous, ArFSPrivateFileOrFolderData, ArFSPublicFileOrFolderData } from '../arfsdao';
 import { CLICommand } from '../CLICommand';
 import { CommonContext } from '../CLICommand/common_context';
 import { ArDriveCommunityOracle } from '../community/ardrive_community_oracle';
@@ -31,8 +25,7 @@ new CLICommand({
 		const wallet = await context.getWallet().catch(() => null);
 		const password = context.getParameterValue(DrivePasswordParameter);
 		const folderId = context.getParameterValue(ParentFolderIdParameter);
-		let folder;
-		let mergedData: (ArFSPrivateFileOrFolderData | ArFSPublicFileOrFolderData)[];
+		let children: (ArFSPrivateFileOrFolderData | ArFSPublicFileOrFolderData)[];
 
 		if (!folderId) {
 			console.log(`Folder id not specified! ${folderId}`);
@@ -48,90 +41,16 @@ new CLICommand({
 				CLI_APP_NAME,
 				CLI_APP_VERSION
 			);
-			// Fetch the folder to extract the drive
-			folder = await arDrive.getPrivateFolder(folderId, password);
-
-			// Fetch all of the folder entities within the drive
-			const driveIdOfFolder = folder.driveId;
-			const allFolderEntitiesOfDrive = await arDrive.getAllFoldersOfPrivateDrive(driveIdOfFolder, password);
-			// Feed entities to FolderHierarchy.setupNodesWithEntity()
-			const hierarchy = FolderHierarchy.newFromEntities(allFolderEntitiesOfDrive);
-			const folderIDs = hierarchy.allFolderIDs();
-
-			// Fetch all file entities within all Folders of the drive
-			const allFileEntitiesOfDrive = await arDrive.getPrivateChildrenFilesFromFolderIDs(folderIDs, password);
-
-			// Fetch all names of each entity
-			const allEntitiesOfDrive = [...allFolderEntitiesOfDrive, ...allFileEntitiesOfDrive];
-
-			mergedData = allEntitiesOfDrive.map((entity) => {
-				const path = `${hierarchy.pathToFolderId(entity.parentFolderId)}/${entity.name}`;
-				const txPath = `${hierarchy.txPathToFolderId(entity.parentFolderId)}/${entity.txId}`;
-				const entityIdPath = `${hierarchy.entityPathToFolderId(entity.parentFolderId)}/${entity.entityId}`;
-				return new ArFSPrivateFileOrFolderData(
-					entity.appName,
-					entity.appVersion,
-					entity.arFS,
-					entity.contentType,
-					entity.driveId,
-					entity.entityType,
-					entity.name,
-					entity.txId,
-					entity.unixTime,
-					entity.parentFolderId,
-					entity.entityId,
-					entity.cipher,
-					entity.cipherIV,
-					path,
-					txPath,
-					entityIdPath
-				);
-			});
+			children = await arDrive.getChildrenOfPrivateFolder(folderId, password);
 		} else {
 			const arDrive = new ArDriveAnonymous(new ArFSDAOAnonymous(arweave));
-			folder = await arDrive.getPublicFolder(folderId);
-
-			// Fetch all of the folder entities within the drive
-			const driveIdOfFolder = folder.driveId;
-			const allFolderEntitiesOfDrive = await arDrive.getAllFoldersOfPublicDrive(driveIdOfFolder);
-
-			// Feed entities to FolderHierarchy.setupNodesWithEntity()
-			const hierarchy = FolderHierarchy.newFromEntities(allFolderEntitiesOfDrive);
-			const folderIDs = hierarchy.allFolderIDs();
-
-			// Fetch all file entities within all Folders of the drive
-			const allFileEntitiesOfDrive = await arDrive.getPublicChildrenFilesFromFolderIDs(folderIDs);
-
-			// Fetch all names of each entity
-			const allEntitiesOfDrive = [...allFolderEntitiesOfDrive, ...allFileEntitiesOfDrive];
-
-			mergedData = allEntitiesOfDrive.map((entity) => {
-				const path = `${hierarchy.pathToFolderId(entity.parentFolderId)}/${entity.name}`;
-				const txPath = `${hierarchy.txPathToFolderId(entity.parentFolderId)}/${entity.txId}`;
-				const entityIdPath = `${hierarchy.entityPathToFolderId(entity.parentFolderId)}/${entity.entityId}`;
-				return new ArFSPublicFileOrFolderData(
-					entity.appName,
-					entity.appVersion,
-					entity.arFS,
-					entity.contentType,
-					entity.driveId,
-					entity.entityType,
-					entity.name,
-					entity.txId,
-					entity.unixTime,
-					entity.parentFolderId,
-					entity.entityId,
-					path,
-					txPath,
-					entityIdPath
-				);
-			});
+			children = await arDrive.getChildrenOfPublicFolder(folderId);
 		}
 
 		// Display data
 		console.log(
 			JSON.stringify(
-				mergedData.sort((a, b) => alphabeticalOrder(a.path, b.path)),
+				children.sort((a, b) => alphabeticalOrder(a.path, b.path)),
 				null,
 				4
 			)
