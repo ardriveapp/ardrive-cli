@@ -122,16 +122,6 @@ export class ArDriveAnonymous extends ArDriveType {
 		return folder;
 	}
 
-	async getRootFolderIdOfPublicDrive(driveId: DriveID): Promise<FolderID> {
-		const drive = await this.getPublicDrive(driveId);
-		const rootFolderId = drive.rootFolderId;
-		return rootFolderId;
-	}
-
-	async getChildrenTxIds(folderId: FolderID): Promise<string[]> {
-		return this.arFsDao.getChildrenOfFolderTxIds(folderId);
-	}
-
 	async getChildrenOfPublicFolder(folderId: FolderID): Promise<ArFSPublicFileOrFolderData[]> {
 		const folder = await this.arFsDao.getPublicFolder(folderId);
 
