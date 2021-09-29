@@ -570,6 +570,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		// Upload file data
 		if (!this.dryRun) {
+			console.log(`Uploading public file: "${wrappedFile.filePath}" to the permaweb..`);
 			await this.sendChunkedUploadWithProgress(dataTrx);
 		}
 
@@ -640,6 +641,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		// Upload file data
 		if (!this.dryRun) {
+			console.log(`Uploading private file: "${wrappedFile.filePath}" to the permaweb..`);
 			await this.sendChunkedUploadWithProgress(dataTrx);
 		}
 
