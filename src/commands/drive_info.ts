@@ -1,7 +1,6 @@
 import { ArDriveAnonymous } from '../ardrive';
 import { ArFSDAOAnonymous } from '../arfsdao';
-import { CLICommand } from '../CLICommand';
-import { Context } from '../CLICommand/common_context';
+import { CLICommand, ParametersHelper } from '../CLICommand';
 import {
 	DriveIdParameter,
 	DriveKeyParameter,
@@ -23,7 +22,7 @@ new CLICommand({
 		WalletFileParameter
 	],
 	async action(options) {
-		const context = new Context(options, cliWalletDao);
+		const context = new ParametersHelper(options, cliWalletDao);
 		const wallet = await context.getWallet().catch(() => null);
 		const result = await (function () {
 			if (wallet) {

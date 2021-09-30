@@ -3,8 +3,7 @@ import { cliArweave } from '..';
 import { cliWalletDao, CLI_APP_NAME, CLI_APP_VERSION } from '..';
 import { ArDrive, ArDriveAnonymous } from '../ardrive';
 import { ArFSDAO, ArFSDAOAnonymous, ArFSPrivateFileOrFolderData, ArFSPublicFileOrFolderData } from '../arfsdao';
-import { CLICommand } from '../CLICommand';
-import { CommonContext } from '../CLICommand/common_context';
+import { CLICommand, ParametersHelper } from '../CLICommand';
 import { ArDriveCommunityOracle } from '../community/ardrive_community_oracle';
 import {
 	DrivePasswordParameter,
@@ -21,7 +20,7 @@ new CLICommand({
 	name: 'list-folder',
 	parameters: [ParentFolderIdParameter, SeedPhraseParameter, WalletFileParameter, DrivePasswordParameter],
 	async action(options) {
-		const context = new CommonContext(options, cliWalletDao);
+		const context = new ParametersHelper(options, cliWalletDao);
 		const wallet = await context.getWallet().catch(() => null);
 		const password = context.getParameterValue(DrivePasswordParameter);
 		const folderId = context.getParameterValue(ParentFolderIdParameter);

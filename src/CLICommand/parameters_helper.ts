@@ -11,14 +11,14 @@ import {
 import { DriveID, DriveKey } from '../types';
 
 /**
- * @type {Context}
+ * @type {ParametersHelper}
  * A class representing the context of the parameters
  */
-export class Context {
+export class ParametersHelper {
 	private readonly _isPrivate: boolean;
 
 	/**
-	 * @returns {Context}
+	 * @returns {ParametersHelper}
 	 * @param {any} options The object containing the parameterName: value mapping
 	 * An immutable instance of CommonContext holding the parsed values of the parameters
 	 */
@@ -96,4 +96,4 @@ export class Context {
 	}
 }
 
-export class PrivateContext extends Context {}
+export class PrivateContext extends ParametersHelper {}

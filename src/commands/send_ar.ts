@@ -1,6 +1,5 @@
 import { cliWalletDao } from '..';
-import { CLICommand } from '../CLICommand';
-import { Context } from '../CLICommand/common_context';
+import { CLICommand, ParametersHelper } from '../CLICommand';
 import {
 	ArAmountParameter,
 	BoostParameter,
@@ -15,7 +14,7 @@ new CLICommand({
 	name: 'send-ar',
 	parameters: [ArAmountParameter, DestinationAddressParameter, WalletFileParameter, BoostParameter, DryRunParameter],
 	async action(options) {
-		const context = new Context(options, cliWalletDao);
+		const context = new ParametersHelper(options, cliWalletDao);
 		const wallet = await context.getWallet();
 		const walletAddress = await wallet.getAddress();
 		console.log(walletAddress);
