@@ -9,8 +9,6 @@ import {
 	FolderHierarchy,
 	ArFSPrivateFileOrFolderData,
 	ArFSPublicFileOrFolderData,
-	ArFSPublicFile,
-	ArFSPrivateFile,
 	ArFSFileOrFolderEntity
 } from './arfsdao';
 import { CommunityOracle } from './community/community_oracle';
@@ -78,6 +76,15 @@ export interface DriveUploadBaseCosts {
 const stubTransactionID = '0000000000000000000000000000000000000000000';
 const stubEntityID = '00000000-0000-0000-0000-000000000000';
 
+/**
+ * @name lastRevisionFilter is a standard JS find/filter function intended to
+ * filter only the last revision of entities within an array
+ *
+ * @param {ArFSFileOrFolderEntity} entity the iterated entity
+ * @param {number} _index the iterated index
+ * @param {ArFSFileOrFolderEntity[]} allEntities the array of all entities
+ * @returns {boolean}
+ */
 export function lastRevisionFilter(
 	entity: ArFSFileOrFolderEntity,
 	_index: number,
@@ -88,6 +95,13 @@ export function lastRevisionFilter(
 	return entity.txId === lastRevision.txId;
 }
 
+/**
+ * @name childrenAndFolderOfFilterFactory is a factory function for a standard find/filter function
+ * which filters all children and self of a specific folder
+ *
+ * @param {FolderID[]} folderIDs an array of the parent folder IDs to query for
+ * @returns the find/filter function
+ */
 export const childrenAndFolderOfFilterFactory = (folderIDs: FolderID[]) =>
 	function (entity: ArFSFileOrFolderEntity): boolean {
 		return folderIDs.includes(entity.parentFolderId) || folderIDs.includes(entity.entityId);
