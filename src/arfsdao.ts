@@ -175,7 +175,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		return await folderBuilder.build();
 	}
 
-	async getAllPublicChildrenFilesFromFolderIDs(folderIDs: FolderID[]): Promise<ArFSPublicFile[]> {
+	async getPublicFilesWithParentFolderIds(folderIDs: FolderID[]): Promise<ArFSPublicFile[]> {
 		let cursor = '';
 		let hasNextPage = true;
 		const allFiles: ArFSPublicFile[] = [];
@@ -254,7 +254,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		const childrenFolderIDs = hierarchy.subTreeOf(folderId).allFolderIDs();
 
 		// Fetch all file entities within all Folders of the drive
-		const allFileEntitiesOfDrive = (await this.getAllPublicChildrenFilesFromFolderIDs(childrenFolderIDs)).filter(
+		const allFileEntitiesOfDrive = (await this.getPublicFilesWithParentFolderIds(childrenFolderIDs)).filter(
 			lastRevisionFilter
 		);
 
@@ -722,10 +722,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return allFolders;
 	}
 
-	async getAllPrivateChildrenFilesFromFolderIDs(
-		folderIDs: FolderID[],
-		drivePassword: string
-	): Promise<ArFSPrivateFile[]> {
+	async getPrivateFilesWithParentFolderIds(folderIDs: FolderID[], drivePassword: string): Promise<ArFSPrivateFile[]> {
 		let cursor = '';
 		let hasNextPage = true;
 		const allFiles: ArFSPrivateFile[] = [];
@@ -779,7 +776,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const folderIDs = hierarchy.allFolderIDs();
 
 		// Fetch all file entities within all Folders of the drive
-		const allFileEntitiesOfDrive = (await this.getAllPrivateChildrenFilesFromFolderIDs(folderIDs, password)).filter(
+		const allFileEntitiesOfDrive = (await this.getPrivateFilesWithParentFolderIds(folderIDs, password)).filter(
 			lastRevisionFilter
 		);
 
