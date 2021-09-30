@@ -6,10 +6,8 @@ import {
 	ArFSPublicFolder,
 	ArFSPrivateFolder,
 	ArFSPrivateDrive,
-	FolderHierarchy,
 	ArFSPrivateFileOrFolderData,
-	ArFSPublicFileOrFolderData,
-	ArFSFileOrFolderEntity
+	ArFSPublicFileOrFolderData
 } from './arfsdao';
 import { CommunityOracle } from './community/community_oracle';
 import { DrivePrivacy, extToMime, GQLTagInterface, winstonToAr } from 'ardrive-core-js';
@@ -75,38 +73,6 @@ export interface DriveUploadBaseCosts {
 
 const stubTransactionID = '0000000000000000000000000000000000000000000';
 const stubEntityID = '00000000-0000-0000-0000-000000000000';
-
-/**
- * @name lastRevisionFilter is a standard JS find/filter function intended to
- * filter only the last revision of entities within an array
- *
- * @param {ArFSFileOrFolderEntity} entity the iterated entity
- * @param {number} _index the iterated index
- * @param {ArFSFileOrFolderEntity[]} allEntities the array of all entities
- * @returns {boolean}
- */
-export function lastRevisionFilter(
-	entity: ArFSFileOrFolderEntity,
-	_index: number,
-	allEntities: (ArFSPublicFolder | ArFSPrivateFolder)[]
-): boolean {
-	const allRevisions = allEntities.filter((e) => e.entityId === entity.entityId);
-	const lastRevision = allRevisions[allRevisions.length - 1];
-	return entity.txId === lastRevision.txId;
-}
-
-/**
- * @name childrenAndFolderOfFilterFactory is a factory function for a standard find/filter function
- * which filters all children and self of a specific folder
- *
- * @param {FolderID[]} folderIDs an array of the parent folder IDs to query for
- * @returns the find/filter function
- */
-export const childrenAndFolderOfFilterFactory = (folderIDs: FolderID[]) =>
-	function (entity: ArFSFileOrFolderEntity): boolean {
-		return folderIDs.includes(entity.parentFolderId) || folderIDs.includes(entity.entityId);
-	};
-
 export abstract class ArDriveType {
 	protected abstract readonly arFsDao: ArFSDAOType;
 }
@@ -132,48 +98,8 @@ export class ArDriveAnonymous extends ArDriveType {
 	 * @returns {ArFSPublicFileOrFolderData[]} an array representation of the children and parent folder
 	 */
 	async listPublicFolder(folderId: FolderID): Promise<ArFSPublicFileOrFolderData[]> {
-		const folder = await this.arFsDao.getPublicFolder(folderId);
-
-		// Fetch all of the folder entities within the drive
-		const driveIdOfFolder = folder.driveId;
-		const allFolderEntitiesOfDrive = (await this.arFsDao.getAllFoldersOfPublicDrive(driveIdOfFolder)).filter(
-			lastRevisionFilter
-		);
-
-		// Feed entities to FolderHierarchy.setupNodesWithEntity()
-		const hierarchy = FolderHierarchy.newFromEntities(allFolderEntitiesOfDrive);
-		const childrenFolderIDs = hierarchy.subTreeOf(folderId).allFolderIDs();
-
-		// Fetch all file entities within all Folders of the drive
-		const allFileEntitiesOfDrive = (
-			await this.arFsDao.getAllPublicChildrenFilesFromFolderIDs(childrenFolderIDs)
-		).filter(lastRevisionFilter);
-
-		const allEntitiesOfDrive = [...allFolderEntitiesOfDrive, ...allFileEntitiesOfDrive];
-		const allChildrenOfFolder = allEntitiesOfDrive.filter(childrenAndFolderOfFilterFactory(childrenFolderIDs));
-
-		const mergedData = allChildrenOfFolder.map((entity) => {
-			const path = `${hierarchy.pathToFolderId(entity.parentFolderId)}${entity.name}`;
-			const txPath = `${hierarchy.txPathToFolderId(entity.parentFolderId)}${entity.txId}`;
-			const entityIdPath = `${hierarchy.entityPathToFolderId(entity.parentFolderId)}${entity.entityId}`;
-			return new ArFSPublicFileOrFolderData(
-				entity.appName,
-				entity.appVersion,
-				entity.arFS,
-				entity.contentType,
-				entity.driveId,
-				entity.entityType,
-				entity.name,
-				entity.txId,
-				entity.unixTime,
-				entity.parentFolderId,
-				entity.entityId,
-				path,
-				txPath,
-				entityIdPath
-			);
-		});
-		return mergedData;
+		const children = await this.arFsDao.listPublicFolder(folderId);
+		return children;
 	}
 }
 
@@ -465,51 +391,8 @@ export class ArDrive extends ArDriveAnonymous {
 	 * @returns {ArFSPrivateFileOrFolderData[]} an array representation of the children and parent folder
 	 */
 	async listPrivateFolder(folderId: FolderID, password: string): Promise<ArFSPrivateFileOrFolderData[]> {
-		const folder = await this.arFsDao.getPrivateFolder(folderId, password);
-
-		// Fetch all of the folder entities within the drive
-		const driveIdOfFolder = folder.driveId;
-		const allFolderEntitiesOfDrive = (
-			await this.arFsDao.getAllFoldersOfPrivateDrive(driveIdOfFolder, password)
-		).filter(lastRevisionFilter);
-
-		// Feed entities to FolderHierarchy.setupNodesWithEntity()
-		const hierarchy = FolderHierarchy.newFromEntities(allFolderEntitiesOfDrive);
-		const folderIDs = hierarchy.allFolderIDs();
-
-		// Fetch all file entities within all Folders of the drive
-		const allFileEntitiesOfDrive = (
-			await this.arFsDao.getAllPrivateChildrenFilesFromFolderIDs(folderIDs, password)
-		).filter(lastRevisionFilter);
-
-		const allEntitiesOfDrive = [...allFolderEntitiesOfDrive, ...allFileEntitiesOfDrive];
-		const childrenFolderIDs = hierarchy.subTreeOf(folderId).allFolderIDs();
-		const allChildrenOfFolder = allEntitiesOfDrive.filter(childrenAndFolderOfFilterFactory(childrenFolderIDs));
-
-		const mergedData = allChildrenOfFolder.map((entity) => {
-			const path = `${hierarchy.pathToFolderId(entity.parentFolderId)}${entity.name}`;
-			const txPath = `${hierarchy.txPathToFolderId(entity.parentFolderId)}${entity.txId}`;
-			const entityIdPath = `${hierarchy.entityPathToFolderId(entity.parentFolderId)}${entity.entityId}`;
-			return new ArFSPrivateFileOrFolderData(
-				entity.appName,
-				entity.appVersion,
-				entity.arFS,
-				entity.contentType,
-				entity.driveId,
-				entity.entityType,
-				entity.name,
-				entity.txId,
-				entity.unixTime,
-				entity.parentFolderId,
-				entity.entityId,
-				entity.cipher,
-				entity.cipherIV,
-				path,
-				txPath,
-				entityIdPath
-			);
-		});
-		return mergedData;
+		const children = this.arFsDao.listPrivateFolder(folderId, password);
+		return children;
 	}
 
 	async estimateAndAssertCostOfFileUpload(
