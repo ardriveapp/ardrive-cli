@@ -39,8 +39,6 @@ import {
 } from './arfs_trx_data_types';
 import { buildQuery } from './query';
 import { FsFile } from './fsFile';
-
-export const ArFS_O_11 = '0.11';
 import {
 	DriveID,
 	FolderID,
