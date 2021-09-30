@@ -137,15 +137,14 @@ export class ArDriveAnonymous extends ArDriveType {
 
 		// Feed entities to FolderHierarchy.setupNodesWithEntity()
 		const hierarchy = FolderHierarchy.newFromEntities(allFolderEntitiesOfDrive);
-		const folderIDs = hierarchy.allFolderIDs();
+		const childrenFolderIDs = hierarchy.subTreeOf(folderId).allFolderIDs();
 
 		// Fetch all file entities within all Folders of the drive
-		const allFileEntitiesOfDrive = (await this.arFsDao.getAllPublicChildrenFilesFromFolderIDs(folderIDs)).filter(
-			lastRevisionFilter
-		);
+		const allFileEntitiesOfDrive = (
+			await this.arFsDao.getAllPublicChildrenFilesFromFolderIDs(childrenFolderIDs)
+		).filter(lastRevisionFilter);
 
 		const allEntitiesOfDrive = [...allFolderEntitiesOfDrive, ...allFileEntitiesOfDrive];
-		const childrenFolderIDs = hierarchy.subTreeOf(folderId).allFolderIDs();
 		const allChildrenOfFolder = allEntitiesOfDrive.filter(childrenAndFolderOfFilterFactory(childrenFolderIDs));
 
 		const mergedData = allChildrenOfFolder.map((entity) => {
