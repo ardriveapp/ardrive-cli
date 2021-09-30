@@ -392,27 +392,42 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 	async createPrivateDrive(
 		driveName: string,
-		password: string,
+		drivePassword: string,
 		driveRewardSettings: RewardSettings,
 		rootFolderRewardSettings: RewardSettings
 	): Promise<ArFSCreatePrivateDriveResult> {
 		// Generate a new drive ID  for the new drive
 		const driveId = uuidv4();
 
-		// TODO: Re-use CreatePrivateFolder function here
-		// Generate a folder ID for the new drive's root folder
-		const rootFolderId = uuidv4();
+		const wallet = this.wallet as JWKWallet;
+
+		// Create root folder
+		const folderData = await ArFSPrivateFolderTransactionData.from(
+			driveName,
+			driveId,
+			drivePassword,
+			wallet.getPrivateKey()
+		);
+		const {
+			folderTrxId: rootFolderTrxId,
+			folderTrxReward: rootFolderTrxReward,
+			folderId: rootFolderId
+		} = await this.createPrivateFolder({
+			folderData,
+			driveId,
+			rewardSettings: rootFolderRewardSettings,
+			syncParentFolderId: false,
+			drivePassword
+		});
 
 		// Get the current time so the app can display the "created" data later on
 		const unixTime = Math.round(Date.now() / 1000);
-
-		const wallet = this.wallet as JWKWallet;
 
 		const privateDriveData = await ArFSPrivateDriveTransactionData.from(
 			driveName,
 			rootFolderId,
 			driveId,
-			password,
+			drivePassword,
 			wallet.getPrivateKey()
 		);
 
@@ -420,25 +435,10 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const driveMetaData = new ArFSPrivateDriveMetaDataPrototype(unixTime, driveId, privateDriveData);
 		const driveTrx = await this.prepareArFSObjectTransaction(driveMetaData, driveRewardSettings);
 
-		// Create a root folder metadata transaction
-		const rootFolderMetadata = new ArFSPrivateFolderMetaDataPrototype(
-			unixTime,
-			driveId,
-			rootFolderId,
-			await ArFSPrivateFolderTransactionData.from(driveName, driveId, password, wallet.getPrivateKey())
-		);
-		const rootFolderTrx = await this.prepareArFSObjectTransaction(rootFolderMetadata, rootFolderRewardSettings);
-
 		// Execute the uploads
 		if (!this.dryRun) {
 			const driveUploader = await this.arweave.transactions.getUploader(driveTrx);
-			const folderUploader = await this.arweave.transactions.getUploader(rootFolderTrx);
-			while (!driveUploader.isComplete) {
-				await driveUploader.uploadChunk();
-			}
-			while (!folderUploader.isComplete) {
-				await folderUploader.uploadChunk();
-			}
+			await driveUploader.uploadChunk();
 		}
 
 		const driveKey = privateDriveData.driveKey;
@@ -446,8 +446,8 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return {
 			driveTrxId: driveTrx.id,
 			driveTrxReward: driveTrx.reward,
-			rootFolderTrxId: rootFolderTrx.id,
-			rootFolderTrxReward: rootFolderTrx.reward,
+			rootFolderTrxId: rootFolderTrxId,
+			rootFolderTrxReward: rootFolderTrxReward,
 			driveId: driveId,
 			rootFolderId: rootFolderId,
 			driveKey
