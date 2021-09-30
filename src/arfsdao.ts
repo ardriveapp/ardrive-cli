@@ -238,9 +238,9 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 	/**
 	 * Lists the children and self of certain public folder
 	 * @param {FolderID} folderId the folder ID to list children of
-	 * @returns {ArFSPublicFileOrFolderData[]} an array representation of the children and parent folder
+	 * @returns {ArFSPublicFileOrFolderWithPaths[]} an array representation of the children and parent folder
 	 */
-	async listPublicFolder(folderId: FolderID): Promise<ArFSPublicFileOrFolderData[]> {
+	async listPublicFolder(folderId: FolderID): Promise<ArFSPublicFileOrFolderWithPaths[]> {
 		const folder = await this.getPublicFolder(folderId);
 
 		// Fetch all of the folder entities within the drive
@@ -261,27 +261,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		const allEntitiesOfDrive = [...allFolderEntitiesOfDrive, ...allFileEntitiesOfDrive];
 		const allChildrenOfFolder = allEntitiesOfDrive.filter(childrenAndFolderOfFilterFactory(childrenFolderIDs));
 
-		const mergedData = allChildrenOfFolder.map((entity) => {
-			const path = `${hierarchy.pathToFolderId(entity.parentFolderId)}${entity.name}`;
-			const txPath = `${hierarchy.txPathToFolderId(entity.parentFolderId)}${entity.txId}`;
-			const entityIdPath = `${hierarchy.entityPathToFolderId(entity.parentFolderId)}${entity.entityId}`;
-			return new ArFSPublicFileOrFolderData(
-				entity.appName,
-				entity.appVersion,
-				entity.arFS,
-				entity.contentType,
-				entity.driveId,
-				entity.entityType,
-				entity.name,
-				entity.txId,
-				entity.unixTime,
-				entity.parentFolderId,
-				entity.entityId,
-				path,
-				txPath,
-				entityIdPath
-			);
-		});
+		const mergedData = allChildrenOfFolder.map((entity) => new ArFSPublicFileOrFolderWithPaths(entity, hierarchy));
 		return mergedData;
 	}
 }
@@ -783,9 +763,9 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	/**
 	 * Lists the children and self of certain private folder
 	 * @param {FolderID} folderId the folder ID to list children of
-	 * @returns {ArFSPrivateFileOrFolderData[]} an array representation of the children and parent folder
+	 * @returns {ArFSPrivateFileOrFolderWithPaths[]} an array representation of the children and parent folder
 	 */
-	async listPrivateFolder(folderId: FolderID, password: string): Promise<ArFSPrivateFileOrFolderData[]> {
+	async listPrivateFolder(folderId: FolderID, password: string): Promise<ArFSPrivateFileOrFolderWithPaths[]> {
 		const folder = await this.getPrivateFolder(folderId, password);
 
 		// Fetch all of the folder entities within the drive
@@ -807,29 +787,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const childrenFolderIDs = hierarchy.subTreeOf(folderId).allFolderIDs();
 		const allChildrenOfFolder = allEntitiesOfDrive.filter(childrenAndFolderOfFilterFactory(childrenFolderIDs));
 
-		const mergedData = allChildrenOfFolder.map((entity) => {
-			const path = `${hierarchy.pathToFolderId(entity.parentFolderId)}${entity.name}`;
-			const txPath = `${hierarchy.txPathToFolderId(entity.parentFolderId)}${entity.txId}`;
-			const entityIdPath = `${hierarchy.entityPathToFolderId(entity.parentFolderId)}${entity.entityId}`;
-			return new ArFSPrivateFileOrFolderData(
-				entity.appName,
-				entity.appVersion,
-				entity.arFS,
-				entity.contentType,
-				entity.driveId,
-				entity.entityType,
-				entity.name,
-				entity.txId,
-				entity.unixTime,
-				entity.parentFolderId,
-				entity.entityId,
-				entity.cipher,
-				entity.cipherIV,
-				path,
-				txPath,
-				entityIdPath
-			);
-		});
+		const mergedData = allChildrenOfFolder.map((entity) => new ArFSPrivateFileOrFolderWithPaths(entity, hierarchy));
 		return mergedData;
 	}
 }
@@ -900,71 +858,57 @@ export interface ArFSWithPath {
 	readonly entityIdPath: string;
 }
 
-export class ArFSPublicFileOrFolderData extends ArFSFileOrFolderEntity implements ArFSWithPath {
-	constructor(
-		appName: string,
-		appVersion: string,
-		arFS: string,
-		contentType: string,
-		driveId: string,
-		entityType: string,
-		name: string,
-		txId: string,
-		unixTime: number,
-		parentFolderId: string,
-		readonly entityId: string,
-		readonly path: string,
-		readonly txIdPath: string,
-		readonly entityIdPath: string
-	) {
+export class ArFSPublicFileOrFolderWithPaths extends ArFSFileOrFolderEntity implements ArFSWithPath {
+	readonly path: string;
+	readonly txIdPath: string;
+	readonly entityIdPath: string;
+
+	constructor(readonly entity: ArFSPublicFile | ArFSPublicFolder, readonly hierarchy: FolderHierarchy) {
 		super(
-			appName,
-			appVersion,
-			arFS,
-			contentType,
-			driveId,
-			entityType,
-			name,
-			txId,
-			unixTime,
-			parentFolderId,
-			entityId
+			entity.appName,
+			entity.appVersion,
+			entity.arFS,
+			entity.contentType,
+			entity.driveId,
+			entity.entityType,
+			entity.name,
+			entity.txId,
+			entity.unixTime,
+			entity.parentFolderId,
+			entity.entityId
 		);
+		this.path = `${hierarchy.pathToFolderId(entity.parentFolderId)}${entity.name}`;
+		this.txIdPath = `${hierarchy.txPathToFolderId(entity.parentFolderId)}${entity.txId}`;
+		this.entityIdPath = `${hierarchy.entityPathToFolderId(entity.parentFolderId)}${entity.entityId}`;
 	}
 }
 
-export class ArFSPrivateFileOrFolderData extends ArFSFileOrFolderEntity implements ArFSWithPath {
-	constructor(
-		appName: string,
-		appVersion: string,
-		arFS: string,
-		contentType: ContentType,
-		driveId: DriveID,
-		entityType: EntityType,
-		name: string,
-		txId: TransactionID,
-		unixTime: number,
-		parentFolderId: FolderID,
-		readonly entityId: string,
-		readonly cipher: string,
-		readonly cipherIV: CipherIV,
-		readonly path: string,
-		readonly txIdPath: string,
-		readonly entityIdPath: string
-	) {
+export class ArFSPrivateFileOrFolderWithPaths extends ArFSFileOrFolderEntity implements ArFSWithPath {
+	readonly cipher: string;
+	readonly cipherIV: CipherIV;
+	readonly path: string;
+	readonly txIdPath: string;
+	readonly entityIdPath: string;
+
+	constructor(readonly entity: ArFSPrivateFile | ArFSPrivateFolder, readonly hierarchy: FolderHierarchy) {
 		super(
-			appName,
-			appVersion,
-			arFS,
-			contentType,
-			driveId,
-			entityType,
-			name,
-			txId,
-			unixTime,
-			parentFolderId,
-			entityId
+			entity.appName,
+			entity.appVersion,
+			entity.arFS,
+			entity.contentType,
+			entity.driveId,
+			entity.entityType,
+			entity.name,
+			entity.txId,
+			entity.unixTime,
+			entity.parentFolderId,
+			entity.entityId
 		);
+		this.cipher = entity.cipher;
+		this.cipherIV = entity.cipherIV;
+		this.path = `${hierarchy.pathToFolderId(entity.parentFolderId)}${entity.name}`;
+		this.txIdPath = `${hierarchy.txPathToFolderId(entity.parentFolderId)}${entity.txId}`;
+		this.entityIdPath = `${hierarchy.entityPathToFolderId(entity.parentFolderId)}${entity.entityId}`;
 	}
 }
 

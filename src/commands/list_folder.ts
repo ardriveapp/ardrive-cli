@@ -2,7 +2,12 @@
 import { arweave } from 'ardrive-core-js';
 import { cliWalletDao, CLI_APP_NAME, CLI_APP_VERSION } from '..';
 import { ArDrive, ArDriveAnonymous } from '../ardrive';
-import { ArFSDAO, ArFSDAOAnonymous, ArFSPrivateFileOrFolderData, ArFSPublicFileOrFolderData } from '../arfsdao';
+import {
+	ArFSDAO,
+	ArFSDAOAnonymous,
+	ArFSPrivateFileOrFolderWithPaths,
+	ArFSPublicFileOrFolderWithPaths
+} from '../arfsdao';
 import { CLICommand } from '../CLICommand';
 import { CommonContext } from '../CLICommand/common_context';
 import { ArDriveCommunityOracle } from '../community/ardrive_community_oracle';
@@ -25,7 +30,7 @@ new CLICommand({
 		const wallet = await context.getWallet().catch(() => null);
 		const password = context.getParameterValue(DrivePasswordParameter);
 		const folderId = context.getParameterValue(ParentFolderIdParameter);
-		let children: (ArFSPrivateFileOrFolderData | ArFSPublicFileOrFolderData)[];
+		let children: (ArFSPrivateFileOrFolderWithPaths | ArFSPublicFileOrFolderWithPaths)[];
 
 		if (!folderId) {
 			console.log(`Folder id not specified!`);

@@ -6,8 +6,8 @@ import {
 	ArFSPublicFolder,
 	ArFSPrivateFolder,
 	ArFSPrivateDrive,
-	ArFSPrivateFileOrFolderData,
-	ArFSPublicFileOrFolderData
+	ArFSPrivateFileOrFolderWithPaths,
+	ArFSPublicFileOrFolderWithPaths
 } from './arfsdao';
 import { CommunityOracle } from './community/community_oracle';
 import { DrivePrivacy, extToMime, GQLTagInterface, winstonToAr } from 'ardrive-core-js';
@@ -95,9 +95,9 @@ export class ArDriveAnonymous extends ArDriveType {
 	/**
 	 * Lists the children and self of certain public folder
 	 * @param {FolderID} folderId the folder ID to list children of
-	 * @returns {ArFSPublicFileOrFolderData[]} an array representation of the children and parent folder
+	 * @returns {ArFSPublicFileOrFolderWithPaths[]} an array representation of the children and parent folder
 	 */
-	async listPublicFolder(folderId: FolderID): Promise<ArFSPublicFileOrFolderData[]> {
+	async listPublicFolder(folderId: FolderID): Promise<ArFSPublicFileOrFolderWithPaths[]> {
 		const children = await this.arFsDao.listPublicFolder(folderId);
 		return children;
 	}
@@ -388,9 +388,9 @@ export class ArDrive extends ArDriveAnonymous {
 	/**
 	 * Lists the children and self of certain private folder
 	 * @param {FolderID} folderId the folder ID to list children of
-	 * @returns {ArFSPrivateFileOrFolderData[]} an array representation of the children and parent folder
+	 * @returns {ArFSPrivateFileOrFolderWithPaths[]} an array representation of the children and parent folder
 	 */
-	async listPrivateFolder(folderId: FolderID, password: string): Promise<ArFSPrivateFileOrFolderData[]> {
+	async listPrivateFolder(folderId: FolderID, password: string): Promise<ArFSPrivateFileOrFolderWithPaths[]> {
 		const children = this.arFsDao.listPrivateFolder(folderId, password);
 		return children;
 	}
