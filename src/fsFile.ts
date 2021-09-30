@@ -1,16 +1,15 @@
 import * as fs from 'fs';
 import { extToMime } from 'ardrive-core-js';
 import { basename, join } from 'path';
-import { Bytes } from './types';
+import { Bytes, DataContentType } from './types';
 import { BulkFileBaseCosts, FolderUploadBaseCosts } from './ardrive';
 
-type ContentType = string;
 type BaseFileName = string;
 type FilePath = string;
 
 export interface FileInfo {
 	fileData: Buffer;
-	dataContentType: ContentType;
+	dataContentType: DataContentType;
 	lastModifiedDateMS: number;
 	fileSize: Bytes;
 }
@@ -79,7 +78,7 @@ export class FsFile {
 		return fs.readFileSync(this.filePath);
 	}
 
-	public getContentType(): ContentType {
+	public getContentType(): DataContentType {
 		return extToMime(this.filePath);
 	}
 
