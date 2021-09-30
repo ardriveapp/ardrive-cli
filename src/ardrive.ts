@@ -78,20 +78,10 @@ export interface DriveUploadBaseCosts {
 const stubTransactionID = '0000000000000000000000000000000000000000000';
 const stubEntityID = '00000000-0000-0000-0000-000000000000';
 
-export function lastFolderRevisionFilter(
-	entity: ArFSPublicFolder | ArFSPrivateFolder,
+export function lastRevisionFilter(
+	entity: ArFSFileOrFolderEntity,
 	_index: number,
 	allEntities: (ArFSPublicFolder | ArFSPrivateFolder)[]
-): boolean {
-	const allRevisions = allEntities.filter((e) => e.entityId === entity.entityId);
-	const lastRevision = allRevisions[allRevisions.length - 1];
-	return entity.txId === lastRevision.txId;
-}
-
-export function lastFileRevisionFilter(
-	entity: ArFSPublicFile | ArFSPrivateFile,
-	_index: number,
-	allEntities: (ArFSPublicFile | ArFSPrivateFile)[]
 ): boolean {
 	const allRevisions = allEntities.filter((e) => e.entityId === entity.entityId);
 	const lastRevision = allRevisions[allRevisions.length - 1];
@@ -128,7 +118,7 @@ export class ArDriveAnonymous extends ArDriveType {
 		// Fetch all of the folder entities within the drive
 		const driveIdOfFolder = folder.driveId;
 		const allFolderEntitiesOfDrive = (await this.arFsDao.getAllFoldersOfPublicDrive(driveIdOfFolder)).filter(
-			lastFolderRevisionFilter
+			lastRevisionFilter
 		);
 
 		// Feed entities to FolderHierarchy.setupNodesWithEntity()
@@ -137,7 +127,7 @@ export class ArDriveAnonymous extends ArDriveType {
 
 		// Fetch all file entities within all Folders of the drive
 		const allFileEntitiesOfDrive = (await this.arFsDao.getAllPublicChildrenFilesFromFolderIDs(folderIDs)).filter(
-			lastFileRevisionFilter
+			lastRevisionFilter
 		);
 
 		const allEntitiesOfDrive = [...allFolderEntitiesOfDrive, ...allFileEntitiesOfDrive];
@@ -458,7 +448,7 @@ export class ArDrive extends ArDriveAnonymous {
 		const driveIdOfFolder = folder.driveId;
 		const allFolderEntitiesOfDrive = (
 			await this.arFsDao.getAllFoldersOfPrivateDrive(driveIdOfFolder, password)
-		).filter(lastFolderRevisionFilter);
+		).filter(lastRevisionFilter);
 
 		// Feed entities to FolderHierarchy.setupNodesWithEntity()
 		const hierarchy = FolderHierarchy.newFromEntities(allFolderEntitiesOfDrive);
@@ -467,7 +457,7 @@ export class ArDrive extends ArDriveAnonymous {
 		// Fetch all file entities within all Folders of the drive
 		const allFileEntitiesOfDrive = (
 			await this.arFsDao.getAllPrivateChildrenFilesFromFolderIDs(folderIDs, password)
-		).filter(lastFileRevisionFilter);
+		).filter(lastRevisionFilter);
 
 		const allEntitiesOfDrive = [...allFolderEntitiesOfDrive, ...allFileEntitiesOfDrive];
 		const childrenFolderIDs = hierarchy.subTreeOf(folderId).allFolderIDs();
