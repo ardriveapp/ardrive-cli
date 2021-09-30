@@ -8,6 +8,13 @@ type ContentType = string;
 type BaseFileName = string;
 type FilePath = string;
 
+export interface FileInfo {
+	fileData: Buffer;
+	dataContentType: ContentType;
+	lastModifiedDateMS: number;
+	fileSize: Bytes;
+}
+
 /**
  * Reads stats of a file or folder  and constructs a File or Folder wrapper class
  *
@@ -51,6 +58,15 @@ export class FsFile {
 	}
 
 	baseCosts?: BulkFileBaseCosts;
+
+	public gatherFileInfo(): FileInfo {
+		const fileData = this.getFileDataBuffer();
+		const dataContentType = this.getContentType();
+		const lastModifiedDateMS = Math.floor(this.fileStats.mtimeMs);
+		const fileSize = this.fileStats.size;
+
+		return { fileData, dataContentType, lastModifiedDateMS, fileSize };
+	}
 
 	public getBaseCosts(): BulkFileBaseCosts {
 		if (!this.baseCosts) {

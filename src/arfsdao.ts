@@ -472,10 +472,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const unixTime = Math.round(Date.now() / 1000);
 
 		// Gather file information
-		const fileStats = wrappedFile.fileStats;
-		const fileData = wrappedFile.getFileDataBuffer();
-		const dataContentType = wrappedFile.getContentType();
-		const lastModifiedDateMS = Math.floor(wrappedFile.fileStats.mtimeMs);
+		const { fileSize, fileData, dataContentType, lastModifiedDateMS } = wrappedFile.gatherFileInfo();
 
 		// Build file data transaction
 		const fileDataPrototype = new ArFSPublicFileDataPrototype(
@@ -494,7 +491,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const fileMetadata = new ArFSPublicFileMetaDataPrototype(
 			new ArFSPublicFileMetadataTransactionData(
 				destinationFileName,
-				fileStats.size,
+				fileSize,
 				lastModifiedDateMS,
 				dataTrx.id,
 				dataContentType
@@ -542,10 +539,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const unixTime = Math.round(Date.now() / 1000);
 
 		// Gather file information
-		const fileStats = wrappedFile.fileStats;
-		const fileData = wrappedFile.getFileDataBuffer();
-		const dataContentType = wrappedFile.getContentType();
-		const lastModifiedDateMS = Math.floor(wrappedFile.fileStats.mtimeMs);
+		const { fileSize, fileData, dataContentType, lastModifiedDateMS } = wrappedFile.gatherFileInfo();
 
 		const wallet: JWKWallet = this.wallet as JWKWallet;
 
@@ -564,7 +558,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		// Prepare meta data transaction
 		const fileMetaData = await ArFSPrivateFileMetadataTransactionData.from(
 			destinationFileName,
-			fileStats.size,
+			fileSize,
 			lastModifiedDateMS,
 			dataTrx.id,
 			dataContentType,
