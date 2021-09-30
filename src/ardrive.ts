@@ -137,7 +137,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 	async uploadPublicFile(
 		parentFolderId: FolderID,
-		wrappedEntity: FsFile,
+		wrappedFile: FsFile,
 		destinationFileName?: string
 	): Promise<ArFSResult> {
 		// Retrieve drive ID from folder ID and ensure that it is indeed public
@@ -148,8 +148,8 @@ export class ArDrive extends ArDriveAnonymous {
 		}
 
 		const uploadBaseCosts = await this.estimateAndAssertCostOfFileUpload(
-			wrappedEntity.fileStats.size,
-			this.stubPublicFileMetadata(wrappedEntity, destinationFileName),
+			wrappedFile.fileStats.size,
+			this.stubPublicFileMetadata(wrappedFile, destinationFileName),
 			'public'
 		);
 		const fileDataRewardSettings = { reward: uploadBaseCosts.fileDataBaseReward, feeMultiple: this.feeMultiple };
@@ -157,7 +157,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		const uploadFileResult = await this.arFsDao.uploadPublicFile(
 			parentFolderId,
-			wrappedEntity,
+			wrappedFile,
 			driveId,
 			fileDataRewardSettings,
 			metadataRewardSettings,
