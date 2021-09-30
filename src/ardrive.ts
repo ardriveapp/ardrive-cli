@@ -52,8 +52,10 @@ export interface FolderUploadBaseCosts {
 	metaDataBaseReward: Winston;
 }
 
-export interface FileUploadBaseCosts extends FolderUploadBaseCosts {
+export interface BulkFileBaseCosts extends FolderUploadBaseCosts {
 	fileDataBaseReward: Winston;
+}
+export interface FileUploadBaseCosts extends BulkFileBaseCosts {
 	communityWinstonTip: Winston;
 }
 
@@ -184,7 +186,27 @@ export class ArDrive extends ArDriveAnonymous {
 		});
 	}
 
-	async createPublicFolderAndUploadChildren({
+	public async createPublicFolderAndUploadChildren(
+		parentFolderId: FolderID,
+		wrappedFolder: FsFolder,
+		parentFolderName?: string
+	): Promise<ArFSResult> {
+		const results = await this.recursivelyCreatePublicFolderAndUploadChildren({
+			parentFolderId,
+			wrappedFolder,
+			parentFolderName
+		});
+
+		const { tipData, reward: communityTipTrxReward } = await this.sendCommunityTip(results.communityWinstonTip);
+
+		return Promise.resolve({
+			created: results.entityResults,
+			tips: [tipData],
+			fees: { ...results.feeResults, [tipData.txId]: +communityTipTrxReward }
+		});
+	}
+
+	protected async recursivelyCreatePublicFolderAndUploadChildren({
 		parentFolderId,
 		wrappedFolder,
 		parentFolderName,
@@ -192,6 +214,7 @@ export class ArDrive extends ArDriveAnonymous {
 	}: CreatePublicFolderAndUploadChildrenParams): Promise<{
 		entityResults: ArFSEntityData[];
 		feeResults: ArFSFees;
+		communityWinstonTip: Winston;
 	}> {
 		// DriveID will not exist if this folder is the parent folder
 		// Recursing children folders will have driveId assigned by the parent folder
@@ -210,10 +233,14 @@ export class ArDrive extends ArDriveAnonymous {
 			parentFolderName ?? wrappedFolder.getBaseFileName()
 		);
 
+		let communityWinstonTip = 0;
+
 		if (isParentFolder) {
 			// Estimate and assert the cost of the entire bulk upload
 			// This will assign the calculated base costs to each wrapped file and folder
-			await this.estimateAndAssertCostOfBulkUpload(wrappedFolder, 'public', parentFolderData);
+			communityWinstonTip = +(
+				await this.estimateAndAssertCostOfBulkUpload(wrappedFolder, 'public', parentFolderData)
+			).communityWinstonTip;
 		}
 
 		let uploadEntityResults: ArFSEntityData[] = [];
@@ -282,7 +309,7 @@ export class ArDrive extends ArDriveAnonymous {
 		// Upload folders, and children of those folders
 		for await (const childFolder of wrappedFolder.folders) {
 			// Recursion alert, will keep creating folders of all nested folders
-			const results = await this.createPublicFolderAndUploadChildren({
+			const results = await this.recursivelyCreatePublicFolderAndUploadChildren({
 				parentFolderId: folderId,
 				wrappedFolder: childFolder,
 				driveId
@@ -296,7 +323,11 @@ export class ArDrive extends ArDriveAnonymous {
 			uploadEntityResults = [...uploadEntityResults, ...results.entityResults];
 		}
 
-		return { entityResults: uploadEntityResults, feeResults: uploadEntityFees };
+		return {
+			entityResults: uploadEntityResults,
+			feeResults: uploadEntityFees,
+			communityWinstonTip: String(communityWinstonTip)
+		};
 	}
 
 	/** Computes the size of a private file encrypted with AES256-GCM */
@@ -317,7 +348,6 @@ export class ArDrive extends ArDriveAnonymous {
 			throw new Error(`Private drive with Drive ID ${driveId} not found!`);
 		}
 
-		// TODO: Hoist this elsewhere for bulk uploads
 		const uploadBaseCosts = await this.estimateAndAssertCostOfFileUpload(
 			wrappedFile.fileStats.size,
 			await this.stubPrivateFileMetadata(wrappedFile, destinationFileName),
@@ -368,7 +398,29 @@ export class ArDrive extends ArDriveAnonymous {
 		});
 	}
 
-	async createPrivateFolderAndUploadChildren({
+	public async createPrivateFolderAndUploadChildren(
+		parentFolderId: FolderID,
+		wrappedFolder: FsFolder,
+		drivePassword: string,
+		parentFolderName?: string
+	): Promise<ArFSResult> {
+		const results = await this.recursivelyCreatePrivateFolderAndUploadChildren({
+			parentFolderId,
+			wrappedFolder,
+			parentFolderName,
+			drivePassword
+		});
+
+		const { tipData, reward: communityTipTrxReward } = await this.sendCommunityTip(results.communityWinstonTip);
+
+		return Promise.resolve({
+			created: results.entityResults,
+			tips: [tipData],
+			fees: { ...results.feeResults, [tipData.txId]: +communityTipTrxReward }
+		});
+	}
+
+	protected async recursivelyCreatePrivateFolderAndUploadChildren({
 		wrappedFolder,
 		driveId,
 		parentFolderId,
@@ -377,6 +429,7 @@ export class ArDrive extends ArDriveAnonymous {
 	}: CreatePrivateFolderAndUploadChildrenParams): Promise<{
 		entityResults: ArFSEntityData[];
 		feeResults: ArFSFees;
+		communityWinstonTip: Winston;
 	}> {
 		// DriveID will not exist if this folder is the parent folder
 		// Recursing children folders will have driveId assigned by the parent folder
@@ -400,10 +453,14 @@ export class ArDrive extends ArDriveAnonymous {
 			wallet.getPrivateKey()
 		);
 
+		let communityWinstonTip = 0;
+
 		if (isParentFolder) {
 			// Estimate and assert the cost of the entire bulk upload
 			// This will assign the calculated base costs to each wrapped file and folder
-			await this.estimateAndAssertCostOfBulkUpload(wrappedFolder, 'private', parentFolderData);
+			communityWinstonTip = +(
+				await this.estimateAndAssertCostOfBulkUpload(wrappedFolder, 'private', parentFolderData)
+			).communityWinstonTip;
 		}
 
 		let uploadEntityResults: ArFSEntityData[] = [];
@@ -475,7 +532,7 @@ export class ArDrive extends ArDriveAnonymous {
 		// Upload folders, and children of those folders
 		for await (const childFolder of wrappedFolder.folders) {
 			// Recursion alert, will keep creating folders of all nested folders
-			const results = await this.createPrivateFolderAndUploadChildren({
+			const results = await this.recursivelyCreatePrivateFolderAndUploadChildren({
 				parentFolderId: folderId,
 				wrappedFolder: childFolder,
 				driveId,
@@ -490,7 +547,11 @@ export class ArDrive extends ArDriveAnonymous {
 			uploadEntityResults = [...uploadEntityResults, ...results.entityResults];
 		}
 
-		return { entityResults: uploadEntityResults, feeResults: uploadEntityFees };
+		return {
+			entityResults: uploadEntityResults,
+			feeResults: uploadEntityFees,
+			communityWinstonTip: String(communityWinstonTip)
+		};
 	}
 
 	async createPublicFolder(folderName: string, driveId: string, parentFolderId?: FolderID): Promise<ArFSResult> {
@@ -670,7 +731,7 @@ export class ArDrive extends ArDriveAnonymous {
 		folderToUpload: FsFolder,
 		drivePrivacy: DrivePrivacy,
 		parentFolderMetaData?: ArFSObjectTransactionData
-	): Promise<number> {
+	): Promise<{ totalPrice: Winston; communityWinstonTip: Winston }> {
 		// parentFolderMetaData will only exist if this folder is the parent folder
 		// Recursing children folders will not have meta data assigned
 		const isParentFolder: boolean = parentFolderMetaData !== undefined;
@@ -684,15 +745,12 @@ export class ArDrive extends ArDriveAnonymous {
 		folderToUpload.baseCosts = { metaDataBaseReward: parentFolderWinstonPrice };
 
 		let totalPrice = +parentFolderWinstonPrice;
+		let totalFileDataRewards = 0;
 
 		for await (const file of folderToUpload.files) {
 			const fileSize = drivePrivacy === 'private' ? file.encryptedDataSize() : file.fileStats.size;
 
 			const fileDataBaseReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(fileSize);
-			const communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(
-				fileDataBaseReward.toString()
-			);
-			const tipReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(0);
 
 			const stubFileMetaData = this.stubPublicFileMetadata(file, file.getBaseFileName());
 			const metaDataBaseReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(
@@ -700,27 +758,34 @@ export class ArDrive extends ArDriveAnonymous {
 			);
 
 			totalPrice += fileDataBaseReward;
-			totalPrice += +communityWinstonTip;
-			totalPrice += tipReward;
 			totalPrice += metaDataBaseReward;
+
+			totalFileDataRewards += fileDataBaseReward;
 
 			// Assign base costs to the file
 			file.baseCosts = {
 				fileDataBaseReward: fileDataBaseReward.toString(),
-				communityWinstonTip,
 				metaDataBaseReward: metaDataBaseReward.toString()
 			};
 		}
 
 		for await (const folder of folderToUpload.folders) {
-			totalPrice += await this.estimateAndAssertCostOfBulkUpload(folder, drivePrivacy);
+			const childFolderResults = await this.estimateAndAssertCostOfBulkUpload(folder, drivePrivacy);
+
+			totalPrice += +childFolderResults.totalPrice;
 		}
 
 		const totalWinstonPrice = totalPrice.toString();
+		let communityWinstonTip = '0';
 
 		if (isParentFolder) {
+			communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(String(totalFileDataRewards));
+
 			// Check and assert balance of the total bulk upload if this folder is the parent folder
-			const walletHasBalance = await this.walletDao.walletHasBalance(this.wallet, totalWinstonPrice);
+			const walletHasBalance = await this.walletDao.walletHasBalance(
+				this.wallet,
+				String(+communityWinstonTip + +totalWinstonPrice)
+			);
 
 			if (!walletHasBalance) {
 				const walletBalance = await this.walletDao.getWalletWinstonBalance(this.wallet);
@@ -733,7 +798,7 @@ export class ArDrive extends ArDriveAnonymous {
 			}
 		}
 
-		return totalPrice;
+		return { totalPrice: String(totalPrice), communityWinstonTip };
 	}
 
 	async estimateAndAssertCostOfFileUpload(

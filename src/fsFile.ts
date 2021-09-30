@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import { extToMime } from 'ardrive-core-js';
 import { basename, join } from 'path';
 import { Bytes } from './types';
-import { FileUploadBaseCosts, FolderUploadBaseCosts } from './ardrive';
+import { BulkFileBaseCosts, FolderUploadBaseCosts } from './ardrive';
 
 type ContentType = string;
 type BaseFileName = string;
@@ -50,9 +50,9 @@ export class FsFile {
 		}
 	}
 
-	baseCosts?: FileUploadBaseCosts;
+	baseCosts?: BulkFileBaseCosts;
 
-	public getBaseCosts(): FileUploadBaseCosts {
+	public getBaseCosts(): BulkFileBaseCosts {
 		if (!this.baseCosts) {
 			throw new Error('Base costs on file were never set!');
 		}

@@ -106,22 +106,20 @@ new CLICommand({
 				feeMultiple: options.boost as FeeMultiple,
 				dryRun: options.dryRun
 			});
+
 			await Promise.all(
 				filesToUpload.map(async (fileToUpload) => {
-					if (!fileToUpload.parentFolderId || !fileToUpload.wrappedEntity) {
-						console.log(`Bad file: ${JSON.stringify(fileToUpload)}`);
-						process.exit(1);
-					}
 					const result = await (async () => {
 						if (options.drivePassword) {
 							if (isFolder(fileToUpload.wrappedEntity)) {
-								return arDrive.createPrivateFolderAndUploadChildren({
-									parentFolderId: fileToUpload.parentFolderId,
-									wrappedFolder: fileToUpload.wrappedEntity,
-									parentFolderName: fileToUpload.destinationFileName,
-									drivePassword: options.drivePassword
-								});
+								return arDrive.createPrivateFolderAndUploadChildren(
+									fileToUpload.parentFolderId,
+									fileToUpload.wrappedEntity,
+									options.drivePassword,
+									fileToUpload.destinationFileName
+								);
 							} else {
+								fileToUpload.wrappedEntity;
 								return arDrive.uploadPrivateFile(
 									fileToUpload.parentFolderId,
 									fileToUpload.wrappedEntity,
@@ -131,11 +129,11 @@ new CLICommand({
 							}
 						} else {
 							if (isFolder(fileToUpload.wrappedEntity)) {
-								return arDrive.createPublicFolderAndUploadChildren({
-									parentFolderId: fileToUpload.parentFolderId,
-									wrappedFolder: fileToUpload.wrappedEntity,
-									parentFolderName: fileToUpload.destinationFileName
-								});
+								return arDrive.createPublicFolderAndUploadChildren(
+									fileToUpload.parentFolderId,
+									fileToUpload.wrappedEntity,
+									fileToUpload.destinationFileName
+								);
 							} else {
 								return arDrive.uploadPublicFile(
 									fileToUpload.parentFolderId,
