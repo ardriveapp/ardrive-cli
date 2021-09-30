@@ -472,7 +472,10 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const unixTime = Math.round(Date.now() / 1000);
 
 		// Gather file information
-		const { fileSize, fileData, dataContentType, lastModifiedDateMS } = wrappedFile.gatherFileInfo();
+		const { fileSize, dataContentType, lastModifiedDateMS } = wrappedFile.gatherFileInfo();
+
+		// Read file data into memory
+		const fileData = wrappedFile.getFileDataBuffer();
 
 		// Build file data transaction
 		const fileDataPrototype = new ArFSPublicFileDataPrototype(
@@ -539,7 +542,10 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const unixTime = Math.round(Date.now() / 1000);
 
 		// Gather file information
-		const { fileSize, fileData, dataContentType, lastModifiedDateMS } = wrappedFile.gatherFileInfo();
+		const { fileSize, dataContentType, lastModifiedDateMS } = wrappedFile.gatherFileInfo();
+
+		// Read file data into memory
+		const fileData = wrappedFile.getFileDataBuffer();
 
 		const wallet: JWKWallet = this.wallet as JWKWallet;
 

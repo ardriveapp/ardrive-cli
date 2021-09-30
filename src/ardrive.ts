@@ -901,13 +901,11 @@ export class ArDrive extends ArDriveAnonymous {
 		wrappedFile: FsFile,
 		destinationFileName?: string
 	): ArFSPublicFileMetadataTransactionData {
-		const fileStats = wrappedFile.fileStats;
-		const dataContentType = wrappedFile.getContentType();
-		const lastModifiedDateMS = Math.floor(fileStats.mtimeMs);
+		const { fileSize, dataContentType, lastModifiedDateMS } = wrappedFile.gatherFileInfo();
 
 		return new ArFSPublicFileMetadataTransactionData(
 			destinationFileName ?? wrappedFile.getBaseFileName(),
-			fileStats.size,
+			fileSize,
 			lastModifiedDateMS,
 			stubTransactionID,
 			dataContentType
@@ -919,13 +917,11 @@ export class ArDrive extends ArDriveAnonymous {
 		wrappedFile: FsFile,
 		destinationFileName?: string
 	): Promise<ArFSPrivateFileMetadataTransactionData> {
-		const fileStats = wrappedFile.fileStats;
-		const dataContentType = wrappedFile.getContentType();
-		const lastModifiedDateMS = Math.floor(fileStats.mtimeMs);
+		const { fileSize, dataContentType, lastModifiedDateMS } = wrappedFile.gatherFileInfo();
 
 		return await ArFSPrivateFileMetadataTransactionData.from(
 			destinationFileName ?? wrappedFile.getBaseFileName(),
-			fileStats.size,
+			fileSize,
 			lastModifiedDateMS,
 			stubTransactionID,
 			dataContentType,

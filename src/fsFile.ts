@@ -16,7 +16,6 @@ type FilePath = string;
 const maxFileSize: Bytes = 2147483646;
 
 export interface FileInfo {
-	fileData: Buffer;
 	dataContentType: DataContentType;
 	lastModifiedDateMS: number;
 	fileSize: Bytes;
@@ -63,12 +62,11 @@ export class FsFile {
 	baseCosts?: BulkFileBaseCosts;
 
 	public gatherFileInfo(): FileInfo {
-		const fileData = this.getFileDataBuffer();
 		const dataContentType = this.getContentType();
 		const lastModifiedDateMS = Math.floor(this.fileStats.mtimeMs);
 		const fileSize = this.fileStats.size;
 
-		return { fileData, dataContentType, lastModifiedDateMS, fileSize };
+		return { dataContentType, lastModifiedDateMS, fileSize };
 	}
 
 	public getBaseCosts(): BulkFileBaseCosts {
