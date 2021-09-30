@@ -126,7 +126,12 @@ export class ArDriveAnonymous extends ArDriveType {
 		return folder;
 	}
 
-	async getChildrenOfPublicFolder(folderId: FolderID): Promise<ArFSPublicFileOrFolderData[]> {
+	/**
+	 * Lists the children and self of certain public folder
+	 * @param {FolderID} folderId the folder ID to list children of
+	 * @returns {ArFSPublicFileOrFolderData[]} an array representation of the children and parent folder
+	 */
+	async listPublicFolder(folderId: FolderID): Promise<ArFSPublicFileOrFolderData[]> {
 		const folder = await this.arFsDao.getPublicFolder(folderId);
 
 		// Fetch all of the folder entities within the drive
@@ -454,7 +459,12 @@ export class ArDrive extends ArDriveAnonymous {
 		return folderEntity;
 	}
 
-	async getChildrenOfPrivateFolder(folderId: FolderID, password: string): Promise<ArFSPrivateFileOrFolderData[]> {
+	/**
+	 * Lists the children and self of certain private folder
+	 * @param {FolderID} folderId the folder ID to list children of
+	 * @returns {ArFSPrivateFileOrFolderData[]} an array representation of the children and parent folder
+	 */
+	async listPrivateFolder(folderId: FolderID, password: string): Promise<ArFSPrivateFileOrFolderData[]> {
 		const folder = await this.arFsDao.getPrivateFolder(folderId, password);
 
 		// Fetch all of the folder entities within the drive

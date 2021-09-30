@@ -41,10 +41,10 @@ new CLICommand({
 				CLI_APP_NAME,
 				CLI_APP_VERSION
 			);
-			children = await arDrive.getChildrenOfPrivateFolder(folderId, password);
+			children = await arDrive.listPrivateFolder(folderId, password);
 		} else {
 			const arDrive = new ArDriveAnonymous(new ArFSDAOAnonymous(arweave));
-			children = await arDrive.getChildrenOfPublicFolder(folderId);
+			children = await arDrive.listPublicFolder(folderId);
 		}
 
 		// Display data
