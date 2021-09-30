@@ -78,4 +78,17 @@ export class CommonContext {
 		const value = this.options[parameterName];
 		return value;
 	}
+
+	/**
+	 * @param {ParameterName} parameterName
+	 * @returns {string | undefined}
+	 * Returns the string value for the specific parameter; returns undefined if not set
+	 */
+	public getRequiredParameterValue(parameterName: ParameterName): string | undefined {
+		const value = this.options[parameterName];
+		if (!value) {
+			throw new Error(`Required parameter ${parameterName} wasn't provided!`);
+		}
+		return value;
+	}
 }
