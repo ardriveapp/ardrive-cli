@@ -90,7 +90,7 @@ export class Context {
 	public getRequiredParameterValue(parameterName: ParameterName): string | undefined {
 		const value = this.options[parameterName];
 		if (!value) {
-			throw new Error(`Parameter ${parameterName} wasn't provided!`);
+			throw new Error(`Required parameter ${parameterName} wasn't provided!`);
 		}
 		return value;
 	}
