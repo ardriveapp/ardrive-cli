@@ -40,9 +40,9 @@ new CLICommand({
 
 		const createDriveResult = await (async function () {
 			if (await context.getIsPrivate()) {
-				return ardrive.movePublicFile(fileId, parentFolderId);
-			} else {
 				return ardrive.movePrivateFile(fileId, parentFolderId, drivePassword);
+			} else {
+				return ardrive.movePublicFile(fileId, parentFolderId);
 			}
 		})();
 		console.log(JSON.stringify(createDriveResult, null, 4));

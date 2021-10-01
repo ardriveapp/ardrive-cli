@@ -14,6 +14,7 @@ import './generate_wallet';
 import './list_folder';
 import './folder_info';
 import './file_info';
+import './move_file';
 
 const program = CLICommand.program;
 

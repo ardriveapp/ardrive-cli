@@ -122,7 +122,7 @@ Parameter.declare({
 
 Parameter.declare({
 	name: FileIdParameter,
-	aliases: ['-f', '--file-id'],
+	aliases: ['-i', '--file-id'],
 	description: `the ArFS file ID for the file to query`,
 	required: true
 });

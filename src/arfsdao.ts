@@ -612,7 +612,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 				dataJSON.destinationFileName,
 				dataJSON.fileSize,
 				dataJSON.lastModifiedDateMS,
-				dataJSON.dataTrx.id,
+				dataJSON.id,
 				dataJSON.dataContentType
 			),
 			unixTime,
