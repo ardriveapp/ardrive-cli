@@ -860,7 +860,7 @@ export class ArFSPublicFileOrFolderWithPaths extends ArFSFileOrFolderEntity impl
 	readonly txIdPath: string;
 	readonly entityIdPath: string;
 
-	constructor(readonly entity: ArFSPublicFile | ArFSPublicFolder, readonly hierarchy: FolderHierarchy) {
+	constructor(entity: ArFSPublicFile | ArFSPublicFolder, hierarchy: FolderHierarchy) {
 		super(
 			entity.appName,
 			entity.appVersion,
@@ -887,7 +887,7 @@ export class ArFSPrivateFileOrFolderWithPaths extends ArFSFileOrFolderEntity imp
 	readonly txIdPath: string;
 	readonly entityIdPath: string;
 
-	constructor(readonly entity: ArFSPrivateFile | ArFSPrivateFolder, readonly hierarchy: FolderHierarchy) {
+	constructor(entity: ArFSPrivateFile | ArFSPrivateFolder, hierarchy: FolderHierarchy) {
 		super(
 			entity.appName,
 			entity.appVersion,
