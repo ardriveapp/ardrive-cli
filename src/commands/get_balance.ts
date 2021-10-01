@@ -1,6 +1,6 @@
 import { cliWalletDao } from '..';
 import { CLICommand } from '../CLICommand';
-import { CommonContext } from '../CLICommand/common_context';
+import { ParametersHelper } from '../CLICommand/common_context';
 import { DriveAddressParameter, SeedPhraseParameter, WalletFileParameter } from '../parameter_declarations';
 import { Wallet } from '../wallet_new';
 
@@ -10,7 +10,7 @@ new CLICommand({
 	name: 'get-balance',
 	parameters: [WalletFileParameter, SeedPhraseParameter],
 	async action(options) {
-		const context = new CommonContext(options, cliWalletDao);
+		const context = new ParametersHelper(options, cliWalletDao);
 		const wallet: Wallet | false = await context.getWallet().catch(() => {
 			return false;
 		});

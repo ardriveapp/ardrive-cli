@@ -11,14 +11,14 @@ import {
 import { DriveID } from '../types';
 
 /**
- * @type {CommonContext}
+ * @type {ParametersHelper}
  * A class representing the context of the parameters
  */
-export class CommonContext {
+export class ParametersHelper {
 	/**
-	 * @returns {CommonContext}
+	 * @returns {ParametersHelper}
 	 * @param {any} options The object containing the parameterName: value mapping
-	 * An immutable instance of CommonContext holding the parsed values of the parameters
+	 * An immutable instance of ParametersHelper holding the parsed values of the parameters
 	 */
 	constructor(private readonly options: any, private readonly walletDao: WalletDAO) {}
 

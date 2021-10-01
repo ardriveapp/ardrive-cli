@@ -1,5 +1,5 @@
 import { CLICommand } from '../CLICommand';
-import { CommonContext } from '../CLICommand/common_context';
+import { ParametersHelper } from '../CLICommand/common_context';
 import {
 	BoostParameter,
 	DriveNameParameter,
@@ -25,7 +25,7 @@ new CLICommand({
 		DryRunParameter
 	],
 	async action(options) {
-		const context = new CommonContext(options, cliWalletDao);
+		const context = new ParametersHelper(options, cliWalletDao);
 		const wallet: Wallet = await context.getWallet();
 		const ardrive = arDriveFactory({
 			wallet: wallet,
