@@ -1,5 +1,4 @@
-import { CLICommand } from '../CLICommand';
-import { ParametersHelper } from '../CLICommand/common_context';
+import { CLICommand, ParametersHelper } from '../CLICommand';
 import {
 	BoostParameter,
 	DriveNameParameter,
@@ -25,15 +24,15 @@ new CLICommand({
 		DryRunParameter
 	],
 	async action(options) {
-		const context = new ParametersHelper(options, cliWalletDao);
-		const wallet: Wallet = await context.getWallet();
+		const parameters = new ParametersHelper(options, cliWalletDao);
+		const wallet: Wallet = await parameters.getWallet();
 		const ardrive = arDriveFactory({
 			wallet: wallet,
 			feeMultiple: options.boost as FeeMultiple,
 			dryRun: options.dryRun
 		});
 		const createDriveResult = await (async function () {
-			if (await context.getIsPrivate()) {
+			if (await parameters.getIsPrivate()) {
 				return ardrive.createPrivateDrive(options.driveName, options.drivePassword);
 			} else {
 				return ardrive.createPublicDrive(options.driveName);

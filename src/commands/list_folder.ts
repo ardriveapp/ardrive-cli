@@ -8,8 +8,7 @@ import {
 	ArFSPrivateFileOrFolderWithPaths,
 	ArFSPublicFileOrFolderWithPaths
 } from '../arfsdao';
-import { CLICommand } from '../CLICommand';
-import { ParametersHelper } from '../CLICommand/common_context';
+import { CLICommand, ParametersHelper } from '../CLICommand';
 import { ArDriveCommunityOracle } from '../community/ardrive_community_oracle';
 import {
 	DrivePasswordParameter,
@@ -26,10 +25,10 @@ new CLICommand({
 	name: 'list-folder',
 	parameters: [ParentFolderIdParameter, SeedPhraseParameter, WalletFileParameter, DrivePasswordParameter],
 	async action(options) {
-		const context = new ParametersHelper(options, cliWalletDao);
-		const wallet = await context.getWallet().catch(() => null);
-		const password = context.getParameterValue(DrivePasswordParameter);
-		const folderId = context.getParameterValue(ParentFolderIdParameter);
+		const parameters = new ParametersHelper(options, cliWalletDao);
+		const wallet = await parameters.getWallet().catch(() => null);
+		const password = parameters.getParameterValue(DrivePasswordParameter);
+		const folderId = parameters.getParameterValue(ParentFolderIdParameter);
 		let children: (ArFSPrivateFileOrFolderWithPaths | ArFSPublicFileOrFolderWithPaths)[];
 
 		if (!folderId) {
@@ -47,7 +46,7 @@ new CLICommand({
 				CLI_APP_VERSION
 			);
 			const driveId = await arDrive.getDriveIdForFolderId(folderId);
-			const driveKey = await context.getDriveKey(driveId);
+			const driveKey = await parameters.getDriveKey(driveId);
 			children = await arDrive.listPrivateFolder(folderId, driveKey);
 		} else {
 			const arDrive = new ArDriveAnonymous(new ArFSDAOAnonymous(arweave));

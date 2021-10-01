@@ -3,12 +3,14 @@ import { ParameterName } from './parameter';
 import * as fs from 'fs';
 import { deriveDriveKey, JWKInterface } from 'ardrive-core-js';
 import {
+	DriveAddressParameter,
 	DriveKeyParameter,
 	DrivePasswordParameter,
 	SeedPhraseParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
 import { DriveID } from '../types';
+import { cliWalletDao } from '..';
 
 /**
  * @type {ParametersHelper}
@@ -20,7 +22,7 @@ export class ParametersHelper {
 	 * @param {any} options The object containing the parameterName: value mapping
 	 * An immutable instance of ParametersHelper holding the parsed values of the parameters
 	 */
-	constructor(private readonly options: any, private readonly walletDao: WalletDAO) {}
+	constructor(private readonly options: any, private readonly walletDao: WalletDAO = cliWalletDao) {}
 
 	/**
 	 * @returns {Promise<boolean>}
@@ -49,6 +51,10 @@ export class ParametersHelper {
 			return await this.walletDao.generateJWKWallet(seedPhrase);
 		}
 		throw new Error('No wallet file neither seed phrase provided!');
+	}
+
+	public async getWalletAddress(): Promise<string> {
+		return this.getParameterValue(DriveAddressParameter) || this.getWallet().then((wallet) => wallet.getAddress());
 	}
 
 	public async getDriveKey(driveId: DriveID): Promise<Buffer> {
@@ -84,7 +90,7 @@ export class ParametersHelper {
 	 * @returns {string | undefined}
 	 * Returns the string value for the specific parameter; returns undefined if not set
 	 */
-	public getRequiredParameterValue(parameterName: ParameterName): string | undefined {
+	public getRequiredParameterValue(parameterName: ParameterName): string {
 		const value = this.options[parameterName];
 		if (!value) {
 			throw new Error(`Required parameter ${parameterName} wasn't provided!`);
