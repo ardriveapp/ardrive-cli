@@ -11,7 +11,8 @@ import {
 	EntityType,
 	GQLEdgeInterface,
 	GQLTagInterface,
-	uploadDataChunk
+	uploadDataChunk,
+	Utf8ArrayToStr
 } from 'ardrive-core-js';
 import {
 	ArFSPublicFileDataPrototype,
@@ -80,6 +81,16 @@ export interface ArFSUploadFileResult {
 	fileId: FileID;
 }
 
+export interface ArFSMoveFileResult {
+	metaDataTrxId: TransactionID;
+	metaDataTrxReward: TransactionID;
+	dataTrxId: TransactionID;
+}
+
+export interface ArFSMovePrivateFileResult extends ArFSMoveFileResult {
+	fileKey: FileKey;
+}
+
 export interface ArFSUploadPrivateFileResult extends ArFSUploadFileResult {
 	fileKey: FileKey;
 }
@@ -89,6 +100,16 @@ export interface ArFSCreatePrivateDriveResult extends ArFSCreateDriveResult {
 }
 export interface ArFSCreatePrivateFolderResult extends ArFSCreateFolderResult {
 	driveKey: DriveKey;
+}
+
+export interface ArFSMoveFileParams {
+	baseFileMetaData: ArFSPublicFile;
+	newParentFolderId: FolderID;
+	fileMetaDataBaseReward: RewardSettings;
+}
+
+export interface ArFSMovePrivateFileParams extends ArFSMoveFileParams {
+	drivePassword: string;
 }
 
 export abstract class ArFSDAOType {
@@ -515,6 +536,104 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			driveId: driveId,
 			rootFolderId: rootFolderId,
 			driveKey
+		};
+	}
+
+	async movePrivateFile({
+		baseFileMetaData,
+		newParentFolderId,
+		fileMetaDataBaseReward,
+		drivePassword
+	}: ArFSMovePrivateFileParams): Promise<ArFSMovePrivateFileResult> {
+		// Get current time
+		const unixTime = Math.round(Date.now() / 1000);
+
+		const { txId, fileId, driveId } = baseFileMetaData;
+
+		const txData = await this.arweave.transactions.getData(txId, { decode: true });
+		const dataString = await Utf8ArrayToStr(txData);
+		const dataJSON = await JSON.parse(dataString);
+
+		const fileMetaData = await ArFSPrivateFileMetadataTransactionData.from(
+			dataJSON.destinationFileName,
+			dataJSON.fileSize,
+			dataJSON.lastModifiedDateMS,
+			dataJSON.dataTrx.id,
+			dataJSON.dataContentType,
+			fileId,
+			driveId,
+			drivePassword,
+			(this.wallet as JWKWallet).getPrivateKey()
+		);
+		const fileMetadataPrototype = new ArFSPrivateFileMetaDataPrototype(
+			fileMetaData,
+			unixTime,
+			driveId,
+			fileId,
+			newParentFolderId
+		);
+
+		// Prepare meta data transaction
+		const metaDataTrx = await this.prepareArFSObjectTransaction(fileMetadataPrototype, fileMetaDataBaseReward);
+
+		// Upload meta data
+		if (!this.dryRun) {
+			const metaDataUploader = await this.arweave.transactions.getUploader(metaDataTrx);
+			while (!metaDataUploader.isComplete) {
+				await metaDataUploader.uploadChunk();
+			}
+		}
+
+		return {
+			metaDataTrxId: metaDataTrx.id,
+			metaDataTrxReward: metaDataTrx.reward,
+			dataTrxId: txId,
+			fileKey: fileMetaData.fileKey
+		};
+	}
+
+	async movePublicFile({
+		baseFileMetaData,
+		newParentFolderId,
+		fileMetaDataBaseReward
+	}: ArFSMoveFileParams): Promise<ArFSMoveFileResult> {
+		// Get current time
+		const unixTime = Math.round(Date.now() / 1000);
+
+		const { txId, fileId, driveId } = baseFileMetaData;
+
+		const txData = await this.arweave.transactions.getData(txId, { decode: true });
+		const dataString = await Utf8ArrayToStr(txData);
+		const dataJSON = await JSON.parse(dataString);
+
+		// Prepare meta data transaction
+		const fileMetadata = new ArFSPublicFileMetaDataPrototype(
+			new ArFSPublicFileMetadataTransactionData(
+				dataJSON.destinationFileName,
+				dataJSON.fileSize,
+				dataJSON.lastModifiedDateMS,
+				dataJSON.dataTrx.id,
+				dataJSON.dataContentType
+			),
+			unixTime,
+			driveId,
+			fileId,
+			newParentFolderId
+		);
+		const metaDataTrx = await this.prepareArFSObjectTransaction(fileMetadata, fileMetaDataBaseReward);
+
+		// Upload meta data
+		if (!this.dryRun) {
+			const metaDataUploader = await this.arweave.transactions.getUploader(metaDataTrx);
+			while (!metaDataUploader.isComplete) {
+				await metaDataUploader.uploadChunk();
+			}
+		}
+
+		return {
+			metaDataTrxId: metaDataTrx.id,
+			metaDataTrxReward: metaDataTrx.reward,
+			dataTrxId: txId
 		};
 	}
 

@@ -20,6 +20,7 @@ import { FsFolder, FsFile } from './fsFile';
 import { ARDataPriceEstimator } from './utils/ar_data_price_estimator';
 import {
 	ArFSDriveTransactionData,
+	ArFSFileMetadataTransactionData,
 	ArFSFolderTransactionData,
 	ArFSObjectTransactionData,
 	ArFSPrivateDriveTransactionData,
@@ -60,11 +61,11 @@ export interface ArFSResult {
 	fees: ArFSFees;
 }
 
-export interface FolderUploadBaseCosts {
+export interface MetaDataBaseCosts {
 	metaDataBaseReward: Winston;
 }
 
-export interface BulkFileBaseCosts extends FolderUploadBaseCosts {
+export interface BulkFileBaseCosts extends MetaDataBaseCosts {
 	fileDataBaseReward: Winston;
 }
 export interface FileUploadBaseCosts extends BulkFileBaseCosts {
@@ -78,6 +79,10 @@ export interface DriveUploadBaseCosts {
 
 const stubTransactionID = '0000000000000000000000000000000000000000000';
 const stubEntityID = '00000000-0000-0000-0000-000000000000';
+const stubSize = 654321;
+const stubUnixTime = 1632236156;
+const stubDataContentType = 'application/json';
+const stubPassword = 'stubPassword';
 
 interface RecursiveBulkUploadParams {
 	parentFolderId: FolderID;
@@ -186,6 +191,106 @@ export class ArDrive extends ArDriveAnonymous {
 		}
 
 		return driveId;
+	}
+
+	async movePublicFile(fileId: FileID, newParentFolderId: FolderID): Promise<ArFSResult> {
+		const driveId = await this.getDriveIdAndAssertDrive(newParentFolderId);
+
+		// Get file meta data, sort query by owner to assert this.wallet owns the drive
+		const baseFileMetaData = await this.getPublicFile(fileId);
+
+		const stubbedFileTransactionData = new ArFSPublicFileMetadataTransactionData(
+			baseFileMetaData.name,
+			stubSize,
+			stubUnixTime,
+			stubTransactionID,
+			stubDataContentType
+		);
+
+		const moveBaseCosts = await this.estimateAndAssertCostOfMoveFile(stubbedFileTransactionData);
+
+		const actualDriveId = baseFileMetaData.driveId;
+
+		if (driveId !== actualDriveId) {
+			throw new Error('File should stay in the same drive!');
+		}
+
+		const fileMetaDataBaseReward = { reward: moveBaseCosts.metaDataBaseReward, feeMultiple: this.feeMultiple };
+
+		// Move file will create a new meta data tx with identical meta data except for a new parentFolderId
+		const moveFileResult = await this.arFsDao.movePublicFile({
+			baseFileMetaData,
+			newParentFolderId,
+			fileMetaDataBaseReward
+		});
+
+		return Promise.resolve({
+			created: [
+				{
+					type: 'file',
+					metadataTxId: moveFileResult.metaDataTrxId,
+					dataTxId: moveFileResult.dataTrxId,
+					entityId: fileId
+				}
+			],
+			tips: [],
+			fees: {
+				[moveFileResult.metaDataTrxId]: +moveFileResult.metaDataTrxReward
+			}
+		});
+	}
+
+	async movePrivateFile(fileId: FileID, newParentFolderId: FolderID, drivePassword: string): Promise<ArFSResult> {
+		const driveId = await this.getDriveIdAndAssertDrive(newParentFolderId);
+
+		// Get file meta data, sort query by owner to assert this.wallet owns the drive
+		const baseFileMetaData = await this.getPrivateFile(fileId, drivePassword);
+
+		const stubbedFileTransactionData = await ArFSPrivateFileMetadataTransactionData.from(
+			baseFileMetaData.name,
+			stubSize,
+			stubUnixTime,
+			stubTransactionID,
+			stubDataContentType,
+			stubEntityID,
+			stubEntityID,
+			stubPassword,
+			(this.wallet as JWKWallet).getPrivateKey()
+		);
+
+		const moveBaseCosts = await this.estimateAndAssertCostOfMoveFile(stubbedFileTransactionData);
+
+		const actualDriveId = baseFileMetaData.driveId;
+
+		if (driveId !== actualDriveId) {
+			throw new Error('File should stay in the same drive!');
+		}
+
+		const fileMetaDataBaseReward = { reward: moveBaseCosts.metaDataBaseReward, feeMultiple: this.feeMultiple };
+
+		// Move file will create a new meta data tx with identical meta data except for a new parentFolderId
+		const moveFileResult = await this.arFsDao.movePrivateFile({
+			baseFileMetaData,
+			newParentFolderId,
+			fileMetaDataBaseReward,
+			drivePassword
+		});
+
+		return Promise.resolve({
+			created: [
+				{
+					type: 'file',
+					metadataTxId: moveFileResult.metaDataTrxId,
+					dataTxId: moveFileResult.dataTrxId,
+					entityId: fileId,
+					key: urlEncodeHashKey(moveFileResult.fileKey)
+				}
+			],
+			tips: [],
+			fees: {
+				[moveFileResult.metaDataTrxId]: +moveFileResult.metaDataTrxReward
+			}
+		});
 	}
 
 	async uploadPublicFile(
@@ -846,6 +951,26 @@ export class ArDrive extends ArDriveAnonymous {
 		return children;
 	}
 
+	async estimateAndAssertCostOfMoveFile(
+		fileTransactionData: ArFSFileMetadataTransactionData
+	): Promise<MetaDataBaseCosts> {
+		const fileMetaTransactionDataReward = String(
+			await this.priceEstimator.getBaseWinstonPriceForByteCount(fileTransactionData.sizeOf())
+		);
+
+		const walletHasBalance = await this.walletDao.walletHasBalance(this.wallet, fileMetaTransactionDataReward);
+
+		if (!walletHasBalance) {
+			const walletBalance = await this.walletDao.getWalletWinstonBalance(this.wallet);
+
+			throw new Error(
+				`Wallet balance of ${walletBalance} Winston is not enough (${fileMetaTransactionDataReward}) for moving file!`
+			);
+		}
+
+		return { metaDataBaseReward: fileMetaTransactionDataReward };
+	}
+
 	async estimateAndAssertCostOfFileUpload(
 		decryptedFileSize: number,
 		metaData: ArFSObjectTransactionData,
@@ -893,7 +1018,7 @@ export class ArDrive extends ArDriveAnonymous {
 		};
 	}
 
-	async estimateAndAssertCostOfFolderUpload(metaData: ArFSObjectTransactionData): Promise<FolderUploadBaseCosts> {
+	async estimateAndAssertCostOfFolderUpload(metaData: ArFSObjectTransactionData): Promise<MetaDataBaseCosts> {
 		const metaDataBaseReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(metaData.sizeOf());
 		const totalWinstonPrice = metaDataBaseReward.toString();
 
@@ -943,7 +1068,6 @@ export class ArDrive extends ArDriveAnonymous {
 			rootFolderMetaDataBaseReward: rootFolderMetaDataBaseReward.toString()
 		};
 	}
-
 	// Provides for stubbing metadata during cost estimations since the data trx ID won't yet be known
 	private stubPublicFileMetadata(
 		wrappedFile: FsFile,
@@ -975,7 +1099,7 @@ export class ArDrive extends ArDriveAnonymous {
 			dataContentType,
 			stubEntityID,
 			stubEntityID,
-			'stubPassword',
+			stubPassword,
 			(this.wallet as JWKWallet).getPrivateKey()
 		);
 	}

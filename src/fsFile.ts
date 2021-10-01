@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import { extToMime } from 'ardrive-core-js';
 import { basename, join } from 'path';
 import { Bytes, DataContentType } from './types';
-import { BulkFileBaseCosts, FolderUploadBaseCosts } from './ardrive';
+import { BulkFileBaseCosts, MetaDataBaseCosts } from './ardrive';
 
 type BaseFileName = string;
 type FilePath = string;
@@ -98,7 +98,7 @@ export class FsFolder {
 	files: FsFile[] = [];
 	folders: FsFolder[] = [];
 
-	baseCosts?: FolderUploadBaseCosts;
+	baseCosts?: MetaDataBaseCosts;
 
 	constructor(public readonly filePath: FilePath, public readonly fileStats: fs.Stats) {
 		const entitiesInFolder = fs.readdirSync(this.filePath);
@@ -119,7 +119,7 @@ export class FsFolder {
 		}
 	}
 
-	public getBaseCosts(): FolderUploadBaseCosts {
+	public getBaseCosts(): MetaDataBaseCosts {
 		if (!this.baseCosts) {
 			throw new Error('Base costs on folder were never set!');
 		}
