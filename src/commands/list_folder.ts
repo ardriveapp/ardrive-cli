@@ -27,8 +27,6 @@ new CLICommand({
 	parameters: [ParentFolderIdParameter, SeedPhraseParameter, WalletFileParameter, DrivePasswordParameter],
 	async action(options) {
 		const context = new CommonContext(options, cliWalletDao);
-		const wallet = await context.getWallet().catch(() => null);
-		const password = context.getParameterValue(DrivePasswordParameter);
 		const folderId = context.getParameterValue(ParentFolderIdParameter);
 		let children: (ArFSPrivateFileOrFolderWithPaths | ArFSPublicFileOrFolderWithPaths)[];
 
@@ -37,7 +35,8 @@ new CLICommand({
 			process.exit(1);
 		}
 
-		if (wallet && password) {
+		if (await context.getIsPrivate()) {
+			const wallet = await context.getWallet();
 			const arDrive = new ArDrive(
 				wallet,
 				cliWalletDao,
