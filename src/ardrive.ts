@@ -1,7 +1,17 @@
+import {
+	ArFSDAO,
+	ArFSPublicDrive,
+	ArFSDAOAnonymous,
+	ArFSDAOType,
+	ArFSPublicFolder,
+	ArFSPrivateDrive,
+	ArFSPublicFileOrFolderWithPaths,
+	ArFSPrivateFolder,
+	ArFSPrivateFileOrFolderWithPaths
+} from './arfsdao';
 import { CommunityOracle } from './community/community_oracle';
-import { DrivePrivacy, GQLTagInterface, winstonToAr } from 'ardrive-core-js';
 import { TransactionID, ArweaveAddress, Winston, DriveID, FolderID, TipType, FileID, FeeMultiple } from './types';
-import { ArFSDAOType, ArFSDAOAnonymous, ArFSPublicDrive, ArFSDAO, ArFSPrivateDrive } from './arfsdao';
+import { DrivePrivacy, GQLTagInterface, winstonToAr } from 'ardrive-core-js';
 import { WalletDAO, Wallet, JWKWallet } from './wallet_new';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
 import { FsFolder, FsFile } from './fsFile';
@@ -93,6 +103,21 @@ export class ArDriveAnonymous extends ArDriveType {
 	async getPublicDrive(driveId: DriveID): Promise<ArFSPublicDrive> {
 		const driveEntity = await this.arFsDao.getPublicDrive(driveId);
 		return Promise.resolve(driveEntity);
+	}
+
+	async getPublicFolder(folderId: string): Promise<ArFSPublicFolder> {
+		const folder = await this.arFsDao.getPublicFolder(folderId);
+		return folder;
+	}
+
+	/**
+	 * Lists the children and self of certain public folder
+	 * @param {FolderID} folderId the folder ID to list children of
+	 * @returns {ArFSPublicFileOrFolderWithPaths[]} an array representation of the children and parent folder
+	 */
+	async listPublicFolder(folderId: FolderID): Promise<ArFSPublicFileOrFolderWithPaths[]> {
+		const children = await this.arFsDao.listPublicFolder(folderId);
+		return children;
 	}
 }
 
@@ -794,6 +819,21 @@ export class ArDrive extends ArDriveAnonymous {
 		}
 
 		return { totalPrice: String(totalPrice), communityWinstonTip };
+	}
+
+	async getPrivateFolder(folderId: FolderID, drivePassword: string): Promise<ArFSPrivateFolder> {
+		const folderEntity = await this.arFsDao.getPrivateFolder(folderId, drivePassword);
+		return folderEntity;
+	}
+
+	/**
+	 * Lists the children and self of certain private folder
+	 * @param {FolderID} folderId the folder ID to list children of
+	 * @returns {ArFSPrivateFileOrFolderWithPaths[]} an array representation of the children and parent folder
+	 */
+	async listPrivateFolder(folderId: FolderID, password: string): Promise<ArFSPrivateFileOrFolderWithPaths[]> {
+		const children = this.arFsDao.listPrivateFolder(folderId, password);
+		return children;
 	}
 
 	async estimateAndAssertCostOfFileUpload(

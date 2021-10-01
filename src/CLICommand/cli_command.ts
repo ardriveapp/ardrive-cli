@@ -16,7 +16,7 @@ program.option('-h, --help', 'Get help');
 program.addHelpCommand(false);
 
 /**
- * @name serCommanderCommand
+ * @name setCommanderCommand
  * @param {CommandDescriptor} commandDescriptor the description of the command to be set
  * @param {CliApiObject} program the instance of the commander class
  * This function is the responsible to tell the third party library to declare a command
