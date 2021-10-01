@@ -16,8 +16,8 @@ export class Parameter implements ParameterData {
 	private parameterData: ParameterData;
 	private static parameters: ParameterData[] = [];
 
-	constructor(public readonly name: ParameterName) {
-		this.parameterData = Parameter.get(name);
+	constructor(public readonly name: ParameterName, config?: Partial<ParameterData> & Omit<ParameterData, 'name'>) {
+		this.parameterData = Object.assign(Parameter.get(name), config);
 	}
 
 	public get aliases(): ParameterName[] {
@@ -70,6 +70,6 @@ export class Parameter implements ParameterData {
 		if (!param) {
 			throw new Error(`No such parameter ${parameterName}`);
 		}
-		return param;
+		return Object.assign({}, param);
 	}
 }

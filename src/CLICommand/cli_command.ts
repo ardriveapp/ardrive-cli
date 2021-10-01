@@ -1,11 +1,11 @@
 import { Command } from 'commander';
 import { CliApiObject, ParsedArguments } from './cli';
-import { Parameter, ParameterName } from './parameter';
+import { Parameter, ParameterData, ParameterName } from './parameter';
 
 export type CommandName = string;
 export interface CommandDescriptor {
 	name: CommandName;
-	parameters: ParameterName[];
+	parameters: (ParameterName | (Partial<ParameterData> & Pick<ParameterData, 'name'>))[];
 	action(options: ParsedArguments): void;
 }
 
@@ -25,8 +25,23 @@ program.addHelpCommand(false);
  */
 function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliApiObject): void {
 	let command: CliApiObject = program.command(commandDescriptor.name);
-	commandDescriptor.parameters.forEach((parameterName) => {
-		const parameter = new Parameter(parameterName);
+	commandDescriptor.parameters.forEach((p) => {
+		const parameterName = (function () {
+			if (typeof p === 'string') {
+				return p;
+			}
+			return p.name;
+		})();
+		const config = (function () {
+			if (typeof p === 'string') {
+				return undefined;
+			}
+			const config: Partial<ParameterData> & Omit<ParameterData, 'name'> = Object.assign({}, p, {
+				name: undefined
+			});
+			return config;
+		})();
+		const parameter = new Parameter(parameterName, config);
 		const aliasesAsString = parameter.aliases.join(' ');
 		const paramType = (function () {
 			if (parameter.type === 'array') {
@@ -51,7 +66,13 @@ function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliA
 
 function assertConjunctionParameters(commandDescriptor: CommandDescriptor, options: any): void {
 	const parameters = commandDescriptor.parameters;
-	parameters.forEach((parameterName) => {
+	parameters.forEach((p) => {
+		const parameterName = (function () {
+			if (typeof p === 'string') {
+				return p;
+			}
+			return p.name;
+		})();
 		const parameterValue = options[parameterName];
 		if (parameterValue) {
 			const parameter = new Parameter(parameterName);
