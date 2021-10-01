@@ -185,6 +185,10 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		return await folderBuilder.build();
 	}
 
+	async getPublicFile(fileId: string): Promise<ArFSPublicFile> {
+		return new ArFSPublicFileBuilder(fileId, this.arweave).build();
+	}
+
 	async getPublicFilesWithParentFolderIds(folderIDs: FolderID[]): Promise<ArFSPublicFile[]> {
 		let cursor = '';
 		let hasNextPage = true;
@@ -756,6 +760,10 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			drivePassword
 		);
 		return await folderBuilder.build();
+	}
+
+	async getPrivateFile(fileId: FileID, drivePassword: string): Promise<ArFSPrivateFile> {
+		return new ArFSPrivateFileBuilder(fileId, this.arweave, this.wallet as JWKWallet, drivePassword).build();
 	}
 
 	async getAllFoldersOfPrivateDrive(driveId: DriveID, drivePassword: string): Promise<ArFSPrivateFolder[]> {

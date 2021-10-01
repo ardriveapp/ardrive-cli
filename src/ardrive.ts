@@ -7,7 +7,9 @@ import {
 	ArFSPrivateDrive,
 	ArFSPublicFileOrFolderWithPaths,
 	ArFSPrivateFolder,
-	ArFSPrivateFileOrFolderWithPaths
+	ArFSPrivateFileOrFolderWithPaths,
+	ArFSPublicFile,
+	ArFSPrivateFile
 } from './arfsdao';
 import { CommunityOracle } from './community/community_oracle';
 import { TransactionID, ArweaveAddress, Winston, DriveID, FolderID, TipType, FileID, FeeMultiple } from './types';
@@ -108,6 +110,10 @@ export class ArDriveAnonymous extends ArDriveType {
 	async getPublicFolder(folderId: string): Promise<ArFSPublicFolder> {
 		const folder = await this.arFsDao.getPublicFolder(folderId);
 		return folder;
+	}
+
+	async getPublicFile(fileId: string): Promise<ArFSPublicFile> {
+		return this.arFsDao.getPublicFile(fileId);
 	}
 
 	/**
@@ -824,6 +830,10 @@ export class ArDrive extends ArDriveAnonymous {
 	async getPrivateFolder(folderId: FolderID, drivePassword: string): Promise<ArFSPrivateFolder> {
 		const folderEntity = await this.arFsDao.getPrivateFolder(folderId, drivePassword);
 		return folderEntity;
+	}
+
+	async getPrivateFile(fileId: string, drivePassword: string): Promise<ArFSPrivateFile> {
+		return this.arFsDao.getPrivateFile(fileId, drivePassword);
 	}
 
 	/**

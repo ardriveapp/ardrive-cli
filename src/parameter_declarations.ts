@@ -12,6 +12,7 @@ export const DestinationAddressParameter = 'destAddres';
 export const TransactionIdParameter = 'txId';
 export const ConfirmationsParameter = 'confirmations';
 export const FolderIdParameter = 'folderId';
+export const FileIdParameter = 'fileId';
 export const ParentFolderIdParameter = 'parentFolderId';
 export const LocalFilePathParameter = 'localFilePath';
 export const DestinationFileNameParameter = 'destFileName';
@@ -116,6 +117,13 @@ Parameter.declare({
 	name: FolderIdParameter,
 	aliases: ['-f', '--folder-id'],
 	description: `the ArFS folder ID for the folder to query`,
+	required: true
+});
+
+Parameter.declare({
+	name: FileIdParameter,
+	aliases: ['-f', '--file-id'],
+	description: `the ArFS file ID for the file to query`,
 	required: true
 });
 

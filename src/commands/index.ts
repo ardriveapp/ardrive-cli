@@ -13,6 +13,7 @@ import './generate_seedphrase';
 import './generate_wallet';
 import './list_folder';
 import './folder_info';
+import './file_info';
 
 const program = CLICommand.program;
 
