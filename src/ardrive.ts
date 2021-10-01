@@ -139,17 +139,30 @@ export class ArDrive extends ArDriveAnonymous {
 		];
 	}
 
+	async getDriveIdAndAssertDrive(folderId: FolderID): Promise<DriveID>;
+	async getDriveIdAndAssertDrive(folderId: FolderID, drivePassword: string): Promise<DriveID>;
+	async getDriveIdAndAssertDrive(folderId: FolderID, drivePassword?: string): Promise<DriveID> {
+		// Retrieve drive ID from folder ID
+		const driveId = await this.arFsDao.getDriveIdForFolderId(folderId);
+
+		const drive = drivePassword
+			? await this.arFsDao.getPrivateDrive(driveId, drivePassword)
+			: await this.arFsDao.getPublicDrive(driveId);
+
+		// Ensure that it is indeed public or private as intended
+		if (!drive) {
+			throw new Error(`${drivePassword ? 'Private' : 'Public'} drive with Drive ID ${driveId} not found!`);
+		}
+
+		return driveId;
+	}
+
 	async uploadPublicFile(
 		parentFolderId: FolderID,
 		wrappedFile: FsFile,
 		destinationFileName?: string
 	): Promise<ArFSResult> {
-		// Retrieve drive ID from folder ID and ensure that it is indeed public
-		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
-		const drive = await this.arFsDao.getPublicDrive(driveId);
-		if (!drive) {
-			throw new Error(`Public drive with Drive ID ${driveId} not found!`);
-		}
+		const driveId = await this.getDriveIdAndAssertDrive(parentFolderId);
 
 		const uploadBaseCosts = await this.estimateAndAssertCostOfFileUpload(
 			wrappedFile.fileStats.size,
@@ -195,12 +208,7 @@ export class ArDrive extends ArDriveAnonymous {
 		wrappedFolder: FsFolder,
 		parentFolderName?: string
 	): Promise<ArFSResult> {
-		// Retrieve drive ID from folder ID and ensure that it is indeed public
-		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
-		const drive = await this.arFsDao.getPublicDrive(driveId);
-		if (!drive) {
-			throw new Error(`Public drive with Drive ID ${driveId} not found!`);
-		}
+		const driveId = await this.getDriveIdAndAssertDrive(parentFolderId);
 
 		const parentFolderData = new ArFSPublicFolderTransactionData(
 			parentFolderName ?? wrappedFolder.getBaseFileName()
@@ -339,12 +347,7 @@ export class ArDrive extends ArDriveAnonymous {
 		password: string,
 		destinationFileName?: string
 	): Promise<ArFSResult> {
-		// Retrieve drive ID from folder ID and ensure that it is indeed a private drive
-		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
-		const drive = await this.arFsDao.getPrivateDrive(driveId, password);
-		if (!drive) {
-			throw new Error(`Private drive with Drive ID ${driveId} not found!`);
-		}
+		const driveId = await this.getDriveIdAndAssertDrive(parentFolderId, password);
 
 		const uploadBaseCosts = await this.estimateAndAssertCostOfFileUpload(
 			wrappedFile.fileStats.size,
@@ -402,12 +405,7 @@ export class ArDrive extends ArDriveAnonymous {
 		drivePassword: string,
 		parentFolderName?: string
 	): Promise<ArFSResult> {
-		// Retrieve drive ID from folder ID and ensure that it is indeed private
-		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
-		const drive = await this.arFsDao.getPrivateDrive(driveId, drivePassword);
-		if (!drive) {
-			throw new Error(`Private drive with Drive ID ${driveId} not found!`);
-		}
+		const driveId = await this.getDriveIdAndAssertDrive(parentFolderId, drivePassword);
 
 		const wallet = this.wallet as JWKWallet;
 
