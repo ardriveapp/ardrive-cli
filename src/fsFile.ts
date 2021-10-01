@@ -1,12 +1,25 @@
 import * as fs from 'fs';
 import { extToMime } from 'ardrive-core-js';
 import { basename, join } from 'path';
-import { Bytes } from './types';
-import { FileUploadBaseCosts, FolderUploadBaseCosts } from './ardrive';
+import { Bytes, DataContentType } from './types';
+import { BulkFileBaseCosts, FolderUploadBaseCosts } from './ardrive';
 
-type ContentType = string;
 type BaseFileName = string;
 type FilePath = string;
+
+/**
+ *  Fs + Node implementation file size limitations -- tested on MacOS Sep 27, 2021
+ *
+ *  Public : 2147483647 bytes
+ *  Private: 2147483646 bytes
+ */
+const maxFileSize: Bytes = 2147483646;
+
+export interface FileInfo {
+	dataContentType: DataContentType;
+	lastModifiedDateMS: number;
+	fileSize: Bytes;
+}
 
 /**
  * Reads stats of a file or folder  and constructs a File or Folder wrapper class
@@ -41,18 +54,22 @@ export function isFolder(fileOrFolder: FsFile | FsFolder): fileOrFolder is FsFol
 
 export class FsFile {
 	constructor(public readonly filePath: FilePath, public readonly fileStats: fs.Stats) {
-		if (this.fileStats.size >= 2147483647) {
-			// Fs/Node file limitations
-			// Public : 2147483647 bytes
-			// Private: 2147483646 bytes
-
-			throw new Error('Files greater than `2147483646` Bytes are not yet supported!');
+		if (this.fileStats.size >= maxFileSize) {
+			throw new Error(`Files greater than "${maxFileSize}" bytes are not yet supported!`);
 		}
 	}
 
-	baseCosts?: FileUploadBaseCosts;
+	baseCosts?: BulkFileBaseCosts;
 
-	public getBaseCosts(): FileUploadBaseCosts {
+	public gatherFileInfo(): FileInfo {
+		const dataContentType = this.getContentType();
+		const lastModifiedDateMS = Math.floor(this.fileStats.mtimeMs);
+		const fileSize = this.fileStats.size;
+
+		return { dataContentType, lastModifiedDateMS, fileSize };
+	}
+
+	public getBaseCosts(): BulkFileBaseCosts {
 		if (!this.baseCosts) {
 			throw new Error('Base costs on file were never set!');
 		}
@@ -63,7 +80,7 @@ export class FsFile {
 		return fs.readFileSync(this.filePath);
 	}
 
-	public getContentType(): ContentType {
+	public getContentType(): DataContentType {
 		return extToMime(this.filePath);
 	}
 

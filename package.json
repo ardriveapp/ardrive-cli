@@ -69,6 +69,7 @@
 		"coverage": "nyc --reporter text mocha",
 		"typecheck": "tsc --noemit",
 		"build": "yarn clean && tsc",
+		"ci": "yarn build && yarn test",
 		"version": "yarn run format && git add -A src",
 		"postversion": "git push && git push --tags",
 		"start": "yarn run build && node ./lib/index.js",
