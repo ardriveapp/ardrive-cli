@@ -46,7 +46,9 @@ new CLICommand({
 				CLI_APP_NAME,
 				CLI_APP_VERSION
 			);
-			children = await arDrive.listPrivateFolder(folderId, password);
+			const driveId = await arDrive.getDriveIdForFolderId(folderId);
+			const driveKey = await context.getDriveKey(driveId);
+			children = await arDrive.listPrivateFolder(folderId, driveKey);
 		} else {
 			const arDrive = new ArDriveAnonymous(new ArFSDAOAnonymous(arweave));
 			children = await arDrive.listPublicFolder(folderId);

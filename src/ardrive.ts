@@ -10,9 +10,19 @@ import {
 	ArFSPublicFileOrFolderWithPaths
 } from './arfsdao';
 import { CommunityOracle } from './community/community_oracle';
-import { DrivePrivacy, extToMime, GQLTagInterface, winstonToAr } from 'ardrive-core-js';
+import { deriveDriveKey, DrivePrivacy, extToMime, GQLTagInterface, winstonToAr } from 'ardrive-core-js';
 import * as fs from 'fs';
-import { TransactionID, ArweaveAddress, Winston, DriveID, FolderID, Bytes, TipType, FeeMultiple } from './types';
+import {
+	TransactionID,
+	ArweaveAddress,
+	Winston,
+	DriveID,
+	FolderID,
+	Bytes,
+	TipType,
+	FeeMultiple,
+	DriveKey
+} from './types';
 import { WalletDAO, Wallet, JWKWallet } from './wallet_new';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
 import { ARDataPriceEstimator } from './utils/ar_data_price_estimator';
@@ -203,7 +213,7 @@ export class ArDrive extends ArDriveAnonymous {
 	async uploadPrivateFile(
 		parentFolderId: FolderID,
 		filePath: string,
-		password: string,
+		driveKey: DriveKey,
 		destinationFileName?: string
 	): Promise<ArFSResult> {
 		// TODO: Hoist this elsewhere for bulk uploads
@@ -220,7 +230,7 @@ export class ArDrive extends ArDriveAnonymous {
 		const uploadFileResult = await this.arFsDao.uploadPrivateFile(
 			parentFolderId,
 			filePath,
-			password,
+			driveKey,
 			fileDataRewardSettings,
 			metadataRewardSettings,
 			destinationFileName
@@ -375,13 +385,13 @@ export class ArDrive extends ArDriveAnonymous {
 		});
 	}
 
-	async getPrivateDrive(driveId: DriveID, drivePassword: string): Promise<ArFSPrivateDrive> {
-		const driveEntity = await this.arFsDao.getPrivateDrive(driveId, drivePassword);
+	async getPrivateDrive(driveId: DriveID, driveKey: DriveKey): Promise<ArFSPrivateDrive> {
+		const driveEntity = await this.arFsDao.getPrivateDrive(driveId, driveKey);
 		return Promise.resolve(driveEntity);
 	}
 
-	async getPrivateFolder(folderId: FolderID, drivePassword: string): Promise<ArFSPrivateFolder> {
-		const folderEntity = await this.arFsDao.getPrivateFolder(folderId, drivePassword);
+	async getPrivateFolder(folderId: FolderID, driveKey: DriveKey): Promise<ArFSPrivateFolder> {
+		const folderEntity = await this.arFsDao.getPrivateFolder(folderId, driveKey);
 		return folderEntity;
 	}
 
@@ -390,8 +400,8 @@ export class ArDrive extends ArDriveAnonymous {
 	 * @param {FolderID} folderId the folder ID to list children of
 	 * @returns {ArFSPrivateFileOrFolderWithPaths[]} an array representation of the children and parent folder
 	 */
-	async listPrivateFolder(folderId: FolderID, password: string): Promise<ArFSPrivateFileOrFolderWithPaths[]> {
-		const children = this.arFsDao.listPrivateFolder(folderId, password);
+	async listPrivateFolder(folderId: FolderID, driveKey: DriveKey): Promise<ArFSPrivateFileOrFolderWithPaths[]> {
+		const children = this.arFsDao.listPrivateFolder(folderId, driveKey);
 		return children;
 	}
 
@@ -484,6 +494,10 @@ export class ArDrive extends ArDriveAnonymous {
 		};
 	}
 
+	async getDriveIdForFolderId(folderId: FolderID): Promise<DriveID> {
+		return this.arFsDao.getDriveIdForFolderId(folderId);
+	}
+
 	// Provides for stubbing metadata during cost estimations since the data trx ID won't yet be known
 	private stubPublicFileMetadata(
 		filePath: string,
@@ -516,9 +530,11 @@ export class ArDrive extends ArDriveAnonymous {
 			stubTransactionID,
 			dataContentType,
 			stubEntityID,
-			stubEntityID,
-			'stubPassword',
-			(this.wallet as JWKWallet).getPrivateKey()
+			await deriveDriveKey(
+				'stubPassword',
+				stubEntityID,
+				JSON.stringify((this.wallet as JWKWallet).getPrivateKey())
+			)
 		);
 	}
 }
