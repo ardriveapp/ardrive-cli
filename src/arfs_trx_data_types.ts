@@ -53,7 +53,7 @@ export class ArFSPrivateDriveTransactionData extends ArFSDriveTransactionData {
 		drivePassword: string,
 		privateKey: JWKInterface
 	): Promise<ArFSPrivateDriveTransactionData> {
-		const driveKey: Buffer = await deriveDriveKey(drivePassword, driveId, JSON.stringify(privateKey));
+		const driveKey: DriveKey = await deriveDriveKey(drivePassword, driveId, JSON.stringify(privateKey));
 		const { cipher, cipherIV, data } = await driveEncrypt(
 			driveKey,
 			Buffer.from(
@@ -105,7 +105,7 @@ export class ArFSPrivateFolderTransactionData extends ArFSFolderTransactionData 
 		drivePassword: string,
 		privateKey: JWKInterface
 	): Promise<ArFSPrivateFolderTransactionData> {
-		const driveKey: Buffer = await deriveDriveKey(drivePassword, driveId, JSON.stringify(privateKey));
+		const driveKey: DriveKey = await deriveDriveKey(drivePassword, driveId, JSON.stringify(privateKey));
 		const { cipher, cipherIV, data }: ArFSEncryptedData = await fileEncrypt(
 			driveKey,
 			Buffer.from(
@@ -169,12 +169,9 @@ export class ArFSPrivateFileMetadataTransactionData extends ArFSFileMetadataTran
 		dataTxId: TransactionID,
 		dataContentType: DataContentType,
 		fileId: FileID,
-		driveId: DriveID,
-		drivePassword: string,
-		privateKey: JWKInterface
+		driveKey: DriveKey
 	): Promise<ArFSPrivateFileMetadataTransactionData> {
-		const driveKey: Buffer = await deriveDriveKey(drivePassword, driveId, JSON.stringify(privateKey));
-		const fileKey: Buffer = await deriveFileKey(fileId, driveKey);
+		const fileKey: FileKey = await deriveFileKey(fileId, driveKey);
 		const { cipher, cipherIV, data }: ArFSEncryptedData = await fileEncrypt(
 			fileKey,
 			Buffer.from(
@@ -224,12 +221,9 @@ export class ArFSPrivateFileDataTransactionData extends ArFSFileDataTransactionD
 	static async from(
 		fileData: Buffer,
 		fileId: FileID,
-		driveId: DriveID,
-		drivePassword: string,
-		privateKey: JWKInterface
+		driveKey: DriveKey
 	): Promise<ArFSPrivateFileDataTransactionData> {
-		const driveKey: Buffer = await deriveDriveKey(drivePassword, driveId, JSON.stringify(privateKey));
-		const fileKey: Buffer = await deriveFileKey(fileId, driveKey);
+		const fileKey: FileKey = await deriveFileKey(fileId, driveKey);
 		const { cipher, cipherIV, data }: ArFSEncryptedData = await fileEncrypt(fileKey, fileData);
 		return new ArFSPrivateFileDataTransactionData(cipher, cipherIV, data);
 	}
