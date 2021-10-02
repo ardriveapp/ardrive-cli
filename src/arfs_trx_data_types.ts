@@ -171,7 +171,6 @@ export class ArFSPrivateFileMetadataTransactionData extends ArFSFileMetadataTran
 		fileId: FileID,
 		driveKey: DriveKey
 	): Promise<ArFSPrivateFileMetadataTransactionData> {
-		// const driveKey: Buffer = await deriveDriveKey(drivePassword, driveId, JSON.stringify(privateKey));
 		const fileKey: FileKey = await deriveFileKey(fileId, driveKey);
 		const { cipher, cipherIV, data }: ArFSEncryptedData = await fileEncrypt(
 			fileKey,
