@@ -14,7 +14,7 @@ import { cliWalletDao } from '..';
 
 /**
  * @type {ParametersHelper}
- * A class representing the context of the parameters
+ * A class that assists with handling Commander options during common ArDrive CLI workflows
  */
 export class ParametersHelper {
 	/**
