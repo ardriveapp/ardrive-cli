@@ -8,7 +8,7 @@ new CLICommand({
 	parameters: [WalletFileParameter, SeedPhraseParameter],
 	async action(options) {
 		const parameters = new ParametersHelper(options);
-		const address = parameters.getWalletAddress();
+		const address = await parameters.getWalletAddress();
 		console.log(address);
 		process.exit(0);
 	}

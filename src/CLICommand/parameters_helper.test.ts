@@ -17,6 +17,7 @@ import {
 } from './test_constants';
 import { ParametersHelper } from './parameters_helper';
 import {
+	AddressParameter,
 	DriveKeyParameter,
 	DrivePasswordParameter,
 	SeedPhraseParameter,
@@ -171,7 +172,7 @@ describe('ParametersHelper class', () => {
 			]);
 		});
 
-		it('throws when none of --wallet-file, -w, --seed-phrase, or -s option is provided', () => {
+		it('throws when none of --wallet-file, -w, --seed-phrase, or -s option are provided', () => {
 			declareCommandWithParams(program, [], async (options) => {
 				const parameters = new ParametersHelper(options);
 				// TODO: Couldn't figure out how to expect an async func to throw without chai-as-promised
@@ -225,10 +226,89 @@ describe('ParametersHelper class', () => {
 			]);
 		});
 
-		it('returns null when none of --wallet-file, -w, --seed-phrase, or -s option is provided', () => {
+		it('returns null when none of --wallet-file, -w, --seed-phrase, or -s option are provided', () => {
 			declareCommandWithParams(program, [], async (options) => {
 				const parameters = new ParametersHelper(options);
 				const wallet = await parameters.getOptionalWallet().catch(() => null);
+				expect(wallet).to.be.null;
+			});
+			CLICommand.parse(program, [...baseArgv, testCommandName]);
+		});
+	});
+
+	describe('getWalletAddress method', () => {
+		it('returns the address of the wallet when a valid --wallet-file is provided', () => {
+			declareCommandWithParams(program, [WalletFileParameter], async (options) => {
+				const parameters = new ParametersHelper(options);
+				expect(await parameters.getWalletAddress()).to.equal('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
+			});
+			CLICommand.parse(program, [...baseArgv, testCommandName, '--wallet-file', './test_wallet.json']);
+		});
+
+		it('returns the address of the wallet when a valid --w file is provided', () => {
+			declareCommandWithParams(program, [WalletFileParameter], async (options) => {
+				const parameters = new ParametersHelper(options);
+				expect(await parameters.getWalletAddress()).to.equal('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
+			});
+			CLICommand.parse(program, [...baseArgv, testCommandName, '-w', './test_wallet.json']);
+		});
+
+		it('returns the address of the wallet when a valid --seed-phrase option is provided', () => {
+			declareCommandWithParams(program, [SeedPhraseParameter], async (options) => {
+				const parameters = new ParametersHelper(options);
+				expect(await parameters.getWalletAddress()).to.equal('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
+			});
+			CLICommand.parse(program, [
+				...baseArgv,
+				testCommandName,
+				'--seed-phrase',
+				'alcohol wisdom allow used april recycle exhibit parent music field cabbage treat'
+			]);
+		});
+
+		it('returns the address of the wallet when a valid -s option is provided', () => {
+			declareCommandWithParams(program, [SeedPhraseParameter], async (options) => {
+				const parameters = new ParametersHelper(options);
+				expect(await parameters.getWalletAddress()).to.equal('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
+			});
+			CLICommand.parse(program, [
+				...baseArgv,
+				testCommandName,
+				'-s',
+				'alcohol wisdom allow used april recycle exhibit parent music field cabbage treat'
+			]);
+		});
+
+		it('returns the address provided by the --address option value', () => {
+			declareCommandWithParams(program, [AddressParameter], async (options) => {
+				const parameters = new ParametersHelper(options);
+				expect(await parameters.getWalletAddress()).to.equal('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
+			});
+			CLICommand.parse(program, [
+				...baseArgv,
+				testCommandName,
+				'--address',
+				'P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4'
+			]);
+		});
+
+		it('returns the address provided by the -a option value', () => {
+			declareCommandWithParams(program, [AddressParameter], async (options) => {
+				const parameters = new ParametersHelper(options);
+				expect(await parameters.getWalletAddress()).to.equal('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
+			});
+			CLICommand.parse(program, [
+				...baseArgv,
+				testCommandName,
+				'-a',
+				'P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4'
+			]);
+		});
+
+		it('throws when none of --wallet-file, -w, --seed-phrase, -s, --address, or -a option are provided', () => {
+			declareCommandWithParams(program, [], async (options) => {
+				const parameters = new ParametersHelper(options);
+				const wallet = await parameters.getWalletAddress().catch(() => null);
 				expect(wallet).to.be.null;
 			});
 			CLICommand.parse(program, [...baseArgv, testCommandName]);
