@@ -16,7 +16,12 @@ import {
 	testCommandName
 } from './test_constants';
 import { ParametersHelper } from './parameters_helper';
-import { DriveKeyParameter, DrivePasswordParameter } from '../parameter_declarations';
+import {
+	DriveKeyParameter,
+	DrivePasswordParameter,
+	SeedPhraseParameter,
+	WalletFileParameter
+} from '../parameter_declarations';
 import '../parameter_declarations';
 
 function declareCommandWithParams(
@@ -120,6 +125,60 @@ describe('ParametersHelper class', () => {
 				expect(await parameters.getIsPrivate()).to.be.true;
 			});
 			CLICommand.parse(program, [...baseArgv, testCommandName, '-k', 'key']);
+		});
+	});
+
+	describe('getRequiredWallet method', () => {
+		it('returns a wallet when a valid --wallet-file is provided', () => {
+			declareCommandWithParams(program, [WalletFileParameter], async (options) => {
+				const parameters = new ParametersHelper(options);
+				expect(await parameters.getRequiredWallet()).to.not.be.null;
+			});
+			CLICommand.parse(program, [...baseArgv, testCommandName, '--wallet-file', './test_wallet.json']);
+		});
+
+		it('returns a wallet when a valid --w file is provided', () => {
+			declareCommandWithParams(program, [WalletFileParameter], async (options) => {
+				const parameters = new ParametersHelper(options);
+				expect(await parameters.getRequiredWallet()).to.not.be.null;
+			});
+			CLICommand.parse(program, [...baseArgv, testCommandName, '-w', './test_wallet.json']);
+		});
+
+		it('returns a wallet when a valid --seed-phrase option is provided', () => {
+			declareCommandWithParams(program, [SeedPhraseParameter], async (options) => {
+				const parameters = new ParametersHelper(options);
+				expect(await parameters.getRequiredWallet()).to.not.be.null;
+			});
+			CLICommand.parse(program, [
+				...baseArgv,
+				testCommandName,
+				'--seed-phrase',
+				'alcohol wisdom allow used april recycle exhibit parent music field cabbage treat'
+			]);
+		});
+
+		it('returns a wallet when a valid -s option is provided', () => {
+			declareCommandWithParams(program, [SeedPhraseParameter], async (options) => {
+				const parameters = new ParametersHelper(options);
+				expect(await parameters.getRequiredWallet()).to.not.be.null;
+			});
+			CLICommand.parse(program, [
+				...baseArgv,
+				testCommandName,
+				'-s',
+				'alcohol wisdom allow used april recycle exhibit parent music field cabbage treat'
+			]);
+		});
+
+		it('throws when none of --wallet-file, -w, --seed-phrase, or -s option is provided', () => {
+			declareCommandWithParams(program, [], async (options) => {
+				const parameters = new ParametersHelper(options);
+				// TODO: Couldn't figure out how to expect an async func to throw without chai-as-promised
+				const wallet = await parameters.getRequiredWallet().catch(() => null);
+				expect(wallet).to.be.null;
+			});
+			CLICommand.parse(program, [...baseArgv, testCommandName]);
 		});
 	});
 });
