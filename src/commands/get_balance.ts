@@ -8,7 +8,7 @@ new CLICommand({
 	name: 'get-balance',
 	parameters: [WalletFileParameter, SeedPhraseParameter, AddressParameter],
 	async action(options) {
-		const parameters = new ParametersHelper(options, cliWalletDao);
+		const parameters = new ParametersHelper(options);
 		const address = await parameters.getWalletAddress();
 		const balance = await cliWalletDao.getAddressWinstonBalance(address);
 		console.log(balance);

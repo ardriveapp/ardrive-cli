@@ -25,7 +25,7 @@ new CLICommand({
 	],
 	async action(options) {
 		const parameters = new ParametersHelper(options);
-		const wallet: Wallet = await parameters.getWallet();
+		const wallet: Wallet = await parameters.getRequiredWallet();
 		const ardrive = arDriveFactory({
 			wallet: wallet,
 			feeMultiple: options.boost as FeeMultiple,

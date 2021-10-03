@@ -16,7 +16,7 @@ new CLICommand({
 	parameters: [ArAmountParameter, DestinationAddressParameter, WalletFileParameter, BoostParameter, DryRunParameter],
 	async action(options) {
 		const parameters = new ParametersHelper(options);
-		const wallet = await parameters.getWallet();
+		const wallet = await parameters.getRequiredWallet();
 		const walletAddress = await wallet.getAddress();
 		console.log(walletAddress);
 		console.log(`arAmount: ${options.arAmount}`);

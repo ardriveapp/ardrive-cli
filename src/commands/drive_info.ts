@@ -21,20 +21,16 @@ new CLICommand({
 	],
 	async action(options) {
 		const parameters = new ParametersHelper(options);
-		const wallet = await parameters.getWallet().catch(() => null);
+		const wallet = await parameters.getOptionalWallet();
 		const result = await (function () {
+			const driveId: string = options.driveId;
+			// const shouldGetAllRevisions: boolean = options.getAllRevisions;
 			if (wallet) {
-				const arDrive = arDriveFactory({
-					wallet: wallet
-				});
-				const driveId: string = options.driveId;
-				// const getAllRevisions: boolean = options.getAllRevisions;
-				return arDrive.getPrivateDrive(driveId, options.drivePassword /*, getAllRevisions*/);
+				const arDrive = arDriveFactory({ wallet: wallet });
+				return arDrive.getPrivateDrive(driveId, options.drivePassword /*, shouldGetAllRevisions*/);
 			} else {
 				const arDrive = arDriveFactory();
-				const driveId: string = options.driveId;
-				// const getAllRevisions: boolean = options.getAllRevisions;
-				return arDrive.getPublicDrive(driveId /*, getAllRevisions*/);
+				return arDrive.getPublicDrive(driveId /*, shouldGetAllRevisions*/);
 			}
 		})();
 		console.log(JSON.stringify(result, null, 4));

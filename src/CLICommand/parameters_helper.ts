@@ -37,9 +37,10 @@ export class ParametersHelper {
 
 	/**
 	 * @returns {Promise<Wallet>}
-	 * Will return a wallet instance created from the seed phrase or the walletFile
+	 * Will return a wallet instance created from the seed phrase or the walletFile.
+	 * Throws an error if a wallet can't be created.
 	 */
-	public async getWallet(): Promise<Wallet> {
+	public async getRequiredWallet(): Promise<Wallet> {
 		const walletFile = this.getParameterValue(WalletFileParameter);
 		const seedPhrase = this.getParameterValue(SeedPhraseParameter);
 		if (walletFile) {
@@ -53,8 +54,14 @@ export class ParametersHelper {
 		throw new Error('No wallet file neither seed phrase provided!');
 	}
 
+	public async getOptionalWallet(): Promise<Wallet | null> {
+		return this.getRequiredWallet().catch(() => null);
+	}
+
 	public async getWalletAddress(): Promise<string> {
-		return this.getParameterValue(AddressParameter) || this.getWallet().then((wallet) => wallet.getAddress());
+		return (
+			this.getParameterValue(AddressParameter) || this.getRequiredWallet().then((wallet) => wallet.getAddress())
+		);
 	}
 
 	public async getDriveKey(driveId: DriveID): Promise<Buffer> {
@@ -64,7 +71,7 @@ export class ParametersHelper {
 		}
 		const drivePassword = this.getParameterValue(DrivePasswordParameter);
 		if (drivePassword) {
-			const wallet: JWKWallet = (await this.getWallet()) as JWKWallet;
+			const wallet: JWKWallet = (await this.getRequiredWallet()) as JWKWallet;
 			const derivedDriveKey: Buffer = await deriveDriveKey(
 				drivePassword,
 				driveId,

@@ -25,8 +25,8 @@ new CLICommand({
 	name: 'list-folder',
 	parameters: [ParentFolderIdParameter, SeedPhraseParameter, WalletFileParameter, DrivePasswordParameter],
 	async action(options) {
-		const parameters = new ParametersHelper(options, cliWalletDao);
-		const wallet = await parameters.getWallet().catch(() => null);
+		const parameters = new ParametersHelper(options);
+		const wallet = await parameters.getOptionalWallet();
 		const password = parameters.getParameterValue(DrivePasswordParameter);
 		const folderId = parameters.getParameterValue(ParentFolderIdParameter);
 		let children: (ArFSPrivateFileOrFolderWithPaths | ArFSPublicFileOrFolderWithPaths)[];
