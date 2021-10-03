@@ -15,7 +15,7 @@ new CLICommand({
 	name: 'send-ar',
 	parameters: [ArAmountParameter, DestinationAddressParameter, WalletFileParameter, BoostParameter, DryRunParameter],
 	async action(options) {
-		const parameters = new ParametersHelper(options, cliWalletDao);
+		const parameters = new ParametersHelper(options);
 		const wallet = await parameters.getWallet();
 		const walletAddress = await wallet.getAddress();
 		console.log(walletAddress);

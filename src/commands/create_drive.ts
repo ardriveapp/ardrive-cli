@@ -8,7 +8,7 @@ import {
 	WalletFileParameter
 } from '../parameter_declarations';
 import { Wallet } from '../wallet_new';
-import { arDriveFactory, cliWalletDao } from '..';
+import { arDriveFactory } from '..';
 import { FeeMultiple } from '../types';
 
 /* eslint-disable no-console */
@@ -24,7 +24,7 @@ new CLICommand({
 		DryRunParameter
 	],
 	async action(options) {
-		const parameters = new ParametersHelper(options, cliWalletDao);
+		const parameters = new ParametersHelper(options);
 		const wallet: Wallet = await parameters.getWallet();
 		const ardrive = arDriveFactory({
 			wallet: wallet,
