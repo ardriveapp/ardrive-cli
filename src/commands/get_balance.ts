@@ -1,12 +1,12 @@
 import { cliWalletDao } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
-import { DriveAddressParameter, SeedPhraseParameter, WalletFileParameter } from '../parameter_declarations';
+import { AddressParameter, SeedPhraseParameter, WalletFileParameter } from '../parameter_declarations';
 
 /* eslint-disable no-console */
 
 new CLICommand({
 	name: 'get-balance',
-	parameters: [WalletFileParameter, SeedPhraseParameter, DriveAddressParameter],
+	parameters: [WalletFileParameter, SeedPhraseParameter, AddressParameter],
 	async action(options) {
 		const parameters = new ParametersHelper(options, cliWalletDao);
 		const address = await parameters.getWalletAddress();

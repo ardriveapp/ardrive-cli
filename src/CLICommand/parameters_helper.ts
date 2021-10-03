@@ -3,7 +3,7 @@ import { ParameterName } from './parameter';
 import * as fs from 'fs';
 import { deriveDriveKey, JWKInterface } from 'ardrive-core-js';
 import {
-	DriveAddressParameter,
+	AddressParameter,
 	DriveKeyParameter,
 	DrivePasswordParameter,
 	SeedPhraseParameter,
@@ -54,7 +54,7 @@ export class ParametersHelper {
 	}
 
 	public async getWalletAddress(): Promise<string> {
-		return this.getParameterValue(DriveAddressParameter) || this.getWallet().then((wallet) => wallet.getAddress());
+		return this.getParameterValue(AddressParameter) || this.getWallet().then((wallet) => wallet.getAddress());
 	}
 
 	public async getDriveKey(driveId: DriveID): Promise<Buffer> {
