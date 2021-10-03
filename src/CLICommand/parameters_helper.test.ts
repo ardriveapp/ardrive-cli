@@ -15,7 +15,6 @@ import {
 	singleValueParameterName,
 	testCommandName
 } from './test_constants';
-import { cliWalletDao } from '..';
 import { ParametersHelper } from './parameters_helper';
 
 function declareCommandWithParams(
@@ -42,7 +41,7 @@ describe('ParametersHelper class', () => {
 	it('Actually reads the value from argv', () => {
 		Parameter.declare(singleValueParameter);
 		declareCommandWithParams(program, [singleValueParameterName], async (options) => {
-			const parameters = new ParametersHelper(options, cliWalletDao);
+			const parameters = new ParametersHelper(options);
 			expect(parameters.getParameterValue(singleValueParameterName)).to.not.be.undefined;
 		});
 		CLICommand.parse(program, [...baseArgv, testCommandName, '--single-value-parameter', '1234567890']);
@@ -51,7 +50,7 @@ describe('ParametersHelper class', () => {
 	it('Boolean parameter false', () => {
 		Parameter.declare(booleanParameter);
 		declareCommandWithParams(program, [booleanParameterName], async (options) => {
-			const parameters = new ParametersHelper(options, cliWalletDao);
+			const parameters = new ParametersHelper(options);
 			expect(!!parameters.getParameterValue(booleanParameterName)).to.be.false;
 		});
 		CLICommand.parse(program, [...baseArgv, testCommandName]);
@@ -60,7 +59,7 @@ describe('ParametersHelper class', () => {
 	it('Boolean parameter true', () => {
 		Parameter.declare(booleanParameter);
 		declareCommandWithParams(program, [booleanParameterName], async (options) => {
-			const parameters = new ParametersHelper(options, cliWalletDao);
+			const parameters = new ParametersHelper(options);
 			expect(parameters.getParameterValue(booleanParameterName)).to.be.true;
 		});
 		CLICommand.parse(program, [...baseArgv, testCommandName, '--boolean-parameter']);
@@ -70,7 +69,7 @@ describe('ParametersHelper class', () => {
 		const colorsArray = ['red', 'green', 'blue'];
 		Parameter.declare(arrayParameter);
 		declareCommandWithParams(program, [arrayParameterName], async (options) => {
-			const parameters = new ParametersHelper(options, cliWalletDao);
+			const parameters = new ParametersHelper(options);
 			expect(parameters.getParameterValue(arrayParameterName)).to.deep.equal(colorsArray);
 		});
 		CLICommand.parse(program, [...baseArgv, testCommandName, '--array-parameter', ...colorsArray]);

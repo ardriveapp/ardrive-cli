@@ -6,7 +6,7 @@ import {
 	FolderIdParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
-import { arDriveFactory, cliWalletDao } from '..';
+import { arDriveFactory } from '..';
 
 /* eslint-disable no-console */
 
@@ -20,7 +20,7 @@ new CLICommand({
 		WalletFileParameter
 	],
 	async action(options) {
-		const parameters = new ParametersHelper(options, cliWalletDao);
+		const parameters = new ParametersHelper(options);
 		const result = await (async function () {
 			if (await parameters.getIsPrivate()) {
 				const wallet = await parameters.getWallet();
