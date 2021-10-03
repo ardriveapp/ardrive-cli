@@ -24,6 +24,7 @@ import {
 	WalletFileParameter
 } from '../parameter_declarations';
 import '../parameter_declarations';
+import { urlEncodeHashKey } from '../utils';
 
 function declareCommandWithParams(
 	program: CliApiObject,
@@ -310,6 +311,49 @@ describe('ParametersHelper class', () => {
 				const parameters = new ParametersHelper(options);
 				const wallet = await parameters.getWalletAddress().catch(() => null);
 				expect(wallet).to.be.null;
+			});
+			CLICommand.parse(program, [...baseArgv, testCommandName]);
+		});
+	});
+
+	describe('getDriveKey method', () => {
+		it('returns the correct drive key given a valid --wallet-file and --drive-password', () => {
+			declareCommandWithParams(program, [WalletFileParameter, DrivePasswordParameter], async (options) => {
+				const parameters = new ParametersHelper(options);
+				expect(urlEncodeHashKey(await parameters.getDriveKey('00000000-0000-0000-0000-000000000000'))).to.equal(
+					'Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg'
+				);
+			});
+			CLICommand.parse(program, [
+				...baseArgv,
+				testCommandName,
+				'--wallet-file',
+				'./test_wallet.json',
+				'--drive-password',
+				'password'
+			]);
+		});
+
+		it('returns the drive key provided by the --drive-key option', () => {
+			declareCommandWithParams(program, [DriveKeyParameter], async (options) => {
+				const parameters = new ParametersHelper(options);
+				expect(urlEncodeHashKey(await parameters.getDriveKey('00000000-0000-0000-0000-000000000000'))).to.equal(
+					'Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg'
+				);
+			});
+			CLICommand.parse(program, [
+				...baseArgv,
+				testCommandName,
+				'--drive-key',
+				'Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg'
+			]);
+		});
+
+		it('throws when none of --wallet-file, -w, --seed-phrase, -s, --drive-key, or -k option are provided', () => {
+			declareCommandWithParams(program, [], async (options) => {
+				const parameters = new ParametersHelper(options);
+				const driveKey = await parameters.getDriveKey('00000000-0000-0000-0000-000000000000').catch(() => null);
+				expect(driveKey).to.be.null;
 			});
 			CLICommand.parse(program, [...baseArgv, testCommandName]);
 		});

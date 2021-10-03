@@ -67,7 +67,7 @@ export class ParametersHelper {
 	public async getDriveKey(driveId: DriveID): Promise<Buffer> {
 		const driveKey = this.getParameterValue(DriveKeyParameter);
 		if (driveKey) {
-			return Buffer.from(driveKey);
+			return Buffer.from(driveKey, 'base64');
 		}
 		const drivePassword = this.getParameterValue(DrivePasswordParameter);
 		if (drivePassword) {
