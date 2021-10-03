@@ -181,4 +181,57 @@ describe('ParametersHelper class', () => {
 			CLICommand.parse(program, [...baseArgv, testCommandName]);
 		});
 	});
+
+	describe('getOptionalWallet method', () => {
+		it('returns a wallet when a valid --wallet-file is provided', () => {
+			declareCommandWithParams(program, [WalletFileParameter], async (options) => {
+				const parameters = new ParametersHelper(options);
+				expect(await parameters.getOptionalWallet()).to.not.be.null;
+			});
+			CLICommand.parse(program, [...baseArgv, testCommandName, '--wallet-file', './test_wallet.json']);
+		});
+
+		it('returns a wallet when a valid --w file is provided', () => {
+			declareCommandWithParams(program, [WalletFileParameter], async (options) => {
+				const parameters = new ParametersHelper(options);
+				expect(await parameters.getOptionalWallet()).to.not.be.null;
+			});
+			CLICommand.parse(program, [...baseArgv, testCommandName, '-w', './test_wallet.json']);
+		});
+
+		it('returns a wallet when a valid --seed-phrase option is provided', () => {
+			declareCommandWithParams(program, [SeedPhraseParameter], async (options) => {
+				const parameters = new ParametersHelper(options);
+				expect(await parameters.getOptionalWallet()).to.not.be.null;
+			});
+			CLICommand.parse(program, [
+				...baseArgv,
+				testCommandName,
+				'--seed-phrase',
+				'alcohol wisdom allow used april recycle exhibit parent music field cabbage treat'
+			]);
+		});
+
+		it('returns a wallet when a valid -s option is provided', () => {
+			declareCommandWithParams(program, [SeedPhraseParameter], async (options) => {
+				const parameters = new ParametersHelper(options);
+				expect(await parameters.getOptionalWallet()).to.not.be.null;
+			});
+			CLICommand.parse(program, [
+				...baseArgv,
+				testCommandName,
+				'-s',
+				'alcohol wisdom allow used april recycle exhibit parent music field cabbage treat'
+			]);
+		});
+
+		it('returns null when none of --wallet-file, -w, --seed-phrase, or -s option is provided', () => {
+			declareCommandWithParams(program, [], async (options) => {
+				const parameters = new ParametersHelper(options);
+				const wallet = await parameters.getOptionalWallet().catch(() => null);
+				expect(wallet).to.be.null;
+			});
+			CLICommand.parse(program, [...baseArgv, testCommandName]);
+		});
+	});
 });
