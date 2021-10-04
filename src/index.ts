@@ -31,20 +31,20 @@ export const cliArweave = Arweave.init({
 
 export const cliWalletDao = new WalletDAO(cliArweave, CLI_APP_NAME, CLI_APP_VERSION);
 
-export interface ArDriveSettingsAnonymus {
+export interface ArDriveSettingsAnonymous {
 	walletDao?: WalletDAO;
 	arweave?: Arweave;
 }
-export interface ArDriveSettings extends ArDriveSettingsAnonymus {
+export interface ArDriveSettings extends ArDriveSettingsAnonymous {
 	wallet: Wallet;
 	priceEstimator?: ARDataPriceEstimator;
 	feeMultiple?: FeeMultiple;
 	dryRun?: boolean;
 }
 
-export function arDriveFactory(settings?: ArDriveSettingsAnonymus): ArDriveAnonymous;
+export function arDriveFactory(settings?: ArDriveSettingsAnonymous): ArDriveAnonymous;
 export function arDriveFactory(settings: ArDriveSettings): ArDrive;
-export function arDriveFactory(s?: ArDriveSettingsAnonymus): ArDrive | ArDriveAnonymous {
+export function arDriveFactory(s?: ArDriveSettingsAnonymous): ArDrive | ArDriveAnonymous {
 	const settings = s as ArDriveSettings;
 	const arweave = settings.arweave || cliArweave;
 	const walletDao = settings.walletDao || cliWalletDao;
