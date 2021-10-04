@@ -175,7 +175,10 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		return await folderBuilder.build();
 	}
 
-	async getPublicFilesWithParentFolderIds(folderIDs: FolderID[]): Promise<ArFSPublicFile[]> {
+	async getPublicFilesWithParentFolderIds(
+		folderIDs: FolderID[],
+		latestRevisionsOnly = false
+	): Promise<ArFSPublicFile[]> {
 		let cursor = '';
 		let hasNextPage = true;
 		const allFiles: ArFSPublicFile[] = [];
@@ -202,10 +205,10 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 			});
 			allFiles.push(...(await Promise.all(files)));
 		}
-		return allFiles;
+		return latestRevisionsOnly ? allFiles.filter(lastRevisionFilter) : allFiles;
 	}
 
-	async getAllFoldersOfPublicDrive(driveId: DriveID): Promise<ArFSPublicFolder[]> {
+	async getAllFoldersOfPublicDrive(driveId: DriveID, latestRevisionsOnly = false): Promise<ArFSPublicFolder[]> {
 		let cursor = '';
 		let hasNextPage = true;
 		const allFolders: ArFSPublicFolder[] = [];
@@ -232,7 +235,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 			});
 			allFolders.push(...(await Promise.all(folders)));
 		}
-		return allFolders;
+		return latestRevisionsOnly ? allFolders.filter(lastRevisionFilter) : allFolders;
 	}
 
 	/**
@@ -245,18 +248,14 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 
 		// Fetch all of the folder entities within the drive
 		const driveIdOfFolder = folder.driveId;
-		const allFolderEntitiesOfDrive = (await this.getAllFoldersOfPublicDrive(driveIdOfFolder)).filter(
-			lastRevisionFilter
-		);
+		const allFolderEntitiesOfDrive = await this.getAllFoldersOfPublicDrive(driveIdOfFolder, true);
 
 		// Feed entities to FolderHierarchy.setupNodesWithEntity()
 		const hierarchy = FolderHierarchy.newFromEntities(allFolderEntitiesOfDrive);
 		const childrenFolderIDs = hierarchy.subTreeOf(folderId).allFolderIDs();
 
 		// Fetch all file entities within all Folders of the drive
-		const allFileEntitiesOfDrive = (await this.getPublicFilesWithParentFolderIds(childrenFolderIDs)).filter(
-			lastRevisionFilter
-		);
+		const allFileEntitiesOfDrive = await this.getPublicFilesWithParentFolderIds(childrenFolderIDs, true);
 
 		const allEntitiesOfDrive = [...allFolderEntitiesOfDrive, ...allFileEntitiesOfDrive];
 		const allChildrenOfFolder = allEntitiesOfDrive.filter(childrenAndFolderOfFilterFactory(childrenFolderIDs));
@@ -676,7 +675,11 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return await folderBuilder.build();
 	}
 
-	async getAllFoldersOfPrivateDrive(driveId: DriveID, driveKey: DriveKey): Promise<ArFSPrivateFolder[]> {
+	async getAllFoldersOfPrivateDrive(
+		driveId: DriveID,
+		driveKey: DriveKey,
+		latestRevisionsOnly = false
+	): Promise<ArFSPrivateFolder[]> {
 		let cursor = '';
 		let hasNextPage = true;
 		const allFolders: ArFSPrivateFolder[] = [];
@@ -704,11 +707,14 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			});
 			allFolders.push(...(await Promise.all(folders)));
 		}
-
-		return allFolders;
+		return latestRevisionsOnly ? allFolders.filter(lastRevisionFilter) : allFolders;
 	}
 
-	async getPrivateFilesWithParentFolderIds(folderIDs: FolderID[], driveKey: DriveKey): Promise<ArFSPrivateFile[]> {
+	async getPrivateFilesWithParentFolderIds(
+		folderIDs: FolderID[],
+		driveKey: DriveKey,
+		latestRevisionsOnly = false
+	): Promise<ArFSPrivateFile[]> {
 		let cursor = '';
 		let hasNextPage = true;
 		const allFiles: ArFSPrivateFile[] = [];
@@ -735,7 +741,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			});
 			allFiles.push(...(await Promise.all(files)));
 		}
-		return allFiles;
+		return latestRevisionsOnly ? allFiles.filter(lastRevisionFilter) : allFiles;
 	}
 
 	/**
@@ -748,18 +754,14 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		// Fetch all of the folder entities within the drive
 		const driveIdOfFolder = folder.driveId;
-		const allFolderEntitiesOfDrive = (await this.getAllFoldersOfPrivateDrive(driveIdOfFolder, driveKey)).filter(
-			lastRevisionFilter
-		);
+		const allFolderEntitiesOfDrive = await this.getAllFoldersOfPrivateDrive(driveIdOfFolder, driveKey, true);
 
 		// Feed entities to FolderHierarchy.setupNodesWithEntity()
 		const hierarchy = FolderHierarchy.newFromEntities(allFolderEntitiesOfDrive);
 		const folderIDs = hierarchy.allFolderIDs();
 
 		// Fetch all file entities within all Folders of the drive
-		const allFileEntitiesOfDrive = (await this.getPrivateFilesWithParentFolderIds(folderIDs, driveKey)).filter(
-			lastRevisionFilter
-		);
+		const allFileEntitiesOfDrive = await this.getPrivateFilesWithParentFolderIds(folderIDs, driveKey, true);
 
 		const allEntitiesOfDrive = [...allFolderEntitiesOfDrive, ...allFileEntitiesOfDrive];
 		const childrenFolderIDs = hierarchy.subTreeOf(folderId).allFolderIDs();
