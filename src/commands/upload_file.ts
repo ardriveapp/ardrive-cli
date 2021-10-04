@@ -1,7 +1,7 @@
 import { GatewayOracle } from 'ardrive-core-js';
 import { arDriveFactory } from '..';
 import { CLICommand } from '../CLICommand';
-import { FsFile, FsFolder, isFolder, wrapFileOrFolder } from '../fsFile';
+import { ArFSFileToUpload, ArFSFolderToUpload, isFolder, wrapFileOrFolder } from '../arfs_file_wrapper';
 import {
 	BoostParameter,
 	DestinationFileNameParameter,
@@ -23,7 +23,7 @@ import { ARDataPriceRegressionEstimator } from '../utils/ar_data_price_regressio
 
 interface UploadFileParameter {
 	parentFolderId: string;
-	wrappedEntity: FsFile | FsFolder;
+	wrappedEntity: ArFSFileToUpload | ArFSFolderToUpload;
 	destinationFileName?: string;
 	drivePassword?: string;
 	driveKey?: string;

@@ -35,7 +35,7 @@ import {
 	ArFSPublicFolderTransactionData
 } from './arfs_trx_data_types';
 import { buildQuery } from './query';
-import { FsFile } from './fsFile';
+import { ArFSFileToUpload } from './arfs_file_wrapper';
 import {
 	DriveID,
 	FolderID,
@@ -516,7 +516,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 	async uploadPublicFile(
 		parentFolderId: FolderID,
-		wrappedFile: FsFile,
+		wrappedFile: ArFSFileToUpload,
 		driveId: DriveID,
 		fileDataRewardSettings: RewardSettings,
 		metadataRewardSettings: RewardSettings,
@@ -585,7 +585,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 	async uploadPrivateFile(
 		parentFolderId: FolderID,
-		wrappedFile: FsFile,
+		wrappedFile: ArFSFileToUpload,
 		driveId: DriveID,
 		password: string,
 		fileDataRewardSettings: RewardSettings,

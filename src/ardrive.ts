@@ -14,7 +14,7 @@ import { TransactionID, ArweaveAddress, Winston, DriveID, FolderID, TipType, Fil
 import { DrivePrivacy, GQLTagInterface, winstonToAr } from 'ardrive-core-js';
 import { WalletDAO, Wallet, JWKWallet } from './wallet_new';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
-import { FsFolder, FsFile } from './fsFile';
+import { ArFSFolderToUpload, ArFSFileToUpload } from './arfs_file_wrapper';
 import { ARDataPriceEstimator } from './utils/ar_data_price_estimator';
 import {
 	ArFSDriveTransactionData,
@@ -79,7 +79,7 @@ const stubEntityID = '00000000-0000-0000-0000-000000000000';
 
 interface RecursiveBulkUploadParams {
 	parentFolderId: FolderID;
-	wrappedFolder: FsFolder;
+	wrappedFolder: ArFSFolderToUpload;
 	driveId: DriveID;
 }
 
@@ -184,7 +184,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 	async uploadPublicFile(
 		parentFolderId: FolderID,
-		wrappedFile: FsFile,
+		wrappedFile: ArFSFileToUpload,
 		destinationFileName?: string
 	): Promise<ArFSResult> {
 		const driveId = await this.getDriveIdAndAssertDrive(parentFolderId);
@@ -230,7 +230,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 	public async createPublicFolderAndUploadChildren(
 		parentFolderId: FolderID,
-		wrappedFolder: FsFolder,
+		wrappedFolder: ArFSFolderToUpload,
 		parentFolderName?: string
 	): Promise<ArFSResult> {
 		const driveId = await this.getDriveIdAndAssertDrive(parentFolderId);
@@ -368,7 +368,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 	async uploadPrivateFile(
 		parentFolderId: FolderID,
-		wrappedFile: FsFile,
+		wrappedFile: ArFSFileToUpload,
 		password: string,
 		destinationFileName?: string
 	): Promise<ArFSResult> {
@@ -426,7 +426,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 	public async createPrivateFolderAndUploadChildren(
 		parentFolderId: FolderID,
-		wrappedFolder: FsFolder,
+		wrappedFolder: ArFSFolderToUpload,
 		drivePassword: string,
 		parentFolderName?: string
 	): Promise<ArFSResult> {
@@ -748,7 +748,7 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	async estimateAndAssertCostOfBulkUpload(
-		folderToUpload: FsFolder,
+		folderToUpload: ArFSFolderToUpload,
 		drivePrivacy: DrivePrivacy,
 		parentFolderMetaData?: ArFSObjectTransactionData
 	): Promise<{ totalPrice: Winston; communityWinstonTip: Winston }> {
@@ -936,7 +936,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 	// Provides for stubbing metadata during cost estimations since the data trx ID won't yet be known
 	private stubPublicFileMetadata(
-		wrappedFile: FsFile,
+		wrappedFile: ArFSFileToUpload,
 		destinationFileName?: string
 	): ArFSPublicFileMetadataTransactionData {
 		const { fileSize, dataContentType, lastModifiedDateMS } = wrappedFile.gatherFileInfo();
@@ -952,7 +952,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 	// Provides for stubbing metadata during cost estimations since the data trx and File IDs won't yet be known
 	private async stubPrivateFileMetadata(
-		wrappedFile: FsFile,
+		wrappedFile: ArFSFileToUpload,
 		destinationFileName?: string
 	): Promise<ArFSPrivateFileMetadataTransactionData> {
 		const { fileSize, dataContentType, lastModifiedDateMS } = wrappedFile.gatherFileInfo();
