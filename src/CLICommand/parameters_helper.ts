@@ -9,8 +9,8 @@ import {
 	SeedPhraseParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
-import { DriveID } from '../types';
 import { cliWalletDao } from '..';
+import { DriveID, DriveKey } from '../types';
 
 /**
  * @type {ParametersHelper}
@@ -64,7 +64,7 @@ export class ParametersHelper {
 		);
 	}
 
-	public async getDriveKey(driveId: DriveID): Promise<Buffer> {
+	public async getDriveKey(driveId: DriveID): Promise<DriveKey> {
 		const driveKey = this.getParameterValue(DriveKeyParameter);
 		if (driveKey) {
 			return Buffer.from(driveKey, 'base64');
@@ -72,7 +72,7 @@ export class ParametersHelper {
 		const drivePassword = this.getParameterValue(DrivePasswordParameter);
 		if (drivePassword) {
 			const wallet: JWKWallet = (await this.getRequiredWallet()) as JWKWallet;
-			const derivedDriveKey: Buffer = await deriveDriveKey(
+			const derivedDriveKey: DriveKey = await deriveDriveKey(
 				drivePassword,
 				driveId,
 				JSON.stringify(wallet.getPrivateKey())
