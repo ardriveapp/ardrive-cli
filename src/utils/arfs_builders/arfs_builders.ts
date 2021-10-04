@@ -94,7 +94,7 @@ export abstract class ArFSMetadataEntityBuilder<T extends ArFSEntity> {
 }
 
 export abstract class ArFSFileOrFolderBuilder<T extends ArFSFileOrFolderEntity> extends ArFSMetadataEntityBuilder<T> {
-	parentFolderId?: string;
+	parentFolderId?: FolderID;
 
 	constructor(protected readonly entityId: FileID | FolderID, protected readonly arweave: Arweave) {
 		super(entityId, arweave);

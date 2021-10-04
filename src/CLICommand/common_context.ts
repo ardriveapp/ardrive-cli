@@ -1,13 +1,14 @@
 import { JWKWallet, Wallet, WalletDAO } from '../wallet_new';
 import { ParameterName } from './parameter';
 import * as fs from 'fs';
-import { JWKInterface } from 'ardrive-core-js';
+import { deriveDriveKey, JWKInterface } from 'ardrive-core-js';
 import {
 	DriveKeyParameter,
 	DrivePasswordParameter,
 	SeedPhraseParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
+import { DriveID, DriveKey } from '../types';
 
 /**
  * @type {CommonContext}
@@ -48,6 +49,24 @@ export class CommonContext {
 			return await this.walletDao.generateJWKWallet(seedPhrase);
 		}
 		throw new Error('No wallet file neither seed phrase provided!');
+	}
+
+	public async getDriveKey(driveId: DriveID): Promise<DriveKey> {
+		const driveKey = this.getParameterValue(DriveKeyParameter);
+		if (driveKey) {
+			return Buffer.from(driveKey);
+		}
+		const drivePassword = this.getParameterValue(DrivePasswordParameter);
+		if (drivePassword) {
+			const wallet: JWKWallet = (await this.getWallet()) as JWKWallet;
+			const derivedDriveKey: DriveKey = await deriveDriveKey(
+				drivePassword,
+				driveId,
+				JSON.stringify(wallet.getPrivateKey())
+			);
+			return derivedDriveKey;
+		}
+		throw new Error(`No drive key or password provided!`);
 	}
 
 	/**

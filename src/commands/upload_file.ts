@@ -1,7 +1,8 @@
 import { GatewayOracle } from 'ardrive-core-js';
-import { arDriveFactory } from '..';
+import { arDriveFactory, cliWalletDao } from '..';
 import { CLICommand } from '../CLICommand';
 import { ArFSFileToUpload, ArFSFolderToUpload, isFolder, wrapFileOrFolder } from '../arfs_file_wrapper';
+import { CommonContext } from '../CLICommand/common_context';
 import {
 	BoostParameter,
 	DestinationFileNameParameter,
@@ -88,6 +89,8 @@ new CLICommand({
 			return [singleParameter];
 		})();
 		if (filesToUpload.length) {
+			const context = new CommonContext(options, cliWalletDao);
+
 			const wallet = readJWKFile(options.walletFile);
 			const priceEstimator: ARDataPriceEstimator = (() => {
 				if (
@@ -109,37 +112,38 @@ new CLICommand({
 
 			await Promise.all(
 				filesToUpload.map(async (fileToUpload) => {
+					const { parentFolderId, wrappedEntity, destinationFileName } = fileToUpload;
+
 					const result = await (async () => {
-						if (options.drivePassword) {
-							if (isFolder(fileToUpload.wrappedEntity)) {
+						if (await context.getIsPrivate()) {
+							const driveId = await arDrive.getDriveIdForFolderId(parentFolderId);
+							const driveKey = await context.getDriveKey(driveId);
+
+							if (isFolder(wrappedEntity)) {
 								return arDrive.createPrivateFolderAndUploadChildren(
-									fileToUpload.parentFolderId,
-									fileToUpload.wrappedEntity,
-									options.drivePassword,
-									fileToUpload.destinationFileName
+									parentFolderId,
+									wrappedEntity,
+									driveKey,
+									destinationFileName
 								);
 							} else {
-								fileToUpload.wrappedEntity;
+								wrappedEntity;
 								return arDrive.uploadPrivateFile(
-									fileToUpload.parentFolderId,
-									fileToUpload.wrappedEntity,
-									options.drivePassword,
-									fileToUpload.destinationFileName
+									parentFolderId,
+									wrappedEntity,
+									driveKey,
+									destinationFileName
 								);
 							}
 						} else {
-							if (isFolder(fileToUpload.wrappedEntity)) {
+							if (isFolder(wrappedEntity)) {
 								return arDrive.createPublicFolderAndUploadChildren(
-									fileToUpload.parentFolderId,
-									fileToUpload.wrappedEntity,
-									fileToUpload.destinationFileName
+									parentFolderId,
+									wrappedEntity,
+									destinationFileName
 								);
 							} else {
-								return arDrive.uploadPublicFile(
-									fileToUpload.parentFolderId,
-									fileToUpload.wrappedEntity,
-									fileToUpload.destinationFileName
-								);
+								return arDrive.uploadPublicFile(parentFolderId, wrappedEntity, destinationFileName);
 							}
 						}
 					})();

@@ -11,6 +11,7 @@ import {
 import { Wallet } from '../wallet_new';
 import { arDriveFactory, cliWalletDao } from '..';
 import { FeeMultiple } from '../types';
+import { v4 as uuidv4 } from 'uuid';
 
 /* eslint-disable no-console */
 
@@ -27,6 +28,7 @@ new CLICommand({
 	async action(options) {
 		const context = new CommonContext(options, cliWalletDao);
 		const wallet: Wallet = await context.getWallet();
+
 		const ardrive = arDriveFactory({
 			wallet: wallet,
 			feeMultiple: options.boost as FeeMultiple,
@@ -34,7 +36,10 @@ new CLICommand({
 		});
 		const createDriveResult = await (async function () {
 			if (await context.getIsPrivate()) {
-				return ardrive.createPrivateDrive(options.driveName, options.drivePassword);
+				const driveId = uuidv4();
+				const driveKey = await context.getDriveKey(driveId);
+
+				return ardrive.createPrivateDrive(options.driveName, driveKey, driveId);
 			} else {
 				return ardrive.createPublicDrive(options.driveName);
 			}

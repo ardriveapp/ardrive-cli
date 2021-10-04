@@ -1,6 +1,5 @@
 import {
 	ContentType,
-	deriveDriveKey,
 	deriveFileKey,
 	fileDecrypt,
 	GQLNodeInterface,
@@ -9,8 +8,7 @@ import {
 } from 'ardrive-core-js';
 import Arweave from 'arweave';
 import { ArFSPrivateFile, ArFSPublicFile } from '../../arfsdao';
-import { FileID, TransactionID } from '../../types';
-import { JWKWallet } from '../../wallet_new';
+import { DriveKey, FileID, TransactionID } from '../../types';
 import { ArFSFileOrFolderBuilder } from './arfs_builders';
 
 export abstract class ArFSFileBuilder<T extends ArFSPublicFile | ArFSPrivateFile> extends ArFSFileOrFolderBuilder<T> {
@@ -91,27 +89,17 @@ export class ArFSPrivateFileBuilder extends ArFSFileBuilder<ArFSPrivateFile> {
 	cipher?: string;
 	cipherIV?: string;
 
-	constructor(
-		readonly fileId: FileID,
-		readonly arweave: Arweave,
-		protected readonly wallet: JWKWallet,
-		protected readonly drivePassword: string
-	) {
+	constructor(readonly fileId: FileID, readonly arweave: Arweave, private readonly driveKey: DriveKey) {
 		super(fileId, arweave);
 	}
 
-	static fromArweaveNode(
-		node: GQLNodeInterface,
-		arweave: Arweave,
-		wallet: JWKWallet,
-		drivePassword: string
-	): ArFSPrivateFileBuilder {
+	static fromArweaveNode(node: GQLNodeInterface, arweave: Arweave, driveKey: DriveKey): ArFSPrivateFileBuilder {
 		const { tags } = node;
 		const fileId = tags.find((tag) => tag.name === 'File-Id')?.value;
 		if (!fileId) {
 			throw new Error('File-ID tag missing!');
 		}
-		const fileBuilder = new ArFSPrivateFileBuilder(fileId, arweave, wallet, drivePassword);
+		const fileBuilder = new ArFSPrivateFileBuilder(fileId, arweave, driveKey);
 		return fileBuilder;
 	}
 
@@ -153,12 +141,7 @@ export class ArFSPrivateFileBuilder extends ArFSFileBuilder<ArFSPrivateFile> {
 		) {
 			const txData = await this.arweave.transactions.getData(this.txId, { decode: true });
 			const dataBuffer = Buffer.from(txData);
-			const driveKey: Buffer = await deriveDriveKey(
-				this.drivePassword,
-				this.driveId,
-				JSON.stringify(this.wallet.getPrivateKey())
-			);
-			const fileKey = await deriveFileKey(this.fileId, driveKey);
+			const fileKey = await deriveFileKey(this.fileId, this.driveKey);
 
 			const decryptedFileBuffer: Buffer = await fileDecrypt(this.cipherIV, fileKey, dataBuffer);
 			const decryptedFileString: string = await Utf8ArrayToStr(decryptedFileBuffer);
