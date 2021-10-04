@@ -12,11 +12,21 @@ import {
 	ArFSPrivateFile
 } from './arfsdao';
 import { CommunityOracle } from './community/community_oracle';
-import { TransactionID, ArweaveAddress, Winston, DriveID, FolderID, TipType, FileID, FeeMultiple } from './types';
-import { DrivePrivacy, GQLTagInterface, winstonToAr } from 'ardrive-core-js';
+import { deriveDriveKey, DrivePrivacy, GQLTagInterface, winstonToAr } from 'ardrive-core-js';
+import {
+	TransactionID,
+	ArweaveAddress,
+	Winston,
+	DriveID,
+	FolderID,
+	TipType,
+	FeeMultiple,
+	DriveKey,
+	FileID
+} from './types';
 import { WalletDAO, Wallet, JWKWallet } from './wallet_new';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
-import { FsFolder, FsFile } from './fsFile';
+import { ArFSFolderToUpload, ArFSFileToUpload } from './arfs_file_wrapper';
 import { ARDataPriceEstimator } from './utils/ar_data_price_estimator';
 import {
 	ArFSDriveTransactionData,
@@ -82,11 +92,10 @@ const stubEntityID = '00000000-0000-0000-0000-000000000000';
 const stubSize = 654321;
 const stubUnixTime = 1632236156;
 const stubDataContentType = 'application/json';
-const stubPassword = 'stubPassword';
 
 interface RecursiveBulkUploadParams {
 	parentFolderId: FolderID;
-	wrappedFolder: FsFolder;
+	wrappedFolder: ArFSFolderToUpload;
 	driveId: DriveID;
 }
 
@@ -95,7 +104,7 @@ interface RecursivePublicBulkUploadParams extends RecursiveBulkUploadParams {
 }
 
 interface RecursivePrivateBulkUploadParams extends RecursiveBulkUploadParams {
-	drivePassword: string;
+	driveKey: DriveKey;
 	folderData: ArFSPrivateFolderTransactionData;
 }
 export abstract class ArDriveType {
@@ -175,19 +184,17 @@ export class ArDrive extends ArDriveAnonymous {
 		];
 	}
 
-	async getDriveIdAndAssertDrive(folderId: FolderID): Promise<DriveID>;
-	async getDriveIdAndAssertDrive(folderId: FolderID, drivePassword: string): Promise<DriveID>;
-	async getDriveIdAndAssertDrive(folderId: FolderID, drivePassword?: string): Promise<DriveID> {
+	async getDriveIdAndAssertDrive(folderId: FolderID, driveKey?: DriveKey): Promise<DriveID> {
 		// Retrieve drive ID from folder ID
 		const driveId = await this.arFsDao.getDriveIdForFolderId(folderId);
 
-		const drive = drivePassword
-			? await this.arFsDao.getPrivateDrive(driveId, drivePassword)
+		const drive = driveKey
+			? await this.arFsDao.getPrivateDrive(driveId, driveKey)
 			: await this.arFsDao.getPublicDrive(driveId);
 
 		// Ensure that it is indeed public or private as intended
 		if (!drive) {
-			throw new Error(`${drivePassword ? 'Private' : 'Public'} drive with Drive ID ${driveId} not found!`);
+			throw new Error(`${driveKey ? 'Private' : 'Public'} drive with Drive ID ${driveId} not found!`);
 		}
 
 		return driveId;
@@ -240,11 +247,11 @@ export class ArDrive extends ArDriveAnonymous {
 		});
 	}
 
-	async movePrivateFile(fileId: FileID, newParentFolderId: FolderID, drivePassword: string): Promise<ArFSResult> {
+	async movePrivateFile(fileId: FileID, newParentFolderId: FolderID, driveKey: DriveKey): Promise<ArFSResult> {
 		const driveId = await this.getDriveIdAndAssertDrive(newParentFolderId);
 
 		// Get file meta data, sort query by owner to assert this.wallet owns the drive
-		const baseFileMetaData = await this.getPrivateFile(fileId, drivePassword);
+		const baseFileMetaData = await this.getPrivateFile(fileId, driveKey);
 
 		const stubbedFileTransactionData = await ArFSPrivateFileMetadataTransactionData.from(
 			baseFileMetaData.name,
@@ -253,9 +260,7 @@ export class ArDrive extends ArDriveAnonymous {
 			stubTransactionID,
 			stubDataContentType,
 			stubEntityID,
-			stubEntityID,
-			stubPassword,
-			(this.wallet as JWKWallet).getPrivateKey()
+			await this.stubDriveKey()
 		);
 
 		const moveBaseCosts = await this.estimateAndAssertCostOfMoveFile(stubbedFileTransactionData);
@@ -273,7 +278,7 @@ export class ArDrive extends ArDriveAnonymous {
 			baseFileMetaData,
 			newParentFolderId,
 			fileMetaDataBaseReward,
-			drivePassword
+			driveKey
 		});
 
 		return Promise.resolve({
@@ -295,7 +300,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 	async uploadPublicFile(
 		parentFolderId: FolderID,
-		wrappedFile: FsFile,
+		wrappedFile: ArFSFileToUpload,
 		destinationFileName?: string
 	): Promise<ArFSResult> {
 		const driveId = await this.getDriveIdAndAssertDrive(parentFolderId);
@@ -341,7 +346,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 	public async createPublicFolderAndUploadChildren(
 		parentFolderId: FolderID,
-		wrappedFolder: FsFolder,
+		wrappedFolder: ArFSFolderToUpload,
 		parentFolderName?: string
 	): Promise<ArFSResult> {
 		const driveId = await this.getDriveIdAndAssertDrive(parentFolderId);
@@ -479,11 +484,11 @@ export class ArDrive extends ArDriveAnonymous {
 
 	async uploadPrivateFile(
 		parentFolderId: FolderID,
-		wrappedFile: FsFile,
-		password: string,
+		wrappedFile: ArFSFileToUpload,
+		driveKey: DriveKey,
 		destinationFileName?: string
 	): Promise<ArFSResult> {
-		const driveId = await this.getDriveIdAndAssertDrive(parentFolderId, password);
+		const driveId = await this.getDriveIdAndAssertDrive(parentFolderId, driveKey);
 
 		const uploadBaseCosts = await this.estimateAndAssertCostOfFileUpload(
 			wrappedFile.fileStats.size,
@@ -506,7 +511,7 @@ export class ArDrive extends ArDriveAnonymous {
 			parentFolderId,
 			wrappedFile,
 			driveId,
-			password,
+			driveKey,
 			fileDataRewardSettings,
 			metadataRewardSettings,
 			destinationFileName
@@ -537,19 +542,15 @@ export class ArDrive extends ArDriveAnonymous {
 
 	public async createPrivateFolderAndUploadChildren(
 		parentFolderId: FolderID,
-		wrappedFolder: FsFolder,
-		drivePassword: string,
+		wrappedFolder: ArFSFolderToUpload,
+		driveKey: DriveKey,
 		parentFolderName?: string
 	): Promise<ArFSResult> {
-		const driveId = await this.getDriveIdAndAssertDrive(parentFolderId, drivePassword);
-
-		const wallet = this.wallet as JWKWallet;
+		const driveId = await this.getDriveIdAndAssertDrive(parentFolderId, driveKey);
 
 		const parentFolderData = await ArFSPrivateFolderTransactionData.from(
 			parentFolderName ?? wrappedFolder.getBaseFileName(),
-			driveId,
-			drivePassword,
-			wallet.getPrivateKey()
+			driveKey
 		);
 
 		// Estimate and assert the cost of the entire bulk upload
@@ -562,7 +563,7 @@ export class ArDrive extends ArDriveAnonymous {
 			parentFolderId,
 			wrappedFolder,
 			folderData: parentFolderData,
-			drivePassword,
+			driveKey,
 			driveId
 		});
 
@@ -581,7 +582,7 @@ export class ArDrive extends ArDriveAnonymous {
 		wrappedFolder,
 		driveId,
 		parentFolderId,
-		drivePassword,
+		driveKey,
 		folderData
 	}: RecursivePrivateBulkUploadParams): Promise<{
 		entityResults: ArFSEntityData[];
@@ -591,7 +592,7 @@ export class ArDrive extends ArDriveAnonymous {
 		let uploadEntityFees: ArFSFees = {};
 
 		// Create parent folder
-		const { folderTrxId, folderTrxReward, folderId, driveKey } = await this.arFsDao.createPrivateFolder({
+		const { folderTrxId, folderTrxReward, folderId } = await this.arFsDao.createPrivateFolder({
 			folderData: folderData,
 			driveId,
 			rewardSettings: {
@@ -599,7 +600,7 @@ export class ArDrive extends ArDriveAnonymous {
 				feeMultiple: this.feeMultiple
 			},
 			parentFolderId,
-			drivePassword,
+			driveKey,
 			syncParentFolderId: false
 		});
 
@@ -630,7 +631,7 @@ export class ArDrive extends ArDriveAnonymous {
 				folderId,
 				wrappedFile,
 				driveId,
-				drivePassword,
+				driveKey,
 				fileDataRewardSettings,
 				metadataRewardSettings
 			);
@@ -655,19 +656,14 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Upload folders, and children of those folders
 		for await (const childFolder of wrappedFolder.folders) {
-			const folderData = await ArFSPrivateFolderTransactionData.from(
-				wrappedFolder.getBaseFileName(),
-				driveId,
-				drivePassword,
-				(this.wallet as JWKWallet).getPrivateKey()
-			);
+			const folderData = await ArFSPrivateFolderTransactionData.from(wrappedFolder.getBaseFileName(), driveKey);
 
 			// Recursion alert, will keep creating folders of all nested folders
 			const results = await this.recursivelyCreatePrivateFolderAndUploadChildren({
 				parentFolderId: folderId,
 				wrappedFolder: childFolder,
 				driveId,
-				drivePassword,
+				driveKey,
 				folderData
 			});
 
@@ -717,25 +713,20 @@ export class ArDrive extends ArDriveAnonymous {
 	async createPrivateFolder(
 		folderName: string,
 		driveId: DriveID,
-		drivePassword: string,
+		driveKey: DriveKey,
 		parentFolderId?: FolderID
 	): Promise<ArFSResult> {
 		// Assert that there's enough AR available in the wallet
-		const folderData = await ArFSPrivateFolderTransactionData.from(
-			folderName,
-			driveId,
-			drivePassword,
-			(this.wallet as JWKWallet).getPrivateKey()
-		);
+		const folderData = await ArFSPrivateFolderTransactionData.from(folderName, driveKey);
 
 		const { metaDataBaseReward } = await this.estimateAndAssertCostOfFolderUpload(folderData);
 
 		// Create the folder and retrieve its folder ID
-		const { folderTrxId, folderTrxReward, folderId, driveKey } = await this.arFsDao.createPrivateFolder({
+		const { folderTrxId, folderTrxReward, folderId } = await this.arFsDao.createPrivateFolder({
 			folderData,
 			driveId,
 			rewardSettings: { reward: metaDataBaseReward, feeMultiple: this.feeMultiple },
-			drivePassword,
+			driveKey,
 			parentFolderId
 		});
 
@@ -796,23 +787,10 @@ export class ArDrive extends ArDriveAnonymous {
 		});
 	}
 
-	async createPrivateDrive(driveName: string, password: string): Promise<ArFSResult> {
+	async createPrivateDrive(driveName: string, driveKey: DriveKey, driveId: DriveID): Promise<ArFSResult> {
 		// Assert that there's enough AR available in the wallet
-		const wallet = this.wallet as JWKWallet;
-		const privKey = wallet.getPrivateKey();
-		const stubRootFolderData = await ArFSPrivateFolderTransactionData.from(
-			driveName,
-			stubEntityID,
-			password,
-			privKey
-		);
-		const stubDriveData = await ArFSPrivateDriveTransactionData.from(
-			driveName,
-			stubEntityID,
-			stubEntityID,
-			password,
-			privKey
-		);
+		const stubRootFolderData = await ArFSPrivateFolderTransactionData.from(driveName, driveKey);
+		const stubDriveData = await ArFSPrivateDriveTransactionData.from(driveName, stubEntityID, driveKey);
 		const driveCreationCosts = await this.estimateAndAssertCostOfDriveCreation(stubDriveData, stubRootFolderData);
 		const driveRewardSettings = {
 			reward: driveCreationCosts.driveMetaDataBaseReward,
@@ -824,7 +802,8 @@ export class ArDrive extends ArDriveAnonymous {
 		};
 		const createDriveResult = await this.arFsDao.createPrivateDrive(
 			driveName,
-			password,
+			driveKey,
+			driveId,
 			driveRewardSettings,
 			rootFolderRewardSettings
 		);
@@ -853,13 +832,13 @@ export class ArDrive extends ArDriveAnonymous {
 		});
 	}
 
-	async getPrivateDrive(driveId: DriveID, drivePassword: string): Promise<ArFSPrivateDrive> {
-		const driveEntity = await this.arFsDao.getPrivateDrive(driveId, drivePassword);
+	async getPrivateDrive(driveId: DriveID, driveKey: DriveKey): Promise<ArFSPrivateDrive> {
+		const driveEntity = await this.arFsDao.getPrivateDrive(driveId, driveKey);
 		return Promise.resolve(driveEntity);
 	}
 
 	async estimateAndAssertCostOfBulkUpload(
-		folderToUpload: FsFolder,
+		folderToUpload: ArFSFolderToUpload,
 		drivePrivacy: DrivePrivacy,
 		parentFolderMetaData?: ArFSObjectTransactionData
 	): Promise<{ totalPrice: Winston; communityWinstonTip: Winston }> {
@@ -932,13 +911,13 @@ export class ArDrive extends ArDriveAnonymous {
 		return { totalPrice: String(totalPrice), communityWinstonTip };
 	}
 
-	async getPrivateFolder(folderId: FolderID, drivePassword: string): Promise<ArFSPrivateFolder> {
-		const folderEntity = await this.arFsDao.getPrivateFolder(folderId, drivePassword);
+	async getPrivateFolder(folderId: FolderID, driveKey: DriveKey): Promise<ArFSPrivateFolder> {
+		const folderEntity = await this.arFsDao.getPrivateFolder(folderId, driveKey);
 		return folderEntity;
 	}
 
-	async getPrivateFile(fileId: string, drivePassword: string): Promise<ArFSPrivateFile> {
-		return this.arFsDao.getPrivateFile(fileId, drivePassword);
+	async getPrivateFile(fileId: string, driveKey: DriveKey): Promise<ArFSPrivateFile> {
+		return this.arFsDao.getPrivateFile(fileId, driveKey);
 	}
 
 	/**
@@ -946,8 +925,8 @@ export class ArDrive extends ArDriveAnonymous {
 	 * @param {FolderID} folderId the folder ID to list children of
 	 * @returns {ArFSPrivateFileOrFolderWithPaths[]} an array representation of the children and parent folder
 	 */
-	async listPrivateFolder(folderId: FolderID, password: string): Promise<ArFSPrivateFileOrFolderWithPaths[]> {
-		const children = this.arFsDao.listPrivateFolder(folderId, password);
+	async listPrivateFolder(folderId: FolderID, driveKey: DriveKey): Promise<ArFSPrivateFileOrFolderWithPaths[]> {
+		const children = this.arFsDao.listPrivateFolder(folderId, driveKey);
 		return children;
 	}
 
@@ -1068,9 +1047,18 @@ export class ArDrive extends ArDriveAnonymous {
 			rootFolderMetaDataBaseReward: rootFolderMetaDataBaseReward.toString()
 		};
 	}
+
+	async stubDriveKey(): Promise<DriveKey> {
+		return deriveDriveKey('stubPassword', stubEntityID, JSON.stringify((this.wallet as JWKWallet).getPrivateKey()));
+	}
+
+	async getDriveIdForFolderId(folderId: FolderID): Promise<DriveID> {
+		return this.arFsDao.getDriveIdForFolderId(folderId);
+	}
+
 	// Provides for stubbing metadata during cost estimations since the data trx ID won't yet be known
 	private stubPublicFileMetadata(
-		wrappedFile: FsFile,
+		wrappedFile: ArFSFileToUpload,
 		destinationFileName?: string
 	): ArFSPublicFileMetadataTransactionData {
 		const { fileSize, dataContentType, lastModifiedDateMS } = wrappedFile.gatherFileInfo();
@@ -1086,7 +1074,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 	// Provides for stubbing metadata during cost estimations since the data trx and File IDs won't yet be known
 	private async stubPrivateFileMetadata(
-		wrappedFile: FsFile,
+		wrappedFile: ArFSFileToUpload,
 		destinationFileName?: string
 	): Promise<ArFSPrivateFileMetadataTransactionData> {
 		const { fileSize, dataContentType, lastModifiedDateMS } = wrappedFile.gatherFileInfo();
@@ -1098,9 +1086,11 @@ export class ArDrive extends ArDriveAnonymous {
 			stubTransactionID,
 			dataContentType,
 			stubEntityID,
-			stubEntityID,
-			stubPassword,
-			(this.wallet as JWKWallet).getPrivateKey()
+			await deriveDriveKey(
+				'stubPassword',
+				stubEntityID,
+				JSON.stringify((this.wallet as JWKWallet).getPrivateKey())
+			)
 		);
 	}
 }

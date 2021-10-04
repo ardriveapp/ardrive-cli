@@ -1,15 +1,7 @@
-import {
-	deriveDriveKey,
-	driveDecrypt,
-	DrivePrivacy,
-	GQLNodeInterface,
-	GQLTagInterface,
-	Utf8ArrayToStr
-} from 'ardrive-core-js';
+import { driveDecrypt, DrivePrivacy, GQLNodeInterface, GQLTagInterface, Utf8ArrayToStr } from 'ardrive-core-js';
 import Arweave from 'arweave';
 import { ArFSPrivateDrive, ArFSPublicDrive } from '../../arfsdao';
-import { DriveID, FolderID } from '../../types';
-import { JWKWallet } from '../../wallet_new';
+import { DriveID, DriveKey, FolderID } from '../../types';
 import { ArFSMetadataEntityBuilder } from './arfs_builders';
 
 export class ArFSPublicDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPublicDrive> {
@@ -91,12 +83,7 @@ export class ArFSPrivateDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPriva
 	cipher?: string;
 	cipherIV?: string;
 
-	constructor(
-		driveId: DriveID,
-		private readonly wallet: JWKWallet,
-		private readonly drivePassword: string,
-		arweave: Arweave
-	) {
+	constructor(driveId: DriveID, arweave: Arweave, private readonly driveKey: DriveKey) {
 		super(driveId, arweave);
 	}
 
@@ -152,13 +139,7 @@ export class ArFSPrivateDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPriva
 		) {
 			const txData = await this.arweave.transactions.getData(this.txId, { decode: true });
 			const dataBuffer = Buffer.from(txData);
-			const driveKey: Buffer = await deriveDriveKey(
-				this.drivePassword,
-				this.driveId,
-				JSON.stringify(this.wallet.getPrivateKey())
-			);
-
-			const decryptedDriveBuffer: Buffer = await driveDecrypt(this.cipherIV, driveKey, dataBuffer);
+			const decryptedDriveBuffer: Buffer = await driveDecrypt(this.cipherIV, this.driveKey, dataBuffer);
 			const decryptedDriveString: string = await Utf8ArrayToStr(decryptedDriveBuffer);
 			const decryptedDriveJSON = await JSON.parse(decryptedDriveString);
 
