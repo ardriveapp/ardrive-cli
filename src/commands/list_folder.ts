@@ -47,6 +47,7 @@ new CLICommand({
 			);
 			const driveId = await arDrive.getDriveIdForFolderId(folderId);
 			const driveKey = await context.getDriveKey(driveId);
+
 			children = await arDrive.listPrivateFolder(folderId, driveKey);
 		} else {
 			const arDrive = new ArDriveAnonymous(new ArFSDAOAnonymous(arweave));

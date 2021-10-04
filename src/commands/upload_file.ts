@@ -1,6 +1,7 @@
 import { GatewayOracle } from 'ardrive-core-js';
-import { arDriveFactory } from '..';
+import { arDriveFactory, cliWalletDao } from '..';
 import { CLICommand } from '../CLICommand';
+import { CommonContext } from '../CLICommand/common_context';
 import {
 	BoostParameter,
 	DestinationFileNameParameter,
@@ -82,6 +83,8 @@ new CLICommand({
 			return [singleParameter];
 		})();
 		if (filesToUpload.length) {
+			const context = new CommonContext(options, cliWalletDao);
+
 			const wallet = readJWKFile(options.walletFile);
 			const priceEstimator: ARDataPriceEstimator = (() => {
 				if (filesToUpload.length > ARDataPriceRegressionEstimator.sampleByteVolumes.length) {
@@ -103,20 +106,21 @@ new CLICommand({
 						console.log(`Bad file: ${JSON.stringify(fileToUpload)}`);
 						process.exit(1);
 					}
+					const { parentFolderId, localFilePath, destinationFileName } = options;
+
 					const result = await (async () => {
-						if (options.drivePassword) {
+						if (await context.getIsPrivate()) {
+							const driveId = await arDrive.getDriveIdForFolderId(parentFolderId);
+							const driveKey = await context.getDriveKey(driveId);
+
 							return arDrive.uploadPrivateFile(
-								fileToUpload.parentFolderId,
-								fileToUpload.localFilePath,
-								options.drivePassword,
-								fileToUpload.destinationFileName
+								parentFolderId,
+								localFilePath,
+								driveKey,
+								destinationFileName
 							);
 						} else {
-							return arDrive.uploadPublicFile(
-								fileToUpload.parentFolderId,
-								fileToUpload.localFilePath,
-								fileToUpload.destinationFileName
-							);
+							return arDrive.uploadPublicFile(parentFolderId, localFilePath, destinationFileName);
 						}
 					})();
 					console.log(JSON.stringify(result, null, 4));
