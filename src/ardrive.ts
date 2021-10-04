@@ -10,7 +10,7 @@ import {
 	ArFSPrivateFileOrFolderWithPaths
 } from './arfsdao';
 import { CommunityOracle } from './community/community_oracle';
-import { deriveDriveKey, DrivePrivacy, GQLTagInterface, winstonToAr } from 'ardrive-core-js';
+import { deriveDriveKey, DrivePrivacy, GQLTagInterface, JWKInterface, winstonToAr } from 'ardrive-core-js';
 import {
 	TransactionID,
 	ArweaveAddress,
@@ -38,6 +38,7 @@ import {
 	ArFSPublicFolderTransactionData
 } from './arfs_trx_data_types';
 import { urlEncodeHashKey } from './utils';
+import { v4 as uuidv4 } from 'uuid';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 
@@ -82,6 +83,16 @@ export interface FileUploadBaseCosts extends BulkFileBaseCosts {
 export interface DriveUploadBaseCosts {
 	driveMetaDataBaseReward: Winston;
 	rootFolderMetaDataBaseReward: Winston;
+}
+
+export class PrivateDriveKeyData {
+	private constructor(readonly driveId: DriveID, readonly driveKey: DriveKey) {}
+
+	static async from(drivePassword: string, privateKey: JWKInterface): Promise<PrivateDriveKeyData> {
+		const driveId = uuidv4();
+		const driveKey = await deriveDriveKey(drivePassword, driveId, JSON.stringify(privateKey));
+		return new PrivateDriveKeyData(driveId, driveKey);
+	}
 }
 
 const stubTransactionID = '0000000000000000000000000000000000000000000';
@@ -679,10 +690,14 @@ export class ArDrive extends ArDriveAnonymous {
 		});
 	}
 
-	async createPrivateDrive(driveName: string, driveKey: DriveKey, driveId: DriveID): Promise<ArFSResult> {
+	async createPrivateDrive(driveName: string, newPrivateDriveData: PrivateDriveKeyData): Promise<ArFSResult> {
 		// Assert that there's enough AR available in the wallet
-		const stubRootFolderData = await ArFSPrivateFolderTransactionData.from(driveName, driveKey);
-		const stubDriveData = await ArFSPrivateDriveTransactionData.from(driveName, stubEntityID, driveKey);
+		const stubRootFolderData = await ArFSPrivateFolderTransactionData.from(driveName, newPrivateDriveData.driveKey);
+		const stubDriveData = await ArFSPrivateDriveTransactionData.from(
+			driveName,
+			stubEntityID,
+			newPrivateDriveData.driveKey
+		);
 		const driveCreationCosts = await this.estimateAndAssertCostOfDriveCreation(stubDriveData, stubRootFolderData);
 		const driveRewardSettings = {
 			reward: driveCreationCosts.driveMetaDataBaseReward,
@@ -694,8 +709,8 @@ export class ArDrive extends ArDriveAnonymous {
 		};
 		const createDriveResult = await this.arFsDao.createPrivateDrive(
 			driveName,
-			driveKey,
-			driveId,
+			newPrivateDriveData.driveKey,
+			newPrivateDriveData.driveId,
 			driveRewardSettings,
 			rootFolderRewardSettings
 		);
