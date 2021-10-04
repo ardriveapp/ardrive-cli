@@ -258,6 +258,8 @@ describe('ParametersHelper class', () => {
 			CLICommand.parse(program, [...baseArgv, testCommandName, '-w', './test_wallet.json']);
 		});
 
+		// Note: Redundant prolonged seed-phrase tests are commented out to save testing time
+
 		// it('returns the address of the wallet when a valid --seed-phrase option is provided', () => {
 		// 	declareCommandWithParams(program, [SeedPhraseParameter], async (options) => {
 		// 		const parameters = new ParametersHelper(options);
