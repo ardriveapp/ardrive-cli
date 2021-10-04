@@ -26,17 +26,11 @@ new CLICommand({
 	parameters: [ParentFolderIdParameter, SeedPhraseParameter, WalletFileParameter, DrivePasswordParameter],
 	async action(options) {
 		const parameters = new ParametersHelper(options);
-		const wallet = await parameters.getOptionalWallet();
-		const password = parameters.getParameterValue(DrivePasswordParameter);
-		const folderId = parameters.getParameterValue(ParentFolderIdParameter);
+		const folderId = parameters.getRequiredParameterValue(ParentFolderIdParameter);
 		let children: (ArFSPrivateFileOrFolderWithPaths | ArFSPublicFileOrFolderWithPaths)[];
 
-		if (!folderId) {
-			console.log(`Folder id not specified!`);
-			process.exit(1);
-		}
-
-		if (wallet && password) {
+		if (await parameters.getIsPrivate()) {
+			const wallet = await parameters.getRequiredWallet();
 			const arDrive = new ArDrive(
 				wallet,
 				cliWalletDao,
@@ -45,8 +39,10 @@ new CLICommand({
 				CLI_APP_NAME,
 				CLI_APP_VERSION
 			);
+
 			const driveId = await arDrive.getDriveIdForFolderId(folderId);
 			const driveKey = await parameters.getDriveKey(driveId);
+
 			children = await arDrive.listPrivateFolder(folderId, driveKey);
 		} else {
 			const arDrive = new ArDriveAnonymous(new ArFSDAOAnonymous(arweave));

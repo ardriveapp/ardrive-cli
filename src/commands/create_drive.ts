@@ -7,9 +7,10 @@ import {
 	SeedPhraseParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
-import { Wallet } from '../wallet_new';
 import { arDriveFactory } from '..';
+import { JWKWallet, Wallet } from '../wallet_new';
 import { FeeMultiple } from '../types';
+import { PrivateDriveKeyData } from '../ardrive';
 
 /* eslint-disable no-console */
 
@@ -26,6 +27,7 @@ new CLICommand({
 	async action(options) {
 		const parameters = new ParametersHelper(options);
 		const wallet: Wallet = await parameters.getRequiredWallet();
+
 		const ardrive = arDriveFactory({
 			wallet: wallet,
 			feeMultiple: options.boost as FeeMultiple,
@@ -33,7 +35,11 @@ new CLICommand({
 		});
 		const createDriveResult = await (async function () {
 			if (await parameters.getIsPrivate()) {
-				return ardrive.createPrivateDrive(options.driveName, options.drivePassword);
+				const newDriveData = await PrivateDriveKeyData.from(
+					options.drivePassword,
+					(wallet as JWKWallet).getPrivateKey()
+				);
+				return ardrive.createPrivateDrive(options.driveName, newDriveData);
 			} else {
 				return ardrive.createPublicDrive(options.driveName);
 			}

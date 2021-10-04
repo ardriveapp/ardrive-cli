@@ -160,18 +160,20 @@ describe('ParametersHelper class', () => {
 			]);
 		});
 
-		it('returns a wallet when a valid -s option is provided', () => {
-			declareCommandWithParams(program, [SeedPhraseParameter], async (options) => {
-				const parameters = new ParametersHelper(options);
-				expect(await parameters.getRequiredWallet()).to.not.be.null;
-			});
-			CLICommand.parse(program, [
-				...baseArgv,
-				testCommandName,
-				'-s',
-				'alcohol wisdom allow used april recycle exhibit parent music field cabbage treat'
-			]);
-		});
+		// Note: Redundant prolonged seed-phrase tests are commented out to save testing time
+
+		// it('returns a wallet when a valid -s option is provided', () => {
+		// 	declareCommandWithParams(program, [SeedPhraseParameter], async (options) => {
+		// 		const parameters = new ParametersHelper(options);
+		// 		expect(await parameters.getRequiredWallet()).to.not.be.null;
+		// 	});
+		// 	CLICommand.parse(program, [
+		// 		...baseArgv,
+		// 		testCommandName,
+		// 		'-s',
+		// 		'alcohol wisdom allow used april recycle exhibit parent music field cabbage treat'
+		// 	]);
+		// });
 
 		it('throws when none of --wallet-file, -w, --seed-phrase, or -s option are provided', () => {
 			declareCommandWithParams(program, [], async (options) => {
@@ -201,31 +203,33 @@ describe('ParametersHelper class', () => {
 			CLICommand.parse(program, [...baseArgv, testCommandName, '-w', './test_wallet.json']);
 		});
 
-		it('returns a wallet when a valid --seed-phrase option is provided', () => {
-			declareCommandWithParams(program, [SeedPhraseParameter], async (options) => {
-				const parameters = new ParametersHelper(options);
-				expect(await parameters.getOptionalWallet()).to.not.be.null;
-			});
-			CLICommand.parse(program, [
-				...baseArgv,
-				testCommandName,
-				'--seed-phrase',
-				'alcohol wisdom allow used april recycle exhibit parent music field cabbage treat'
-			]);
-		});
+		// Note: Redundant prolonged seed-phrase tests are commented out to save testing time
 
-		it('returns a wallet when a valid -s option is provided', () => {
-			declareCommandWithParams(program, [SeedPhraseParameter], async (options) => {
-				const parameters = new ParametersHelper(options);
-				expect(await parameters.getOptionalWallet()).to.not.be.null;
-			});
-			CLICommand.parse(program, [
-				...baseArgv,
-				testCommandName,
-				'-s',
-				'alcohol wisdom allow used april recycle exhibit parent music field cabbage treat'
-			]);
-		});
+		// it('returns a wallet when a valid --seed-phrase option is provided', () => {
+		// 	declareCommandWithParams(program, [SeedPhraseParameter], async (options) => {
+		// 		const parameters = new ParametersHelper(options);
+		// 		expect(await parameters.getOptionalWallet()).to.not.be.null;
+		// 	});
+		// 	CLICommand.parse(program, [
+		// 		...baseArgv,
+		// 		testCommandName,
+		// 		'--seed-phrase',
+		// 		'alcohol wisdom allow used april recycle exhibit parent music field cabbage treat'
+		// 	]);
+		// });
+
+		// it('returns a wallet when a valid -s option is provided', () => {
+		// 	declareCommandWithParams(program, [SeedPhraseParameter], async (options) => {
+		// 		const parameters = new ParametersHelper(options);
+		// 		expect(await parameters.getOptionalWallet()).to.not.be.null;
+		// 	});
+		// 	CLICommand.parse(program, [
+		// 		...baseArgv,
+		// 		testCommandName,
+		// 		'-s',
+		// 		'alcohol wisdom allow used april recycle exhibit parent music field cabbage treat'
+		// 	]);
+		// });
 
 		it('returns null when none of --wallet-file, -w, --seed-phrase, or -s option are provided', () => {
 			declareCommandWithParams(program, [], async (options) => {
@@ -254,31 +258,33 @@ describe('ParametersHelper class', () => {
 			CLICommand.parse(program, [...baseArgv, testCommandName, '-w', './test_wallet.json']);
 		});
 
-		it('returns the address of the wallet when a valid --seed-phrase option is provided', () => {
-			declareCommandWithParams(program, [SeedPhraseParameter], async (options) => {
-				const parameters = new ParametersHelper(options);
-				expect(await parameters.getWalletAddress()).to.equal('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
-			});
-			CLICommand.parse(program, [
-				...baseArgv,
-				testCommandName,
-				'--seed-phrase',
-				'alcohol wisdom allow used april recycle exhibit parent music field cabbage treat'
-			]);
-		});
+		// Note: Redundant prolonged seed-phrase tests are commented out to save testing time
 
-		it('returns the address of the wallet when a valid -s option is provided', () => {
-			declareCommandWithParams(program, [SeedPhraseParameter], async (options) => {
-				const parameters = new ParametersHelper(options);
-				expect(await parameters.getWalletAddress()).to.equal('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
-			});
-			CLICommand.parse(program, [
-				...baseArgv,
-				testCommandName,
-				'-s',
-				'alcohol wisdom allow used april recycle exhibit parent music field cabbage treat'
-			]);
-		});
+		// it('returns the address of the wallet when a valid --seed-phrase option is provided', () => {
+		// 	declareCommandWithParams(program, [SeedPhraseParameter], async (options) => {
+		// 		const parameters = new ParametersHelper(options);
+		// 		expect(await parameters.getWalletAddress()).to.equal('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
+		// 	});
+		// 	CLICommand.parse(program, [
+		// 		...baseArgv,
+		// 		testCommandName,
+		// 		'--seed-phrase',
+		// 		'alcohol wisdom allow used april recycle exhibit parent music field cabbage treat'
+		// 	]);
+		// });
+
+		// it('returns the address of the wallet when a valid -s option is provided', () => {
+		// 	declareCommandWithParams(program, [SeedPhraseParameter], async (options) => {
+		// 		const parameters = new ParametersHelper(options);
+		// 		expect(await parameters.getWalletAddress()).to.equal('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
+		// 	});
+		// 	CLICommand.parse(program, [
+		// 		...baseArgv,
+		// 		testCommandName,
+		// 		'-s',
+		// 		'alcohol wisdom allow used april recycle exhibit parent music field cabbage treat'
+		// 	]);
+		// });
 
 		it('returns the address provided by the --address option value', () => {
 			declareCommandWithParams(program, [AddressParameter], async (options) => {
