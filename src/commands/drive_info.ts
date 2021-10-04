@@ -25,14 +25,16 @@ new CLICommand({
 	async action(options) {
 		const context = new CommonContext(options, cliWalletDao);
 		const wallet = await context.getWallet().catch(() => null);
-		const result = await (function () {
+		const result = await (async function () {
 			if (wallet) {
 				const arDrive = arDriveFactory({
 					wallet: wallet
 				});
 				const driveId: string = options.driveId;
+				const driveKey = await context.getDriveKey(driveId);
+
 				// const getAllRevisions: boolean = options.getAllRevisions;
-				return arDrive.getPrivateDrive(driveId, options.drivePassword /*, getAllRevisions*/);
+				return arDrive.getPrivateDrive(driveId, driveKey /*, getAllRevisions*/);
 			} else {
 				const arDrive = new ArDriveAnonymous(new ArFSDAOAnonymous(cliArweave));
 				const driveId: string = options.driveId;

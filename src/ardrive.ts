@@ -328,23 +328,10 @@ export class ArDrive extends ArDriveAnonymous {
 		});
 	}
 
-	async createPrivateDrive(driveName: string, password: string): Promise<ArFSResult> {
+	async createPrivateDrive(driveName: string, driveKey: DriveKey, driveId: DriveID): Promise<ArFSResult> {
 		// Assert that there's enough AR available in the wallet
-		const wallet = this.wallet as JWKWallet;
-		const privKey = wallet.getPrivateKey();
-		const stubRootFolderData = await ArFSPrivateFolderTransactionData.from(
-			driveName,
-			stubEntityID,
-			password,
-			privKey
-		);
-		const stubDriveData = await ArFSPrivateDriveTransactionData.from(
-			driveName,
-			stubEntityID,
-			stubEntityID,
-			password,
-			privKey
-		);
+		const stubRootFolderData = await ArFSPrivateFolderTransactionData.from(driveName, driveKey);
+		const stubDriveData = await ArFSPrivateDriveTransactionData.from(driveName, stubEntityID, driveKey);
 		const driveCreationCosts = await this.estimateAndAssertCostOfDriveCreation(stubDriveData, stubRootFolderData);
 		const driveRewardSettings = {
 			reward: driveCreationCosts.driveMetaDataBaseReward,
@@ -356,7 +343,8 @@ export class ArDrive extends ArDriveAnonymous {
 		};
 		const createDriveResult = await this.arFsDao.createPrivateDrive(
 			driveName,
-			password,
+			driveKey,
+			driveId,
 			driveRewardSettings,
 			rootFolderRewardSettings
 		);
