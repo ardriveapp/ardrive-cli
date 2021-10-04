@@ -207,7 +207,14 @@ export class ArDrive extends ArDriveAnonymous {
 
 	/** Computes the size of a private file encrypted with AES256-GCM */
 	encryptedDataSize(dataSize: number): number {
-		return (dataSize / 16 + 1) * 16;
+		if (dataSize < 0 || !Number.isInteger(dataSize)) {
+			throw new Error(`dataSize must be non-negative, integer value! ${dataSize} is invalid!`);
+		}
+		if (dataSize > Number.MAX_SAFE_INTEGER - 16) {
+			throw new Error(`Max unencrypted dataSize allowed is ${Number.MAX_SAFE_INTEGER - 16}!`);
+		}
+		const modulo16 = dataSize % 16;
+		return dataSize - modulo16 + 16;
 	}
 
 	async uploadPrivateFile(
