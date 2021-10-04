@@ -1,8 +1,7 @@
 import { GatewayOracle } from 'ardrive-core-js';
-import { arDriveFactory, cliWalletDao } from '..';
-import { CLICommand } from '../CLICommand';
 import { ArFSFileToUpload, ArFSFolderToUpload, isFolder, wrapFileOrFolder } from '../arfs_file_wrapper';
-import { CommonContext } from '../CLICommand/common_context';
+import { arDriveFactory } from '..';
+import { CLICommand, ParametersHelper } from '../CLICommand';
 import {
 	BoostParameter,
 	DestinationFileNameParameter,
@@ -89,7 +88,7 @@ new CLICommand({
 			return [singleParameter];
 		})();
 		if (filesToUpload.length) {
-			const context = new CommonContext(options, cliWalletDao);
+			const parameters = new ParametersHelper(options);
 
 			const wallet = readJWKFile(options.walletFile);
 			const priceEstimator: ARDataPriceEstimator = (() => {
@@ -115,9 +114,9 @@ new CLICommand({
 					const { parentFolderId, wrappedEntity, destinationFileName } = fileToUpload;
 
 					const result = await (async () => {
-						if (await context.getIsPrivate()) {
+						if (await parameters.getIsPrivate()) {
 							const driveId = await arDrive.getDriveIdForFolderId(parentFolderId);
-							const driveKey = await context.getDriveKey(driveId);
+							const driveKey = await parameters.getDriveKey(driveId);
 
 							if (isFolder(wrappedEntity)) {
 								return arDrive.createPrivateFolderAndUploadChildren(
