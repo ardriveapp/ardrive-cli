@@ -1,5 +1,4 @@
-import { CLICommand } from '../CLICommand';
-import { CommonContext } from '../CLICommand/common_context';
+import { CLICommand, ParametersHelper } from '../CLICommand';
 import {
 	BoostParameter,
 	DriveNameParameter,
@@ -8,8 +7,8 @@ import {
 	SeedPhraseParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
+import { arDriveFactory } from '..';
 import { JWKWallet, Wallet } from '../wallet_new';
-import { arDriveFactory, cliWalletDao } from '..';
 import { FeeMultiple } from '../types';
 import { PrivateDriveKeyData } from '../ardrive';
 
@@ -26,8 +25,8 @@ new CLICommand({
 		DryRunParameter
 	],
 	async action(options) {
-		const context = new CommonContext(options, cliWalletDao);
-		const wallet: Wallet = await context.getWallet();
+		const parameters = new ParametersHelper(options);
+		const wallet: Wallet = await parameters.getRequiredWallet();
 
 		const ardrive = arDriveFactory({
 			wallet: wallet,
@@ -35,7 +34,7 @@ new CLICommand({
 			dryRun: options.dryRun
 		});
 		const createDriveResult = await (async function () {
-			if (await context.getIsPrivate()) {
+			if (await parameters.getIsPrivate()) {
 				const newDriveData = await PrivateDriveKeyData.from(
 					options.drivePassword,
 					(wallet as JWKWallet).getPrivateKey()
