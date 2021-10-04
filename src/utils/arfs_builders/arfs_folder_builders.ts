@@ -1,8 +1,7 @@
-import { deriveDriveKey, fileDecrypt, GQLNodeInterface, GQLTagInterface, Utf8ArrayToStr } from 'ardrive-core-js';
+import { fileDecrypt, GQLNodeInterface, GQLTagInterface, Utf8ArrayToStr } from 'ardrive-core-js';
 import Arweave from 'arweave';
 import { ArFSPrivateFolder, ArFSPublicFolder } from '../../arfsdao';
-import { FolderID } from '../../types';
-import { JWKWallet } from '../../wallet_new';
+import { DriveKey, FolderID } from '../../types';
 import { ArFSFileOrFolderBuilder } from './arfs_builders';
 
 export abstract class ArFSFolderBuilder<
@@ -79,27 +78,17 @@ export class ArFSPrivateFolderBuilder extends ArFSFolderBuilder<ArFSPrivateFolde
 	cipher?: string;
 	cipherIV?: string;
 
-	constructor(
-		readonly folderId: FolderID,
-		readonly arweave: Arweave,
-		protected readonly wallet: JWKWallet,
-		protected readonly drivePassword: string
-	) {
+	constructor(readonly folderId: FolderID, readonly arweave: Arweave, protected readonly driveKey: DriveKey) {
 		super(folderId, arweave);
 	}
 
-	static fromArweaveNode(
-		node: GQLNodeInterface,
-		arweave: Arweave,
-		wallet: JWKWallet,
-		drivePassword: string
-	): ArFSPrivateFolderBuilder {
+	static fromArweaveNode(node: GQLNodeInterface, arweave: Arweave, driveKey: DriveKey): ArFSPrivateFolderBuilder {
 		const { tags } = node;
 		const folderId = tags.find((tag) => tag.name === 'Folder-Id')?.value;
 		if (!folderId) {
 			throw new Error('Folder-ID tag missing!');
 		}
-		const folderBuilder = new ArFSPrivateFolderBuilder(folderId, arweave, wallet, drivePassword);
+		const folderBuilder = new ArFSPrivateFolderBuilder(folderId, arweave, driveKey);
 		return folderBuilder;
 	}
 
@@ -146,13 +135,8 @@ export class ArFSPrivateFolderBuilder extends ArFSFolderBuilder<ArFSPrivateFolde
 		) {
 			const txData = await this.arweave.transactions.getData(this.txId, { decode: true });
 			const dataBuffer = Buffer.from(txData);
-			const driveKey: Buffer = await deriveDriveKey(
-				this.drivePassword,
-				this.driveId,
-				JSON.stringify(this.wallet.getPrivateKey())
-			);
 
-			const decryptedFolderBuffer: Buffer = await fileDecrypt(this.cipherIV, driveKey, dataBuffer);
+			const decryptedFolderBuffer: Buffer = await fileDecrypt(this.cipherIV, this.driveKey, dataBuffer);
 			const decryptedFolderString: string = await Utf8ArrayToStr(decryptedFolderBuffer);
 			const decryptedFolderJSON = await JSON.parse(decryptedFolderString);
 

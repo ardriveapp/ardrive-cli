@@ -37,22 +37,22 @@ export interface FileInfo {
  * }
  *
  */
-export function wrapFileOrFolder(fileOrFolderPath: FilePath): FsFile | FsFolder {
+export function wrapFileOrFolder(fileOrFolderPath: FilePath): ArFSFileToUpload | ArFSFolderToUpload {
 	const entityStats = fs.statSync(fileOrFolderPath);
 
 	if (entityStats.isDirectory()) {
-		return new FsFolder(fileOrFolderPath, entityStats);
+		return new ArFSFolderToUpload(fileOrFolderPath, entityStats);
 	}
 
-	return new FsFile(fileOrFolderPath, entityStats);
+	return new ArFSFileToUpload(fileOrFolderPath, entityStats);
 }
 
 /** Type-guard function to determine if returned class is a File or Folder */
-export function isFolder(fileOrFolder: FsFile | FsFolder): fileOrFolder is FsFolder {
+export function isFolder(fileOrFolder: ArFSFileToUpload | ArFSFolderToUpload): fileOrFolder is ArFSFolderToUpload {
 	return Object.keys(fileOrFolder).includes('files') || Object.keys(fileOrFolder).includes('folders');
 }
 
-export class FsFile {
+export class ArFSFileToUpload {
 	constructor(public readonly filePath: FilePath, public readonly fileStats: fs.Stats) {
 		if (this.fileStats.size >= maxFileSize) {
 			throw new Error(`Files greater than "${maxFileSize}" bytes are not yet supported!`);
@@ -94,9 +94,9 @@ export class FsFile {
 	}
 }
 
-export class FsFolder {
-	files: FsFile[] = [];
-	folders: FsFolder[] = [];
+export class ArFSFolderToUpload {
+	files: ArFSFileToUpload[] = [];
+	folders: ArFSFolderToUpload[] = [];
 
 	baseCosts?: FolderUploadBaseCosts;
 
@@ -109,11 +109,11 @@ export class FsFolder {
 
 			if (entityStats.isDirectory()) {
 				// Child is a folder, build a new folder which will construct it's own children
-				const childFolder = new FsFolder(absoluteEntityPath, entityStats);
+				const childFolder = new ArFSFolderToUpload(absoluteEntityPath, entityStats);
 				this.folders.push(childFolder);
 			} else {
 				// Child is a file, build a new file
-				const childFile = new FsFile(absoluteEntityPath, entityStats);
+				const childFile = new ArFSFileToUpload(absoluteEntityPath, entityStats);
 				this.files.push(childFile);
 			}
 		}
