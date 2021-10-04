@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import { SinonStubbedInstance, stub } from 'sinon';
 import { arDriveFactory } from '../../src';
 import { ArDrive } from '../../src/ardrive';
+import { TipType } from '../../src/types';
 import { readJWKFile } from '../../src/utils';
 import { ArweaveOracle } from '../../src/utils/arweave_oracle';
 import { ARDataPriceRegressionEstimator } from '../../src/utils/ar_data_price_regression_estimator';
@@ -51,6 +52,23 @@ describe('ArDrive class', () => {
 			];
 			inputsAndExpectedOutputs.forEach(([input, expectedOutput]) => {
 				expect(arDrive.encryptedDataSize(input)).to.equal(expectedOutput);
+			});
+		});
+	});
+
+	// TODO: Move these to unit test file
+	describe('getTipTags function', () => {
+		it('returns the expected tags', () => {
+			const baseTags = [
+				{ name: 'App-Name', value: 'ArDrive-CLI' },
+				{ name: 'App-Version', value: '2.0' }
+			];
+			const inputsAndExpectedOutputs = [
+				[undefined, [...baseTags, { name: 'Tip-Type', value: 'data upload' }]],
+				['data upload', [...baseTags, { name: 'Tip-Type', value: 'data upload' }]]
+			];
+			inputsAndExpectedOutputs.forEach(([input, expectedOutput]) => {
+				expect(arDrive.getTipTags(input as TipType)).to.deep.equal(expectedOutput);
 			});
 		});
 	});
