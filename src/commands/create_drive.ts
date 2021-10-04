@@ -8,10 +8,10 @@ import {
 	SeedPhraseParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
-import { Wallet } from '../wallet_new';
+import { JWKWallet, Wallet } from '../wallet_new';
 import { arDriveFactory, cliWalletDao } from '..';
 import { FeeMultiple } from '../types';
-import { v4 as uuidv4 } from 'uuid';
+import { PrivateDriveKeyData } from '../ardrive';
 
 /* eslint-disable no-console */
 
@@ -36,10 +36,11 @@ new CLICommand({
 		});
 		const createDriveResult = await (async function () {
 			if (await context.getIsPrivate()) {
-				const driveId = uuidv4();
-				const driveKey = await context.getDriveKey(driveId);
-
-				return ardrive.createPrivateDrive(options.driveName, driveKey, driveId);
+				const newDriveData = await PrivateDriveKeyData.from(
+					options.drivePassword,
+					(wallet as JWKWallet).getPrivateKey()
+				);
+				return ardrive.createPrivateDrive(options.driveName, newDriveData);
 			} else {
 				return ardrive.createPublicDrive(options.driveName);
 			}
