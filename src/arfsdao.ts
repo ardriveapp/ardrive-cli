@@ -11,8 +11,7 @@ import {
 	EntityType,
 	GQLEdgeInterface,
 	GQLTagInterface,
-	uploadDataChunk,
-	Utf8ArrayToStr
+	uploadDataChunk
 } from 'ardrive-core-js';
 import {
 	ArFSPublicFileDataPrototype,
