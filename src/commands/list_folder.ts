@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { arweave } from 'ardrive-core-js';
-import { cliWalletDao, CLI_APP_NAME, CLI_APP_VERSION } from '..';
+import { arDriveFactory, cliWalletDao, CLI_APP_NAME, CLI_APP_VERSION } from '..';
 import { ArDrive, ArDriveAnonymous } from '../ardrive';
 import {
 	ArFSDAO,
@@ -31,21 +31,14 @@ new CLICommand({
 
 		if (await parameters.getIsPrivate()) {
 			const wallet = await parameters.getRequiredWallet();
-			const arDrive = new ArDrive(
-				wallet,
-				cliWalletDao,
-				new ArFSDAO(wallet, arweave),
-				new ArDriveCommunityOracle(arweave),
-				CLI_APP_NAME,
-				CLI_APP_VERSION
-			);
+			const arDrive = arDriveFactory({ wallet });
 
 			const driveId = await arDrive.getDriveIdForFolderId(folderId);
 			const driveKey = await parameters.getDriveKey(driveId);
 
 			children = await arDrive.listPrivateFolder(folderId, driveKey);
 		} else {
-			const arDrive = new ArDriveAnonymous(new ArFSDAOAnonymous(arweave));
+			const arDrive = arDriveFactory();
 			children = await arDrive.listPublicFolder(folderId);
 		}
 
