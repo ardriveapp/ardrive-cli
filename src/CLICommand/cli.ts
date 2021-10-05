@@ -10,7 +10,7 @@ export interface ParsedArguments {
  */
 export abstract class CliApiObject {
 	abstract arguments(names: string): CliApiObject;
-	abstract action(action: (options: ParsedArguments) => void): CliApiObject;
+	abstract action(action: (options: ParsedArguments) => Promise<void>): CliApiObject;
 	abstract option(aliases: string, description: string, defaultValue?: string | boolean): CliApiObject;
 	abstract requiredOption(aliases: string, description: string, defaultValue?: string | boolean): CliApiObject;
 	abstract command(commandName: string): CliApiObject;
