@@ -21,11 +21,11 @@ new CLICommand({
 	],
 	async action(options) {
 		const parameters = new ParametersHelper(options);
-		const wallet = await parameters.getRequiredWallet();
 		// const shouldGetAllRevisions: boolean = options.getAllRevisions;
 
 		const result = await (async function () {
-			if (wallet) {
+			if (await parameters.getIsPrivate()) {
+				const wallet = await parameters.getRequiredWallet();
 				const arDrive = arDriveFactory({ wallet: wallet });
 				const folderId: string = options.folderId;
 
