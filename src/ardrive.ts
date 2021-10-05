@@ -1,25 +1,31 @@
-import { CommunityOracle } from './community/community_oracle';
-import * as fs from 'fs';
-import { DrivePrivacy, extToMime, GQLTagInterface, winstonToAr } from 'ardrive-core-js';
-import { TransactionID, ArweaveAddress, Winston, DriveID, FolderID, Bytes, TipType, FeeMultiple } from './types';
-import { WalletDAO, Wallet, JWKWallet } from './wallet_new';
-import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
-import { ARDataPriceEstimator } from './utils/ar_data_price_estimator';
 import {
 	ArFSDAO,
 	ArFSDAOAnonymous,
 	ArFSDAOType,
-	ArFSFileOrFolderEntity,
 	ArFSPrivateDrive,
-	ArFSPrivateFile,
+	ArFSPrivateFileOrFolderWithPaths,
 	ArFSPrivateFolder,
-	FolderHierarchy,
-	ArFSPrivateFileOrFolderData,
-	ArFSPublicFileOrFolderData,
-	ArFSPublicFile,
 	ArFSPublicDrive,
+	ArFSPublicFileOrFolderWithPaths,
 	ArFSPublicFolder
 } from './arfsdao';
+import { CommunityOracle } from './community/community_oracle';
+import { deriveDriveKey, DrivePrivacy, extToMime, GQLTagInterface, JWKInterface, winstonToAr } from 'ardrive-core-js';
+import * as fs from 'fs';
+import {
+	TransactionID,
+	ArweaveAddress,
+	Winston,
+	DriveID,
+	FolderID,
+	Bytes,
+	TipType,
+	FeeMultiple,
+	DriveKey
+} from './types';
+import { WalletDAO, Wallet, JWKWallet } from './wallet_new';
+import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
+import { ARDataPriceEstimator } from './utils/ar_data_price_estimator';
 import {
 	ArFSDriveTransactionData,
 	ArFSFolderTransactionData,
@@ -33,6 +39,7 @@ import {
 } from './arfs_trx_data_types';
 import { basename } from 'path';
 import { urlEncodeHashKey } from './utils';
+import { v4 as uuidv4 } from 'uuid';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 
@@ -75,34 +82,18 @@ export interface DriveUploadBaseCosts {
 	rootFolderMetaDataBaseReward: Winston;
 }
 
+export class PrivateDriveKeyData {
+	private constructor(readonly driveId: DriveID, readonly driveKey: DriveKey) {}
+
+	static async from(drivePassword: string, privateKey: JWKInterface): Promise<PrivateDriveKeyData> {
+		const driveId = uuidv4();
+		const driveKey = await deriveDriveKey(drivePassword, driveId, JSON.stringify(privateKey));
+		return new PrivateDriveKeyData(driveId, driveKey);
+	}
+}
+
 const stubTransactionID = '0000000000000000000000000000000000000000000';
 const stubEntityID = '00000000-0000-0000-0000-000000000000';
-
-export function lastFolderRevisionFilter(
-	entity: ArFSPublicFolder | ArFSPrivateFolder,
-	_index: number,
-	allEntities: (ArFSPublicFolder | ArFSPrivateFolder)[]
-): boolean {
-	const allRevisions = allEntities.filter((e) => e.entityId === entity.entityId);
-	const lastRevision = allRevisions[allRevisions.length - 1];
-	return entity.txId === lastRevision.txId;
-}
-
-export function lastFileRevisionFilter(
-	entity: ArFSPublicFile | ArFSPrivateFile,
-	_index: number,
-	allEntities: (ArFSPublicFile | ArFSPrivateFile)[]
-): boolean {
-	const allRevisions = allEntities.filter((e) => e.entityId === entity.entityId);
-	const lastRevision = allRevisions[allRevisions.length - 1];
-	return entity.txId === lastRevision.txId;
-}
-
-export const childrenAndFolderOfFilterFactory = (folderIDs: FolderID[]) =>
-	function (entity: ArFSFileOrFolderEntity): boolean {
-		return folderIDs.includes(entity.parentFolderId) || folderIDs.includes(entity.entityId);
-	};
-
 export abstract class ArDriveType {
 	protected abstract readonly arFsDao: ArFSDAOType;
 }
@@ -122,50 +113,14 @@ export class ArDriveAnonymous extends ArDriveType {
 		return folder;
 	}
 
-	async getChildrenOfPublicFolder(folderId: FolderID): Promise<ArFSPublicFileOrFolderData[]> {
-		const folder = await this.arFsDao.getPublicFolder(folderId);
-
-		// Fetch all of the folder entities within the drive
-		const driveIdOfFolder = folder.driveId;
-		const allFolderEntitiesOfDrive = (await this.arFsDao.getAllFoldersOfPublicDrive(driveIdOfFolder)).filter(
-			lastFolderRevisionFilter
-		);
-
-		// Feed entities to FolderHierarchy.setupNodesWithEntity()
-		const hierarchy = FolderHierarchy.newFromEntities(allFolderEntitiesOfDrive);
-		const folderIDs = hierarchy.allFolderIDs();
-
-		// Fetch all file entities within all Folders of the drive
-		const allFileEntitiesOfDrive = (await this.arFsDao.getAllPublicChildrenFilesFromFolderIDs(folderIDs)).filter(
-			lastFileRevisionFilter
-		);
-
-		const allEntitiesOfDrive = [...allFolderEntitiesOfDrive, ...allFileEntitiesOfDrive];
-		const childrenFolderIDs = hierarchy.subTreeOf(folderId).allFolderIDs();
-		const allChildrenOfFolder = allEntitiesOfDrive.filter(childrenAndFolderOfFilterFactory(childrenFolderIDs));
-
-		const mergedData = allChildrenOfFolder.map((entity) => {
-			const path = `${hierarchy.pathToFolderId(entity.parentFolderId)}${entity.name}`;
-			const txPath = `${hierarchy.txPathToFolderId(entity.parentFolderId)}${entity.txId}`;
-			const entityIdPath = `${hierarchy.entityPathToFolderId(entity.parentFolderId)}${entity.entityId}`;
-			return new ArFSPublicFileOrFolderData(
-				entity.appName,
-				entity.appVersion,
-				entity.arFS,
-				entity.contentType,
-				entity.driveId,
-				entity.entityType,
-				entity.name,
-				entity.txId,
-				entity.unixTime,
-				entity.parentFolderId,
-				entity.entityId,
-				path,
-				txPath,
-				entityIdPath
-			);
-		});
-		return mergedData;
+	/**
+	 * Lists the children and self of certain public folder
+	 * @param {FolderID} folderId the folder ID to list children of
+	 * @returns {ArFSPublicFileOrFolderWithPaths[]} an array representation of the children and parent folder
+	 */
+	async listPublicFolder(folderId: FolderID): Promise<ArFSPublicFileOrFolderWithPaths[]> {
+		const children = await this.arFsDao.listPublicFolder(folderId);
+		return children;
 	}
 }
 
@@ -269,7 +224,7 @@ export class ArDrive extends ArDriveAnonymous {
 	async uploadPrivateFile(
 		parentFolderId: FolderID,
 		filePath: string,
-		password: string,
+		driveKey: DriveKey,
 		destinationFileName?: string
 	): Promise<ArFSResult> {
 		// TODO: Hoist this elsewhere for bulk uploads
@@ -286,7 +241,7 @@ export class ArDrive extends ArDriveAnonymous {
 		const uploadFileResult = await this.arFsDao.uploadPrivateFile(
 			parentFolderId,
 			filePath,
-			password,
+			driveKey,
 			fileDataRewardSettings,
 			metadataRewardSettings,
 			destinationFileName
@@ -384,22 +339,13 @@ export class ArDrive extends ArDriveAnonymous {
 		});
 	}
 
-	async createPrivateDrive(driveName: string, password: string): Promise<ArFSResult> {
+	async createPrivateDrive(driveName: string, newPrivateDriveData: PrivateDriveKeyData): Promise<ArFSResult> {
 		// Assert that there's enough AR available in the wallet
-		const wallet = this.wallet as JWKWallet;
-		const privKey = wallet.getPrivateKey();
-		const stubRootFolderData = await ArFSPrivateFolderTransactionData.from(
-			driveName,
-			stubEntityID,
-			password,
-			privKey
-		);
+		const stubRootFolderData = await ArFSPrivateFolderTransactionData.from(driveName, newPrivateDriveData.driveKey);
 		const stubDriveData = await ArFSPrivateDriveTransactionData.from(
 			driveName,
 			stubEntityID,
-			stubEntityID,
-			password,
-			privKey
+			newPrivateDriveData.driveKey
 		);
 		const driveCreationCosts = await this.estimateAndAssertCostOfDriveCreation(stubDriveData, stubRootFolderData);
 		const driveRewardSettings = {
@@ -412,7 +358,8 @@ export class ArDrive extends ArDriveAnonymous {
 		};
 		const createDriveResult = await this.arFsDao.createPrivateDrive(
 			driveName,
-			password,
+			newPrivateDriveData.driveKey,
+			newPrivateDriveData.driveId,
 			driveRewardSettings,
 			rootFolderRewardSettings
 		);
@@ -441,62 +388,24 @@ export class ArDrive extends ArDriveAnonymous {
 		});
 	}
 
-	async getPrivateDrive(driveId: DriveID, drivePassword: string): Promise<ArFSPrivateDrive> {
-		const driveEntity = await this.arFsDao.getPrivateDrive(driveId, drivePassword);
+	async getPrivateDrive(driveId: DriveID, driveKey: DriveKey): Promise<ArFSPrivateDrive> {
+		const driveEntity = await this.arFsDao.getPrivateDrive(driveId, driveKey);
 		return Promise.resolve(driveEntity);
 	}
 
-	async getPrivateFolder(folderId: FolderID, drivePassword: string): Promise<ArFSPrivateFolder> {
-		const folderEntity = await this.arFsDao.getPrivateFolder(folderId, drivePassword);
+	async getPrivateFolder(folderId: FolderID, driveKey: DriveKey): Promise<ArFSPrivateFolder> {
+		const folderEntity = await this.arFsDao.getPrivateFolder(folderId, driveKey);
 		return folderEntity;
 	}
 
-	async getChildrenOfPrivateFolder(folderId: FolderID, password: string): Promise<ArFSPrivateFileOrFolderData[]> {
-		const folder = await this.arFsDao.getPrivateFolder(folderId, password);
-
-		// Fetch all of the folder entities within the drive
-		const driveIdOfFolder = folder.driveId;
-		const allFolderEntitiesOfDrive = (
-			await this.arFsDao.getAllFoldersOfPrivateDrive(driveIdOfFolder, password)
-		).filter(lastFolderRevisionFilter);
-
-		// Feed entities to FolderHierarchy.setupNodesWithEntity()
-		const hierarchy = FolderHierarchy.newFromEntities(allFolderEntitiesOfDrive);
-		const folderIDs = hierarchy.allFolderIDs();
-
-		// Fetch all file entities within all Folders of the drive
-		const allFileEntitiesOfDrive = (
-			await this.arFsDao.getAllPrivateChildrenFilesFromFolderIDs(folderIDs, password)
-		).filter(lastFileRevisionFilter);
-
-		const allEntitiesOfDrive = [...allFolderEntitiesOfDrive, ...allFileEntitiesOfDrive];
-		const childrenFolderIDs = hierarchy.subTreeOf(folderId).allFolderIDs();
-		const allChildrenOfFolder = allEntitiesOfDrive.filter(childrenAndFolderOfFilterFactory(childrenFolderIDs));
-
-		const mergedData = allChildrenOfFolder.map((entity) => {
-			const path = `${hierarchy.pathToFolderId(entity.parentFolderId)}${entity.name}`;
-			const txPath = `${hierarchy.txPathToFolderId(entity.parentFolderId)}${entity.txId}`;
-			const entityIdPath = `${hierarchy.entityPathToFolderId(entity.parentFolderId)}${entity.entityId}`;
-			return new ArFSPrivateFileOrFolderData(
-				entity.appName,
-				entity.appVersion,
-				entity.arFS,
-				entity.contentType,
-				entity.driveId,
-				entity.entityType,
-				entity.name,
-				entity.txId,
-				entity.unixTime,
-				entity.parentFolderId,
-				entity.entityId,
-				entity.cipher,
-				entity.cipherIV,
-				path,
-				txPath,
-				entityIdPath
-			);
-		});
-		return mergedData;
+	/**
+	 * Lists the children and self of certain private folder
+	 * @param {FolderID} folderId the folder ID to list children of
+	 * @returns {ArFSPrivateFileOrFolderWithPaths[]} an array representation of the children and parent folder
+	 */
+	async listPrivateFolder(folderId: FolderID, driveKey: DriveKey): Promise<ArFSPrivateFileOrFolderWithPaths[]> {
+		const children = this.arFsDao.listPrivateFolder(folderId, driveKey);
+		return children;
 	}
 
 	async estimateAndAssertCostOfFileUpload(
@@ -588,6 +497,10 @@ export class ArDrive extends ArDriveAnonymous {
 		};
 	}
 
+	async getDriveIdForFolderId(folderId: FolderID): Promise<DriveID> {
+		return this.arFsDao.getDriveIdForFolderId(folderId);
+	}
+
 	// Provides for stubbing metadata during cost estimations since the data trx ID won't yet be known
 	private stubPublicFileMetadata(
 		filePath: string,
@@ -620,9 +533,11 @@ export class ArDrive extends ArDriveAnonymous {
 			stubTransactionID,
 			dataContentType,
 			stubEntityID,
-			stubEntityID,
-			'stubPassword',
-			(this.wallet as JWKWallet).getPrivateKey()
+			await deriveDriveKey(
+				'stubPassword',
+				stubEntityID,
+				JSON.stringify((this.wallet as JWKWallet).getPrivateKey())
+			)
 		);
 	}
 }
