@@ -1,9 +1,13 @@
 /* eslint-disable no-console */
 import { cliArweave, cliWalletDao, CLI_APP_NAME, CLI_APP_VERSION } from '..';
 import { ArDrive, ArDriveAnonymous } from '../ardrive';
-import { ArFSDAO, ArFSDAOAnonymous, ArFSPrivateFileOrFolderData, ArFSPublicFileOrFolderData } from '../arfsdao';
-import { CLICommand } from '../CLICommand';
-import { CommonContext } from '../CLICommand/common_context';
+import {
+	ArFSDAO,
+	ArFSDAOAnonymous,
+	ArFSPrivateFileOrFolderWithPaths,
+	ArFSPublicFileOrFolderWithPaths
+} from '../arfsdao';
+import { CLICommand, ParametersHelper } from '../CLICommand';
 import { ArDriveCommunityOracle } from '../community/ardrive_community_oracle';
 import {
 	DriveIdParameter,
@@ -17,11 +21,11 @@ new CLICommand({
 	name: 'list-drive',
 	parameters: [DriveIdParameter, SeedPhraseParameter, WalletFileParameter],
 	async action(options) {
-		const context = new CommonContext(options, cliWalletDao);
-		const wallet = await context.getWallet().catch(() => null);
-		const password = context.getParameterValue(DrivePasswordParameter);
-		const driveId = context.getParameterValue(DriveIdParameter);
-		let children: (ArFSPrivateFileOrFolderData | ArFSPublicFileOrFolderData)[];
+		const parameters = new ParametersHelper(options, cliWalletDao);
+		const wallet = await parameters.getRequiredWallet().catch(() => null);
+		const password = parameters.getParameterValue(DrivePasswordParameter);
+		const driveId = parameters.getParameterValue(DriveIdParameter);
+		let children: (ArFSPrivateFileOrFolderWithPaths | ArFSPublicFileOrFolderWithPaths)[];
 
 		if (!driveId) {
 			console.log(`Drive id not specified!`);
@@ -37,14 +41,15 @@ new CLICommand({
 				CLI_APP_NAME,
 				CLI_APP_VERSION
 			);
-			const drive = await arDrive.getPrivateDrive(driveId, password);
+			const driveKey = await parameters.getDriveKey(driveId);
+			const drive = await arDrive.getPrivateDrive(driveId, driveKey);
 			const rootFolderId = drive.rootFolderId;
-			children = await arDrive.getChildrenOfPrivateFolder(rootFolderId, password);
+			children = await arDrive.listPrivateFolder(rootFolderId, driveKey);
 		} else {
 			const arDrive = new ArDriveAnonymous(new ArFSDAOAnonymous(cliArweave));
 			const drive = await arDrive.getPublicDrive(driveId);
 			const rootFolderId = drive.rootFolderId;
-			children = await arDrive.getChildrenOfPublicFolder(rootFolderId);
+			children = await arDrive.listPublicFolder(rootFolderId);
 		}
 
 		// Display data
