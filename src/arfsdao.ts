@@ -261,7 +261,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		);
 
 		// Fetch all file entities within all Folders of the drive
-		const childrenFileEntities = await this.getPublicFilesWithParentFolderIds([folderId, ...searchFolderIDs], true);
+		const childrenFileEntities = await this.getPublicFilesWithParentFolderIds(searchFolderIDs, true);
 
 		const children = [...childrenFolderEntities, ...childrenFileEntities];
 
