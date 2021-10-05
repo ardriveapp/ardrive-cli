@@ -1,15 +1,7 @@
 /* eslint-disable no-console */
-import { arweave } from 'ardrive-core-js';
-import { arDriveFactory, cliWalletDao, CLI_APP_NAME, CLI_APP_VERSION } from '..';
-import { ArDrive, ArDriveAnonymous } from '../ardrive';
-import {
-	ArFSDAO,
-	ArFSDAOAnonymous,
-	ArFSPrivateFileOrFolderWithPaths,
-	ArFSPublicFileOrFolderWithPaths
-} from '../arfsdao';
+import { arDriveFactory } from '..';
+import { ArFSPrivateFileOrFolderWithPaths, ArFSPublicFileOrFolderWithPaths } from '../arfsdao';
 import { CLICommand, ParametersHelper } from '../CLICommand';
-import { ArDriveCommunityOracle } from '../community/ardrive_community_oracle';
 import {
 	DrivePasswordParameter,
 	ParentFolderIdParameter,
