@@ -1,15 +1,18 @@
 import { GatewayOracle } from 'ardrive-core-js';
 import { arDriveFactory } from '..';
-import { CLICommand } from '../CLICommand';
+import { CLICommand, ParametersHelper } from '../CLICommand';
 import {
+	BoostParameter,
 	DestinationFileNameParameter,
 	DriveKeyParameter,
 	DrivePasswordParameter,
+	DryRunParameter,
 	LocalFilePathParameter,
 	LocalFilesParameter,
 	ParentFolderIdParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
+import { FeeMultiple } from '../types';
 import { readJWKFile } from '../utils';
 import { ARDataPriceEstimator } from '../utils/ar_data_price_estimator';
 import { ARDataPriceOracleEstimator } from '../utils/ar_data_price_oracle_estimator';
@@ -34,7 +37,9 @@ new CLICommand({
 		LocalFilesParameter,
 		DrivePasswordParameter,
 		DriveKeyParameter,
-		WalletFileParameter
+		WalletFileParameter,
+		BoostParameter,
+		DryRunParameter
 	],
 	async action(options) {
 		const filesToUpload: UploadFileParameter[] = (function (): UploadFileParameter[] {
@@ -77,6 +82,8 @@ new CLICommand({
 			return [singleParameter];
 		})();
 		if (filesToUpload.length) {
+			const parameters = new ParametersHelper(options);
+
 			const wallet = readJWKFile(options.walletFile);
 			const priceEstimator: ARDataPriceEstimator = (() => {
 				if (filesToUpload.length > ARDataPriceRegressionEstimator.sampleByteVolumes.length) {
@@ -86,27 +93,33 @@ new CLICommand({
 				}
 			})();
 
-			const arDrive = arDriveFactory(wallet, priceEstimator);
+			const arDrive = arDriveFactory({
+				wallet: wallet,
+				priceEstimator: priceEstimator,
+				feeMultiple: options.boost as FeeMultiple,
+				dryRun: options.dryRun
+			});
 			await Promise.all(
 				filesToUpload.map(async (fileToUpload) => {
 					if (!fileToUpload.parentFolderId || !fileToUpload.localFilePath) {
 						console.log(`Bad file: ${JSON.stringify(fileToUpload)}`);
 						process.exit(1);
 					}
+					const { parentFolderId, localFilePath, destinationFileName } = options;
+
 					const result = await (async () => {
-						if (options.drivePassword) {
+						if (await parameters.getIsPrivate()) {
+							const driveId = await arDrive.getDriveIdForFolderId(parentFolderId);
+							const driveKey = await parameters.getDriveKey(driveId);
+
 							return arDrive.uploadPrivateFile(
-								fileToUpload.parentFolderId,
-								fileToUpload.localFilePath,
-								options.drivePassword,
-								fileToUpload.destinationFileName
+								parentFolderId,
+								localFilePath,
+								driveKey,
+								destinationFileName
 							);
 						} else {
-							return arDrive.uploadPublicFile(
-								fileToUpload.parentFolderId,
-								fileToUpload.localFilePath,
-								fileToUpload.destinationFileName
-							);
+							return arDrive.uploadPublicFile(parentFolderId, localFilePath, destinationFileName);
 						}
 					})();
 					console.log(JSON.stringify(result, null, 4));

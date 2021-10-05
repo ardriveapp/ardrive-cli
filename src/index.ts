@@ -3,10 +3,11 @@
 import { Wallet, WalletDAO } from './wallet_new';
 import Arweave from 'arweave';
 import { ArDriveCommunityOracle } from './community/ardrive_community_oracle';
-import { ArDrive } from './ardrive';
-import { ArFSDAO } from './arfsdao';
-import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
+import { ArDrive, ArDriveAnonymous } from './ardrive';
+import { ArFSDAO, ArFSDAOAnonymous } from './arfsdao';
 import { ARDataPriceEstimator } from './utils/ar_data_price_estimator';
+import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
+import { FeeMultiple } from './types';
 
 if (require.main === module) {
 	// declare all parameters
@@ -30,19 +31,39 @@ export const cliArweave = Arweave.init({
 
 export const cliWalletDao = new WalletDAO(cliArweave, CLI_APP_NAME, CLI_APP_VERSION);
 
-export function arDriveFactory(
-	wallet: Wallet,
-	priceEstimator: ARDataPriceEstimator = new ARDataPriceRegressionEstimator(),
-	walletDao: WalletDAO = cliWalletDao,
-	arweave: Arweave = cliArweave
-): ArDrive {
-	return new ArDrive(
-		wallet,
-		walletDao,
-		new ArFSDAO(wallet, arweave, CLI_APP_NAME, CLI_APP_VERSION),
-		new ArDriveCommunityOracle(arweave),
-		CLI_APP_NAME,
-		CLI_APP_VERSION,
-		priceEstimator
-	);
+export interface ArDriveSettingsAnonymous {
+	walletDao?: WalletDAO;
+	arweave?: Arweave;
 }
+export interface ArDriveSettings extends ArDriveSettingsAnonymous {
+	wallet: Wallet;
+	priceEstimator?: ARDataPriceEstimator;
+	feeMultiple?: FeeMultiple;
+	dryRun?: boolean;
+}
+
+export function arDriveFactory(settings?: ArDriveSettingsAnonymous): ArDriveAnonymous;
+export function arDriveFactory(settings: ArDriveSettings): ArDrive;
+export function arDriveFactory(s?: ArDriveSettingsAnonymous): ArDrive | ArDriveAnonymous {
+	const settings = s as ArDriveSettings;
+	const arweave = settings.arweave || cliArweave;
+	const walletDao = settings.walletDao || cliWalletDao;
+	const priceEstimator = settings.priceEstimator || new ARDataPriceRegressionEstimator();
+	if (s && settings.wallet) {
+		return new ArDrive(
+			settings.wallet,
+			walletDao,
+			new ArFSDAO(settings.wallet, arweave, settings.dryRun, CLI_APP_NAME, CLI_APP_VERSION),
+			new ArDriveCommunityOracle(arweave),
+			CLI_APP_NAME,
+			CLI_APP_VERSION,
+			priceEstimator,
+			settings.feeMultiple,
+			settings.dryRun
+		);
+	} else {
+		return new ArDriveAnonymous(new ArFSDAOAnonymous(arweave, CLI_APP_NAME, CLI_APP_VERSION));
+	}
+}
+
+// return new ArDriveAnonymous(new ArFSDAOAnonymous(arweave, CLI_APP_NAME, CLI_APP_VERSION));
