@@ -1,9 +1,9 @@
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import {
-	DriveIdParameter,
 	DriveKeyParameter,
 	DrivePasswordParameter,
 	GetAllRevisionsParameter,
+	FolderIdParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
 import { arDriveFactory } from '..';
@@ -11,9 +11,9 @@ import { arDriveFactory } from '..';
 /* eslint-disable no-console */
 
 new CLICommand({
-	name: 'drive-info',
+	name: 'folder-info',
 	parameters: [
-		DriveIdParameter,
+		FolderIdParameter,
 		GetAllRevisionsParameter,
 		DrivePasswordParameter,
 		DriveKeyParameter,
@@ -21,19 +21,22 @@ new CLICommand({
 	],
 	async action(options) {
 		const parameters = new ParametersHelper(options);
-		const wallet = await parameters.getOptionalWallet();
-		const driveId: string = options.driveId;
+		const wallet = await parameters.getRequiredWallet();
 		// const shouldGetAllRevisions: boolean = options.getAllRevisions;
 
 		const result = await (async function () {
 			if (wallet) {
 				const arDrive = arDriveFactory({ wallet: wallet });
+				const folderId: string = options.folderId;
+
+				const driveId = await arDrive.getDriveIdForFolderId(folderId);
 				const driveKey = await parameters.getDriveKey(driveId);
 
-				return arDrive.getPrivateDrive(driveId, driveKey /*, shouldGetAllRevisions*/);
+				return arDrive.getPrivateFolder(folderId, driveKey /*, shouldGetAllRevisions*/);
 			} else {
 				const arDrive = arDriveFactory();
-				return arDrive.getPublicDrive(driveId /*, shouldGetAllRevisions*/);
+				const folderId: string = options.folderId;
+				return arDrive.getPublicFolder(folderId /*, shouldGetAllRevisions*/);
 			}
 		})();
 		console.log(JSON.stringify(result, null, 4));

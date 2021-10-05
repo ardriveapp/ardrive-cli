@@ -6,7 +6,7 @@ export type CommandName = string;
 export interface CommandDescriptor {
 	name: CommandName;
 	parameters: ParameterName[];
-	action(options: ParsedArguments): void;
+	action(options: ParsedArguments): Promise<void>;
 }
 
 const program: CliApiObject = new Command() as CliApiObject;
@@ -16,7 +16,7 @@ program.option('-h, --help', 'Get help');
 program.addHelpCommand(false);
 
 /**
- * @name serCommanderCommand
+ * @name setCommanderCommand
  * @param {CommandDescriptor} commandDescriptor the description of the command to be set
  * @param {CliApiObject} program the instance of the commander class
  * This function is the responsible to tell the third party library to declare a command
@@ -45,8 +45,12 @@ function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliA
 			command.option(...optionArguments);
 		}
 	});
-	command = command.action((options) => {
-		commandDescriptor.action(options);
+	command = command.action(async (options) => {
+		await commandDescriptor.action(options).catch((err) => {
+			// eslint-disable-next-line no-console
+			console.log(err.message);
+			process.exit(1);
+		});
 	});
 }
 

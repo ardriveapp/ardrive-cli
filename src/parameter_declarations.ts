@@ -5,12 +5,13 @@ export const SeedPhraseParameter = 'seedPhrase';
 export const DrivePasswordParameter = 'drivePassword';
 export const DriveNameParameter = 'driveName';
 export const DriveKeyParameter = 'driveKey';
-export const DriveAddressParameter = 'driveAddress';
+export const AddressParameter = 'address';
 export const DriveIdParameter = 'driveId';
 export const ArAmountParameter = 'arAmount';
-export const DestinationAddressParameter = 'destAddres';
+export const DestinationAddressParameter = 'destAddress';
 export const TransactionIdParameter = 'txId';
 export const ConfirmationsParameter = 'confirmations';
+export const FolderIdParameter = 'folderId';
 export const ParentFolderIdParameter = 'parentFolderId';
 export const LocalFilePathParameter = 'localFilePath';
 export const DestinationFileNameParameter = 'destFileName';
@@ -44,7 +45,7 @@ Parameter.declare({
 	aliases: ['-p', '--drive-password'],
 	description: `the encryption password for the private drive (OPTIONAL)
 		• When provided, creates the drive as a private drive. Public drive otherwise.`,
-	forbiddenConjunctionParameters: [DriveKeyParameter, DriveAddressParameter]
+	forbiddenConjunctionParameters: [DriveKeyParameter]
 });
 
 Parameter.declare({
@@ -53,7 +54,7 @@ Parameter.declare({
 	description: `the drive key for the parent drive of the folder identified by --folder-id
 		• Required only for folders residing in private drives
 		• Can NOT be used in conjunction with --drive-password`,
-	forbiddenConjunctionParameters: [DrivePasswordParameter, DriveAddressParameter]
+	forbiddenConjunctionParameters: [DrivePasswordParameter]
 });
 
 Parameter.declare({
@@ -63,8 +64,8 @@ Parameter.declare({
 });
 
 Parameter.declare({
-	name: DriveAddressParameter,
-	aliases: ['-a', '--drive-address'],
+	name: AddressParameter,
+	aliases: ['-a', '--address'],
 	description: 'the address',
 	forbiddenConjunctionParameters: [DrivePasswordParameter, DriveKeyParameter]
 });
@@ -107,18 +108,29 @@ Parameter.declare({
 	name: ParentFolderIdParameter,
 	aliases: ['-f', '--parent-folder-id'],
 	description: `the ArFS folder ID for the folder in which this file will reside (i.e. its parent folder)
-		• To upload the file to the root of a drive, use the root folder ID of the drive`
+		• To upload the file to the root of a drive, use the root folder ID of the drive`,
+	required: true
 });
+
+Parameter.declare({
+	name: FolderIdParameter,
+	aliases: ['-f', '--folder-id'],
+	description: `the ArFS folder ID for the folder to query`,
+	required: true
+});
+
 Parameter.declare({
 	name: LocalFilePathParameter,
 	aliases: ['-l', '--local-file-path'],
 	description: `the path on the local filesystem for the file that will be uploaded`
 });
+
 Parameter.declare({
 	name: DestinationFileNameParameter,
 	aliases: ['-d', '--dest-file-name'],
 	description: `(OPTIONAL) a destination file name to use when uploaded to ArDrive`
 });
+
 Parameter.declare({
 	name: LocalFilesParameter,
 	aliases: ['--local-files'],

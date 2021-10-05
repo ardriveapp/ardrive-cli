@@ -1,5 +1,5 @@
 import { cliWalletDao } from '..';
-import { CLICommand } from '../CLICommand';
+import { CLICommand, ParametersHelper } from '../CLICommand';
 import { SeedPhraseParameter } from '../parameter_declarations';
 
 /* eslint-disable no-console */
@@ -8,10 +8,9 @@ new CLICommand({
 	name: 'generate-wallet',
 	parameters: [SeedPhraseParameter],
 	async action(options) {
-		if (!options.seedPhrase) {
-			throw new Error('Missing required seed phrase');
-		}
-		const wallet = await cliWalletDao.generateJWKWallet(options.seed);
+		const parameters = new ParametersHelper(options);
+		const seedPhrase = await parameters.getRequiredParameterValue(SeedPhraseParameter);
+		const wallet = await cliWalletDao.generateJWKWallet(seedPhrase);
 		console.log(JSON.stringify(wallet));
 		process.exit(0);
 	}
