@@ -49,7 +49,11 @@ import {
 	DEFAULT_APP_VERSION,
 	CURRENT_ARFS_VERSION,
 	CipherIV,
-	RewardSettings
+	RewardSettings,
+	DataContentType,
+	EntityID,
+	UnixTime,
+	ByteCount
 } from './types';
 import { CreateTransactionInterface } from 'arweave/node/common';
 import { ArFSPrivateDriveBuilder, ArFSPublicDriveBuilder } from './utils/arfs_builders/arfs_drive_builders';
@@ -997,21 +1001,21 @@ export class ArFSPrivateDrive extends ArFSEntity implements ArFSDriveEntity {
 }
 
 export class ArFSFileOrFolderEntity extends ArFSEntity implements ArFSFileFolderEntity {
-	lastModifiedDate!: never;
 	folderId?: string;
 
 	constructor(
 		appName: string,
 		appVersion: string,
 		arFS: string,
-		contentType: string,
-		driveId: string,
-		entityType: string,
+		contentType: ContentType,
+		driveId: DriveID,
+		entityType: EntityType,
 		name: string,
-		txId: string,
-		unixTime: number,
-		readonly parentFolderId: string,
-		readonly entityId: string
+		txId: TransactionID,
+		unixTime: UnixTime,
+		readonly lastModifiedDate: UnixTime,
+		readonly parentFolderId: FolderID,
+		readonly entityId: EntityID
 	) {
 		super(appName, appVersion, arFS, contentType, driveId, entityType, name, 0, txId, unixTime);
 	}
@@ -1039,6 +1043,7 @@ export class ArFSPublicFileOrFolderWithPaths extends ArFSFileOrFolderEntity impl
 			entity.name,
 			entity.txId,
 			entity.unixTime,
+			0,
 			entity.parentFolderId,
 			entity.entityId
 		);
@@ -1066,6 +1071,7 @@ export class ArFSPrivateFileOrFolderWithPaths extends ArFSFileOrFolderEntity imp
 			entity.name,
 			entity.txId,
 			entity.unixTime,
+			0,
 			entity.parentFolderId,
 			entity.entityId
 		);
@@ -1086,10 +1092,14 @@ export class ArFSPublicFile extends ArFSFileOrFolderEntity {
 		readonly driveId: DriveID,
 		readonly entityType: EntityType,
 		readonly name: string,
-		readonly txId: string,
-		readonly unixTime: number,
+		readonly txId: TransactionID,
+		readonly unixTime: UnixTime,
 		readonly parentFolderId: FolderID,
-		readonly fileId: FileID
+		readonly fileId: FileID,
+		readonly size: ByteCount,
+		readonly lastModifiedDate: UnixTime,
+		readonly dataTxId: TransactionID,
+		readonly dataContentType: DataContentType
 	) {
 		super(
 			appName,
@@ -1101,6 +1111,7 @@ export class ArFSPublicFile extends ArFSFileOrFolderEntity {
 			name,
 			txId,
 			unixTime,
+			0,
 			parentFolderId,
 			fileId
 		);
@@ -1117,11 +1128,15 @@ export class ArFSPrivateFile extends ArFSFileOrFolderEntity {
 		readonly entityType: EntityType,
 		readonly name: string,
 		readonly txId: TransactionID,
-		readonly unixTime: number,
+		readonly unixTime: UnixTime,
 		readonly parentFolderId: FolderID,
 		readonly fileId: FileID,
+		readonly size: ByteCount,
+		readonly lastModifiedDate: UnixTime,
+		readonly dataTxId: TransactionID,
+		readonly dataContentType: DataContentType,
 		readonly cipher: string,
-		readonly cipherIV: string
+		readonly cipherIV: CipherIV
 	) {
 		super(
 			appName,
@@ -1133,6 +1148,7 @@ export class ArFSPrivateFile extends ArFSFileOrFolderEntity {
 			name,
 			txId,
 			unixTime,
+			0,
 			parentFolderId,
 			fileId
 		);
@@ -1163,6 +1179,7 @@ export class ArFSPublicFolder extends ArFSFileOrFolderEntity {
 			name,
 			txId,
 			unixTime,
+			0,
 			parentFolderId,
 			entityId
 		);
@@ -1194,6 +1211,7 @@ export class ArFSPrivateFolder extends ArFSFileOrFolderEntity {
 			name,
 			txId,
 			unixTime,
+			0,
 			parentFolderId,
 			entityId
 		);
