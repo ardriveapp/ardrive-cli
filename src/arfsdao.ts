@@ -240,7 +240,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 	}
 
 	/**
-	 * Lists the children and self of certain public folder
+	 * Lists the children of certain public folder
 	 * @param {FolderID} folderId the folder ID to list children of
 	 * @returns {ArFSPublicFileOrFolderWithPaths[]} an array representation of the children and parent folder
 	 */
@@ -740,7 +740,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	}
 
 	/**
-	 * Lists the children and self of certain private folder
+	 * Lists the children of certain private folder
 	 * @param {FolderID} folderId the folder ID to list children of
 	 * @returns {ArFSPrivateFileOrFolderWithPaths[]} an array representation of the children and parent folder
 	 */
