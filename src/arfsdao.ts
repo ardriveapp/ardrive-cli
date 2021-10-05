@@ -55,7 +55,7 @@ import { CreateTransactionInterface } from 'arweave/node/common';
 import { ArFSPrivateDriveBuilder, ArFSPublicDriveBuilder } from './utils/arfs_builders/arfs_drive_builders';
 import { ArFSPrivateFileBuilder, ArFSPublicFileBuilder } from './utils/arfs_builders/arfs_file_builders';
 import { ArFSPrivateFolderBuilder, ArFSPublicFolderBuilder } from './utils/arfs_builders/arfs_folder_builders';
-import { lastRevisionFilter } from './utils/filter_methods';
+import { latestRevisionFilter } from './utils/filter_methods';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 export interface ArFSCreateDriveResult {
@@ -205,7 +205,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 			});
 			allFiles.push(...(await Promise.all(files)));
 		}
-		return latestRevisionsOnly ? allFiles.filter(lastRevisionFilter) : allFiles;
+		return latestRevisionsOnly ? allFiles.filter(latestRevisionFilter) : allFiles;
 	}
 
 	async getAllFoldersOfPublicDrive(driveId: DriveID, latestRevisionsOnly = false): Promise<ArFSPublicFolder[]> {
@@ -235,7 +235,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 			});
 			allFolders.push(...(await Promise.all(folders)));
 		}
-		return latestRevisionsOnly ? allFolders.filter(lastRevisionFilter) : allFolders;
+		return latestRevisionsOnly ? allFolders.filter(latestRevisionFilter) : allFolders;
 	}
 
 	/**
@@ -711,7 +711,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			});
 			allFolders.push(...(await Promise.all(folders)));
 		}
-		return latestRevisionsOnly ? allFolders.filter(lastRevisionFilter) : allFolders;
+		return latestRevisionsOnly ? allFolders.filter(latestRevisionFilter) : allFolders;
 	}
 
 	async getPrivateFilesWithParentFolderIds(
@@ -745,7 +745,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			});
 			allFiles.push(...(await Promise.all(files)));
 		}
-		return latestRevisionsOnly ? allFiles.filter(lastRevisionFilter) : allFiles;
+		return latestRevisionsOnly ? allFiles.filter(latestRevisionFilter) : allFiles;
 	}
 
 	/**

@@ -10,14 +10,14 @@ import { FolderID } from '../types';
  * @param {ArFSFileOrFolderEntity[]} allEntities the array of all entities
  * @returns {boolean}
  */
-export function lastRevisionFilter(
+export function latestRevisionFilter(
 	entity: ArFSFileOrFolderEntity,
 	_index: number,
 	allEntities: ArFSFileOrFolderEntity[]
 ): boolean {
 	const allRevisions = allEntities.filter((e) => e.entityId === entity.entityId);
-	const lastRevision = allRevisions[allRevisions.length - 1];
-	return entity.txId === lastRevision.txId;
+	const latestRevision = allRevisions[0];
+	return entity.txId === latestRevision.txId;
 }
 
 /**
