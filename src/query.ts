@@ -1,4 +1,3 @@
-import { GQLTagInterface } from 'ardrive-core-js';
 import { ArweaveAddress } from './types';
 
 const nodeFragment = `
@@ -37,12 +36,16 @@ const pageLimit = 100;
  * @example
  * const query = buildQuery([{ name: 'Folder-Id', value: folderId }]);
  */
-export function buildQuery(tags: GQLTagInterface[], cursor?: string, owner?: ArweaveAddress): GQLQuery {
+export function buildQuery(
+	tags: { name: string; value: string | string[] }[],
+	cursor?: string,
+	owner?: ArweaveAddress
+): GQLQuery {
 	let queryTags = ``;
 
 	tags.forEach((t) => {
 		queryTags = `${queryTags}
-				{ name: "${t.name}", values: "${t.value}" }`;
+				{ name: "${t.name}", values: ${Array.isArray(t.value) ? JSON.stringify(t.value) : `"${t.value}"`} }`;
 	});
 
 	const singleResult = cursor === undefined;

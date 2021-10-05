@@ -8,7 +8,6 @@ new CLICommand({
 	parameters: [],
 	async action() {
 		const transactionsInMempool = await fetchMempool();
-
 		console.log(JSON.stringify(transactionsInMempool, null, 4));
 		process.exit(0);
 	}
