@@ -55,7 +55,7 @@ import { CreateTransactionInterface } from 'arweave/node/common';
 import { ArFSPrivateDriveBuilder, ArFSPublicDriveBuilder } from './utils/arfs_builders/arfs_drive_builders';
 import { ArFSPrivateFileBuilder, ArFSPublicFileBuilder } from './utils/arfs_builders/arfs_file_builders';
 import { ArFSPrivateFolderBuilder, ArFSPublicFolderBuilder } from './utils/arfs_builders/arfs_folder_builders';
-import { childrenAndFolderOfFilterFactory, lastRevisionFilter } from './utils/filter_methods';
+import { lastRevisionFilter } from './utils/filter_methods';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 export interface ArFSCreateDriveResult {
@@ -243,25 +243,29 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 	 * @param {FolderID} folderId the folder ID to list children of
 	 * @returns {ArFSPublicFileOrFolderWithPaths[]} an array representation of the children and parent folder
 	 */
-	async listPublicFolder(folderId: FolderID): Promise<ArFSPublicFileOrFolderWithPaths[]> {
+	async listPublicFolder(folderId: FolderID, maxDepth = 0): Promise<ArFSPublicFileOrFolderWithPaths[]> {
 		const folder = await this.getPublicFolder(folderId);
 
 		// Fetch all of the folder entities within the drive
 		const driveIdOfFolder = folder.driveId;
 		const allFolderEntitiesOfDrive = await this.getAllFoldersOfPublicDrive(driveIdOfFolder, true);
 
-		// Feed entities to FolderHierarchy.setupNodesWithEntity()
+		// Feed entities to FolderHierarchy
 		const hierarchy = FolderHierarchy.newFromEntities(allFolderEntitiesOfDrive);
-		const childrenFolderIDs = hierarchy.subTreeOf(folderId).allFolderIDs();
+		const searchFolderIDs = hierarchy.subFolderIDsForFolderId(folderId, maxDepth - 1);
+		const [, ...subFolderIDs]: FolderID[] = hierarchy.subFolderIDsForFolderId(folderId, maxDepth);
+
+		const childrenFolderEntities = allFolderEntitiesOfDrive.filter((folder) =>
+			subFolderIDs.includes(folder.entityId)
+		);
 
 		// Fetch all file entities within all Folders of the drive
-		const allFileEntitiesOfDrive = await this.getPublicFilesWithParentFolderIds(childrenFolderIDs, true);
+		const childrenFileEntities = await this.getPublicFilesWithParentFolderIds([folderId, ...searchFolderIDs], true);
 
-		const allEntitiesOfDrive = [...allFolderEntitiesOfDrive, ...allFileEntitiesOfDrive];
-		const allChildrenOfFolder = allEntitiesOfDrive.filter(childrenAndFolderOfFilterFactory(childrenFolderIDs));
+		const children = [...childrenFolderEntities, ...childrenFileEntities];
 
-		const mergedData = allChildrenOfFolder.map((entity) => new ArFSPublicFileOrFolderWithPaths(entity, hierarchy));
-		return mergedData;
+		const entitiesWithPath = children.map((entity) => new ArFSPublicFileOrFolderWithPaths(entity, hierarchy));
+		return entitiesWithPath;
 	}
 }
 
@@ -749,26 +753,32 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	 * @param {FolderID} folderId the folder ID to list children of
 	 * @returns {ArFSPrivateFileOrFolderWithPaths[]} an array representation of the children and parent folder
 	 */
-	async listPrivateFolder(folderId: FolderID, driveKey: DriveKey): Promise<ArFSPrivateFileOrFolderWithPaths[]> {
+	async listPrivateFolder(
+		folderId: FolderID,
+		driveKey: DriveKey,
+		maxDepth = 0
+	): Promise<ArFSPrivateFileOrFolderWithPaths[]> {
 		const folder = await this.getPrivateFolder(folderId, driveKey);
 
 		// Fetch all of the folder entities within the drive
 		const driveIdOfFolder = folder.driveId;
 		const allFolderEntitiesOfDrive = await this.getAllFoldersOfPrivateDrive(driveIdOfFolder, driveKey, true);
 
-		// Feed entities to FolderHierarchy.setupNodesWithEntity()
 		const hierarchy = FolderHierarchy.newFromEntities(allFolderEntitiesOfDrive);
-		const folderIDs = hierarchy.allFolderIDs();
+		const searchFolderIDs = hierarchy.subFolderIDsForFolderId(folderId, maxDepth - 1);
+		const [, ...subFolderIDs]: FolderID[] = hierarchy.subFolderIDsForFolderId(folderId, maxDepth);
+
+		const childrenFolderEntities = allFolderEntitiesOfDrive.filter((folder) =>
+			subFolderIDs.includes(folder.entityId)
+		);
 
 		// Fetch all file entities within all Folders of the drive
-		const allFileEntitiesOfDrive = await this.getPrivateFilesWithParentFolderIds(folderIDs, driveKey, true);
+		const childrenFileEntities = await this.getPrivateFilesWithParentFolderIds(searchFolderIDs, driveKey, true);
 
-		const allEntitiesOfDrive = [...allFolderEntitiesOfDrive, ...allFileEntitiesOfDrive];
-		const childrenFolderIDs = hierarchy.subTreeOf(folderId).allFolderIDs();
-		const allChildrenOfFolder = allEntitiesOfDrive.filter(childrenAndFolderOfFilterFactory(childrenFolderIDs));
+		const children = [...childrenFolderEntities, ...childrenFileEntities];
 
-		const mergedData = allChildrenOfFolder.map((entity) => new ArFSPrivateFileOrFolderWithPaths(entity, hierarchy));
-		return mergedData;
+		const entitiesWithPath = children.map((entity) => new ArFSPrivateFileOrFolderWithPaths(entity, hierarchy));
+		return entitiesWithPath;
 	}
 }
 
@@ -1060,10 +1070,6 @@ export class FolderHierarchy {
 				const parentFolderEntity = folderIdToEntityMap[entity.parentFolderId];
 				if (parentFolderEntity) {
 					this.setupNodesWithEntity(parentFolderEntity, folderIdToEntityMap, folderIdToNodeMap);
-					// const parent = folderIdToNodeMap[entity.parentFolderId];
-					// const node = new FolderTreeNode(entity.entityId, parent);
-					// parent.children.push(node);
-					// folderIdToNodeMap[entity.entityId] = node;
 				}
 			}
 			const parent = folderIdToNodeMap[entity.parentFolderId];
@@ -1088,15 +1094,15 @@ export class FolderHierarchy {
 		let tmpNode = this.folderIdToNodeMap[someFolderId];
 		while (tmpNode.parent && this.folderIdToNodeMap[tmpNode.parent.folderId]) {
 			tmpNode = tmpNode.parent;
-			this._rootNode = tmpNode;
 		}
+		this._rootNode = tmpNode;
 		return tmpNode;
 	}
 
-	public subTreeOf(folderId: FolderID): FolderHierarchy {
+	public subTreeOf(folderId: FolderID, maxDepth = Number.POSITIVE_INFINITY): FolderHierarchy {
 		const newRootNode = this.folderIdToNodeMap[folderId];
 
-		const subTreeNodes = this.nodeAndChildrenOf(newRootNode);
+		const subTreeNodes = this.nodeAndChildrenOf(newRootNode, maxDepth);
 
 		const entitiesMapping = subTreeNodes.reduce((accumulator, node) => {
 			return Object.assign(accumulator, { [node.folderId]: this.folderIdToEntityMap[node.folderId] });
@@ -1112,11 +1118,33 @@ export class FolderHierarchy {
 		return Object.keys(this.folderIdToEntityMap);
 	}
 
-	public nodeAndChildrenOf(node: FolderTreeNode): FolderTreeNode[] {
+	public nodeAndChildrenOf(node: FolderTreeNode, maxDepth: number): FolderTreeNode[] {
 		const subTreeEntities: FolderTreeNode[] = [node];
-		subTreeEntities.push(...node.children);
-
+		if (maxDepth > 0) {
+			node.children.forEach((child) => {
+				subTreeEntities.push(...this.nodeAndChildrenOf(child, maxDepth - 1));
+			});
+		}
 		return subTreeEntities;
+	}
+
+	public subFolderIDsForFolderId(folderId: FolderID, maxDepth: number): FolderID[] {
+		const rootNode = this.folderIdToNodeMap[folderId];
+		switch (maxDepth) {
+			case -1:
+				return [rootNode.folderId];
+				break;
+			default: {
+				const subFolderIDs: FolderID[] = [];
+				rootNode.children
+					.map((node) => node.folderId)
+					.forEach((childFolderID) => {
+						subFolderIDs.push(...this.subFolderIDsForFolderId(childFolderID, maxDepth - 1));
+					});
+				return subFolderIDs;
+				break;
+			}
+		}
 	}
 
 	public pathToFolderId(folderId: FolderID): string {
