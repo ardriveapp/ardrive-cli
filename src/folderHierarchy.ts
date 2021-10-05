@@ -105,7 +105,7 @@ export class FolderHierarchy {
 		return subTreeEntities;
 	}
 
-	public subFolderIDsForFolderId(folderId: FolderID, maxDepth: number): FolderID[] {
+	public folderIdSubtreeFromFolderId(folderId: FolderID, maxDepth: number): FolderID[] {
 		const rootNode = this.folderIdToNodeMap[folderId];
 		switch (maxDepth) {
 			case -1:
@@ -116,7 +116,7 @@ export class FolderHierarchy {
 				rootNode.children
 					.map((node) => node.folderId)
 					.forEach((childFolderID) => {
-						subFolderIDs.push(...this.subFolderIDsForFolderId(childFolderID, maxDepth - 1));
+						subFolderIDs.push(...this.folderIdSubtreeFromFolderId(childFolderID, maxDepth - 1));
 					});
 				return subFolderIDs;
 				break;

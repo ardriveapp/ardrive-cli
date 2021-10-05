@@ -253,8 +253,8 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 
 		// Feed entities to FolderHierarchy
 		const hierarchy = FolderHierarchy.newFromEntities(allFolderEntitiesOfDrive);
-		const searchFolderIDs = hierarchy.subFolderIDsForFolderId(folderId, maxDepth - 1);
-		const [, ...subFolderIDs]: FolderID[] = hierarchy.subFolderIDsForFolderId(folderId, maxDepth);
+		const searchFolderIDs = hierarchy.folderIdSubtreeFromFolderId(folderId, maxDepth - 1);
+		const [, ...subFolderIDs]: FolderID[] = hierarchy.folderIdSubtreeFromFolderId(folderId, maxDepth);
 
 		const childrenFolderEntities = allFolderEntitiesOfDrive.filter((folder) =>
 			subFolderIDs.includes(folder.entityId)
@@ -756,8 +756,8 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const allFolderEntitiesOfDrive = await this.getAllFoldersOfPrivateDrive(driveIdOfFolder, driveKey, true);
 
 		const hierarchy = FolderHierarchy.newFromEntities(allFolderEntitiesOfDrive);
-		const searchFolderIDs = hierarchy.subFolderIDsForFolderId(folderId, maxDepth - 1);
-		const [, ...subFolderIDs]: FolderID[] = hierarchy.subFolderIDsForFolderId(folderId, maxDepth);
+		const searchFolderIDs = hierarchy.folderIdSubtreeFromFolderId(folderId, maxDepth - 1);
+		const [, ...subFolderIDs]: FolderID[] = hierarchy.folderIdSubtreeFromFolderId(folderId, maxDepth);
 
 		const childrenFolderEntities = allFolderEntitiesOfDrive.filter((folder) =>
 			subFolderIDs.includes(folder.entityId)
