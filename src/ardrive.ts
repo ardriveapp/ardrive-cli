@@ -901,7 +901,7 @@ export class ArDrive extends ArDriveAnonymous {
 				const walletBalance = await this.walletDao.getWalletWinstonBalance(this.wallet);
 
 				throw new Error(
-					`Wallet balance of ${walletBalance} Winston is not enough (${totalWinstonPrice}) for data upload of size ${folderToUpload.getTotalBytes(
+					`Wallet balance of ${walletBalance} Winston is not enough (${totalWinstonPrice}) for data upload of size ${folderToUpload.getTotalByteCount(
 						drivePrivacy === 'private'
 					)} bytes!`
 				);

@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import { extToMime } from 'ardrive-core-js';
 import { basename, join } from 'path';
-import { Bytes, DataContentType } from './types';
+import { ByteCount, DataContentType, UnixTime } from './types';
 import { BulkFileBaseCosts, MetaDataBaseCosts } from './ardrive';
 
 type BaseFileName = string;
@@ -13,12 +13,12 @@ type FilePath = string;
  *  Public : 2147483647 bytes
  *  Private: 2147483646 bytes
  */
-const maxFileSize: Bytes = 2147483646;
+const maxFileSize: ByteCount = 2147483646;
 
 export interface FileInfo {
 	dataContentType: DataContentType;
-	lastModifiedDateMS: number;
-	fileSize: Bytes;
+	lastModifiedDateMS: UnixTime;
+	fileSize: ByteCount;
 }
 
 /**
@@ -89,7 +89,7 @@ export class ArFSFileToUpload {
 	}
 
 	/** Computes the size of a private file encrypted with AES256-GCM */
-	public encryptedDataSize(): number {
+	public encryptedDataSize(): ByteCount {
 		return (this.fileStats.size / 16 + 1) * 16;
 	}
 }
@@ -130,16 +130,16 @@ export class ArFSFolderToUpload {
 		return basename(this.filePath);
 	}
 
-	getTotalBytes(encrypted = false): Bytes {
-		let totalBytes = 0;
+	getTotalByteCount(encrypted = false): ByteCount {
+		let totalByteCount = 0;
 
 		for (const file of this.files) {
-			totalBytes += encrypted ? file.encryptedDataSize() : file.fileStats.size;
+			totalByteCount += encrypted ? file.encryptedDataSize() : file.fileStats.size;
 		}
 		for (const folder of this.folders) {
-			totalBytes += folder.getTotalBytes(encrypted);
+			totalByteCount += folder.getTotalByteCount(encrypted);
 		}
 
-		return totalBytes;
+		return totalByteCount;
 	}
 }
