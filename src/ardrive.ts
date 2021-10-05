@@ -20,7 +20,6 @@ import {
 	TipType,
 	FeeMultiple,
 	DriveKey,
-	FileID,
 	EntityID
 } from './types';
 import { WalletDAO, Wallet, JWKWallet } from './wallet_new';
