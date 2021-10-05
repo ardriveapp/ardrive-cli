@@ -246,7 +246,11 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 	 * @param {FolderID} folderId the folder ID to list children of
 	 * @returns {ArFSPublicFileOrFolderWithPaths[]} an array representation of the children and parent folder
 	 */
-	async listPublicFolder(folderId: FolderID, maxDepth = 0): Promise<ArFSPublicFileOrFolderWithPaths[]> {
+	async listPublicFolder(
+		folderId: FolderID,
+		maxDepth: number,
+		includeRoot: boolean
+	): Promise<ArFSPublicFileOrFolderWithPaths[]> {
 		const folder = await this.getPublicFolder(folderId);
 
 		// Fetch all of the folder entities within the drive
@@ -261,6 +265,10 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		const childrenFolderEntities = allFolderEntitiesOfDrive.filter((folder) =>
 			subFolderIDs.includes(folder.entityId)
 		);
+
+		if (includeRoot) {
+			childrenFolderEntities.unshift(folder);
+		}
 
 		// Fetch all file entities within all Folders of the drive
 		const childrenFileEntities = await this.getPublicFilesWithParentFolderIds(searchFolderIDs, true);
@@ -749,7 +757,8 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	async listPrivateFolder(
 		folderId: FolderID,
 		driveKey: DriveKey,
-		maxDepth = 0
+		maxDepth: number,
+		includeRoot: boolean
 	): Promise<ArFSPrivateFileOrFolderWithPaths[]> {
 		const folder = await this.getPrivateFolder(folderId, driveKey);
 
@@ -764,6 +773,10 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const childrenFolderEntities = allFolderEntitiesOfDrive.filter((folder) =>
 			subFolderIDs.includes(folder.entityId)
 		);
+
+		if (includeRoot) {
+			childrenFolderEntities.unshift(folder);
+		}
 
 		// Fetch all file entities within all Folders of the drive
 		const childrenFileEntities = await this.getPrivateFilesWithParentFolderIds(searchFolderIDs, driveKey, true);
