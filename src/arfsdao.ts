@@ -966,14 +966,14 @@ export class ArFSPublicDrive extends ArFSEntity implements ArFSDriveEntity {
 		readonly appName: string,
 		readonly appVersion: string,
 		readonly arFS: string,
-		readonly contentType: string,
-		readonly driveId: string,
-		readonly entityType: string,
+		readonly contentType: ContentType,
+		readonly driveId: DriveID,
+		readonly entityType: EntityType,
 		readonly name: string,
-		readonly txId: string,
-		readonly unixTime: number,
+		readonly txId: TransactionID,
+		readonly unixTime: UnixTime,
 		readonly drivePrivacy: string,
-		readonly rootFolderId: string
+		readonly rootFolderId: FolderID
 	) {
 		super(appName, appVersion, arFS, contentType, driveId, entityType, name, 0, txId, unixTime);
 	}
@@ -984,17 +984,17 @@ export class ArFSPrivateDrive extends ArFSEntity implements ArFSDriveEntity {
 		readonly appName: string,
 		readonly appVersion: string,
 		readonly arFS: string,
-		readonly contentType: string,
-		readonly driveId: string,
-		readonly entityType: string,
+		readonly contentType: ContentType,
+		readonly driveId: DriveID,
+		readonly entityType: EntityType,
 		readonly name: string,
-		readonly txId: string,
-		readonly unixTime: number,
+		readonly txId: TransactionID,
+		readonly unixTime: UnixTime,
 		readonly drivePrivacy: string,
-		readonly rootFolderId: string,
+		readonly rootFolderId: FolderID,
 		readonly driveAuthMode: string,
 		readonly cipher: string,
-		readonly cipherIV: string
+		readonly cipherIV: CipherIV
 	) {
 		super(appName, appVersion, arFS, contentType, driveId, entityType, name, 0, txId, unixTime);
 	}
@@ -1165,7 +1165,7 @@ export class ArFSPublicFolder extends ArFSFileOrFolderEntity {
 		readonly entityType: EntityType,
 		readonly name: string,
 		readonly txId: TransactionID,
-		readonly unixTime: number,
+		readonly unixTime: UnixTime,
 		readonly parentFolderId: FolderID,
 		readonly entityId: FolderID
 	) {
@@ -1194,12 +1194,12 @@ export class ArFSPrivateFolder extends ArFSFileOrFolderEntity {
 		readonly driveId: DriveID,
 		readonly entityType: EntityType,
 		readonly name: string,
-		readonly txId: string,
-		readonly unixTime: number,
+		readonly txId: TransactionID,
+		readonly unixTime: UnixTime,
 		readonly parentFolderId: FolderID,
 		readonly entityId: FolderID,
 		readonly cipher: string,
-		readonly cipherIV: string
+		readonly cipherIV: CipherIV
 	) {
 		super(
 			appName,
