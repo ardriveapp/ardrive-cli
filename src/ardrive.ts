@@ -20,7 +20,8 @@ import {
 	TipType,
 	FeeMultiple,
 	DriveKey,
-	FileID
+	FileID,
+	EntityID
 } from './types';
 import { WalletDAO, Wallet, JWKWallet } from './wallet_new';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
@@ -46,7 +47,7 @@ export interface ArFSEntityData {
 	type: ArFSEntityDataType;
 	metadataTxId: TransactionID;
 	dataTxId?: TransactionID;
-	entityId: FolderID | DriveID | FileID;
+	entityId: EntityID;
 	key?: string;
 }
 
