@@ -532,22 +532,14 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		// Get current time
 		const unixTime = Math.round(Date.now() / 1000);
 
-		const { txId, fileId, driveId } = baseFileMetaData;
-
-		const txData = await this.arweave.transactions.getData(txId, { decode: true });
-		const dataString = await Utf8ArrayToStr(txData);
-		const dataJSON = await JSON.parse(dataString);
-
-		// TODO: Decrypt or use correct types in arfs_builders
-
-		const dataTrxId: TransactionID = dataJSON.dataTxId;
+		const { dataTxId, dataContentType, lastModifiedDate, size, name, fileId, driveId } = baseFileMetaData;
 
 		const fileMetaData = await ArFSPrivateFileMetadataTransactionData.from(
-			dataJSON.name,
-			dataJSON.size,
-			dataJSON.lastModifiedDate,
-			dataTrxId,
-			dataJSON.dataContentType,
+			name,
+			size,
+			lastModifiedDate,
+			dataTxId,
+			dataContentType,
 			fileId,
 			driveKey
 		);
@@ -573,7 +565,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return {
 			metaDataTrxId: metaDataTrx.id,
 			metaDataTrxReward: metaDataTrx.reward,
-			dataTrxId,
+			dataTrxId: dataTxId,
 			fileKey: fileMetaData.fileKey
 		};
 	}
@@ -586,23 +578,11 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		// Get current time
 		const unixTime = Math.round(Date.now() / 1000);
 
-		const { txId, fileId, driveId } = baseFileMetaData;
-
-		const txData = await this.arweave.transactions.getData(txId, { decode: true });
-		const dataString = await Utf8ArrayToStr(txData);
-		const dataJSON = await JSON.parse(dataString);
-
-		const dataTrxId: TransactionID = dataJSON.dataTxId;
+		const { dataTxId, dataContentType, lastModifiedDate, size, name, fileId, driveId } = baseFileMetaData;
 
 		// Prepare meta data transaction
 		const fileMetadata = new ArFSPublicFileMetaDataPrototype(
-			new ArFSPublicFileMetadataTransactionData(
-				dataJSON.name,
-				dataJSON.size,
-				dataJSON.lastModifiedDate,
-				dataTrxId,
-				dataJSON.dataContentType
-			),
+			new ArFSPublicFileMetadataTransactionData(name, size, lastModifiedDate, dataTxId, dataContentType),
 			unixTime,
 			driveId,
 			fileId,
@@ -621,7 +601,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return {
 			metaDataTrxId: metaDataTrx.id,
 			metaDataTrxReward: metaDataTrx.reward,
-			dataTrxId
+			dataTrxId: dataTxId
 		};
 	}
 
