@@ -12,7 +12,7 @@ new CLICommand({
 	parameters: [FileIdParameter, GetAllRevisionsParameter, ...DrivePrivacyParameters],
 	async action(options) {
 		const parameters = new ParametersHelper(options, cliWalletDao);
-		const fileId: FileID = options.fileId;
+		const fileId: FileID = parameters.getRequiredParameterValue(FileIdParameter);
 		// const shouldGetAllRevisions: boolean = options.getAllRevisions;
 
 		const result = await (async function () {
