@@ -46,10 +46,12 @@ export function arDriveFactory(settings?: ArDriveSettingsAnonymous): ArDriveAnon
 export function arDriveFactory(settings: ArDriveSettings): ArDrive;
 export function arDriveFactory(s?: ArDriveSettingsAnonymous): ArDrive | ArDriveAnonymous {
 	const settings = s as ArDriveSettings;
-	const arweave = settings.arweave || cliArweave;
-	const walletDao = settings.walletDao || cliWalletDao;
-	const priceEstimator = settings.priceEstimator || new ARDataPriceRegressionEstimator();
+	const arweave = s && settings.arweave ? settings.arweave : cliArweave;
+
 	if (s && settings.wallet) {
+		const priceEstimator = settings.priceEstimator || new ARDataPriceRegressionEstimator();
+		const walletDao = settings.walletDao || cliWalletDao;
+
 		return new ArDrive(
 			settings.wallet,
 			walletDao,
