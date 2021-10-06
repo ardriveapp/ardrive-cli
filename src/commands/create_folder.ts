@@ -2,11 +2,9 @@ import { CLICommand, ParametersHelper } from '../CLICommand';
 import {
 	BoostParameter,
 	FolderNameParameter,
-	DrivePasswordParameter,
 	DryRunParameter,
 	ParentFolderIdParameter,
-	SeedPhraseParameter,
-	WalletFileParameter
+	DrivePrivacyParameters
 } from '../parameter_declarations';
 import { arDriveFactory } from '..';
 import { Wallet } from '../wallet_new';
@@ -17,13 +15,11 @@ import { FeeMultiple } from '../types';
 new CLICommand({
 	name: 'create-folder',
 	parameters: [
-		WalletFileParameter,
-		SeedPhraseParameter,
 		ParentFolderIdParameter,
 		FolderNameParameter,
-		DrivePasswordParameter,
 		BoostParameter,
-		DryRunParameter
+		DryRunParameter,
+		...DrivePrivacyParameters
 	],
 	async action(options) {
 		const parameters = new ParametersHelper(options);
@@ -35,9 +31,9 @@ new CLICommand({
 			dryRun: options.dryRun
 		});
 
-		const createFolderResult = await (async function () {
-			const driveId = await ardrive.getDriveIdForFolderId(options.parentFolderId);
+		const driveId = await ardrive.getDriveIdForFolderId(options.parentFolderId);
 
+		const createFolderResult = await (async function () {
 			if (await parameters.getIsPrivate()) {
 				const driveKey = await parameters.getDriveKey(driveId);
 				return ardrive.createPrivateFolder(options.folderName, driveId, driveKey);
