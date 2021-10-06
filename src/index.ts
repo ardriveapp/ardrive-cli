@@ -43,20 +43,18 @@ export interface ArDriveSettings extends ArDriveSettingsAnonymous {
 }
 
 export function arDriveFactory({
-	arweave,
+	arweave = cliArweave,
 	priceEstimator = new ARDataPriceRegressionEstimator(),
 	wallet,
 	walletDao = cliWalletDao,
 	dryRun,
 	feeMultiple
 }: ArDriveSettings): ArDrive {
-	const arweaveSetting = arweave || cliArweave;
-
 	return new ArDrive(
 		wallet,
 		walletDao,
-		new ArFSDAO(wallet, arweaveSetting, dryRun, CLI_APP_NAME, CLI_APP_VERSION),
-		new ArDriveCommunityOracle(arweaveSetting),
+		new ArFSDAO(wallet, arweave, dryRun, CLI_APP_NAME, CLI_APP_VERSION),
+		new ArDriveCommunityOracle(arweave),
 		CLI_APP_NAME,
 		CLI_APP_VERSION,
 		priceEstimator,
