@@ -82,7 +82,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["source-map-support", "npm:0.5.20"],
             ["ts-node", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:10.2.1"],
             ["ts-sinon", "npm:2.0.1"],
-            ["tsc-files", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:1.1.2"],
             ["typescript", "patch:typescript@npm%3A4.2.3#builtin<compat/typescript>::version=4.2.3&hash=a45b0e"],
             ["uuid", "npm:8.3.2"]
           ],
@@ -1874,7 +1873,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["source-map-support", "npm:0.5.20"],
             ["ts-node", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:10.2.1"],
             ["ts-sinon", "npm:2.0.1"],
-            ["tsc-files", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:1.1.2"],
             ["typescript", "patch:typescript@npm%3A4.2.3#builtin<compat/typescript>::version=4.2.3&hash=a45b0e"],
             ["uuid", "npm:8.3.2"]
           ],
@@ -7920,28 +7918,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/sinon", "npm:9.0.11"],
             ["@types/sinon-chai", "npm:3.2.5"],
             ["sinon", "npm:9.2.4"]
-          ],
-          "linkType": "HARD",
-        }]
-      ]],
-      ["tsc-files", [
-        ["npm:1.1.2", {
-          "packageLocation": "./.yarn/cache/tsc-files-npm-1.1.2-5dbe902f60-6e5a3a53f5.zip/node_modules/tsc-files/",
-          "packageDependencies": [
-            ["tsc-files", "npm:1.1.2"]
-          ],
-          "linkType": "SOFT",
-        }],
-        ["virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:1.1.2", {
-          "packageLocation": "./.yarn/$$virtual/tsc-files-virtual-79c092f09d/0/cache/tsc-files-npm-1.1.2-5dbe902f60-6e5a3a53f5.zip/node_modules/tsc-files/",
-          "packageDependencies": [
-            ["tsc-files", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:1.1.2"],
-            ["@types/typescript", null],
-            ["typescript", "patch:typescript@npm%3A4.2.3#builtin<compat/typescript>::version=4.2.3&hash=a45b0e"]
-          ],
-          "packagePeers": [
-            "@types/typescript",
-            "typescript"
           ],
           "linkType": "HARD",
         }]
