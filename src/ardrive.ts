@@ -295,9 +295,6 @@ export class ArDrive extends ArDriveAnonymous {
 		entityResults: ArFSEntityData[];
 		feeResults: ArFSFees;
 	}> {
-		let uploadEntityResults: ArFSEntityData[] = [];
-		let uploadEntityFees: ArFSFees = {};
-
 		// Create the parent folder
 		const { folderTrxId, folderTrxReward, folderId } = await this.arFsDao.createPublicFolder({
 			folderData: folderData,
@@ -311,9 +308,8 @@ export class ArDrive extends ArDriveAnonymous {
 		});
 
 		// Capture parent folder results
-		uploadEntityFees = { ...uploadEntityFees, [folderTrxId]: +folderTrxReward };
-		uploadEntityResults = [
-			...uploadEntityResults,
+		let uploadEntityFees: ArFSFees = { [folderTrxId]: +folderTrxReward };
+		let uploadEntityResults: ArFSEntityData[] = [
 			{
 				type: 'folder',
 				metadataTxId: folderTrxId,
