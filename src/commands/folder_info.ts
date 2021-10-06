@@ -1,5 +1,5 @@
 import { ArDriveAnonymous } from '../ardrive';
-import { ArFSDAOAnonymous } from '../arfsdao';
+import { ArFSDAOAnonymous, ArFSPrivateFolder, ArFSPublicFolder } from '../arfsdao';
 import { CLICommand } from '../CLICommand';
 import { CommonContext } from '../CLICommand/common_context';
 import {
@@ -25,7 +25,7 @@ new CLICommand({
 	async action(options) {
 		const context = new CommonContext(options, cliWalletDao);
 		const wallet = await context.getWallet().catch(() => null);
-		const result = await (async function () {
+		const result: Partial<ArFSPublicFolder | ArFSPrivateFolder> = await (async function () {
 			if (wallet) {
 				const arDrive = arDriveFactory({ wallet: wallet });
 				const folderId: string = options.folderId;
@@ -42,6 +42,11 @@ new CLICommand({
 				return arDrive.getPublicFolder(folderId /*, getAllRevisions*/);
 			}
 		})();
+
+		// TODO: Fix base types so deleting un-used values is not necessary
+		delete result.lastModifiedDate;
+		delete result.syncStatus;
+
 		console.log(JSON.stringify(result, null, 4));
 		process.exit(0);
 	}

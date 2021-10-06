@@ -54,14 +54,19 @@ new CLICommand({
 			children = await arDrive.listPublicFolder(folderId);
 		}
 
+		const sortedChildren = children.sort((a, b) => alphabeticalOrder(a.path, b.path)) as (
+			| Partial<ArFSPrivateFileOrFolderWithPaths>
+			| Partial<ArFSPublicFileOrFolderWithPaths>
+		)[];
+
+		// TODO: Fix base types so deleting un-used values is not necessary
+		sortedChildren.map((fileOrFolderMetaData) => {
+			delete fileOrFolderMetaData.lastModifiedDate;
+			delete fileOrFolderMetaData.syncStatus;
+		});
+
 		// Display data
-		console.log(
-			JSON.stringify(
-				children.sort((a, b) => alphabeticalOrder(a.path, b.path)),
-				null,
-				4
-			)
-		);
+		console.log(JSON.stringify(sortedChildren, null, 4));
 		process.exit(0);
 	}
 });

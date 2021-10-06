@@ -992,11 +992,11 @@ export class ArFSFileOrFolderEntity extends ArFSEntity implements ArFSFileFolder
 		name: string,
 		txId: TransactionID,
 		unixTime: UnixTime,
-		readonly lastModifiedDate: UnixTime,
+		public lastModifiedDate: UnixTime,
 		readonly parentFolderId: FolderID,
 		readonly entityId: EntityID
 	) {
-		super(appName, appVersion, arFS, contentType, driveId, entityType, name, 0, txId, unixTime);
+		super(appName, appVersion, arFS, contentType, driveId, entityType, name, lastModifiedDate, txId, unixTime);
 	}
 }
 
