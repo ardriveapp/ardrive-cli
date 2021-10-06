@@ -32,38 +32,41 @@ export const cliArweave = Arweave.init({
 export const cliWalletDao = new WalletDAO(cliArweave, CLI_APP_NAME, CLI_APP_VERSION);
 
 export interface ArDriveSettingsAnonymous {
-	walletDao?: WalletDAO;
 	arweave?: Arweave;
 }
 export interface ArDriveSettings extends ArDriveSettingsAnonymous {
 	wallet: Wallet;
+	walletDao?: WalletDAO;
 	priceEstimator?: ARDataPriceEstimator;
 	feeMultiple?: FeeMultiple;
 	dryRun?: boolean;
 }
 
-export function arDriveFactory(settings?: ArDriveSettingsAnonymous): ArDriveAnonymous;
-export function arDriveFactory(settings: ArDriveSettings): ArDrive;
-export function arDriveFactory(s?: ArDriveSettingsAnonymous): ArDrive | ArDriveAnonymous {
-	const settings = s as ArDriveSettings;
-	const arweave = settings.arweave || cliArweave;
-	const walletDao = settings.walletDao || cliWalletDao;
-	const priceEstimator = settings.priceEstimator || new ARDataPriceRegressionEstimator();
-	if (s && settings.wallet) {
-		return new ArDrive(
-			settings.wallet,
-			walletDao,
-			new ArFSDAO(settings.wallet, arweave, settings.dryRun, CLI_APP_NAME, CLI_APP_VERSION),
-			new ArDriveCommunityOracle(arweave),
-			CLI_APP_NAME,
-			CLI_APP_VERSION,
-			priceEstimator,
-			settings.feeMultiple,
-			settings.dryRun
-		);
-	} else {
-		return new ArDriveAnonymous(new ArFSDAOAnonymous(arweave, CLI_APP_NAME, CLI_APP_VERSION));
-	}
+export function arDriveFactory({
+	arweave = cliArweave,
+	priceEstimator = new ARDataPriceRegressionEstimator(),
+	wallet,
+	walletDao = cliWalletDao,
+	dryRun,
+	feeMultiple
+}: ArDriveSettings): ArDrive {
+	return new ArDrive(
+		wallet,
+		walletDao,
+		new ArFSDAO(wallet, arweave, dryRun, CLI_APP_NAME, CLI_APP_VERSION),
+		new ArDriveCommunityOracle(arweave),
+		CLI_APP_NAME,
+		CLI_APP_VERSION,
+		priceEstimator,
+		feeMultiple,
+		dryRun
+	);
 }
 
-// return new ArDriveAnonymous(new ArFSDAOAnonymous(arweave, CLI_APP_NAME, CLI_APP_VERSION));
+export function arDriveAnonymousFactory(
+	settings: ArDriveSettingsAnonymous = {
+		arweave: cliArweave
+	}
+): ArDriveAnonymous {
+	return new ArDriveAnonymous(new ArFSDAOAnonymous(settings.arweave ?? cliArweave, CLI_APP_NAME, CLI_APP_VERSION));
+}
