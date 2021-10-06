@@ -102,7 +102,13 @@ export interface ArFSUploadPrivateFileResult extends ArFSUploadFileResult {
 export interface ArFSCreatePrivateDriveResult extends ArFSCreateDriveResult {
 	driveKey: DriveKey;
 }
+export interface ArFSCreatePrivateDriveBundleResult extends ArFSCreateDriveBundleResult {
+	driveKey: DriveKey;
+}
 export interface ArFSCreatePrivateFolderResult extends ArFSCreateFolderResult {
+	driveKey: DriveKey;
+}
+export interface ArFSCreatePrivateFolderDataItemResult extends ArFSCreateFolderDataItemResult {
 	driveKey: DriveKey;
 }
 
@@ -118,12 +124,23 @@ export interface CreateFolderSettings {
 	parentFolderId?: FolderID;
 	syncParentFolderId?: boolean;
 }
+export interface CreateFolderDataItemSettings {
+	driveId: DriveID;
+	parentFolderId?: FolderID;
+	syncParentFolderId?: boolean;
+}
 
 export interface CreatePublicFolderSettings extends CreateFolderSettings {
 	folderData: ArFSPublicFolderTransactionData;
 }
-
+export interface CreatePublicFolderDataItemSettings extends CreateFolderDataItemSettings {
+	folderData: ArFSPublicFolderTransactionData;
+}
 export interface CreatePrivateFolderSettings extends CreateFolderSettings {
+	folderData: ArFSPrivateFolderTransactionData;
+	driveKey: DriveKey;
+}
+export interface CreatePrivateFolderDataItemSettings extends CreateFolderDataItemSettings {
 	folderData: ArFSPrivateFolderTransactionData;
 	driveKey: DriveKey;
 }
@@ -412,6 +429,53 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return { folderTrxId: folderTrx.id, folderTrxReward: folderTrx.reward, folderId, driveKey };
 	}
 
+	async createPrivateFolderDataItem({
+		folderData,
+		driveId,
+		driveKey,
+		parentFolderId,
+		syncParentFolderId = true
+	}: CreatePrivateFolderDataItemSettings): Promise<ArFSCreatePrivateFolderDataItemResult> {
+		if (parentFolderId && syncParentFolderId) {
+			// Assert that drive ID is consistent with parent folder ID
+			const actualDriveId = await this.getDriveIdForFolderId(parentFolderId);
+
+			if (actualDriveId !== driveId) {
+				throw new Error(
+					`Drive id: ${driveId} does not match actual drive id: ${actualDriveId} for parent folder id`
+				);
+			}
+		} else if (syncParentFolderId) {
+			// If drive contains a root folder ID, treat this as a subfolder to the root folder
+			const drive = await this.getPrivateDrive(driveId, driveKey);
+			if (!drive) {
+				throw new Error(`Private drive with Drive ID ${driveId} not found!`);
+			}
+
+			if (drive.rootFolderId) {
+				parentFolderId = drive.rootFolderId;
+			}
+		}
+
+		// Generate a new folder ID
+		const folderId = uuidv4();
+
+		// Get the current time so the app can display the "created" data later on
+		const unixTime = Math.round(Date.now() / 1000);
+
+		// Create a folder metadata transaction
+		const folderMetadata = new ArFSPrivateFolderMetaDataPrototype(
+			unixTime,
+			driveId,
+			folderId,
+			folderData,
+			parentFolderId
+		);
+		const folderDataItem = await this.prepareArFSObjectDataItem(folderMetadata);
+
+		return { folderDataItem, folderId, driveKey };
+	}
+
 	async createPublicFolderDataItem(
 		folderName: string,
 		driveId: DriveID,
@@ -550,6 +614,50 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			rootFolderTrxReward: rootFolderTrxReward,
 			driveId: driveId,
 			rootFolderId: rootFolderId
+		};
+	}
+
+	async createPrivateBundledDrive(
+		driveName: string,
+		driveKey: DriveKey,
+		driveId: DriveID
+	): Promise<ArFSCreatePrivateDriveBundleResult> {
+		// Create root folder
+		const folderData = await ArFSPrivateFolderTransactionData.from(driveName, driveKey);
+		const { folderDataItem: rootFolderDataItem, folderId: rootFolderId } = await this.createPrivateFolderDataItem({
+			folderData,
+			driveId,
+			syncParentFolderId: false,
+			driveKey
+		});
+
+		// Get the current time so the app can display the "created" data later on
+		const unixTime = Math.round(Date.now() / 1000);
+
+		const privateDriveData = await ArFSPrivateDriveTransactionData.from(driveName, rootFolderId, driveKey);
+
+		// Create a drive metadata transaction
+		const driveMetaData = new ArFSPrivateDriveMetaDataPrototype(unixTime, driveId, privateDriveData);
+		const driveDataItem = await this.prepareArFSObjectDataItem(driveMetaData);
+
+		const dataItems: DataItem[] = [rootFolderDataItem, driveDataItem];
+
+		const bundleTrx = await this.prepareArFSObjectBundle(dataItems);
+
+		// Execute the uploads
+		if (!this.dryRun) {
+			const driveUploader = await this.arweave.transactions.getUploader(bundleTrx);
+			await driveUploader.uploadChunk();
+		}
+
+		return {
+			bundleTrxId: bundleTrx.id,
+			bundleTrxReward: bundleTrx.reward,
+			driveTrxId: driveDataItem.id,
+			rootFolderTrxId: rootFolderDataItem.id,
+			driveId,
+			rootFolderId,
+			driveKey
 		};
 	}
 
