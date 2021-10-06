@@ -15,14 +15,22 @@ export interface ParameterConfig {
 }
 
 export class Parameter implements ParameterConfig {
+	public readonly name;
 	private parameterData: ParameterConfig;
 	private static parameters: ParameterConfig[] = [];
 
-	constructor(
-		public readonly name: ParameterName,
-		overridedConfig?: Partial<ParameterConfig> & Omit<ParameterConfig, 'name'>
-	) {
-		this.parameterData = Object.assign(Parameter.get(name), overridedConfig);
+	constructor(arg: ParameterName | ParameterOverridenConfig) {
+		const argAsParameterName = arg as ParameterName;
+		const argAsOverridenConfig = arg as ParameterOverridenConfig;
+		const overridenConfig = (function () {
+			if (typeof arg === 'string') {
+				return undefined;
+			} else {
+				return argAsOverridenConfig;
+			}
+		})();
+		this.name = overridenConfig?.name || argAsParameterName;
+		this.parameterData = Object.assign(Parameter.get(this.name), overridenConfig);
 	}
 
 	public get aliases(): ParameterName[] {

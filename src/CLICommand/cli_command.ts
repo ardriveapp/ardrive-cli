@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { Command } from 'commander';
 import { CliApiObject, ParsedArguments } from './cli';
-import { Parameter, ParameterName, ParameterOverridenConfig, ParameterOverridingConfigWithoutName } from './parameter';
+import { Parameter, ParameterName, ParameterOverridenConfig } from './parameter';
 
 export type CommandName = string;
 export interface CommandDescriptor {
@@ -24,7 +24,7 @@ program.addHelpCommand(false);
  */
 function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliApiObject): void {
 	let command: CliApiObject = program.command(commandDescriptor.name);
-	const parameters = commandDescriptor.parameters.map(getParameterFromParameterNameOrOverridenConfig);
+	const parameters = commandDescriptor.parameters.map((param) => new Parameter(param));
 	parameters.forEach((parameter) => {
 		const aliasesAsString = parameter.aliases.join(' ');
 		const paramTypeString = (function () {
@@ -54,33 +54,6 @@ function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliA
 			process.exit(1);
 		});
 	});
-}
-
-/**
- * A mapper function from ParameterName | ParameterOverridenConfig to an actual instance of Parameter, which could have an overriden configuration
- * @param parameterNameOrConfig a value representing the
- * @returns {Parameter}
- */
-function getParameterFromParameterNameOrOverridenConfig(
-	parameterNameOrConfig: ParameterName | ParameterOverridenConfig
-): Parameter {
-	const parameterName = (function () {
-		if (typeof parameterNameOrConfig === 'string') {
-			return parameterNameOrConfig;
-		}
-		return parameterNameOrConfig.name;
-	})();
-	const overridedConfig = (function () {
-		if (typeof parameterNameOrConfig === 'string') {
-			return undefined;
-		}
-		// eslint-disable-next-line prettier/prettier
-		const config: ParameterOverridingConfigWithoutName = Object.assign({}, parameterNameOrConfig, {
-			name: undefined
-		});
-		return config;
-	})();
-	return new Parameter(parameterName, overridedConfig);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
