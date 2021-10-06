@@ -1069,7 +1069,7 @@ export class ArFSPublicFileOrFolderWithPaths extends ArFSFileOrFolderEntity impl
 			entity.name,
 			entity.txId,
 			entity.unixTime,
-			0,
+			entity.lastModifiedDate,
 			entity.parentFolderId,
 			entity.entityId
 		);
@@ -1097,7 +1097,7 @@ export class ArFSPrivateFileOrFolderWithPaths extends ArFSFileOrFolderEntity imp
 			entity.name,
 			entity.txId,
 			entity.unixTime,
-			0,
+			entity.lastModifiedDate,
 			entity.parentFolderId,
 			entity.entityId
 		);
@@ -1137,7 +1137,7 @@ export class ArFSPublicFile extends ArFSFileOrFolderEntity {
 			name,
 			txId,
 			unixTime,
-			0,
+			lastModifiedDate,
 			parentFolderId,
 			fileId
 		);
@@ -1174,7 +1174,7 @@ export class ArFSPrivateFile extends ArFSFileOrFolderEntity {
 			name,
 			txId,
 			unixTime,
-			0,
+			lastModifiedDate,
 			parentFolderId,
 			fileId
 		);
