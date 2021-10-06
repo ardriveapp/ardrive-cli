@@ -196,7 +196,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		throw new Error(`No Drive-Id tag found for meta data transaction of Folder-Id: ${folderId}`);
 	}
 
-	async getPublicDrive(driveId: string): Promise<ArFSPublicDrive> {
+	async getPublicDrive(driveId: DriveID): Promise<ArFSPublicDrive> {
 		const gqlQuery = buildQuery([
 			{ name: 'Drive-Id', value: driveId },
 			{ name: 'Entity-Type', value: 'drive' },
@@ -217,7 +217,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		return driveBuilder.build();
 	}
 
-	async getPublicFolder(folderId: string): Promise<ArFSPublicFolder> {
+	async getPublicFolder(folderId: FolderID): Promise<ArFSPublicFolder> {
 		const gqlQuery = buildQuery([{ name: 'Folder-Id', value: folderId }]);
 
 		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
@@ -234,7 +234,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		return await folderBuilder.build();
 	}
 
-	async getPublicFile(fileId: string): Promise<ArFSPublicFile> {
+	async getPublicFile(fileId: FileID): Promise<ArFSPublicFile> {
 		return new ArFSPublicFileBuilder(fileId, this.arweave).build();
 	}
 
@@ -1041,7 +1041,7 @@ export class ArFSPrivateDrive extends ArFSEntity implements ArFSDriveEntity {
 }
 
 export class ArFSFileOrFolderEntity extends ArFSEntity implements ArFSFileFolderEntity {
-	folderId?: string;
+	folderId?: FolderID;
 
 	constructor(
 		appName: string,

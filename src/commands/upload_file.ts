@@ -12,17 +12,17 @@ import {
 	ParentFolderIdParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
-import { FeeMultiple } from '../types';
+import { DriveKey, FeeMultiple, FolderID } from '../types';
 import { readJWKFile } from '../utils';
 
 /* eslint-disable no-console */
 
 interface UploadFileParameter {
-	parentFolderId: string;
+	parentFolderId: FolderID;
 	wrappedEntity: ArFSFileToUpload | ArFSFolderToUpload;
 	destinationFileName?: string;
 	drivePassword?: string;
-	driveKey?: string;
+	driveKey?: DriveKey;
 }
 
 new CLICommand({

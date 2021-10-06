@@ -8,6 +8,7 @@ import {
 } from '../parameter_declarations';
 import { arDriveFactory } from '..';
 import { ArFSPrivateDrive, ArFSPublicDrive } from '../arfsdao';
+import { DriveID } from '../types';
 
 /* eslint-disable no-console */
 
@@ -23,7 +24,7 @@ new CLICommand({
 	async action(options) {
 		const parameters = new ParametersHelper(options);
 		const wallet = await parameters.getOptionalWallet();
-		const driveId: string = options.driveId;
+		const driveId: DriveID = options.driveId;
 		// const shouldGetAllRevisions: boolean = options.getAllRevisions;
 
 		const result: Partial<ArFSPublicDrive | ArFSPrivateDrive> = await (async function () {

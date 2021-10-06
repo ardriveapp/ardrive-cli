@@ -9,7 +9,7 @@ import {
 import Arweave from 'arweave';
 import { ArFSFileOrFolderEntity, graphQLURL } from '../../arfsdao';
 import { buildQuery } from '../../query';
-import { ArweaveAddress, DriveID, EntityID, FileID, FolderID, TransactionID } from '../../types';
+import { ArweaveAddress, DriveID, EntityID, FileID, FolderID, TransactionID, UnixTime } from '../../types';
 
 export abstract class ArFSMetadataEntityBuilder<T extends ArFSEntity> {
 	appName?: string;
@@ -20,7 +20,7 @@ export abstract class ArFSMetadataEntityBuilder<T extends ArFSEntity> {
 	entityType?: EntityType;
 	name?: string;
 	txId?: TransactionID;
-	unixTime?: number;
+	unixTime?: UnixTime;
 
 	constructor(protected readonly entityId: EntityID, protected readonly arweave: Arweave) {}
 

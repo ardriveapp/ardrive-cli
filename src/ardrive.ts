@@ -23,7 +23,8 @@ import {
 	FeeMultiple,
 	DriveKey,
 	EntityID,
-	FileID
+	FileID,
+	ByteCount
 } from './types';
 import { WalletDAO, Wallet, JWKWallet } from './wallet_new';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
@@ -133,12 +134,12 @@ export class ArDriveAnonymous extends ArDriveType {
 		return Promise.resolve(driveEntity);
 	}
 
-	async getPublicFolder(folderId: string): Promise<ArFSPublicFolder> {
+	async getPublicFolder(folderId: FolderID): Promise<ArFSPublicFolder> {
 		const folder = await this.arFsDao.getPublicFolder(folderId);
 		return folder;
 	}
 
-	async getPublicFile(fileId: string): Promise<ArFSPublicFile> {
+	async getPublicFile(fileId: FileID): Promise<ArFSPublicFile> {
 		return this.arFsDao.getPublicFile(fileId);
 	}
 
@@ -491,7 +492,7 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	/** Computes the size of a private file encrypted with AES256-GCM */
-	encryptedDataSize(dataSize: number): number {
+	encryptedDataSize(dataSize: ByteCount): ByteCount {
 		return (dataSize / 16 + 1) * 16;
 	}
 
@@ -694,7 +695,7 @@ export class ArDrive extends ArDriveAnonymous {
 		};
 	}
 
-	async createPublicFolder(folderName: string, driveId: string, parentFolderId?: FolderID): Promise<ArFSResult> {
+	async createPublicFolder(folderName: string, driveId: DriveID, parentFolderId?: FolderID): Promise<ArFSResult> {
 		// Assert that there's enough AR available in the wallet
 		const folderData = new ArFSPublicFolderTransactionData(folderName);
 		const { metaDataBaseReward } = await this.estimateAndAssertCostOfFolderUpload(folderData);
@@ -934,7 +935,7 @@ export class ArDrive extends ArDriveAnonymous {
 		return folderEntity;
 	}
 
-	async getPrivateFile(fileId: string, driveKey: DriveKey): Promise<ArFSPrivateFile> {
+	async getPrivateFile(fileId: FileID, driveKey: DriveKey): Promise<ArFSPrivateFile> {
 		return this.arFsDao.getPrivateFile(fileId, driveKey);
 	}
 
@@ -974,7 +975,7 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	async estimateAndAssertCostOfFileUpload(
-		decryptedFileSize: number,
+		decryptedFileSize: ByteCount,
 		metaData: ArFSObjectTransactionData,
 		drivePrivacy: DrivePrivacy
 	): Promise<FileUploadBaseCosts> {

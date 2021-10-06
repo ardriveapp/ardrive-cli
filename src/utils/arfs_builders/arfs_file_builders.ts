@@ -8,12 +8,12 @@ import {
 } from 'ardrive-core-js';
 import Arweave from 'arweave';
 import { ArFSPrivateFile, ArFSPublicFile } from '../../arfsdao';
-import { DriveKey, FileID, TransactionID } from '../../types';
+import { ByteCount, CipherIV, DriveKey, FileID, TransactionID, UnixTime } from '../../types';
 import { ArFSFileOrFolderBuilder } from './arfs_builders';
 
 export abstract class ArFSFileBuilder<T extends ArFSPublicFile | ArFSPrivateFile> extends ArFSFileOrFolderBuilder<T> {
-	size?: number;
-	lastModifiedDate?: number;
+	size?: ByteCount;
+	lastModifiedDate?: UnixTime;
 	dataTxId?: TransactionID;
 	dataContentType?: ContentType;
 
@@ -92,7 +92,7 @@ export class ArFSPublicFileBuilder extends ArFSFileBuilder<ArFSPublicFile> {
 
 export class ArFSPrivateFileBuilder extends ArFSFileBuilder<ArFSPrivateFile> {
 	cipher?: string;
-	cipherIV?: string;
+	cipherIV?: CipherIV;
 
 	constructor(readonly fileId: FileID, readonly arweave: Arweave, private readonly driveKey: DriveKey) {
 		super(fileId, arweave);

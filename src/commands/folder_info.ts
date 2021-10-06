@@ -8,6 +8,7 @@ import {
 	WalletFileParameter
 } from '../parameter_declarations';
 import { arDriveFactory } from '..';
+import { FolderID } from '../types';
 
 /* eslint-disable no-console */
 
@@ -25,10 +26,11 @@ new CLICommand({
 		// const shouldGetAllRevisions: boolean = options.getAllRevisions;
 
 		const result: Partial<ArFSPublicFolder | ArFSPrivateFolder> = await (async function () {
+			const folderId: FolderID = options.folderId;
+
 			if (await parameters.getIsPrivate()) {
 				const wallet = await parameters.getRequiredWallet();
 				const arDrive = arDriveFactory({ wallet: wallet });
-				const folderId: string = options.folderId;
 
 				const driveId = await arDrive.getDriveIdForFolderId(folderId);
 				const driveKey = await parameters.getDriveKey(driveId);
@@ -36,7 +38,6 @@ new CLICommand({
 				return arDrive.getPrivateFolder(folderId, driveKey /*, shouldGetAllRevisions*/);
 			} else {
 				const arDrive = arDriveFactory();
-				const folderId: string = options.folderId;
 				return arDrive.getPublicFolder(folderId /*, shouldGetAllRevisions*/);
 			}
 		})();
