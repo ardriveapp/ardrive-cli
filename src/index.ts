@@ -66,9 +66,11 @@ export function arDriveFactory({
 }
 
 export function arDriveAnonymousFactory(settings?: ArDriveSettingsAnonymous): ArDriveAnonymous {
-	const arweave = settings && settings.arweave ? settings.arweave : cliArweave;
-
-	return new ArDriveAnonymous(new ArFSDAOAnonymous(arweave, CLI_APP_NAME, CLI_APP_VERSION));
+	return new ArDriveAnonymous(
+		new ArFSDAOAnonymous(
+			settings && settings.arweave ? settings.arweave : cliArweave,
+			CLI_APP_NAME,
+			CLI_APP_VERSION
+		)
+	);
 }
-
-// return new ArDriveAnonymous(new ArFSDAOAnonymous(arweave, CLI_APP_NAME, CLI_APP_VERSION));
