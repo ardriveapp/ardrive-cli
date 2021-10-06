@@ -24,7 +24,8 @@ program.addHelpCommand(false);
  */
 function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliApiObject): void {
 	let command: CliApiObject = program.command(commandDescriptor.name);
-	commandDescriptor.parameters.map(getParameterFromParameterNameOrOverridenConfig).forEach((parameter) => {
+	const parameters = commandDescriptor.parameters.map(getParameterFromParameterNameOrOverridenConfig);
+	parameters.forEach((parameter) => {
 		const aliasesAsString = parameter.aliases.join(' ');
 		const paramTypeString = (function () {
 			if (parameter.type === 'array') {
