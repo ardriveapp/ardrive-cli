@@ -1,12 +1,10 @@
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import {
 	BoostParameter,
-	DrivePasswordParameter,
 	DryRunParameter,
 	FileIdParameter,
 	ParentFolderIdParameter,
-	SeedPhraseParameter,
-	WalletFileParameter
+	DrivePrivacyParameters
 } from '../parameter_declarations';
 import { Wallet } from '../wallet_new';
 import { arDriveFactory } from '..';
@@ -16,15 +14,7 @@ import { FeeMultiple } from '../types';
 
 new CLICommand({
 	name: 'move-file',
-	parameters: [
-		WalletFileParameter,
-		SeedPhraseParameter,
-		FileIdParameter,
-		ParentFolderIdParameter,
-		DrivePasswordParameter,
-		BoostParameter,
-		DryRunParameter
-	],
+	parameters: [FileIdParameter, ParentFolderIdParameter, BoostParameter, DryRunParameter, ...DrivePrivacyParameters],
 	async action(options) {
 		const parameters = new ParametersHelper(options);
 
