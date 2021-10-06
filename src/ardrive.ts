@@ -264,7 +264,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Estimate and assert the cost of the entire bulk upload
 		// This will assign the calculated base costs to each wrapped file and folder
-		const bulkEstimation = await this.estimateAndAssertCostOfBulkUpload(wrappedFolder, 'public', parentFolderData);
+		const bulkEstimation = await this.estimateAndAssertCostOfBulkUpload(wrappedFolder, undefined, parentFolderData);
 
 		// TODO: Add interactive confirmation of price estimation before uploading
 
@@ -462,7 +462,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Estimate and assert the cost of the entire bulk upload
 		// This will assign the calculated base costs to each wrapped file and folder
-		const bulkEstimation = await this.estimateAndAssertCostOfBulkUpload(wrappedFolder, 'private', parentFolderData);
+		const bulkEstimation = await this.estimateAndAssertCostOfBulkUpload(wrappedFolder, driveKey, parentFolderData);
 
 		// TODO: Add interactive confirmation of price estimation before uploading
 
@@ -750,15 +750,24 @@ export class ArDrive extends ArDriveAnonymous {
 
 	async estimateAndAssertCostOfBulkUpload(
 		folderToUpload: ArFSFolderToUpload,
-		drivePrivacy: DrivePrivacy,
+		driveKey?: DriveKey,
 		parentFolderMetaData?: ArFSObjectTransactionData
-	): Promise<{ totalPrice: Winston; communityWinstonTip: Winston }> {
+	): Promise<{ totalPrice: Winston; totalFilePrice: Winston; communityWinstonTip: Winston }> {
 		// parentFolderMetaData will only exist if this folder is the parent folder
 		// Recursing children folders will not have meta data assigned
 		const isParentFolder: boolean = parentFolderMetaData !== undefined;
 
+		const folderMetadataTrxData = await (async () => {
+			if (parentFolderMetaData) {
+				return parentFolderMetaData;
+			}
+			if (driveKey) {
+				return ArFSPrivateFolderTransactionData.from(folderToUpload.getBaseFileName(), driveKey);
+			}
+			return new ArFSPublicFolderTransactionData(folderToUpload.getBaseFileName());
+		})();
 		const metaDataBaseReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(
-			(parentFolderMetaData ?? new ArFSPublicFolderTransactionData(folderToUpload.getBaseFileName())).sizeOf()
+			folderMetadataTrxData.sizeOf()
 		);
 		const parentFolderWinstonPrice = metaDataBaseReward.toString();
 
@@ -766,14 +775,16 @@ export class ArDrive extends ArDriveAnonymous {
 		folderToUpload.baseCosts = { metaDataBaseReward: parentFolderWinstonPrice };
 
 		let totalPrice = +parentFolderWinstonPrice;
-		let totalFileDataRewards = 0;
+		let totalFilePrice = 0;
 
 		for await (const file of folderToUpload.files) {
-			const fileSize = drivePrivacy === 'private' ? file.encryptedDataSize() : file.fileStats.size;
+			const fileSize = driveKey ? file.encryptedDataSize() : file.fileStats.size;
 
 			const fileDataBaseReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(fileSize);
 
-			const stubFileMetaData = this.stubPublicFileMetadata(file, file.getBaseFileName());
+			const stubFileMetaData = driveKey
+				? await this.stubPrivateFileMetadata(file, file.getBaseFileName())
+				: this.stubPublicFileMetadata(file, file.getBaseFileName());
 			const metaDataBaseReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(
 				stubFileMetaData.sizeOf()
 			);
@@ -781,7 +792,7 @@ export class ArDrive extends ArDriveAnonymous {
 			totalPrice += fileDataBaseReward;
 			totalPrice += metaDataBaseReward;
 
-			totalFileDataRewards += fileDataBaseReward;
+			totalFilePrice += fileDataBaseReward;
 
 			// Assign base costs to the file
 			file.baseCosts = {
@@ -791,16 +802,17 @@ export class ArDrive extends ArDriveAnonymous {
 		}
 
 		for await (const folder of folderToUpload.folders) {
-			const childFolderResults = await this.estimateAndAssertCostOfBulkUpload(folder, drivePrivacy);
+			const childFolderResults = await this.estimateAndAssertCostOfBulkUpload(folder, driveKey);
 
 			totalPrice += +childFolderResults.totalPrice;
+			totalFilePrice += +childFolderResults.totalFilePrice;
 		}
 
 		const totalWinstonPrice = totalPrice.toString();
 		let communityWinstonTip = '0';
 
 		if (isParentFolder) {
-			communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(String(totalFileDataRewards));
+			communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(String(totalFilePrice));
 
 			// Check and assert balance of the total bulk upload if this folder is the parent folder
 			const walletHasBalance = await this.walletDao.walletHasBalance(
@@ -813,13 +825,13 @@ export class ArDrive extends ArDriveAnonymous {
 
 				throw new Error(
 					`Wallet balance of ${walletBalance} Winston is not enough (${totalWinstonPrice}) for data upload of size ${folderToUpload.getTotalBytes(
-						drivePrivacy === 'private'
+						driveKey !== undefined
 					)} bytes!`
 				);
 			}
 		}
 
-		return { totalPrice: String(totalPrice), communityWinstonTip };
+		return { totalPrice: String(totalPrice), totalFilePrice: String(totalFilePrice), communityWinstonTip };
 	}
 
 	async getPrivateFolder(folderId: FolderID, driveKey: DriveKey): Promise<ArFSPrivateFolder> {
