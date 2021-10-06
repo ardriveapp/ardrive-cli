@@ -50,7 +50,8 @@ import {
 	DEFAULT_APP_VERSION,
 	CURRENT_ARFS_VERSION,
 	CipherIV,
-	RewardSettings
+	RewardSettings,
+	EntityID
 } from './types';
 import { CreateTransactionInterface } from 'arweave/node/common';
 import { ArFSPrivateDriveBuilder, ArFSPublicDriveBuilder } from './utils/arfs_builders/arfs_drive_builders';
@@ -128,8 +129,8 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		super();
 	}
 
-	async getDriveIdForFolderId(folderId: FolderID): Promise<DriveID> {
-		const gqlQuery = buildQuery([{ name: 'Folder-Id', value: folderId }]);
+	private async getDriveID(entityId: EntityID, gqlTypeTag: 'File-Id' | 'Folder-Id') {
+		const gqlQuery = buildQuery([{ name: gqlTypeTag, value: entityId }]);
 
 		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 		const { data } = response.data;
@@ -138,7 +139,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		const edges: GQLEdgeInterface[] = transactions.edges;
 
 		if (!edges.length) {
-			throw new Error(`Folder with Folder ID ${folderId} not found!`);
+			throw new Error(`Entity with ${gqlTypeTag} ${entityId} not found!`);
 		}
 
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -147,7 +148,15 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 			return driveIdTag.value;
 		}
 
-		throw new Error(`No Drive-Id tag found for meta data transaction of Folder-Id: ${folderId}`);
+		throw new Error(`No Drive-Id tag found for meta data transaction of ${gqlTypeTag}: ${entityId}`);
+	}
+
+	async getDriveIdForFileId(fileId: FileID): Promise<DriveID> {
+		return this.getDriveID(fileId, 'File-Id');
+	}
+
+	async getDriveIdForFolderId(folderId: FolderID): Promise<DriveID> {
+		return this.getDriveID(folderId, 'Folder-Id');
 	}
 
 	async getPublicDrive(driveId: string): Promise<ArFSPublicDrive> {
@@ -186,6 +195,10 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 
 		const folderBuilder = new ArFSPublicFolderBuilder(folderId, this.arweave);
 		return await folderBuilder.build();
+	}
+
+	async getPublicFile(fileId: string): Promise<ArFSPublicFile> {
+		return new ArFSPublicFileBuilder(fileId, this.arweave).build();
 	}
 
 	async getPublicFilesWithParentFolderIds(
@@ -748,6 +761,10 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	async getPrivateFolder(folderId: FolderID, driveKey: DriveKey): Promise<ArFSPrivateFolder> {
 		const folderBuilder = new ArFSPrivateFolderBuilder(folderId, this.arweave, driveKey);
 		return await folderBuilder.build();
+	}
+
+	async getPrivateFile(fileId: FileID, driveKey: DriveKey): Promise<ArFSPrivateFile> {
+		return new ArFSPrivateFileBuilder(fileId, this.arweave, driveKey).build();
 	}
 
 	async getAllFoldersOfPrivateDrive(
