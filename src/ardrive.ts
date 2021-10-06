@@ -1,6 +1,5 @@
 import {
 	ArFSDAO,
-	ArFSPublicDrive,
 	ArFSDAOAnonymous,
 	ArFSDAOType,
 	ArFSPublicFolder,
@@ -9,7 +8,8 @@ import {
 	ArFSPrivateFolder,
 	ArFSPrivateFileOrFolderWithPaths,
 	ArFSPublicFile,
-	ArFSPrivateFile
+	ArFSPrivateFile,
+	ArFSPublicDrive
 } from './arfsdao';
 import { CommunityOracle } from './community/community_oracle';
 import { deriveDriveKey, DrivePrivacy, GQLTagInterface, JWKInterface, winstonToAr } from 'ardrive-core-js';
@@ -22,6 +22,7 @@ import {
 	TipType,
 	FeeMultiple,
 	DriveKey,
+	EntityID,
 	FileID
 } from './types';
 import { WalletDAO, Wallet, JWKWallet } from './wallet_new';
@@ -48,7 +49,7 @@ export interface ArFSEntityData {
 	type: ArFSEntityDataType;
 	metadataTxId: TransactionID;
 	dataTxId?: TransactionID;
-	entityId: FolderID | DriveID | FileID;
+	entityId: EntityID;
 	key?: string;
 }
 
@@ -138,12 +139,16 @@ export class ArDriveAnonymous extends ArDriveType {
 	}
 
 	/**
-	 * Lists the children and self of certain public folder
+	 * Lists the children of certain public folder
 	 * @param {FolderID} folderId the folder ID to list children of
 	 * @returns {ArFSPublicFileOrFolderWithPaths[]} an array representation of the children and parent folder
 	 */
-	async listPublicFolder(folderId: FolderID): Promise<ArFSPublicFileOrFolderWithPaths[]> {
-		const children = await this.arFsDao.listPublicFolder(folderId);
+	async listPublicFolder(
+		folderId: FolderID,
+		maxDepth = 0,
+		includeRoot = false
+	): Promise<ArFSPublicFileOrFolderWithPaths[]> {
+		const children = await this.arFsDao.listPublicFolder(folderId, maxDepth, includeRoot);
 		return children;
 	}
 }
@@ -834,12 +839,17 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	/**
-	 * Lists the children and self of certain private folder
+	 * Lists the children of certain private folder
 	 * @param {FolderID} folderId the folder ID to list children of
 	 * @returns {ArFSPrivateFileOrFolderWithPaths[]} an array representation of the children and parent folder
 	 */
-	async listPrivateFolder(folderId: FolderID, driveKey: DriveKey): Promise<ArFSPrivateFileOrFolderWithPaths[]> {
-		const children = this.arFsDao.listPrivateFolder(folderId, driveKey);
+	async listPrivateFolder(
+		folderId: FolderID,
+		driveKey: DriveKey,
+		maxDepth = 0,
+		includeRoot = false
+	): Promise<ArFSPrivateFileOrFolderWithPaths[]> {
+		const children = this.arFsDao.listPrivateFolder(folderId, driveKey, maxDepth, includeRoot);
 		return children;
 	}
 

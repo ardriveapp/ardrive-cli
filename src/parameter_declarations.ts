@@ -18,6 +18,8 @@ export const LocalFilePathParameter = 'localFilePath';
 export const DestinationFileNameParameter = 'destFileName';
 export const LocalFilesParameter = 'localFiles';
 export const GetAllRevisionsParameter = 'getAllRevisions';
+export const AllParameter = 'all';
+export const MaxDepthParameter = 'maxDepth';
 export const BoostParameter = 'boost';
 export const DryRunParameter = 'dryRun';
 
@@ -172,4 +174,17 @@ Parameter.declare({
 	description:
 		'(OPTIONAL) Print the results of the transactions that would occur, and their potential fees, without sending the transactions.',
 	type: 'boolean'
+});
+
+Parameter.declare({
+	name: AllParameter,
+	aliases: ['--all'],
+	description: `(OPTIONAL) gets all contents within this folder, including child files/folders`,
+	type: 'boolean'
+});
+
+Parameter.declare({
+	name: MaxDepthParameter,
+	aliases: ['--max-depth'],
+	description: `(OPTIONAL) enter a number of the amount of sub folder levels to list`
 });
