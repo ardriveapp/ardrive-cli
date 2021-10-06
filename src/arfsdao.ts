@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
-import * as fs from 'fs';
 import type { JWKWallet, Wallet } from './wallet_new';
 import Arweave from 'arweave';
 import { v4 as uuidv4 } from 'uuid';
@@ -12,11 +11,10 @@ import {
 	DriveAuthMode,
 	DrivePrivacy,
 	EntityType,
-	extToMime,
 	GQLEdgeInterface,
-	GQLTagInterface
+	GQLTagInterface,
+	uploadDataChunk
 } from 'ardrive-core-js';
-import { basename } from 'path';
 import {
 	ArFSPublicFileDataPrototype,
 	ArFSObjectMetadataPrototype,
@@ -39,6 +37,7 @@ import {
 	ArFSPublicFolderTransactionData
 } from './arfs_trx_data_types';
 import { buildQuery } from './query';
+import { ArFSFileToUpload } from './arfs_file_wrapper';
 import {
 	DriveID,
 	FolderID,
@@ -91,6 +90,9 @@ export interface ArFSUploadPrivateFileResult extends ArFSUploadFileResult {
 export interface ArFSCreatePrivateDriveResult extends ArFSCreateDriveResult {
 	driveKey: DriveKey;
 }
+export interface ArFSCreatePrivateFolderResult extends ArFSCreateFolderResult {
+	driveKey: DriveKey;
+}
 
 export abstract class ArFSDAOType {
 	protected abstract readonly arweave: Arweave;
@@ -98,12 +100,20 @@ export abstract class ArFSDAOType {
 	protected abstract readonly appVersion: string;
 }
 
-export interface CreatePublicFolderSettings {
-	folderData: ArFSPublicFolderTransactionData;
+export interface CreateFolderSettings {
 	driveId: DriveID;
 	rewardSettings: RewardSettings;
 	parentFolderId?: FolderID;
 	syncParentFolderId?: boolean;
+}
+
+export interface CreatePublicFolderSettings extends CreateFolderSettings {
+	folderData: ArFSPublicFolderTransactionData;
+}
+
+export interface CreatePrivateFolderSettings extends CreateFolderSettings {
+	folderData: ArFSPrivateFolderTransactionData;
+	driveKey: DriveKey;
 }
 
 /**
@@ -305,7 +315,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		parentFolderId,
 		syncParentFolderId = true
 	}: CreatePublicFolderSettings): Promise<ArFSCreateFolderResult> {
-		if (parentFolderId) {
+		if (parentFolderId && syncParentFolderId) {
 			// Assert that drive ID is consistent with parent folder ID
 			const actualDriveId = await this.getDriveIdForFolderId(parentFolderId);
 
@@ -351,6 +361,61 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		}
 
 		return { folderTrxId: folderTrx.id, folderTrxReward: folderTrx.reward, folderId };
+	}
+
+	async createPrivateFolder({
+		folderData,
+		driveId,
+		driveKey,
+		parentFolderId,
+		syncParentFolderId = true
+	}: CreatePrivateFolderSettings): Promise<ArFSCreatePrivateFolderResult> {
+		if (parentFolderId && syncParentFolderId) {
+			// Assert that drive ID is consistent with parent folder ID
+			const actualDriveId = await this.getDriveIdForFolderId(parentFolderId);
+
+			if (actualDriveId !== driveId) {
+				throw new Error(
+					`Drive id: ${driveId} does not match actual drive id: ${actualDriveId} for parent folder id`
+				);
+			}
+		} else if (syncParentFolderId) {
+			// If drive contains a root folder ID, treat this as a subfolder to the root folder
+			const drive = await this.getPrivateDrive(driveId, driveKey);
+			if (!drive) {
+				throw new Error(`Private drive with Drive ID ${driveId} not found!`);
+			}
+
+			if (drive.rootFolderId) {
+				parentFolderId = drive.rootFolderId;
+			}
+		}
+
+		// Generate a new folder ID
+		const folderId = uuidv4();
+
+		// Get the current time so the app can display the "created" data later on
+		const unixTime = Math.round(Date.now() / 1000);
+
+		// Create a folder metadata transaction
+		const folderMetadata = new ArFSPrivateFolderMetaDataPrototype(
+			unixTime,
+			driveId,
+			folderId,
+			folderData,
+			parentFolderId
+		);
+		const folderTrx = await this.prepareArFSObjectTransaction(folderMetadata);
+
+		// Execute the upload
+		if (!this.dryRun) {
+			const folderUploader = await this.arweave.transactions.getUploader(folderTrx);
+			while (!folderUploader.isComplete) {
+				await folderUploader.uploadChunk();
+			}
+		}
+
+		return { folderTrxId: folderTrx.id, folderTrxReward: folderTrx.reward, folderId, driveKey };
 	}
 
 	async createPublicDrive(
@@ -410,10 +475,19 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		driveRewardSettings: RewardSettings,
 		rootFolderRewardSettings: RewardSettings
 	): Promise<ArFSCreatePrivateDriveResult> {
-		// Generate a new drive ID  for the new drive
-
-		// Generate a folder ID for the new drive's root folder
-		const rootFolderId = uuidv4();
+		// Create root folder
+		const folderData = await ArFSPrivateFolderTransactionData.from(driveName, driveKey);
+		const {
+			folderTrxId: rootFolderTrxId,
+			folderTrxReward: rootFolderTrxReward,
+			folderId: rootFolderId
+		} = await this.createPrivateFolder({
+			folderData,
+			driveId,
+			rewardSettings: rootFolderRewardSettings,
+			syncParentFolderId: false,
+			driveKey
+		});
 
 		// Get the current time so the app can display the "created" data later on
 		const unixTime = Math.round(Date.now() / 1000);
@@ -424,54 +498,33 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const driveMetaData = new ArFSPrivateDriveMetaDataPrototype(unixTime, driveId, privateDriveData);
 		const driveTrx = await this.prepareArFSObjectTransaction(driveMetaData, driveRewardSettings);
 
-		// Create a root folder metadata transaction
-		const rootFolderMetadata = new ArFSPrivateFolderMetaDataPrototype(
-			unixTime,
-			driveId,
-			rootFolderId,
-			await ArFSPrivateFolderTransactionData.from(driveName, driveKey)
-		);
-		const rootFolderTrx = await this.prepareArFSObjectTransaction(rootFolderMetadata, rootFolderRewardSettings);
-
 		// Execute the uploads
 		if (!this.dryRun) {
 			const driveUploader = await this.arweave.transactions.getUploader(driveTrx);
-			const folderUploader = await this.arweave.transactions.getUploader(rootFolderTrx);
-			while (!driveUploader.isComplete) {
-				await driveUploader.uploadChunk();
-			}
-			while (!folderUploader.isComplete) {
-				await folderUploader.uploadChunk();
-			}
+			await driveUploader.uploadChunk();
 		}
 
 		return {
 			driveTrxId: driveTrx.id,
 			driveTrxReward: driveTrx.reward,
-			rootFolderTrxId: rootFolderTrx.id,
-			rootFolderTrxReward: rootFolderTrx.reward,
-			driveId: driveId,
-			rootFolderId: rootFolderId,
+			rootFolderTrxId,
+			rootFolderTrxReward,
+			driveId,
+			rootFolderId,
 			driveKey
 		};
 	}
 
 	async uploadPublicFile(
 		parentFolderId: FolderID,
-		filePath: string,
+		wrappedFile: ArFSFileToUpload,
+		driveId: DriveID,
 		fileDataRewardSettings: RewardSettings,
 		metadataRewardSettings: RewardSettings,
 		destFileName?: string
 	): Promise<ArFSUploadFileResult> {
-		// Retrieve drive ID from folder ID and ensure that it is indeed public
-		const driveId = await this.getDriveIdForFolderId(parentFolderId);
-		const drive = await this.getPublicDrive(driveId);
-		if (!drive) {
-			throw new Error(`Public drive with Drive ID ${driveId} not found!`);
-		}
-
 		// Establish destination file name
-		const destinationFileName = destFileName ?? basename(filePath);
+		const destinationFileName = destFileName ?? wrappedFile.getBaseFileName();
 
 		// Generate file ID
 		const fileId = uuidv4();
@@ -480,10 +533,10 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const unixTime = Math.round(Date.now() / 1000);
 
 		// Gather file information
-		const fileStats = fs.statSync(filePath);
-		const fileData = fs.readFileSync(filePath);
-		const dataContentType = extToMime(filePath);
-		const lastModifiedDateMS = Math.floor(fileStats.mtimeMs);
+		const { fileSize, dataContentType, lastModifiedDateMS } = wrappedFile.gatherFileInfo();
+
+		// Read file data into memory
+		const fileData = wrappedFile.getFileDataBuffer();
 
 		// Build file data transaction
 		const fileDataPrototype = new ArFSPublicFileDataPrototype(
@@ -494,17 +547,15 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		// Upload file data
 		if (!this.dryRun) {
-			const dataUploader = await this.arweave.transactions.getUploader(dataTrx);
-			while (!dataUploader.isComplete) {
-				await dataUploader.uploadChunk();
-			}
+			console.log(`Uploading public file: "${wrappedFile.filePath}" to the permaweb..`);
+			await this.sendChunkedUploadWithProgress(dataTrx);
 		}
 
 		// Prepare meta data transaction
 		const fileMetadata = new ArFSPublicFileMetaDataPrototype(
 			new ArFSPublicFileMetadataTransactionData(
 				destinationFileName,
-				fileStats.size,
+				fileSize,
 				lastModifiedDateMS,
 				dataTrx.id,
 				dataContentType
@@ -535,21 +586,15 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 	async uploadPrivateFile(
 		parentFolderId: FolderID,
-		filePath: string,
+		wrappedFile: ArFSFileToUpload,
+		driveId: DriveID,
 		driveKey: DriveKey,
 		fileDataRewardSettings: RewardSettings,
 		metadataRewardSettings: RewardSettings,
 		destFileName?: string
 	): Promise<ArFSUploadPrivateFileResult> {
-		// Retrieve drive ID from folder ID and ensure that it is indeed a private drive
-		const driveId = await this.getDriveIdForFolderId(parentFolderId);
-		const drive = await this.getPrivateDrive(driveId, driveKey);
-		if (!drive) {
-			throw new Error(`Private drive with Drive ID ${driveId} not found!`);
-		}
-
 		// Establish destination file name
-		const destinationFileName = destFileName ?? basename(filePath);
+		const destinationFileName = destFileName ?? wrappedFile.getBaseFileName();
 
 		// Generate file ID
 		const fileId = uuidv4();
@@ -558,10 +603,10 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const unixTime = Math.round(Date.now() / 1000);
 
 		// Gather file information
-		const fileStats = fs.statSync(filePath);
-		const fileData = fs.readFileSync(filePath);
-		const dataContentType = extToMime(filePath);
-		const lastModifiedDateMS = Math.floor(fileStats.mtimeMs);
+		const { fileSize, dataContentType, lastModifiedDateMS } = wrappedFile.gatherFileInfo();
+
+		// Read file data into memory
+		const fileData = wrappedFile.getFileDataBuffer();
 
 		// Build file data transaction
 		const fileDataPrototype = new ArFSPrivateFileDataPrototype(
@@ -571,16 +616,14 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		// Upload file data
 		if (!this.dryRun) {
-			const dataUploader = await this.arweave.transactions.getUploader(dataTrx);
-			while (!dataUploader.isComplete) {
-				await dataUploader.uploadChunk();
-			}
+			console.log(`Uploading private file: "${wrappedFile.filePath}" to the permaweb..`);
+			await this.sendChunkedUploadWithProgress(dataTrx);
 		}
 
 		// Prepare meta data transaction
 		const fileMetaData = await ArFSPrivateFileMetadataTransactionData.from(
 			destinationFileName,
-			fileStats.size,
+			fileSize,
 			lastModifiedDateMS,
 			dataTrx.id,
 			dataContentType,
@@ -613,6 +656,27 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			fileId,
 			fileKey: fileMetaData.fileKey
 		};
+	}
+
+	/**
+	 * Uploads a v2 transaction in chunks with progress logging
+	 *
+	 * @example await this.sendChunkedUpload(myTransaction);
+	 */
+	async sendChunkedUploadWithProgress(trx: Transaction): Promise<void> {
+		const dataUploader = await this.arweave.transactions.getUploader(trx);
+
+		while (!dataUploader.isComplete) {
+			const nextChunk = await uploadDataChunk(dataUploader);
+			if (nextChunk === null) {
+				break;
+			} else {
+				// TODO: Add custom logger function that produces various levels of detail
+				console.log(
+					`${dataUploader.pctComplete}% complete, ${dataUploader.uploadedChunks}/${dataUploader.totalChunks}`
+				);
+			}
+		}
 	}
 
 	async prepareArFSObjectTransaction(
