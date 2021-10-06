@@ -275,14 +275,25 @@ export class ArDrive extends ArDriveAnonymous {
 			driveId
 		});
 
-		const { tipData, reward: communityTipTrxReward } = await this.sendCommunityTip(
-			bulkEstimation.communityWinstonTip
-		);
+		if (+bulkEstimation.communityWinstonTip > 0) {
+			// Send community tip only if communityWinstonTip has a value
+			// This can be zero when a user uses this method to upload empty folders
+
+			const { tipData, reward: communityTipTrxReward } = await this.sendCommunityTip(
+				bulkEstimation.communityWinstonTip
+			);
+
+			return Promise.resolve({
+				created: results.entityResults,
+				tips: [tipData],
+				fees: { ...results.feeResults, [tipData.txId]: +communityTipTrxReward }
+			});
+		}
 
 		return Promise.resolve({
 			created: results.entityResults,
-			tips: [tipData],
-			fees: { ...results.feeResults, [tipData.txId]: +communityTipTrxReward }
+			tips: [],
+			fees: results.feeResults
 		});
 	}
 
@@ -470,14 +481,25 @@ export class ArDrive extends ArDriveAnonymous {
 			driveId
 		});
 
-		const { tipData, reward: communityTipTrxReward } = await this.sendCommunityTip(
-			bulkEstimation.communityWinstonTip
-		);
+		if (+bulkEstimation.communityWinstonTip > 0) {
+			// Send community tip only if communityWinstonTip has a value
+			// This can be zero when a user uses this method to upload empty folders
+
+			const { tipData, reward: communityTipTrxReward } = await this.sendCommunityTip(
+				bulkEstimation.communityWinstonTip
+			);
+
+			return Promise.resolve({
+				created: results.entityResults,
+				tips: [tipData],
+				fees: { ...results.feeResults, [tipData.txId]: +communityTipTrxReward }
+			});
+		}
 
 		return Promise.resolve({
 			created: results.entityResults,
-			tips: [tipData],
-			fees: { ...results.feeResults, [tipData.txId]: +communityTipTrxReward }
+			tips: [],
+			fees: results.feeResults
 		});
 	}
 
@@ -804,7 +826,9 @@ export class ArDrive extends ArDriveAnonymous {
 		let communityWinstonTip = '0';
 
 		if (isParentFolder) {
-			communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(String(totalFilePrice));
+			if (totalFilePrice > 0) {
+				communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(String(totalFilePrice));
+			}
 
 			// Check and assert balance of the total bulk upload if this folder is the parent folder
 			const walletHasBalance = await this.walletDao.walletHasBalance(
