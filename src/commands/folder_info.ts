@@ -1,24 +1,12 @@
 import { CLICommand, ParametersHelper } from '../CLICommand';
-import {
-	DriveKeyParameter,
-	DrivePasswordParameter,
-	GetAllRevisionsParameter,
-	FolderIdParameter,
-	WalletFileParameter
-} from '../parameter_declarations';
-import { arDriveFactory } from '..';
+import { GetAllRevisionsParameter, FolderIdParameter, DrivePrivacyParameters } from '../parameter_declarations';
+import { arDriveAnonymousFactory, arDriveFactory } from '..';
 
 /* eslint-disable no-console */
 
 new CLICommand({
 	name: 'folder-info',
-	parameters: [
-		FolderIdParameter,
-		GetAllRevisionsParameter,
-		DrivePasswordParameter,
-		DriveKeyParameter,
-		WalletFileParameter
-	],
+	parameters: [FolderIdParameter, GetAllRevisionsParameter, ...DrivePrivacyParameters],
 	async action(options) {
 		const parameters = new ParametersHelper(options);
 		// const shouldGetAllRevisions: boolean = options.getAllRevisions;
@@ -34,7 +22,7 @@ new CLICommand({
 
 				return arDrive.getPrivateFolder(folderId, driveKey /*, shouldGetAllRevisions*/);
 			} else {
-				const arDrive = arDriveFactory();
+				const arDrive = arDriveAnonymousFactory();
 				const folderId: string = options.folderId;
 				return arDrive.getPublicFolder(folderId /*, shouldGetAllRevisions*/);
 			}

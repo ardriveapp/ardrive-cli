@@ -7,6 +7,8 @@ import {
 	ArFSPublicFileOrFolderWithPaths,
 	ArFSPrivateFolder,
 	ArFSPrivateFileOrFolderWithPaths,
+	ArFSPublicFile,
+	ArFSPrivateFile,
 	ArFSPublicDrive
 } from './arfsdao';
 import { CommunityOracle } from './community/community_oracle';
@@ -20,7 +22,8 @@ import {
 	TipType,
 	FeeMultiple,
 	DriveKey,
-	EntityID
+	EntityID,
+	FileID
 } from './types';
 import { WalletDAO, Wallet, JWKWallet } from './wallet_new';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
@@ -129,6 +132,10 @@ export class ArDriveAnonymous extends ArDriveType {
 	async getPublicFolder(folderId: string): Promise<ArFSPublicFolder> {
 		const folder = await this.arFsDao.getPublicFolder(folderId);
 		return folder;
+	}
+
+	async getPublicFile(fileId: string): Promise<ArFSPublicFile> {
+		return this.arFsDao.getPublicFile(fileId);
 	}
 
 	/**
@@ -855,6 +862,10 @@ export class ArDrive extends ArDriveAnonymous {
 		return folderEntity;
 	}
 
+	async getPrivateFile(fileId: string, driveKey: DriveKey): Promise<ArFSPrivateFile> {
+		return this.arFsDao.getPrivateFile(fileId, driveKey);
+	}
+
 	/**
 	 * Lists the children of certain private folder
 	 * @param {FolderID} folderId the folder ID to list children of
@@ -966,6 +977,10 @@ export class ArDrive extends ArDriveAnonymous {
 			driveMetaDataBaseReward: driveMetaDataBaseReward.toString(),
 			rootFolderMetaDataBaseReward: rootFolderMetaDataBaseReward.toString()
 		};
+	}
+
+	async getDriveIdForFileId(fileId: FileID): Promise<DriveID> {
+		return this.arFsDao.getDriveIdForFileId(fileId);
 	}
 
 	async getDriveIdForFolderId(folderId: FolderID): Promise<DriveID> {

@@ -13,6 +13,7 @@ export const DestinationAddressParameter = 'destAddress';
 export const TransactionIdParameter = 'txId';
 export const ConfirmationsParameter = 'confirmations';
 export const FolderIdParameter = 'folderId';
+export const FileIdParameter = 'fileId';
 export const ParentFolderIdParameter = 'parentFolderId';
 export const LocalFilePathParameter = 'localFilePath';
 export const DestinationFileNameParameter = 'destFileName';
@@ -22,6 +23,10 @@ export const AllParameter = 'all';
 export const MaxDepthParameter = 'maxDepth';
 export const BoostParameter = 'boost';
 export const DryRunParameter = 'dryRun';
+
+// Aggregates for convenience
+export const DriveCreationPrivacyParameters = [DrivePasswordParameter, WalletFileParameter, SeedPhraseParameter];
+export const DrivePrivacyParameters = [DriveKeyParameter, ...DriveCreationPrivacyParameters];
 
 /**
  * Note: importing this file will declare all the above parameters
@@ -126,6 +131,13 @@ Parameter.declare({
 	name: FolderIdParameter,
 	aliases: ['-f', '--folder-id'],
 	description: `the ArFS folder ID for the folder to query`,
+	required: true
+});
+
+Parameter.declare({
+	name: FileIdParameter,
+	aliases: ['-i', '--file-id'],
+	description: `the ArFS file ID for the file to query`,
 	required: true
 });
 
