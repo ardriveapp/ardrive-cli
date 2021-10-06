@@ -1,6 +1,5 @@
 import { ArDriveAnonymous } from '../ardrive';
 import { ArFSDAOAnonymous, ArFSPrivateFile, ArFSPublicFile } from '../arfsdao';
-import { CommonContext } from '../CLICommand/common_context';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import {
 	DriveKeyParameter,

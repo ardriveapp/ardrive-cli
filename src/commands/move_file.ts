@@ -1,5 +1,4 @@
-import { CLICommand } from '../CLICommand';
-import { CommonContext } from '../CLICommand/common_context';
+import { CLICommand, ParametersHelper } from '../CLICommand';
 import {
 	BoostParameter,
 	DrivePasswordParameter,
@@ -10,7 +9,7 @@ import {
 	WalletFileParameter
 } from '../parameter_declarations';
 import { Wallet } from '../wallet_new';
-import { arDriveFactory, cliWalletDao } from '..';
+import { arDriveFactory } from '..';
 import { FeeMultiple } from '../types';
 
 /* eslint-disable no-console */
@@ -27,11 +26,11 @@ new CLICommand({
 		DryRunParameter
 	],
 	async action(options) {
-		const context = new CommonContext(options, cliWalletDao);
-		const wallet: Wallet = await context.getWallet();
+		const parameters = new ParametersHelper(options);
 
 		const { fileId, parentFolderId, boost, dryRun } = options;
 
+		const wallet: Wallet = await parameters.getRequiredWallet();
 		const ardrive = arDriveFactory({
 			wallet: wallet,
 			feeMultiple: boost as FeeMultiple,
@@ -39,9 +38,9 @@ new CLICommand({
 		});
 
 		const createDriveResult = await (async function () {
-			if (await context.getIsPrivate()) {
+			if (await parameters.getIsPrivate()) {
 				const driveId = await ardrive.getDriveIdForFolderId(parentFolderId);
-				const driveKey = await context.getDriveKey(driveId);
+				const driveKey = await parameters.getDriveKey(driveId);
 
 				return ardrive.movePrivateFile(fileId, parentFolderId, driveKey);
 			} else {
