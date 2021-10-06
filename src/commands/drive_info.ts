@@ -1,7 +1,4 @@
-import { ArDriveAnonymous } from '../ardrive';
-import { ArFSDAOAnonymous, ArFSPrivateDrive, ArFSPublicDrive } from '../arfsdao';
-import { CLICommand } from '../CLICommand';
-import { CommonContext } from '../CLICommand/common_context';
+import { CLICommand, ParametersHelper } from '../CLICommand';
 import {
 	DriveIdParameter,
 	DriveKeyParameter,
@@ -9,7 +6,8 @@ import {
 	GetAllRevisionsParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
-import { arDriveFactory, cliArweave, cliWalletDao } from '..';
+import { arDriveFactory } from '..';
+import { ArFSPrivateDrive, ArFSPublicDrive } from '../arfsdao';
 
 /* eslint-disable no-console */
 
@@ -23,23 +21,20 @@ new CLICommand({
 		WalletFileParameter
 	],
 	async action(options) {
-		const context = new CommonContext(options, cliWalletDao);
-		const wallet = await context.getWallet().catch(() => null);
+		const parameters = new ParametersHelper(options);
+		const wallet = await parameters.getOptionalWallet();
+		const driveId: string = options.driveId;
+		// const shouldGetAllRevisions: boolean = options.getAllRevisions;
+
 		const result: Partial<ArFSPublicDrive | ArFSPrivateDrive> = await (async function () {
 			if (wallet) {
-				const arDrive = arDriveFactory({
-					wallet: wallet
-				});
-				const driveId: string = options.driveId;
-				const driveKey = await context.getDriveKey(driveId);
+				const arDrive = arDriveFactory({ wallet: wallet });
+				const driveKey = await parameters.getDriveKey(driveId);
 
-				// const getAllRevisions: boolean = options.getAllRevisions;
-				return arDrive.getPrivateDrive(driveId, driveKey /*, getAllRevisions*/);
+				return arDrive.getPrivateDrive(driveId, driveKey /*, shouldGetAllRevisions*/);
 			} else {
-				const arDrive = new ArDriveAnonymous(new ArFSDAOAnonymous(cliArweave));
-				const driveId: string = options.driveId;
-				// const getAllRevisions: boolean = options.getAllRevisions;
-				return arDrive.getPublicDrive(driveId /*, getAllRevisions*/);
+				const arDrive = arDriveFactory();
+				return arDrive.getPublicDrive(driveId /*, shouldGetAllRevisions*/);
 			}
 		})();
 

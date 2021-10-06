@@ -6,7 +6,7 @@ export type CommandName = string;
 export interface CommandDescriptor {
 	name: CommandName;
 	parameters: ParameterName[];
-	action(options: ParsedArguments): void;
+	action(options: ParsedArguments): Promise<void>;
 }
 
 const program: CliApiObject = new Command() as CliApiObject;
@@ -45,8 +45,12 @@ function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliA
 			command.option(...optionArguments);
 		}
 	});
-	command = command.action((options) => {
-		commandDescriptor.action(options);
+	command = command.action(async (options) => {
+		await commandDescriptor.action(options).catch((err) => {
+			// eslint-disable-next-line no-console
+			console.log(err.message);
+			process.exit(1);
+		});
 	});
 }
 

@@ -12,7 +12,7 @@ const driveNameCommandName = 'drive-name-test';
 const driveNameCommandDescription: CommandDescriptor = {
 	name: driveNameCommandName,
 	parameters: [DriveNameParameter],
-	action(option) {
+	async action(option) {
 		/** This code here will run after argv is parsed */
 		expect(option.driveNameTest).to.equal(MY_DRIVE_NAME);
 	}

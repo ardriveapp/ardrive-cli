@@ -1,56 +1,33 @@
 /* eslint-disable no-console */
-import { arweave } from 'ardrive-core-js';
-import { cliWalletDao, CLI_APP_NAME, CLI_APP_VERSION } from '..';
-import { ArDrive, ArDriveAnonymous } from '../ardrive';
-import {
-	ArFSDAO,
-	ArFSDAOAnonymous,
-	ArFSPrivateFileOrFolderWithPaths,
-	ArFSPublicFileOrFolderWithPaths
-} from '../arfsdao';
-import { CLICommand } from '../CLICommand';
-import { CommonContext } from '../CLICommand/common_context';
-import { ArDriveCommunityOracle } from '../community/ardrive_community_oracle';
+import { arDriveFactory } from '..';
+import { ArFSPrivateFileOrFolderWithPaths, ArFSPublicFileOrFolderWithPaths } from '../arfsdao';
+import { CLICommand, ParametersHelper } from '../CLICommand';
 import {
 	DrivePasswordParameter,
 	ParentFolderIdParameter,
 	SeedPhraseParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
-
-function alphabeticalOrder(a: string, b: string) {
-	return a.localeCompare(b);
-}
+import { alphabeticalOrder } from '../utils/sort_functions';
 
 new CLICommand({
 	name: 'list-folder',
 	parameters: [ParentFolderIdParameter, SeedPhraseParameter, WalletFileParameter, DrivePasswordParameter],
 	async action(options) {
-		const context = new CommonContext(options, cliWalletDao);
-		const folderId = context.getParameterValue(ParentFolderIdParameter);
+		const parameters = new ParametersHelper(options);
+		const folderId = parameters.getRequiredParameterValue(ParentFolderIdParameter);
 		let children: (ArFSPrivateFileOrFolderWithPaths | ArFSPublicFileOrFolderWithPaths)[];
 
-		if (!folderId) {
-			console.log(`Folder id not specified!`);
-			process.exit(1);
-		}
+		if (await parameters.getIsPrivate()) {
+			const wallet = await parameters.getRequiredWallet();
+			const arDrive = arDriveFactory({ wallet });
 
-		if (await context.getIsPrivate()) {
-			const wallet = await context.getWallet();
-			const arDrive = new ArDrive(
-				wallet,
-				cliWalletDao,
-				new ArFSDAO(wallet, arweave),
-				new ArDriveCommunityOracle(arweave),
-				CLI_APP_NAME,
-				CLI_APP_VERSION
-			);
 			const driveId = await arDrive.getDriveIdForFolderId(folderId);
-			const driveKey = await context.getDriveKey(driveId);
+			const driveKey = await parameters.getDriveKey(driveId);
 
 			children = await arDrive.listPrivateFolder(folderId, driveKey);
 		} else {
-			const arDrive = new ArDriveAnonymous(new ArFSDAOAnonymous(arweave));
+			const arDrive = arDriveFactory();
 			children = await arDrive.listPublicFolder(folderId);
 		}
 
