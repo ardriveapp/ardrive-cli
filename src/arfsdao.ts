@@ -9,6 +9,8 @@ import {
 	ArFSEntity,
 	ArFSFileFolderEntity,
 	ContentType,
+	DriveAuthMode,
+	DrivePrivacy,
 	EntityType,
 	extToMime,
 	GQLEdgeInterface,
@@ -242,9 +244,19 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 	/**
 	 * Lists the children of certain public folder
 	 * @param {FolderID} folderId the folder ID to list children of
+	 * @param {number} maxDepth a non-negative integer value indicating the depth of the folder tree to list where 0 = this folder's contents only
+	 * @param {boolean} includeRoot whether or not folderId's folder data should be included in the listing
 	 * @returns {ArFSPublicFileOrFolderWithPaths[]} an array representation of the children and parent folder
 	 */
-	async listPublicFolder(folderId: FolderID, maxDepth = 0): Promise<ArFSPublicFileOrFolderWithPaths[]> {
+	async listPublicFolder(
+		folderId: FolderID,
+		maxDepth: number,
+		includeRoot: boolean
+	): Promise<ArFSPublicFileOrFolderWithPaths[]> {
+		if (maxDepth < 0 || !Number.isInteger(maxDepth)) {
+			throw new Error('maxDepth should be a non-negative integer!');
+		}
+
 		const folder = await this.getPublicFolder(folderId);
 
 		// Fetch all of the folder entities within the drive
@@ -259,6 +271,10 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		const childrenFolderEntities = allFolderEntitiesOfDrive.filter((folder) =>
 			subFolderIDs.includes(folder.entityId)
 		);
+
+		if (includeRoot) {
+			childrenFolderEntities.unshift(folder);
+		}
 
 		// Fetch all file entities within all Folders of the drive
 		const childrenFileEntities = await this.getPublicFilesWithParentFolderIds(searchFolderIDs, true);
@@ -742,13 +758,21 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	/**
 	 * Lists the children of certain private folder
 	 * @param {FolderID} folderId the folder ID to list children of
+	 * @param {DriveKey} driveKey the drive key used for drive and folder data decryption and file key derivation
+	 * @param {number} maxDepth a non-negative integer value indicating the depth of the folder tree to list where 0 = this folder's contents only
+	 * @param {boolean} includeRoot whether or not folderId's folder data should be included in the listing
 	 * @returns {ArFSPrivateFileOrFolderWithPaths[]} an array representation of the children and parent folder
 	 */
 	async listPrivateFolder(
 		folderId: FolderID,
 		driveKey: DriveKey,
-		maxDepth = 0
+		maxDepth: number,
+		includeRoot: boolean
 	): Promise<ArFSPrivateFileOrFolderWithPaths[]> {
+		if (maxDepth < 0 || !Number.isInteger(maxDepth)) {
+			throw new Error('maxDepth should be a non-negative integer!');
+		}
+
 		const folder = await this.getPrivateFolder(folderId, driveKey);
 
 		// Fetch all of the folder entities within the drive
@@ -762,6 +786,10 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const childrenFolderEntities = allFolderEntitiesOfDrive.filter((folder) =>
 			subFolderIDs.includes(folder.entityId)
 		);
+
+		if (includeRoot) {
+			childrenFolderEntities.unshift(folder);
+		}
 
 		// Fetch all file entities within all Folders of the drive
 		const childrenFileEntities = await this.getPrivateFilesWithParentFolderIds(searchFolderIDs, driveKey, true);
@@ -778,14 +806,14 @@ export class ArFSPublicDrive extends ArFSEntity implements ArFSDriveEntity {
 		readonly appName: string,
 		readonly appVersion: string,
 		readonly arFS: string,
-		readonly contentType: string,
-		readonly driveId: string,
-		readonly entityType: string,
+		readonly contentType: ContentType,
+		readonly driveId: DriveID,
+		readonly entityType: EntityType,
 		readonly name: string,
-		readonly txId: string,
+		readonly txId: TransactionID,
 		readonly unixTime: number,
-		readonly drivePrivacy: string,
-		readonly rootFolderId: string
+		readonly drivePrivacy: DrivePrivacy,
+		readonly rootFolderId: FolderID
 	) {
 		super(appName, appVersion, arFS, contentType, driveId, entityType, name, 0, txId, unixTime);
 	}
@@ -796,17 +824,17 @@ export class ArFSPrivateDrive extends ArFSEntity implements ArFSDriveEntity {
 		readonly appName: string,
 		readonly appVersion: string,
 		readonly arFS: string,
-		readonly contentType: string,
-		readonly driveId: string,
-		readonly entityType: string,
+		readonly contentType: ContentType,
+		readonly driveId: DriveID,
+		readonly entityType: EntityType,
 		readonly name: string,
-		readonly txId: string,
+		readonly txId: TransactionID,
 		readonly unixTime: number,
-		readonly drivePrivacy: string,
-		readonly rootFolderId: string,
-		readonly driveAuthMode: string,
+		readonly drivePrivacy: DrivePrivacy,
+		readonly rootFolderId: FolderID,
+		readonly driveAuthMode: DriveAuthMode,
 		readonly cipher: string,
-		readonly cipherIV: string
+		readonly cipherIV: CipherIV
 	) {
 		super(appName, appVersion, arFS, contentType, driveId, entityType, name, 0, txId, unixTime);
 	}
