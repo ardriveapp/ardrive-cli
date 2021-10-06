@@ -100,24 +100,12 @@ export function assertForbidden(parameter: Parameter, options: any): void {
 }
 
 export class CLICommand {
-	private static _argv?: string[]; // Custom argv vector for testing purposes
-
 	/**
 	 * @param {CommandDescriptor} commandDescription an immutable representation of a command
 	 * @param {string[]} argv a custom argv for testing purposes
 	 */
 	constructor(private readonly commandDescription: CommandDescriptor, private readonly _program?: CliApiObject) {
 		this.setCommand();
-	}
-
-	public static set argv(argv: string[]) {
-		if (!this._argv) {
-			this._argv = argv;
-		}
-	}
-
-	public static get argv(): string[] {
-		return this._argv || process.argv;
 	}
 
 	// A singleton instance of the commander's program object
@@ -134,7 +122,7 @@ export class CLICommand {
 		setCommanderCommand(this.commandDescription, this.program);
 	}
 
-	public static parse(program: CliApiObject = this.program, argv = CLICommand.argv): void {
+	public static parse(program: CliApiObject = this.program, argv: string[] = process.argv): void {
 		program.parse(argv);
 	}
 }

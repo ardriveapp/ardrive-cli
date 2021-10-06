@@ -40,7 +40,6 @@ describe('CLICommand class', () => {
 	const program: CliApiObject = new Command() as CliApiObject;
 
 	before(() => {
-		CLICommand.argv = driveNameArgv;
 		stubbedProgram = new TestCliApiObject(program);
 	});
 
@@ -51,7 +50,7 @@ describe('CLICommand class', () => {
 	});
 
 	it('The library parses the given argv', () => {
-		CLICommand.parse(stubbedProgram);
+		CLICommand.parse(stubbedProgram, driveNameArgv);
 		expect(stubbedProgram.parse.calledOnce).to.be.true;
 	});
 });
