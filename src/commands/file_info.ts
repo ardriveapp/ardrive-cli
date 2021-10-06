@@ -1,8 +1,6 @@
-import { ArDriveAnonymous } from '../ardrive';
-import { ArFSDAOAnonymous } from '../arfsdao';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { GetAllRevisionsParameter, FileIdParameter, DrivePrivacyParameters } from '../parameter_declarations';
-import { arDriveFactory, cliArweave, cliWalletDao } from '..';
+import { arDriveAnonymousFactory, arDriveFactory, cliWalletDao } from '..';
 import { FileID } from '../types';
 
 /* eslint-disable no-console */
@@ -25,7 +23,7 @@ new CLICommand({
 
 				return arDrive.getPrivateFile(fileId, driveKey /*, shouldGetAllRevisions*/);
 			} else {
-				const arDrive = new ArDriveAnonymous(new ArFSDAOAnonymous(cliArweave));
+				const arDrive = arDriveAnonymousFactory();
 				return arDrive.getPublicFile(fileId /*, shouldGetAllRevisions*/);
 			}
 		})();
