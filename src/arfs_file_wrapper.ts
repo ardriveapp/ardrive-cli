@@ -49,7 +49,7 @@ export function wrapFileOrFolder(fileOrFolderPath: FilePath): ArFSFileToUpload |
 
 /** Type-guard function to determine if returned class is a File or Folder */
 export function isFolder(fileOrFolder: ArFSFileToUpload | ArFSFolderToUpload): fileOrFolder is ArFSFolderToUpload {
-	return Object.keys(fileOrFolder).includes('files') || Object.keys(fileOrFolder).includes('folders');
+	return fileOrFolder instanceof ArFSFolderToUpload;
 }
 
 export class ArFSFileToUpload {
