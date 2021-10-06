@@ -33,7 +33,9 @@ new CLICommand({
 
 		// TODO: Fix base types so deleting un-used values is not necessary
 		sortedChildren.map((fileOrFolderMetaData) => {
-			delete fileOrFolderMetaData.lastModifiedDate;
+			if (fileOrFolderMetaData.entityType === 'folder') {
+				delete fileOrFolderMetaData.lastModifiedDate;
+			}
 			delete fileOrFolderMetaData.syncStatus;
 		});
 
