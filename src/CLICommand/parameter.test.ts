@@ -47,7 +47,7 @@ describe('Parameter class', () => {
 		expect(parameter.type).to.equal('single-value');
 	});
 
-	it('Passing an object as argument would ovewrite the default configuration', () => {
+	it('Passing an object as argument would overwrite the default configuration', () => {
 		parameter = new Parameter(overridenParameterConfig);
 		expect(parameter.description).to.equal(overridenParameterDescription);
 	});
