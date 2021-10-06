@@ -1,29 +1,13 @@
 /* eslint-disable no-console */
-import { arweave } from 'ardrive-core-js';
-import { cliWalletDao, CLI_APP_NAME, CLI_APP_VERSION } from '..';
-import { ArDrive, ArDriveAnonymous } from '../ardrive';
-import {
-	ArFSDAO,
-	ArFSDAOAnonymous,
-	ArFSPrivateFileOrFolderWithPaths,
-	ArFSPublicFileOrFolderWithPaths
-} from '../arfsdao';
+import { arDriveAnonymousFactory, arDriveFactory } from '..';
+import { ArFSPrivateFileOrFolderWithPaths, ArFSPublicFileOrFolderWithPaths } from '../arfsdao';
 import { CLICommand, ParametersHelper } from '../CLICommand';
-import { ArDriveCommunityOracle } from '../community/ardrive_community_oracle';
-import {
-	DrivePasswordParameter,
-	ParentFolderIdParameter,
-	SeedPhraseParameter,
-	WalletFileParameter
-} from '../parameter_declarations';
-
-function alphabeticalOrder(a: string, b: string) {
-	return a.localeCompare(b);
-}
+import { DrivePrivacyParameters, ParentFolderIdParameter } from '../parameter_declarations';
+import { alphabeticalOrder } from '../utils/sort_functions';
 
 new CLICommand({
 	name: 'list-folder',
-	parameters: [ParentFolderIdParameter, SeedPhraseParameter, WalletFileParameter, DrivePasswordParameter],
+	parameters: [ParentFolderIdParameter, ...DrivePrivacyParameters],
 	async action(options) {
 		const parameters = new ParametersHelper(options);
 		const folderId = parameters.getRequiredParameterValue(ParentFolderIdParameter);
@@ -31,32 +15,32 @@ new CLICommand({
 
 		if (await parameters.getIsPrivate()) {
 			const wallet = await parameters.getRequiredWallet();
-			const arDrive = new ArDrive(
-				wallet,
-				cliWalletDao,
-				new ArFSDAO(wallet, arweave),
-				new ArDriveCommunityOracle(arweave),
-				CLI_APP_NAME,
-				CLI_APP_VERSION
-			);
+			const arDrive = arDriveFactory({ wallet });
 
 			const driveId = await arDrive.getDriveIdForFolderId(folderId);
 			const driveKey = await parameters.getDriveKey(driveId);
 
 			children = await arDrive.listPrivateFolder(folderId, driveKey);
 		} else {
-			const arDrive = new ArDriveAnonymous(new ArFSDAOAnonymous(arweave));
+			const arDrive = arDriveAnonymousFactory();
 			children = await arDrive.listPublicFolder(folderId);
 		}
 
+		const sortedChildren = children.sort((a, b) => alphabeticalOrder(a.path, b.path)) as (
+			| Partial<ArFSPrivateFileOrFolderWithPaths>
+			| Partial<ArFSPublicFileOrFolderWithPaths>
+		)[];
+
+		// TODO: Fix base types so deleting un-used values is not necessary
+		sortedChildren.map((fileOrFolderMetaData) => {
+			if (fileOrFolderMetaData.entityType === 'folder') {
+				delete fileOrFolderMetaData.lastModifiedDate;
+			}
+			delete fileOrFolderMetaData.syncStatus;
+		});
+
 		// Display data
-		console.log(
-			JSON.stringify(
-				children.sort((a, b) => alphabeticalOrder(a.path, b.path)),
-				null,
-				4
-			)
-		);
+		console.log(JSON.stringify(sortedChildren, null, 4));
 		process.exit(0);
 	}
 });

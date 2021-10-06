@@ -1,7 +1,7 @@
 import { fileDecrypt, GQLNodeInterface, GQLTagInterface, Utf8ArrayToStr } from 'ardrive-core-js';
 import Arweave from 'arweave';
 import { ArFSPrivateFolder, ArFSPublicFolder } from '../../arfsdao';
-import { DriveKey, FolderID } from '../../types';
+import { CipherIV, DriveKey, FolderID } from '../../types';
 import { ArFSFileOrFolderBuilder } from './arfs_builders';
 
 export abstract class ArFSFolderBuilder<
@@ -76,7 +76,7 @@ export class ArFSPublicFolderBuilder extends ArFSFolderBuilder<ArFSPublicFolder>
 
 export class ArFSPrivateFolderBuilder extends ArFSFolderBuilder<ArFSPrivateFolder> {
 	cipher?: string;
-	cipherIV?: string;
+	cipherIV?: CipherIV;
 
 	constructor(readonly folderId: FolderID, readonly arweave: Arweave, protected readonly driveKey: DriveKey) {
 		super(folderId, arweave);

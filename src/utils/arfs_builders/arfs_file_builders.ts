@@ -8,12 +8,12 @@ import {
 } from 'ardrive-core-js';
 import Arweave from 'arweave';
 import { ArFSPrivateFile, ArFSPublicFile } from '../../arfsdao';
-import { DriveKey, FileID, TransactionID } from '../../types';
+import { ByteCount, CipherIV, DriveKey, FileID, TransactionID, UnixTime } from '../../types';
 import { ArFSFileOrFolderBuilder } from './arfs_builders';
 
 export abstract class ArFSFileBuilder<T extends ArFSPublicFile | ArFSPrivateFile> extends ArFSFileOrFolderBuilder<T> {
-	size?: number;
-	lastModifiedDate?: number;
+	size?: ByteCount;
+	lastModifiedDate?: UnixTime;
 	dataTxId?: TransactionID;
 	dataContentType?: ContentType;
 
@@ -55,15 +55,16 @@ export class ArFSPublicFileBuilder extends ArFSFileBuilder<ArFSPublicFile> {
 
 			// Get the file name
 			this.name = dataJSON.name;
-			if (!this.name) {
-				throw new Error('Invalid file state');
-			}
-
-			// TODO: WHY IS THE ArFSPublicFile type missing these fields?
 			this.size = dataJSON.size;
 			this.lastModifiedDate = dataJSON.lastModifiedDate;
 			this.dataTxId = dataJSON.dataTxId;
 			this.dataContentType = dataJSON.dataContentType;
+
+			if (!this.name || !this.size || !this.lastModifiedDate || !this.dataTxId || !this.dataContentType) {
+				throw new Error('Invalid file state');
+			}
+
+			// TODO: WHY IS THE ArFSPublicFile type missing these fields?
 
 			return Promise.resolve(
 				new ArFSPublicFile(
@@ -77,7 +78,11 @@ export class ArFSPublicFileBuilder extends ArFSFileBuilder<ArFSPublicFile> {
 					this.txId,
 					this.unixTime,
 					this.parentFolderId,
-					this.entityId
+					this.entityId,
+					this.size,
+					this.lastModifiedDate,
+					this.dataTxId,
+					this.dataContentType
 				)
 			);
 		}
@@ -87,7 +92,7 @@ export class ArFSPublicFileBuilder extends ArFSFileBuilder<ArFSPublicFile> {
 
 export class ArFSPrivateFileBuilder extends ArFSFileBuilder<ArFSPrivateFile> {
 	cipher?: string;
-	cipherIV?: string;
+	cipherIV?: CipherIV;
 
 	constructor(readonly fileId: FileID, readonly arweave: Arweave, private readonly driveKey: DriveKey) {
 		super(fileId, arweave);
@@ -149,15 +154,14 @@ export class ArFSPrivateFileBuilder extends ArFSFileBuilder<ArFSPrivateFile> {
 
 			// Get the file name
 			this.name = decryptedFileJSON.name;
-			if (!this.name) {
-				throw new Error('Invalid file state');
-			}
-
-			// TODO: WHY IS THE ArFSPrivateFile type missing these fields?
 			this.size = decryptedFileJSON.size;
 			this.lastModifiedDate = decryptedFileJSON.lastModifiedDate;
 			this.dataTxId = decryptedFileJSON.dataTxId;
 			this.dataContentType = decryptedFileJSON.dataContentType;
+
+			if (!this.name || !this.size || !this.lastModifiedDate || !this.dataTxId || !this.dataContentType) {
+				throw new Error('Invalid file state');
+			}
 
 			return new ArFSPrivateFile(
 				this.appName,
@@ -171,6 +175,10 @@ export class ArFSPrivateFileBuilder extends ArFSFileBuilder<ArFSPrivateFile> {
 				this.unixTime,
 				this.parentFolderId,
 				this.entityId,
+				this.size,
+				this.lastModifiedDate,
+				this.dataTxId,
+				this.dataContentType,
 				this.cipher,
 				this.cipherIV
 			);

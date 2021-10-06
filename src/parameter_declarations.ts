@@ -4,6 +4,7 @@ export const WalletFileParameter = 'walletFile';
 export const SeedPhraseParameter = 'seedPhrase';
 export const DrivePasswordParameter = 'drivePassword';
 export const DriveNameParameter = 'driveName';
+export const FolderNameParameter = 'folderName';
 export const DriveKeyParameter = 'driveKey';
 export const AddressParameter = 'address';
 export const DriveIdParameter = 'driveId';
@@ -12,13 +13,20 @@ export const DestinationAddressParameter = 'destAddress';
 export const TransactionIdParameter = 'txId';
 export const ConfirmationsParameter = 'confirmations';
 export const FolderIdParameter = 'folderId';
+export const FileIdParameter = 'fileId';
 export const ParentFolderIdParameter = 'parentFolderId';
 export const LocalFilePathParameter = 'localFilePath';
 export const DestinationFileNameParameter = 'destFileName';
 export const LocalFilesParameter = 'localFiles';
 export const GetAllRevisionsParameter = 'getAllRevisions';
+export const AllParameter = 'all';
+export const MaxDepthParameter = 'maxDepth';
 export const BoostParameter = 'boost';
 export const DryRunParameter = 'dryRun';
+
+// Aggregates for convenience
+export const DriveCreationPrivacyParameters = [DrivePasswordParameter, WalletFileParameter, SeedPhraseParameter];
+export const DrivePrivacyParameters = [DriveKeyParameter, ...DriveCreationPrivacyParameters];
 
 /**
  * Note: importing this file will declare all the above parameters
@@ -61,6 +69,13 @@ Parameter.declare({
 	name: DriveNameParameter,
 	aliases: ['-n', '--drive-name'],
 	description: `the name for the new drive`
+});
+
+Parameter.declare({
+	name: FolderNameParameter,
+	aliases: ['-n', '--folder-name'],
+	description: `the name for the new folder`,
+	required: true
 });
 
 Parameter.declare({
@@ -120,6 +135,13 @@ Parameter.declare({
 });
 
 Parameter.declare({
+	name: FileIdParameter,
+	aliases: ['-i', '--file-id'],
+	description: `the ArFS file ID for the file to query`,
+	required: true
+});
+
+Parameter.declare({
 	name: LocalFilePathParameter,
 	aliases: ['-l', '--local-file-path'],
 	description: `the path on the local filesystem for the file that will be uploaded`
@@ -164,4 +186,17 @@ Parameter.declare({
 	description:
 		'(OPTIONAL) Print the results of the transactions that would occur, and their potential fees, without sending the transactions.',
 	type: 'boolean'
+});
+
+Parameter.declare({
+	name: AllParameter,
+	aliases: ['--all'],
+	description: `(OPTIONAL) gets all contents within this folder, including child files/folders`,
+	type: 'boolean'
+});
+
+Parameter.declare({
+	name: MaxDepthParameter,
+	aliases: ['--max-depth'],
+	description: `(OPTIONAL) enter a number of the amount of sub folder levels to list`
 });
