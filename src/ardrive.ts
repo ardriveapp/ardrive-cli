@@ -203,7 +203,6 @@ export class ArDrive extends ArDriveAnonymous {
 	async movePublicFile(fileId: FileID, newParentFolderId: FolderID): Promise<ArFSResult> {
 		const driveId = await this.getDriveIdAndAssertDrive(newParentFolderId);
 
-		// Get file meta data, sort query by owner to assert this.wallet owns the drive
 		const baseFileMetaData = await this.getPublicFile(fileId);
 
 		const stubbedFileTransactionData = new ArFSPublicFileMetadataTransactionData(
@@ -248,9 +247,7 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	async movePrivateFile(fileId: FileID, newParentFolderId: FolderID, driveKey: DriveKey): Promise<ArFSResult> {
-		const driveId = await this.getDriveIdAndAssertDrive(newParentFolderId);
-
-		// Get file meta data, sort query by owner to assert this.wallet owns the drive
+		const driveId = await this.getDriveIdAndAssertDrive(newParentFolderId, driveKey);
 		const baseFileMetaData = await this.getPrivateFile(fileId, driveKey);
 
 		const stubbedFileTransactionData = await ArFSPrivateFileMetadataTransactionData.from(
@@ -834,6 +831,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 	async getPrivateDrive(driveId: DriveID, driveKey: DriveKey): Promise<ArFSPrivateDrive> {
 		const driveEntity = await this.arFsDao.getPrivateDrive(driveId, driveKey);
+
 		return Promise.resolve(driveEntity);
 	}
 

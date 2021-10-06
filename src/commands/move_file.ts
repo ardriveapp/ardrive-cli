@@ -30,7 +30,7 @@ new CLICommand({
 		const context = new CommonContext(options, cliWalletDao);
 		const wallet: Wallet = await context.getWallet();
 
-		const { fileId, parentFolderId, drivePassword, boost, dryRun } = options;
+		const { fileId, parentFolderId, boost, dryRun } = options;
 
 		const ardrive = arDriveFactory({
 			wallet: wallet,
@@ -40,7 +40,10 @@ new CLICommand({
 
 		const createDriveResult = await (async function () {
 			if (await context.getIsPrivate()) {
-				return ardrive.movePrivateFile(fileId, parentFolderId, drivePassword);
+				const driveId = await ardrive.getDriveIdForFolderId(parentFolderId);
+				const driveKey = await context.getDriveKey(driveId);
+
+				return ardrive.movePrivateFile(fileId, parentFolderId, driveKey);
 			} else {
 				return ardrive.movePublicFile(fileId, parentFolderId);
 			}
