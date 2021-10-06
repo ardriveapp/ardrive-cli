@@ -107,21 +107,22 @@ export class FolderHierarchy {
 
 	public folderIdSubtreeFromFolderId(folderId: FolderID, maxDepth: number): FolderID[] {
 		const rootNode = this.folderIdToNodeMap[folderId];
+		const subTree: FolderID[] = [rootNode.folderId];
 		switch (maxDepth) {
 			case -1:
-				return [rootNode.folderId];
+				// Recursion stopping condition - hit the max allowable depth
 				break;
 			default: {
-				const subFolderIDs: FolderID[] = [];
+				// Recursion stopping condition - no further child nodes to recurse to
 				rootNode.children
 					.map((node) => node.folderId)
 					.forEach((childFolderID) => {
-						subFolderIDs.push(...this.folderIdSubtreeFromFolderId(childFolderID, maxDepth - 1));
+						subTree.push(...this.folderIdSubtreeFromFolderId(childFolderID, maxDepth - 1));
 					});
-				return subFolderIDs;
 				break;
 			}
 		}
+		return subTree;
 	}
 
 	public pathToFolderId(folderId: FolderID): string {

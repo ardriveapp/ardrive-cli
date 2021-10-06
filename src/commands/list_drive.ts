@@ -3,17 +3,23 @@ import { arDriveFactory, cliArweave, cliWalletDao } from '..';
 import { ArDriveAnonymous } from '../ardrive';
 import { ArFSDAOAnonymous, ArFSPrivateFileOrFolderWithPaths, ArFSPublicFileOrFolderWithPaths } from '../arfsdao';
 import { CLICommand, ParametersHelper } from '../CLICommand';
-import { DriveIdParameter, SeedPhraseParameter, WalletFileParameter } from '../parameter_declarations';
+import {
+	DriveIdParameter,
+	DriveKeyParameter,
+	DrivePasswordParameter,
+	SeedPhraseParameter,
+	WalletFileParameter
+} from '../parameter_declarations';
 import { alphabeticalOrder } from '../utils/sort_functions';
 
 new CLICommand({
 	name: 'list-drive',
-	parameters: [DriveIdParameter, SeedPhraseParameter, WalletFileParameter],
+	parameters: [DriveIdParameter, SeedPhraseParameter, WalletFileParameter, DrivePasswordParameter, DriveKeyParameter],
 	async action(options) {
 		const parameters = new ParametersHelper(options, cliWalletDao);
 		const driveId = parameters.getRequiredParameterValue(DriveIdParameter);
 		let children: (ArFSPrivateFileOrFolderWithPaths | ArFSPublicFileOrFolderWithPaths)[];
-		const maxDepth = 0;
+		const maxDepth = Number.MAX_SAFE_INTEGER;
 
 		if (await parameters.getIsPrivate()) {
 			const wallet = await parameters.getRequiredWallet();
