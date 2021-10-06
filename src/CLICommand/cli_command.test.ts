@@ -1,23 +1,28 @@
 import { expect } from 'chai';
 import { Command } from 'commander';
 import { SinonStubbedInstance, stub } from 'sinon';
-import { CLICommand, CommandDescriptor } from './cli_command';
+import { assertConjunctionParameters, CLICommand, CommandDescriptor } from './cli_command';
 
-import { DriveNameParameter } from '../parameter_declarations';
+import {
+	DriveNameParameter,
+	DrivePasswordParameter,
+	SeedPhraseParameter,
+	WalletFileParameter
+} from '../parameter_declarations';
 import { CliApiObject } from './cli';
 import { baseArgv } from './test_constants';
 
 const MY_DRIVE_NAME = 'My awesome drive!';
-const driveNameCommandName = 'drive-name-test';
+const testingCommandName = 'drive-name-test';
 const driveNameCommandDescription: CommandDescriptor = {
-	name: driveNameCommandName,
+	name: testingCommandName,
 	parameters: [DriveNameParameter],
 	async action(option) {
 		/** This code here will run after argv is parsed */
 		expect(option.driveNameTest).to.equal(MY_DRIVE_NAME);
 	}
 };
-const driveNameArgv: string[] = [...baseArgv, driveNameCommandName, '--drive-name', MY_DRIVE_NAME];
+const driveNameArgv: string[] = [...baseArgv, testingCommandName, '--drive-name', MY_DRIVE_NAME];
 
 process.exit = (n: number) => {
 	process.exit(n);
@@ -52,5 +57,40 @@ describe('CLICommand class', () => {
 	it('The library parses the given argv', () => {
 		CLICommand.parse(stubbedProgram, driveNameArgv);
 		expect(stubbedProgram.parse.calledOnce).to.be.true;
+	});
+
+	it('Assert required in conjunction parameters', () => {
+		expect(function () {
+			assertConjunctionParameters(
+				{
+					name: testingCommandName,
+					parameters: [
+						WalletFileParameter,
+						{ name: DrivePasswordParameter, requiredConjunctionParameters: [WalletFileParameter] }
+					],
+					async action() {
+						// eslint-disable-next-line no-console
+						console.log('DUMMY ACTION');
+					}
+				},
+				{ [WalletFileParameter]: undefined, [DrivePasswordParameter]: 'non-empty value' }
+			);
+		}).to.throw();
+	});
+
+	it('Assert forbidden in conjunction parameters', () => {
+		expect(function () {
+			assertConjunctionParameters(
+				{
+					name: testingCommandName,
+					parameters: [WalletFileParameter, SeedPhraseParameter],
+					async action() {
+						// eslint-disable-next-line no-console
+						console.log('DUMMY ACTION');
+					}
+				},
+				{ [WalletFileParameter]: 'non-empty value', [SeedPhraseParameter]: 'non-empty value' }
+			);
+		}).to.throw();
 	});
 });

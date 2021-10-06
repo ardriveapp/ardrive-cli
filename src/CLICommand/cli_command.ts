@@ -59,18 +59,13 @@ function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliA
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function assertConjunctionParameters(commandDescriptor: CommandDescriptor, options: any): void {
 	const parameters = commandDescriptor.parameters;
-	parameters.forEach((p) => {
-		const parameterName = (function () {
-			if (typeof p === 'string') {
-				return p;
-			}
-			return p.name;
-		})();
+	parameters.forEach((param) => {
+		const parameter = new Parameter(param);
+		const parameterName = parameter.name;
 		const parameterValue = options[parameterName];
 		if (parameterValue) {
-			const parameter = new Parameter(parameterName);
-			assertForbidden(parameter, options);
 			assertRequired(parameter, options);
+			assertForbidden(parameter, options);
 		}
 	});
 }
