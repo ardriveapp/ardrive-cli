@@ -4,6 +4,7 @@ export const WalletFileParameter = 'walletFile';
 export const SeedPhraseParameter = 'seedPhrase';
 export const DrivePasswordParameter = 'drivePassword';
 export const DriveNameParameter = 'driveName';
+export const FolderNameParameter = 'folderName';
 export const DriveKeyParameter = 'driveKey';
 export const AddressParameter = 'address';
 export const DriveIdParameter = 'driveId';
@@ -22,6 +23,10 @@ export const AllParameter = 'all';
 export const MaxDepthParameter = 'maxDepth';
 export const BoostParameter = 'boost';
 export const DryRunParameter = 'dryRun';
+
+// Aggregates for convenience
+export const DriveCreationPrivacyParameters = [DrivePasswordParameter, WalletFileParameter, SeedPhraseParameter];
+export const DrivePrivacyParameters = [DriveKeyParameter, ...DriveCreationPrivacyParameters];
 
 /**
  * Note: importing this file will declare all the above parameters
@@ -64,6 +69,13 @@ Parameter.declare({
 	name: DriveNameParameter,
 	aliases: ['-n', '--drive-name'],
 	description: `the name for the new drive`
+});
+
+Parameter.declare({
+	name: FolderNameParameter,
+	aliases: ['-n', '--folder-name'],
+	description: `the name for the new folder`,
+	required: true
 });
 
 Parameter.declare({

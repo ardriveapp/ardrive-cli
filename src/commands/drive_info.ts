@@ -1,26 +1,14 @@
 import { CLICommand, ParametersHelper } from '../CLICommand';
-import {
-	DriveIdParameter,
-	DriveKeyParameter,
-	DrivePasswordParameter,
-	GetAllRevisionsParameter,
-	WalletFileParameter
-} from '../parameter_declarations';
-import { arDriveFactory } from '..';
 import { ArFSPrivateDrive, ArFSPublicDrive } from '../arfsdao';
 import { DriveID } from '../types';
+import { DriveIdParameter, GetAllRevisionsParameter, DrivePrivacyParameters } from '../parameter_declarations';
+import { arDriveAnonymousFactory, arDriveFactory } from '..';
 
 /* eslint-disable no-console */
 
 new CLICommand({
 	name: 'drive-info',
-	parameters: [
-		DriveIdParameter,
-		GetAllRevisionsParameter,
-		DrivePasswordParameter,
-		DriveKeyParameter,
-		WalletFileParameter
-	],
+	parameters: [DriveIdParameter, GetAllRevisionsParameter, ...DrivePrivacyParameters],
 	async action(options) {
 		const parameters = new ParametersHelper(options);
 		const wallet = await parameters.getOptionalWallet();
@@ -34,7 +22,7 @@ new CLICommand({
 
 				return arDrive.getPrivateDrive(driveId, driveKey /*, shouldGetAllRevisions*/);
 			} else {
-				const arDrive = arDriveFactory();
+				const arDrive = arDriveAnonymousFactory();
 				return arDrive.getPublicDrive(driveId /*, shouldGetAllRevisions*/);
 			}
 		})();

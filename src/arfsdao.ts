@@ -152,8 +152,8 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		super();
 	}
 
-	async getDriveIdForFileId(fileId: FileID): Promise<DriveID> {
-		const gqlQuery = buildQuery([{ name: 'File-Id', value: fileId }]);
+	private async getDriveID(entityId: EntityID, gqlTypeTag: 'File-Id' | 'Folder-Id') {
+		const gqlQuery = buildQuery([{ name: gqlTypeTag, value: entityId }]);
 
 		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 		const { data } = response.data;
@@ -162,7 +162,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		const edges: GQLEdgeInterface[] = transactions.edges;
 
 		if (!edges.length) {
-			throw new Error(`File with File ID ${fileId} not found!`);
+			throw new Error(`Entity with ${gqlTypeTag} ${entityId} not found!`);
 		}
 
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -171,29 +171,15 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 			return driveIdTag.value;
 		}
 
-		throw new Error(`No Drive-Id tag found for meta data transaction of File-Id: ${fileId}`);
+		throw new Error(`No Drive-Id tag found for meta data transaction of ${gqlTypeTag}: ${entityId}`);
+	}
+
+	async getDriveIdForFileId(fileId: FileID): Promise<DriveID> {
+		return this.getDriveID(fileId, 'File-Id');
 	}
 
 	async getDriveIdForFolderId(folderId: FolderID): Promise<DriveID> {
-		const gqlQuery = buildQuery([{ name: 'Folder-Id', value: folderId }]);
-
-		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
-		const { data } = response.data;
-		const { transactions } = data;
-
-		const edges: GQLEdgeInterface[] = transactions.edges;
-
-		if (!edges.length) {
-			throw new Error(`Folder with Folder ID ${folderId} not found!`);
-		}
-
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		const driveIdTag = edges[0].node.tags.find((t) => t.name === 'Drive-Id');
-		if (driveIdTag) {
-			return driveIdTag.value;
-		}
-
-		throw new Error(`No Drive-Id tag found for meta data transaction of Folder-Id: ${folderId}`);
+		return this.getDriveID(folderId, 'Folder-Id');
 	}
 
 	async getPublicDrive(driveId: DriveID): Promise<ArFSPublicDrive> {

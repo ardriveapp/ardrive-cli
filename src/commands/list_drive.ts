@@ -3,18 +3,12 @@ import { arDriveFactory, cliArweave, cliWalletDao } from '..';
 import { ArDriveAnonymous } from '../ardrive';
 import { ArFSDAOAnonymous, ArFSPrivateFileOrFolderWithPaths, ArFSPublicFileOrFolderWithPaths } from '../arfsdao';
 import { CLICommand, ParametersHelper } from '../CLICommand';
-import {
-	DriveIdParameter,
-	DriveKeyParameter,
-	DrivePasswordParameter,
-	SeedPhraseParameter,
-	WalletFileParameter
-} from '../parameter_declarations';
+import { DriveIdParameter, DrivePrivacyParameters } from '../parameter_declarations';
 import { alphabeticalOrder } from '../utils/sort_functions';
 
 new CLICommand({
 	name: 'list-drive',
-	parameters: [DriveIdParameter, SeedPhraseParameter, WalletFileParameter, DrivePasswordParameter, DriveKeyParameter],
+	parameters: [DriveIdParameter, ...DrivePrivacyParameters],
 	async action(options) {
 		const parameters = new ParametersHelper(options, cliWalletDao);
 		const driveId = parameters.getRequiredParameterValue(DriveIdParameter);

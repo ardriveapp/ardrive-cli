@@ -4,13 +4,11 @@ import { CLICommand, ParametersHelper } from '../CLICommand';
 import {
 	BoostParameter,
 	DestinationFileNameParameter,
-	DriveKeyParameter,
-	DrivePasswordParameter,
+	DrivePrivacyParameters,
 	DryRunParameter,
 	LocalFilePathParameter,
 	LocalFilesParameter,
-	ParentFolderIdParameter,
-	WalletFileParameter
+	ParentFolderIdParameter
 } from '../parameter_declarations';
 import { DriveKey, FeeMultiple, FolderID } from '../types';
 import { readJWKFile } from '../utils';
@@ -32,11 +30,9 @@ new CLICommand({
 		LocalFilePathParameter,
 		DestinationFileNameParameter,
 		LocalFilesParameter,
-		DrivePasswordParameter,
-		DriveKeyParameter,
-		WalletFileParameter,
 		BoostParameter,
-		DryRunParameter
+		DryRunParameter,
+		...DrivePrivacyParameters
 	],
 	async action(options) {
 		const filesToUpload: UploadFileParameter[] = (function (): UploadFileParameter[] {
