@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { arDriveFactory } from '..';
+import { arDriveAnonymousFactory, arDriveFactory } from '..';
 import { ArFSPrivateFileOrFolderWithPaths, ArFSPublicFileOrFolderWithPaths } from '../arfsdao';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import {
@@ -27,7 +27,7 @@ new CLICommand({
 
 			children = await arDrive.listPrivateFolder(folderId, driveKey);
 		} else {
-			const arDrive = arDriveFactory();
+			const arDrive = arDriveAnonymousFactory();
 			children = await arDrive.listPublicFolder(folderId);
 		}
 
