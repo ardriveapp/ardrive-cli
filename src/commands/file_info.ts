@@ -1,13 +1,7 @@
 import { ArDriveAnonymous } from '../ardrive';
 import { ArFSDAOAnonymous } from '../arfsdao';
 import { CLICommand, ParametersHelper } from '../CLICommand';
-import {
-	DriveKeyParameter,
-	DrivePasswordParameter,
-	GetAllRevisionsParameter,
-	FileIdParameter,
-	WalletFileParameter
-} from '../parameter_declarations';
+import { GetAllRevisionsParameter, FileIdParameter, DrivePrivacyParameters } from '../parameter_declarations';
 import { arDriveFactory, cliArweave, cliWalletDao } from '..';
 import { FileID } from '../types';
 
@@ -15,13 +9,7 @@ import { FileID } from '../types';
 
 new CLICommand({
 	name: 'file-info',
-	parameters: [
-		FileIdParameter,
-		GetAllRevisionsParameter,
-		DrivePasswordParameter,
-		DriveKeyParameter,
-		WalletFileParameter
-	],
+	parameters: [FileIdParameter, GetAllRevisionsParameter, ...DrivePrivacyParameters],
 	async action(options) {
 		const parameters = new ParametersHelper(options, cliWalletDao);
 		const fileId: FileID = options.fileId;

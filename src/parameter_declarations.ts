@@ -23,6 +23,10 @@ export const MaxDepthParameter = 'maxDepth';
 export const BoostParameter = 'boost';
 export const DryRunParameter = 'dryRun';
 
+// Aggregates for convenience
+export const DriveCreationPrivacyParameters = [DrivePasswordParameter, WalletFileParameter, SeedPhraseParameter];
+export const DrivePrivacyParameters = [DriveKeyParameter, ...DriveCreationPrivacyParameters];
+
 /**
  * Note: importing this file will declare all the above parameters
  */

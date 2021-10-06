@@ -1,24 +1,12 @@
 import { CLICommand, ParametersHelper } from '../CLICommand';
-import {
-	DriveKeyParameter,
-	DrivePasswordParameter,
-	GetAllRevisionsParameter,
-	FolderIdParameter,
-	WalletFileParameter
-} from '../parameter_declarations';
+import { GetAllRevisionsParameter, FolderIdParameter, DrivePrivacyParameters } from '../parameter_declarations';
 import { arDriveAnonymousFactory, arDriveFactory } from '..';
 
 /* eslint-disable no-console */
 
 new CLICommand({
 	name: 'folder-info',
-	parameters: [
-		FolderIdParameter,
-		GetAllRevisionsParameter,
-		DrivePasswordParameter,
-		DriveKeyParameter,
-		WalletFileParameter
-	],
+	parameters: [FolderIdParameter, GetAllRevisionsParameter, ...DrivePrivacyParameters],
 	async action(options) {
 		const parameters = new ParametersHelper(options);
 		// const shouldGetAllRevisions: boolean = options.getAllRevisions;
