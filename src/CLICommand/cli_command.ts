@@ -1,11 +1,12 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { Command } from 'commander';
 import { CliApiObject, ParsedArguments } from './cli';
-import { Parameter, ParameterData, ParameterName } from './parameter';
+import { Parameter, ParameterName, ParameterOverridenConfig, ParameterOverridingConfigWithoutName } from './parameter';
 
 export type CommandName = string;
 export interface CommandDescriptor {
 	name: CommandName;
-	parameters: (ParameterName | (Partial<ParameterData> & Pick<ParameterData, 'name'>))[];
+	parameters: (ParameterName | ParameterOverridenConfig)[];
 	action(options: ParsedArguments): Promise<void>;
 }
 
@@ -23,31 +24,15 @@ program.addHelpCommand(false);
  */
 function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliApiObject): void {
 	let command: CliApiObject = program.command(commandDescriptor.name);
-	commandDescriptor.parameters.forEach((p) => {
-		const parameterName = (function () {
-			if (typeof p === 'string') {
-				return p;
-			}
-			return p.name;
-		})();
-		const config = (function () {
-			if (typeof p === 'string') {
-				return undefined;
-			}
-			const config: Partial<ParameterData> & Omit<ParameterData, 'name'> = Object.assign({}, p, {
-				name: undefined
-			});
-			return config;
-		})();
-		const parameter = new Parameter(parameterName, config);
+	commandDescriptor.parameters.map(getParameterFromParameterNameOrOverridenConfig).forEach((parameter) => {
 		const aliasesAsString = parameter.aliases.join(' ');
 		const paramTypeString = (function () {
 			if (parameter.type === 'array') {
-				return ` <${parameterName}...>`;
+				return ` <${parameter.name}...>`;
 			} else if (parameter.type === 'boolean') {
 				return '';
 			}
-			return ` <${parameterName}>`;
+			return ` <${parameter.name}>`;
 		})();
 		const optionArguments = [
 			`${aliasesAsString}${paramTypeString}`,
@@ -70,7 +55,35 @@ function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliA
 	});
 }
 
-function assertConjunctionParameters(commandDescriptor: CommandDescriptor, options: any): void {
+/**
+ * A mapper function from ParameterName | ParameterOverridenConfig to an actual instance of Parameter, which could have an overriden configuration
+ * @param parameterNameOrConfig a value representing the
+ * @returns {Parameter}
+ */
+function getParameterFromParameterNameOrOverridenConfig(
+	parameterNameOrConfig: ParameterName | ParameterOverridenConfig
+): Parameter {
+	const parameterName = (function () {
+		if (typeof parameterNameOrConfig === 'string') {
+			return parameterNameOrConfig;
+		}
+		return parameterNameOrConfig.name;
+	})();
+	const overridedConfig = (function () {
+		if (typeof parameterNameOrConfig === 'string') {
+			return undefined;
+		}
+		// eslint-disable-next-line prettier/prettier
+		const config: ParameterOverridingConfigWithoutName = Object.assign({}, parameterNameOrConfig, {
+			name: undefined
+		});
+		return config;
+	})();
+	return new Parameter(parameterName, overridedConfig);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function assertConjunctionParameters(commandDescriptor: CommandDescriptor, options: any): void {
 	const parameters = commandDescriptor.parameters;
 	parameters.forEach((p) => {
 		const parameterName = (function () {
@@ -82,24 +95,32 @@ function assertConjunctionParameters(commandDescriptor: CommandDescriptor, optio
 		const parameterValue = options[parameterName];
 		if (parameterValue) {
 			const parameter = new Parameter(parameterName);
-			const forbidden = parameter.forbiddenParametersInConjunction;
-			forbidden.forEach((forbiddenParameterName) => {
-				const forbiddenParameterValue = options[forbiddenParameterName];
-				if (forbiddenParameterValue) {
-					throw new Error(
-						`Parameter ${parameterName} cannot be used in conjunction with ${forbiddenParameterName}`
-					);
-				}
-			});
-			const required = parameter.requiredParametersInConjunction;
-			required.forEach((requiredParameterName) => {
-				const requiredParameterValue = options[requiredParameterName];
-				if (!requiredParameterValue) {
-					throw new Error(
-						`Parameter ${parameterName} requires ${requiredParameterName} but it wasn't provided`
-					);
-				}
-			});
+			assertForbidden(parameter, options);
+			assertRequired(parameter, options);
+		}
+	});
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function assertRequired(parameter: Parameter, options: any): void {
+	const parameterName = parameter.name;
+	const required = parameter.requiredParametersInConjunction;
+	required.forEach((requiredParameterName) => {
+		const requiredParameterValue = options[requiredParameterName];
+		if (!requiredParameterValue) {
+			throw new Error(`Parameter ${parameterName} requires ${requiredParameterName} but it wasn't provided`);
+		}
+	});
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function assertForbidden(parameter: Parameter, options: any): void {
+	const parameterName = parameter.name;
+	const forbidden = parameter.forbiddenParametersInConjunction;
+	forbidden.forEach((forbiddenParameterName) => {
+		const forbiddenParameterValue = options[forbiddenParameterName];
+		if (forbiddenParameterValue) {
+			throw new Error(`Parameter ${parameterName} cannot be used in conjunction with ${forbiddenParameterName}`);
 		}
 	});
 }

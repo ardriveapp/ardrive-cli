@@ -1,7 +1,9 @@
 export type ParameterName = string;
 export type ParameterType = 'single-value' | 'boolean' | 'array';
+export type ParameterOverridenConfig = Partial<ParameterConfig> & Pick<ParameterConfig, 'name'>;
+export type ParameterOverridingConfigWithoutName = Partial<ParameterConfig> & Omit<ParameterConfig, 'name'>;
 
-export interface ParameterData {
+export interface ParameterConfig {
 	name: ParameterName;
 	aliases: ParameterName[];
 	description: string;
@@ -12,12 +14,15 @@ export interface ParameterData {
 	requiredConjunctionParameters?: ParameterName[];
 }
 
-export class Parameter implements ParameterData {
-	private parameterData: ParameterData;
-	private static parameters: ParameterData[] = [];
+export class Parameter implements ParameterConfig {
+	private parameterData: ParameterConfig;
+	private static parameters: ParameterConfig[] = [];
 
-	constructor(public readonly name: ParameterName, config?: Partial<ParameterData> & Omit<ParameterData, 'name'>) {
-		this.parameterData = Object.assign(Parameter.get(name), config);
+	constructor(
+		public readonly name: ParameterName,
+		overridedConfig?: Partial<ParameterConfig> & Omit<ParameterConfig, 'name'>
+	) {
+		this.parameterData = Object.assign(Parameter.get(name), overridedConfig);
 	}
 
 	public get aliases(): ParameterName[] {
@@ -52,20 +57,20 @@ export class Parameter implements ParameterData {
 			: [];
 	}
 
-	public static declare(parameter: ParameterData): void {
+	public static declare(parameter: ParameterConfig): void {
 		Parameter.parameters.push(parameter);
 	}
 
 	/**
 	 * @name reset
 	 * For testing purposes only. It will just remove all parameters declaration
-	 * @returns {ParameterData[]} the removed parameters
+	 * @returns {ParameterConfig[]} the removed parameters
 	 */
-	public static reset(): ParameterData[] {
+	public static reset(): ParameterConfig[] {
 		return this.parameters.splice(0, this.parameters.length);
 	}
 
-	public static get(parameterName: ParameterName): ParameterData {
+	public static get(parameterName: ParameterName): ParameterConfig {
 		const param = Parameter.parameters.find((p) => p.name === parameterName);
 		if (!param) {
 			throw new Error(`No such parameter ${parameterName}`);
