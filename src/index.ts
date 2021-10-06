@@ -42,34 +42,33 @@ export interface ArDriveSettings extends ArDriveSettingsAnonymous {
 	dryRun?: boolean;
 }
 
-function settingsHasWallet(settings: ArDriveSettings | ArDriveSettingsAnonymous): settings is ArDriveSettings {
-	// Anonymous settings do not require a wallet
-	return Object.keys(settings).includes('wallet');
-}
-
-export function arDriveFactory(settings?: ArDriveSettingsAnonymous): ArDriveAnonymous;
-export function arDriveFactory(settings: ArDriveSettings): ArDrive;
-export function arDriveFactory(settings?: ArDriveSettings | ArDriveSettingsAnonymous): ArDrive | ArDriveAnonymous {
-	const arweave = settings && settings.arweave ? settings.arweave : cliArweave;
-
-	if (!settings || !settingsHasWallet(settings)) {
-		return new ArDriveAnonymous(new ArFSDAOAnonymous(arweave, CLI_APP_NAME, CLI_APP_VERSION));
-	}
-
-	const priceEstimator = settings.priceEstimator || new ARDataPriceRegressionEstimator();
-	const walletDao = settings.walletDao || cliWalletDao;
+export function arDriveFactory({
+	arweave,
+	priceEstimator,
+	wallet,
+	walletDao,
+	dryRun,
+	feeMultiple
+}: ArDriveSettings): ArDrive {
+	const arweaveSetting = arweave || cliArweave;
 
 	return new ArDrive(
-		settings.wallet,
-		walletDao,
-		new ArFSDAO(settings.wallet, arweave, settings.dryRun, CLI_APP_NAME, CLI_APP_VERSION),
-		new ArDriveCommunityOracle(arweave),
+		wallet,
+		walletDao || cliWalletDao,
+		new ArFSDAO(wallet, arweaveSetting, dryRun, CLI_APP_NAME, CLI_APP_VERSION),
+		new ArDriveCommunityOracle(arweaveSetting),
 		CLI_APP_NAME,
 		CLI_APP_VERSION,
-		priceEstimator,
-		settings.feeMultiple,
-		settings.dryRun
+		priceEstimator || new ARDataPriceRegressionEstimator(),
+		feeMultiple,
+		dryRun
 	);
+}
+
+export function arDriveAnonymousFactory(settings?: ArDriveSettingsAnonymous): ArDriveAnonymous {
+	const arweave = settings && settings.arweave ? settings.arweave : cliArweave;
+
+	return new ArDriveAnonymous(new ArFSDAOAnonymous(arweave, CLI_APP_NAME, CLI_APP_VERSION));
 }
 
 // return new ArDriveAnonymous(new ArFSDAOAnonymous(arweave, CLI_APP_NAME, CLI_APP_VERSION));

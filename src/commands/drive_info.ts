@@ -6,7 +6,7 @@ import {
 	GetAllRevisionsParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
-import { arDriveFactory } from '..';
+import { arDriveAnonymousFactory, arDriveFactory } from '..';
 
 /* eslint-disable no-console */
 
@@ -32,7 +32,7 @@ new CLICommand({
 
 				return arDrive.getPrivateDrive(driveId, driveKey /*, shouldGetAllRevisions*/);
 			} else {
-				const arDrive = arDriveFactory();
+				const arDrive = arDriveAnonymousFactory();
 				return arDrive.getPublicDrive(driveId /*, shouldGetAllRevisions*/);
 			}
 		})();

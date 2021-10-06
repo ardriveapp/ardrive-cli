@@ -6,7 +6,7 @@ import {
 	FolderIdParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
-import { arDriveFactory } from '..';
+import { arDriveAnonymousFactory, arDriveFactory } from '..';
 
 /* eslint-disable no-console */
 
@@ -34,7 +34,7 @@ new CLICommand({
 
 				return arDrive.getPrivateFolder(folderId, driveKey /*, shouldGetAllRevisions*/);
 			} else {
-				const arDrive = arDriveFactory();
+				const arDrive = arDriveAnonymousFactory();
 				const folderId: string = options.folderId;
 				return arDrive.getPublicFolder(folderId /*, shouldGetAllRevisions*/);
 			}
