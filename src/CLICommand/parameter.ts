@@ -1,7 +1,6 @@
 export type ParameterName = string;
 export type ParameterType = 'single-value' | 'boolean' | 'array';
 export type ParameterOverridenConfig = Partial<ParameterConfig> & Pick<ParameterConfig, 'name'>;
-export type ParameterOverridingConfigWithoutName = Partial<ParameterConfig> & Omit<ParameterConfig, 'name'>;
 
 export interface ParameterConfig {
 	name: ParameterName;
