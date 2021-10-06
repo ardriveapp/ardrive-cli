@@ -244,6 +244,8 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 	/**
 	 * Lists the children of certain public folder
 	 * @param {FolderID} folderId the folder ID to list children of
+	 * @param {number} maxDepth a non-negative integer value indicating the depth of the folder tree to list where 0 = this folder's contents only
+	 * @param {boolean} includeRoot whether or not folderId's folder data should be included in the listing
 	 * @returns {ArFSPublicFileOrFolderWithPaths[]} an array representation of the children and parent folder
 	 */
 	async listPublicFolder(
@@ -251,6 +253,10 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		maxDepth: number,
 		includeRoot: boolean
 	): Promise<ArFSPublicFileOrFolderWithPaths[]> {
+		if (maxDepth < 0 || !Number.isInteger(maxDepth)) {
+			throw new Error('maxDepth should be a non-negative integer!');
+		}
+
 		const folder = await this.getPublicFolder(folderId);
 
 		// Fetch all of the folder entities within the drive
@@ -752,6 +758,9 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	/**
 	 * Lists the children of certain private folder
 	 * @param {FolderID} folderId the folder ID to list children of
+	 * @param {DriveKey} driveKey the drive key used for drive and folder data decryption and file key derivation
+	 * @param {number} maxDepth a non-negative integer value indicating the depth of the folder tree to list where 0 = this folder's contents only
+	 * @param {boolean} includeRoot whether or not folderId's folder data should be included in the listing
 	 * @returns {ArFSPrivateFileOrFolderWithPaths[]} an array representation of the children and parent folder
 	 */
 	async listPrivateFolder(
@@ -760,6 +769,10 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		maxDepth: number,
 		includeRoot: boolean
 	): Promise<ArFSPrivateFileOrFolderWithPaths[]> {
+		if (maxDepth < 0 || !Number.isInteger(maxDepth)) {
+			throw new Error('maxDepth should be a non-negative integer!');
+		}
+
 		const folder = await this.getPrivateFolder(folderId, driveKey);
 
 		// Fetch all of the folder entities within the drive
