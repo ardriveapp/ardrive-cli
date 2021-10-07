@@ -121,7 +121,7 @@ Parameter.declare({
 
 Parameter.declare({
 	name: ParentFolderIdParameter,
-	aliases: ['-p', '--parent-folder-id'],
+	aliases: ['-pf', '--parent-folder-id'],
 	description: `the ArFS folder ID for the folder in which this file will reside (i.e. its parent folder)
 		• To upload the file to the root of a drive, use the root folder ID of the drive`,
 	required: true
@@ -136,7 +136,7 @@ Parameter.declare({
 
 Parameter.declare({
 	name: FileIdParameter,
-	aliases: ['-i', '--file-id'],
+	aliases: ['-f', '--file-id'],
 	description: `the ArFS file ID for the file to query`,
 	required: true
 });
