@@ -121,7 +121,6 @@ export interface ArFSMovePublicFileParams extends ArFSMoveFileParams {
 export interface ArFSMovePrivateFileParams extends ArFSMoveFileParams {
 	fileTransactionData: ArFSPrivateFileMetadataTransactionData;
 	originalFileMetaData: ArFSPrivateFile;
-	driveKey: DriveKey;
 }
 
 export abstract class ArFSDAOType {
@@ -561,23 +560,13 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		originalFileMetaData,
 		fileTransactionData,
 		newParentFolderId,
-		fileMetaDataBaseReward,
-		driveKey
+		fileMetaDataBaseReward
 	}: ArFSMovePrivateFileParams): Promise<ArFSMovePrivateFileResult> {
 		// Get current time
 		const unixTime = Math.round(Date.now() / 1000);
 
-		const { dataTxId, dataContentType, lastModifiedDate, size, name, fileId, driveId } = originalFileMetaData;
+		const { dataTxId, fileId, driveId } = originalFileMetaData;
 
-		const fileMetaData = await ArFSPrivateFileMetadataTransactionData.from(
-			name,
-			size,
-			lastModifiedDate,
-			dataTxId,
-			dataContentType,
-			fileId,
-			driveKey
-		);
 		const fileMetadataPrototype = new ArFSPrivateFileMetaDataPrototype(
 			fileTransactionData,
 			unixTime,
@@ -601,7 +590,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			metaDataTrxId: metaDataTrx.id,
 			metaDataTrxReward: metaDataTrx.reward,
 			dataTrxId: dataTxId,
-			fileKey: fileMetaData.fileKey
+			fileKey: fileTransactionData.fileKey
 		};
 	}
 

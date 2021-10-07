@@ -285,8 +285,7 @@ export class ArDrive extends ArDriveAnonymous {
 			originalFileMetaData,
 			fileTransactionData,
 			newParentFolderId,
-			fileMetaDataBaseReward,
-			driveKey
+			fileMetaDataBaseReward
 		});
 
 		return Promise.resolve({
