@@ -192,7 +192,8 @@ Parameter.declare({
 	name: AllParameter,
 	aliases: ['--all'],
 	description: `(OPTIONAL) gets all contents within this folder, including child files/folders`,
-	type: 'boolean'
+	type: 'boolean',
+	forbiddenConjunctionParameters: [MaxDepthParameter]
 });
 
 Parameter.declare({
