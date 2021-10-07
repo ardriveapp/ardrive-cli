@@ -82,6 +82,7 @@ export class Parameter implements ParameterConfig {
 		if (!param) {
 			throw new Error(`No such parameter ${parameterName}`);
 		}
+		// It uses Object.assign in order to return a copy of the instance instead of the original one, so modifying it won't affect the original
 		return Object.assign({}, param);
 	}
 }
