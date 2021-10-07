@@ -217,29 +217,29 @@ export class ArDrive extends ArDriveAnonymous {
 	async movePublicFile(fileId: FileID, newParentFolderId: FolderID): Promise<ArFSResult> {
 		const driveId = await this.getDriveIdAndAssertDrive(newParentFolderId);
 
-		const originalFileMetaData = await this.getPublicFile(fileId);
+		const originalMetaData = await this.getPublicFile(fileId);
 
-		if (driveId !== originalFileMetaData.driveId) {
+		if (driveId !== originalMetaData.driveId) {
 			throw new Error('File should stay in the same drive!');
 		}
 
-		const fileTransactionData = new ArFSPublicFileMetadataTransactionData(
-			originalFileMetaData.name,
-			originalFileMetaData.size,
-			originalFileMetaData.lastModifiedDate,
-			originalFileMetaData.dataTxId,
-			originalFileMetaData.dataContentType
+		const transactionData = new ArFSPublicFileMetadataTransactionData(
+			originalMetaData.name,
+			originalMetaData.size,
+			originalMetaData.lastModifiedDate,
+			originalMetaData.dataTxId,
+			originalMetaData.dataContentType
 		);
 
-		const moveBaseCosts = await this.estimateAndAssertCostOfMoveFile(fileTransactionData);
-		const fileMetaDataBaseReward = { reward: moveBaseCosts.metaDataBaseReward, feeMultiple: this.feeMultiple };
+		const moveBaseCosts = await this.estimateAndAssertCostOfMoveFile(transactionData);
+		const metaDataBaseReward = { reward: moveBaseCosts.metaDataBaseReward, feeMultiple: this.feeMultiple };
 
 		// Move file will create a new meta data tx with identical meta data except for a new parentFolderId
 		const moveFileResult = await this.arFsDao.movePublicFile({
-			originalFileMetaData,
-			fileTransactionData,
+			originalMetaData,
+			transactionData,
 			newParentFolderId,
-			fileMetaDataBaseReward
+			metaDataBaseReward
 		});
 
 		return Promise.resolve({
@@ -260,32 +260,32 @@ export class ArDrive extends ArDriveAnonymous {
 
 	async movePrivateFile(fileId: FileID, newParentFolderId: FolderID, driveKey: DriveKey): Promise<ArFSResult> {
 		const driveId = await this.getDriveIdAndAssertDrive(newParentFolderId, driveKey);
-		const originalFileMetaData = await this.getPrivateFile(fileId, driveKey);
+		const originalMetaData = await this.getPrivateFile(fileId, driveKey);
 
-		if (driveId !== originalFileMetaData.driveId) {
+		if (driveId !== originalMetaData.driveId) {
 			throw new Error('File should stay in the same drive!');
 		}
 
-		const fileTransactionData = await ArFSPrivateFileMetadataTransactionData.from(
-			originalFileMetaData.name,
-			originalFileMetaData.size,
-			originalFileMetaData.lastModifiedDate,
-			originalFileMetaData.dataTxId,
-			originalFileMetaData.dataContentType,
+		const transactionData = await ArFSPrivateFileMetadataTransactionData.from(
+			originalMetaData.name,
+			originalMetaData.size,
+			originalMetaData.lastModifiedDate,
+			originalMetaData.dataTxId,
+			originalMetaData.dataContentType,
 			fileId,
 			driveKey
 		);
 
-		const moveBaseCosts = await this.estimateAndAssertCostOfMoveFile(fileTransactionData);
+		const moveBaseCosts = await this.estimateAndAssertCostOfMoveFile(transactionData);
 
-		const fileMetaDataBaseReward = { reward: moveBaseCosts.metaDataBaseReward, feeMultiple: this.feeMultiple };
+		const metaDataBaseReward = { reward: moveBaseCosts.metaDataBaseReward, feeMultiple: this.feeMultiple };
 
 		// Move file will create a new meta data tx with identical meta data except for a new parentFolderId
 		const moveFileResult = await this.arFsDao.movePrivateFile({
-			originalFileMetaData,
-			fileTransactionData,
+			originalMetaData,
+			transactionData,
 			newParentFolderId,
-			fileMetaDataBaseReward
+			metaDataBaseReward
 		});
 
 		return Promise.resolve({
@@ -301,6 +301,80 @@ export class ArDrive extends ArDriveAnonymous {
 			tips: [],
 			fees: {
 				[moveFileResult.metaDataTrxId]: +moveFileResult.metaDataTrxReward
+			}
+		});
+	}
+
+	async movePublicFolder(folderId: FolderID, newParentFolderId: FolderID): Promise<ArFSResult> {
+		const parentFolderDriveId = await this.getDriveIdAndAssertDrive(newParentFolderId);
+
+		const originalMetaData = await this.getPublicFolder(folderId);
+
+		if (parentFolderDriveId !== originalMetaData.driveId) {
+			throw new Error('Folder should stay in the same drive!');
+		}
+
+		const transactionData = new ArFSPublicFolderTransactionData(originalMetaData.name);
+		const { metaDataBaseReward: baseReward } = await this.estimateAndAssertCostOfFolderUpload(transactionData);
+
+		const metaDataBaseReward = { reward: baseReward, feeMultiple: this.feeMultiple };
+
+		// Move folder will create a new meta data tx with identical meta data except for a new parentFolderId
+		const moveFolderResult = await this.arFsDao.movePublicFolder({
+			originalMetaData,
+			transactionData,
+			newParentFolderId,
+			metaDataBaseReward
+		});
+
+		return Promise.resolve({
+			created: [
+				{
+					type: 'folder',
+					metadataTxId: moveFolderResult.metaDataTrxId,
+					entityId: folderId
+				}
+			],
+			tips: [],
+			fees: {
+				[moveFolderResult.metaDataTrxId]: +moveFolderResult.metaDataTrxReward
+			}
+		});
+	}
+
+	async movePrivateFolder(folderId: FolderID, newParentFolderId: FolderID, driveKey: DriveKey): Promise<ArFSResult> {
+		const parentFolderDriveId = await this.getDriveIdAndAssertDrive(newParentFolderId, driveKey);
+		const originalMetaData = await this.getPrivateFolder(folderId, driveKey);
+
+		if (parentFolderDriveId !== originalMetaData.driveId) {
+			throw new Error('Folder should stay in the same drive!');
+		}
+
+		const transactionData = await ArFSPrivateFolderTransactionData.from(originalMetaData.name, driveKey);
+		const { metaDataBaseReward: baseReward } = await this.estimateAndAssertCostOfFolderUpload(transactionData);
+
+		const metaDataBaseReward = { reward: baseReward, feeMultiple: this.feeMultiple };
+
+		// Move folder will create a new meta data tx with identical meta data except for a new parentFolderId
+		const moveFolderResult = await this.arFsDao.movePrivateFolder({
+			originalMetaData,
+			transactionData,
+			newParentFolderId,
+			metaDataBaseReward
+		});
+
+		return Promise.resolve({
+			created: [
+				{
+					type: 'folder',
+					metadataTxId: moveFolderResult.metaDataTrxId,
+					entityId: folderId,
+					key: urlEncodeHashKey(moveFolderResult.driveKey)
+				}
+			],
+			tips: [],
+			fees: {
+				[moveFolderResult.metaDataTrxId]: +moveFolderResult.metaDataTrxReward
 			}
 		});
 	}
