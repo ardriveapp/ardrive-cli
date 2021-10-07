@@ -4,8 +4,6 @@ import { DriveID } from '../types';
 import { DriveIdParameter, GetAllRevisionsParameter, DrivePrivacyParameters } from '../parameter_declarations';
 import { arDriveAnonymousFactory, arDriveFactory } from '..';
 
-/* eslint-disable no-console */
-
 new CLICommand({
 	name: 'drive-info',
 	parameters: [DriveIdParameter, GetAllRevisionsParameter, ...DrivePrivacyParameters],

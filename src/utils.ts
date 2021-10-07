@@ -3,8 +3,6 @@ import { JWKInterface } from './wallet';
 import * as fs from 'fs';
 import fetch from 'node-fetch';
 
-/* eslint-disable no-console */
-
 export function readJWKFile(path: string): Wallet {
 	const walletFileData = fs.readFileSync(path, { encoding: 'utf8', flag: 'r' });
 	const walletJSON = JSON.parse(walletFileData);
@@ -18,7 +16,7 @@ export async function fetchMempool(): Promise<string[]> {
 	return response.json();
 }
 
-export function urlEncodeHashKey(keyBuffer: Buffer) {
+export function urlEncodeHashKey(keyBuffer: Buffer): string {
 	return keyBuffer.toString('base64').replace('=', '');
 }
 

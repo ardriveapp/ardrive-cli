@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { arDriveFactory, cliArweave, cliWalletDao } from '..';
 import { ArDriveAnonymous } from '../ardrive';
 import { ArFSDAOAnonymous, ArFSPrivateFileOrFolderWithPaths, ArFSPublicFileOrFolderWithPaths } from '../arfsdao';

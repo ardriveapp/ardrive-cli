@@ -10,8 +10,6 @@ import { JWKWallet, Wallet } from '../wallet_new';
 import { FeeMultiple } from '../types';
 import { PrivateDriveKeyData } from '../ardrive';
 
-/* eslint-disable no-console */
-
 new CLICommand({
 	name: 'create-drive',
 	parameters: [...DriveCreationPrivacyParameters, DriveNameParameter, BoostParameter, DryRunParameter],

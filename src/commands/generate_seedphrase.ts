@@ -1,8 +1,6 @@
 import { cliWalletDao } from '..';
 import { CLICommand } from '../CLICommand';
 
-/* eslint-disable no-console */
-
 new CLICommand({
 	name: 'generate-seedphrase',
 	parameters: [],

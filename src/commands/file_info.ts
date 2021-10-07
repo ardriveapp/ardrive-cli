@@ -4,8 +4,6 @@ import { GetAllRevisionsParameter, FileIdParameter, DrivePrivacyParameters } fro
 import { arDriveAnonymousFactory, arDriveFactory, cliWalletDao } from '..';
 import { FileID } from '../types';
 
-/* eslint-disable no-console */
-
 new CLICommand({
 	name: 'file-info',
 	parameters: [FileIdParameter, GetAllRevisionsParameter, ...DrivePrivacyParameters],
