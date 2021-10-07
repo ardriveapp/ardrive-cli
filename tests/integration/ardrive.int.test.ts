@@ -170,7 +170,7 @@ describe('ArDrive class', () => {
 			);
 		});
 
-		it('returns the correct reward and tip data', async () => {
+		it('returns the correct reward data', async () => {
 			walletDao.walletHasBalance.callsFake(() => {
 				return Promise.resolve(true);
 			});
@@ -199,7 +199,7 @@ describe('ArDrive class', () => {
 			);
 		});
 
-		it('returns the correct reward and tip data', async () => {
+		it('returns the correct reward data', async () => {
 			walletDao.walletHasBalance.callsFake(() => {
 				return Promise.resolve(true);
 			});
@@ -211,6 +211,30 @@ describe('ArDrive class', () => {
 			expect(actual).to.deep.equal({
 				driveMetaDataBaseReward: '73',
 				rootFolderMetaDataBaseReward: '19'
+			});
+		});
+	});
+
+	// TODO: Move these to unit test file
+	describe('estimateAndAssertCostOfMoveFile function', () => {
+		it('throws an error when there is an insufficient wallet balance', async () => {
+			walletDao.walletHasBalance.callsFake(() => {
+				return Promise.resolve(false);
+			});
+			walletDao.getWalletWinstonBalance.callsFake(() => {
+				return Promise.resolve(0);
+			});
+			await expectAsyncErrorThrow(() => arDrive.estimateAndAssertCostOfMoveFile(stubPublicFileTransactionData));
+		});
+
+		it('returns the correct reward data', async () => {
+			walletDao.walletHasBalance.callsFake(() => {
+				return Promise.resolve(true);
+			});
+
+			const actual = await arDrive.estimateAndAssertCostOfMoveFile(stubPublicFileTransactionData);
+			expect(actual).to.deep.equal({
+				metaDataBaseReward: '147'
 			});
 		});
 	});
