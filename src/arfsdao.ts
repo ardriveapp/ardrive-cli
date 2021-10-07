@@ -847,9 +847,6 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		maxDepth: number,
 		includeRoot: boolean
 	): Promise<ArFSPrivateFileOrFolderWithPaths[]> {
-		if (maxDepth < 0 || (!Number.isInteger(maxDepth) && maxDepth !== Number.POSITIVE_INFINITY)) {
-			throw new Error('maxDepth should be a non-negative integer!');
-		}
 
 		const folder = await this.getPrivateFolder(folderId, driveKey);
 
