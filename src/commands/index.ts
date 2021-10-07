@@ -16,6 +16,7 @@ import './list_drive';
 import './folder_info';
 import './create_folder';
 import './file_info';
+import './move_file';
 
 const program = CLICommand.program;
 

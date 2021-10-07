@@ -1,4 +1,6 @@
 import { CLICommand, ParametersHelper } from '../CLICommand';
+import { ArFSPrivateDrive, ArFSPublicDrive } from '../arfsdao';
+import { DriveID } from '../types';
 import { DriveIdParameter, GetAllRevisionsParameter, DrivePrivacyParameters } from '../parameter_declarations';
 import { arDriveAnonymousFactory, arDriveFactory } from '..';
 
@@ -10,10 +12,10 @@ new CLICommand({
 	async action(options) {
 		const parameters = new ParametersHelper(options);
 		const wallet = await parameters.getOptionalWallet();
-		const driveId: string = options.driveId;
+		const driveId: DriveID = options.driveId;
 		// const shouldGetAllRevisions: boolean = options.getAllRevisions;
 
-		const result = await (async function () {
+		const result: Partial<ArFSPublicDrive | ArFSPrivateDrive> = await (async function () {
 			if (wallet) {
 				const arDrive = arDriveFactory({ wallet: wallet });
 				const driveKey = await parameters.getDriveKey(driveId);
@@ -24,6 +26,10 @@ new CLICommand({
 				return arDrive.getPublicDrive(driveId /*, shouldGetAllRevisions*/);
 			}
 		})();
+
+		// TODO: Fix base types so deleting un-used values is not necessary
+		delete result.syncStatus;
+
 		console.log(JSON.stringify(result, null, 4));
 		process.exit(0);
 	}

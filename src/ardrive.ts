@@ -23,7 +23,8 @@ import {
 	FeeMultiple,
 	DriveKey,
 	EntityID,
-	FileID
+	FileID,
+	ByteCount
 } from './types';
 import { WalletDAO, Wallet, JWKWallet } from './wallet_new';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
@@ -31,6 +32,7 @@ import { ArFSFolderToUpload, ArFSFileToUpload } from './arfs_file_wrapper';
 import { ARDataPriceEstimator } from './utils/ar_data_price_estimator';
 import {
 	ArFSDriveTransactionData,
+	ArFSFileMetadataTransactionData,
 	ArFSFolderTransactionData,
 	ArFSObjectTransactionData,
 	ArFSPrivateDriveTransactionData,
@@ -72,11 +74,11 @@ export interface ArFSResult {
 	fees: ArFSFees;
 }
 
-export interface FolderUploadBaseCosts {
+export interface MetaDataBaseCosts {
 	metaDataBaseReward: Winston;
 }
 
-export interface BulkFileBaseCosts extends FolderUploadBaseCosts {
+export interface BulkFileBaseCosts extends MetaDataBaseCosts {
 	fileDataBaseReward: Winston;
 }
 export interface FileUploadBaseCosts extends BulkFileBaseCosts {
@@ -129,12 +131,12 @@ export class ArDriveAnonymous extends ArDriveType {
 		return Promise.resolve(driveEntity);
 	}
 
-	async getPublicFolder(folderId: string): Promise<ArFSPublicFolder> {
+	async getPublicFolder(folderId: FolderID): Promise<ArFSPublicFolder> {
 		const folder = await this.arFsDao.getPublicFolder(folderId);
 		return folder;
 	}
 
-	async getPublicFile(fileId: string): Promise<ArFSPublicFile> {
+	async getPublicFile(fileId: FileID): Promise<ArFSPublicFile> {
 		return this.arFsDao.getPublicFile(fileId);
 	}
 
@@ -210,6 +212,97 @@ export class ArDrive extends ArDriveAnonymous {
 		}
 
 		return driveId;
+	}
+
+	async movePublicFile(fileId: FileID, newParentFolderId: FolderID): Promise<ArFSResult> {
+		const driveId = await this.getDriveIdAndAssertDrive(newParentFolderId);
+
+		const originalFileMetaData = await this.getPublicFile(fileId);
+
+		if (driveId !== originalFileMetaData.driveId) {
+			throw new Error('File should stay in the same drive!');
+		}
+
+		const fileTransactionData = new ArFSPublicFileMetadataTransactionData(
+			originalFileMetaData.name,
+			originalFileMetaData.size,
+			originalFileMetaData.lastModifiedDate,
+			originalFileMetaData.dataTxId,
+			originalFileMetaData.dataContentType
+		);
+
+		const moveBaseCosts = await this.estimateAndAssertCostOfMoveFile(fileTransactionData);
+		const fileMetaDataBaseReward = { reward: moveBaseCosts.metaDataBaseReward, feeMultiple: this.feeMultiple };
+
+		// Move file will create a new meta data tx with identical meta data except for a new parentFolderId
+		const moveFileResult = await this.arFsDao.movePublicFile({
+			originalFileMetaData,
+			fileTransactionData,
+			newParentFolderId,
+			fileMetaDataBaseReward
+		});
+
+		return Promise.resolve({
+			created: [
+				{
+					type: 'file',
+					metadataTxId: moveFileResult.metaDataTrxId,
+					dataTxId: moveFileResult.dataTrxId,
+					entityId: fileId
+				}
+			],
+			tips: [],
+			fees: {
+				[moveFileResult.metaDataTrxId]: +moveFileResult.metaDataTrxReward
+			}
+		});
+	}
+
+	async movePrivateFile(fileId: FileID, newParentFolderId: FolderID, driveKey: DriveKey): Promise<ArFSResult> {
+		const driveId = await this.getDriveIdAndAssertDrive(newParentFolderId, driveKey);
+		const originalFileMetaData = await this.getPrivateFile(fileId, driveKey);
+
+		if (driveId !== originalFileMetaData.driveId) {
+			throw new Error('File should stay in the same drive!');
+		}
+
+		const fileTransactionData = await ArFSPrivateFileMetadataTransactionData.from(
+			originalFileMetaData.name,
+			originalFileMetaData.size,
+			originalFileMetaData.lastModifiedDate,
+			originalFileMetaData.dataTxId,
+			originalFileMetaData.dataContentType,
+			fileId,
+			driveKey
+		);
+
+		const moveBaseCosts = await this.estimateAndAssertCostOfMoveFile(fileTransactionData);
+
+		const fileMetaDataBaseReward = { reward: moveBaseCosts.metaDataBaseReward, feeMultiple: this.feeMultiple };
+
+		// Move file will create a new meta data tx with identical meta data except for a new parentFolderId
+		const moveFileResult = await this.arFsDao.movePrivateFile({
+			originalFileMetaData,
+			fileTransactionData,
+			newParentFolderId,
+			fileMetaDataBaseReward
+		});
+
+		return Promise.resolve({
+			created: [
+				{
+					type: 'file',
+					metadataTxId: moveFileResult.metaDataTrxId,
+					dataTxId: moveFileResult.dataTrxId,
+					entityId: fileId,
+					key: urlEncodeHashKey(moveFileResult.fileKey)
+				}
+			],
+			tips: [],
+			fees: {
+				[moveFileResult.metaDataTrxId]: +moveFileResult.metaDataTrxReward
+			}
+		});
 	}
 
 	async uploadPublicFile(
@@ -399,7 +492,7 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	/** Computes the size of a private file encrypted with AES256-GCM */
-	encryptedDataSize(dataSize: number): number {
+	encryptedDataSize(dataSize: ByteCount): ByteCount {
 		return (dataSize / 16 + 1) * 16;
 	}
 
@@ -609,7 +702,7 @@ export class ArDrive extends ArDriveAnonymous {
 		};
 	}
 
-	async createPublicFolder(folderName: string, driveId: string, parentFolderId?: FolderID): Promise<ArFSResult> {
+	async createPublicFolder(folderName: string, driveId: DriveID, parentFolderId?: FolderID): Promise<ArFSResult> {
 		// Assert that there's enough AR available in the wallet
 		const folderData = new ArFSPublicFolderTransactionData(folderName);
 		const { metaDataBaseReward } = await this.estimateAndAssertCostOfFolderUpload(folderData);
@@ -847,7 +940,7 @@ export class ArDrive extends ArDriveAnonymous {
 				const walletBalance = await this.walletDao.getWalletWinstonBalance(this.wallet);
 
 				throw new Error(
-					`Wallet balance of ${walletBalance} Winston is not enough (${totalWinstonPrice}) for data upload of size ${folderToUpload.getTotalBytes(
+					`Wallet balance of ${walletBalance} Winston is not enough (${totalWinstonPrice}) for data upload of size ${folderToUpload.getTotalByteCount(
 						driveKey !== undefined
 					)} bytes!`
 				);
@@ -862,7 +955,7 @@ export class ArDrive extends ArDriveAnonymous {
 		return folderEntity;
 	}
 
-	async getPrivateFile(fileId: string, driveKey: DriveKey): Promise<ArFSPrivateFile> {
+	async getPrivateFile(fileId: FileID, driveKey: DriveKey): Promise<ArFSPrivateFile> {
 		return this.arFsDao.getPrivateFile(fileId, driveKey);
 	}
 
@@ -881,8 +974,28 @@ export class ArDrive extends ArDriveAnonymous {
 		return children;
 	}
 
+	async estimateAndAssertCostOfMoveFile(
+		fileTransactionData: ArFSFileMetadataTransactionData
+	): Promise<MetaDataBaseCosts> {
+		const fileMetaTransactionDataReward = String(
+			await this.priceEstimator.getBaseWinstonPriceForByteCount(fileTransactionData.sizeOf())
+		);
+
+		const walletHasBalance = await this.walletDao.walletHasBalance(this.wallet, fileMetaTransactionDataReward);
+
+		if (!walletHasBalance) {
+			const walletBalance = await this.walletDao.getWalletWinstonBalance(this.wallet);
+
+			throw new Error(
+				`Wallet balance of ${walletBalance} Winston is not enough (${fileMetaTransactionDataReward}) for moving file!`
+			);
+		}
+
+		return { metaDataBaseReward: fileMetaTransactionDataReward };
+	}
+
 	async estimateAndAssertCostOfFileUpload(
-		decryptedFileSize: number,
+		decryptedFileSize: ByteCount,
 		metaData: ArFSObjectTransactionData,
 		drivePrivacy: DrivePrivacy
 	): Promise<FileUploadBaseCosts> {
@@ -928,7 +1041,7 @@ export class ArDrive extends ArDriveAnonymous {
 		};
 	}
 
-	async estimateAndAssertCostOfFolderUpload(metaData: ArFSObjectTransactionData): Promise<FolderUploadBaseCosts> {
+	async estimateAndAssertCostOfFolderUpload(metaData: ArFSObjectTransactionData): Promise<MetaDataBaseCosts> {
 		const metaDataBaseReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(metaData.sizeOf());
 		const totalWinstonPrice = metaDataBaseReward.toString();
 
