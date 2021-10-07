@@ -27,6 +27,7 @@ import {
 	ArFSPrivateFileMetaDataPrototype
 } from './arfs_prototypes';
 import {
+	ArFSFileMetadataTransactionData,
 	ArFSPrivateDriveTransactionData,
 	ArFSPrivateFileDataTransactionData,
 	ArFSPrivateFileMetadataTransactionData,
@@ -108,20 +109,15 @@ export interface ArFSCreatePrivateFolderResult extends ArFSCreateFolderResult {
 	driveKey: DriveKey;
 }
 
-export interface ArFSMoveFileParams {
+export interface ArFSMoveFileParams<O extends ArFSFileOrFolderEntity, T extends ArFSFileMetadataTransactionData> {
+	originalFileMetaData: O;
+	fileTransactionData: T;
 	newParentFolderId: FolderID;
 	fileMetaDataBaseReward: RewardSettings;
 }
 
-export interface ArFSMovePublicFileParams extends ArFSMoveFileParams {
-	fileTransactionData: ArFSPublicFileMetadataTransactionData;
-	originalFileMetaData: ArFSPublicFile;
-}
-
-export interface ArFSMovePrivateFileParams extends ArFSMoveFileParams {
-	fileTransactionData: ArFSPrivateFileMetadataTransactionData;
-	originalFileMetaData: ArFSPrivateFile;
-}
+export type ArFSMovePublicFileParams = ArFSMoveFileParams<ArFSPublicFile, ArFSPublicFileMetadataTransactionData>;
+export type ArFSMovePrivateFileParams = ArFSMoveFileParams<ArFSPrivateFile, ArFSPrivateFileMetadataTransactionData>;
 
 export abstract class ArFSDAOType {
 	protected abstract readonly arweave: Arweave;
