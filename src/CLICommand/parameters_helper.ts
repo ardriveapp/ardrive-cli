@@ -4,8 +4,10 @@ import * as fs from 'fs';
 import { deriveDriveKey, JWKInterface } from 'ardrive-core-js';
 import {
 	AddressParameter,
+	AllParameter,
 	DriveKeyParameter,
 	DrivePasswordParameter,
+	MaxDepthParameter,
 	SeedPhraseParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
@@ -80,6 +82,15 @@ export class ParametersHelper {
 			return derivedDriveKey;
 		}
 		throw new Error(`No drive key or password provided!`);
+	}
+
+	public async getMaxDepth(): Promise<number> {
+		if (await this.getParameterValue(AllParameter)) {
+			return Number.POSITIVE_INFINITY;
+		} else {
+			const value = Number(await this.getParameterValue(MaxDepthParameter));
+			return value ? value : 0;
+		}
 	}
 
 	/**
