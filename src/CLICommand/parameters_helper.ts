@@ -89,7 +89,10 @@ export class ParametersHelper {
 			return Number.POSITIVE_INFINITY;
 		} else {
 			const value = Number(await this.getParameterValue(MaxDepthParameter));
-			return value ? value : 0;
+			if(!Number.isInteger(value) || value < 0) {
+				throw new Error('maxDepth should be a non-negative integer!')
+			}
+			return value;
 		}
 	}
 
