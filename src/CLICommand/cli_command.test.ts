@@ -60,36 +60,43 @@ describe('CLICommand class', () => {
 	});
 
 	it('Assert required in conjunction parameters', () => {
+		const commandDescriptorRequiredWallet = {
+			name: testingCommandName,
+			parameters: [
+				WalletFileParameter,
+				{ name: DrivePasswordParameter, requiredConjunctionParameters: [WalletFileParameter] }
+			],
+			async action() {
+				// eslint-disable-next-line no-console
+				console.log('DUMMY ACTION');
+			}
+		};
+		const parsedOptionsMissingWallet = {
+			[WalletFileParameter]: undefined,
+			[DrivePasswordParameter]: 'non-empty value'
+		};
 		expect(function () {
-			assertConjunctionParameters(
-				{
-					name: testingCommandName,
-					parameters: [
-						WalletFileParameter,
-						{ name: DrivePasswordParameter, requiredConjunctionParameters: [WalletFileParameter] }
-					],
-					async action() {
-						// eslint-disable-next-line no-console
-						console.log('DUMMY ACTION');
-					}
-				},
-				{ [WalletFileParameter]: undefined, [DrivePasswordParameter]: 'non-empty value' }
-			);
+			assertConjunctionParameters(commandDescriptorRequiredWallet, parsedOptionsMissingWallet);
 		}).to.throw();
 	});
 
 	it('Assert forbidden in conjunction parameters', () => {
+		const commandDescriptorForbiddenWalletFileAndSeedPhrase = {
+			name: testingCommandName,
+			parameters: [WalletFileParameter, SeedPhraseParameter],
+			async action() {
+				// eslint-disable-next-line no-console
+				console.log('DUMMY ACTION');
+			}
+		};
+		const parsedCommandOptionsBothEspecified = {
+			[WalletFileParameter]: 'non-empty value',
+			[SeedPhraseParameter]: 'non-empty value'
+		};
 		expect(function () {
 			assertConjunctionParameters(
-				{
-					name: testingCommandName,
-					parameters: [WalletFileParameter, SeedPhraseParameter],
-					async action() {
-						// eslint-disable-next-line no-console
-						console.log('DUMMY ACTION');
-					}
-				},
-				{ [WalletFileParameter]: 'non-empty value', [SeedPhraseParameter]: 'non-empty value' }
+				commandDescriptorForbiddenWalletFileAndSeedPhrase,
+				parsedCommandOptionsBothEspecified
 			);
 		}).to.throw();
 	});
