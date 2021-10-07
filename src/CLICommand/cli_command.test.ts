@@ -23,32 +23,31 @@ const driveNameCommandDescription: CommandDescriptor = {
 	}
 };
 const driveNameArgv: string[] = [...baseArgv, testingCommandName, '--drive-name', MY_DRIVE_NAME];
+async function action() {
+	// eslint-disable-next-line no-console
+	console.log('DUMMY ACTION');
+}
+const nonEmptyValue = 'non-empty value';
 const commandDescriptorRequiredWallet: CommandDescriptor = {
 	name: testingCommandName,
 	parameters: [
 		WalletFileParameter,
 		{ name: DrivePasswordParameter, requiredConjunctionParameters: [WalletFileParameter] }
 	],
-	async action() {
-		// eslint-disable-next-line no-console
-		console.log('DUMMY ACTION');
-	}
+	action
 };
 const parsedOptionsMissingWallet = {
 	[WalletFileParameter]: undefined,
-	[DrivePasswordParameter]: 'non-empty value'
+	[DrivePasswordParameter]: nonEmptyValue
 };
 const commandDescriptorForbiddenWalletFileAndSeedPhrase: CommandDescriptor = {
 	name: testingCommandName,
 	parameters: [WalletFileParameter, SeedPhraseParameter],
-	async action() {
-		// eslint-disable-next-line no-console
-		console.log('DUMMY ACTION');
-	}
+	action
 };
 const parsedCommandOptionsBothEspecified = {
-	[WalletFileParameter]: 'non-empty value',
-	[SeedPhraseParameter]: 'non-empty value'
+	[WalletFileParameter]: nonEmptyValue,
+	[SeedPhraseParameter]: nonEmptyValue
 };
 
 process.exit = (n: number) => {
