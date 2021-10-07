@@ -2,8 +2,12 @@ import Arweave from 'arweave';
 import { expect } from 'chai';
 import { SinonStubbedInstance, stub } from 'sinon';
 import { arDriveFactory } from '../../src';
-import { ArDrive, stubTransactionID } from '../../src/ardrive';
-import { ArFSPublicFileMetadataTransactionData, ArFSPublicFolderTransactionData } from '../../src/arfs_trx_data_types';
+import { ArDrive, stubEntityID, stubTransactionID } from '../../src/ardrive';
+import {
+	ArFSPublicDriveTransactionData,
+	ArFSPublicFileMetadataTransactionData,
+	ArFSPublicFolderTransactionData
+} from '../../src/arfs_trx_data_types';
 import { TipType } from '../../src/types';
 import { readJWKFile } from '../../src/utils';
 import { ArweaveOracle } from '../../src/utils/arweave_oracle';
@@ -35,6 +39,7 @@ describe('ArDrive class', () => {
 		'application/json'
 	);
 	const stubPublicFolderTransactionData = new ArFSPublicFolderTransactionData('stubName');
+	const stubPublicDriveMetadataTransactionData = new ArFSPublicDriveTransactionData('stubName', stubEntityID);
 
 	beforeEach(async () => {
 		// Set pricing algo up as x = y (bytes = Winston)
@@ -173,6 +178,39 @@ describe('ArDrive class', () => {
 			const actual = await arDrive.estimateAndAssertCostOfFolderUpload(stubPublicFileTransactionData);
 			expect(actual).to.deep.equal({
 				metaDataBaseReward: '147'
+			});
+		});
+	});
+
+	// TODO: Move these to unit test file
+	describe('estimateAndAssertCostOfDriveCreation function', () => {
+		it('throws an error when there is an insufficient wallet balance', async () => {
+			walletDao.walletHasBalance.callsFake(() => {
+				return Promise.resolve(false);
+			});
+			walletDao.getWalletWinstonBalance.callsFake(() => {
+				return Promise.resolve(0);
+			});
+			await expectAsyncErrorThrow(() =>
+				arDrive.estimateAndAssertCostOfDriveCreation(
+					stubPublicDriveMetadataTransactionData,
+					stubPublicFolderTransactionData
+				)
+			);
+		});
+
+		it('returns the correct reward and tip data', async () => {
+			walletDao.walletHasBalance.callsFake(() => {
+				return Promise.resolve(true);
+			});
+
+			const actual = await arDrive.estimateAndAssertCostOfDriveCreation(
+				stubPublicDriveMetadataTransactionData,
+				stubPublicFolderTransactionData
+			);
+			expect(actual).to.deep.equal({
+				driveMetaDataBaseReward: '73',
+				rootFolderMetaDataBaseReward: '19'
 			});
 		});
 	});
