@@ -27,6 +27,7 @@ import {
 	ArFSPrivateFileMetaDataPrototype
 } from './arfs_prototypes';
 import {
+	ArFSFileMetadataTransactionData,
 	ArFSPrivateDriveTransactionData,
 	ArFSPrivateFileDataTransactionData,
 	ArFSPrivateFileMetadataTransactionData,
@@ -108,15 +109,15 @@ export interface ArFSCreatePrivateFolderResult extends ArFSCreateFolderResult {
 	driveKey: DriveKey;
 }
 
-export interface ArFSMoveFileParams {
-	baseFileMetaData: ArFSPublicFile;
+export interface ArFSMoveFileParams<O extends ArFSFileOrFolderEntity, T extends ArFSFileMetadataTransactionData> {
+	originalFileMetaData: O;
+	fileTransactionData: T;
 	newParentFolderId: FolderID;
 	fileMetaDataBaseReward: RewardSettings;
 }
 
-export interface ArFSMovePrivateFileParams extends ArFSMoveFileParams {
-	driveKey: DriveKey;
-}
+export type ArFSMovePublicFileParams = ArFSMoveFileParams<ArFSPublicFile, ArFSPublicFileMetadataTransactionData>;
+export type ArFSMovePrivateFileParams = ArFSMoveFileParams<ArFSPrivateFile, ArFSPrivateFileMetadataTransactionData>;
 
 export abstract class ArFSDAOType {
 	protected abstract readonly arweave: Arweave;
@@ -552,27 +553,18 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	}
 
 	async movePrivateFile({
-		baseFileMetaData,
+		originalFileMetaData,
+		fileTransactionData,
 		newParentFolderId,
-		fileMetaDataBaseReward,
-		driveKey
+		fileMetaDataBaseReward
 	}: ArFSMovePrivateFileParams): Promise<ArFSMovePrivateFileResult> {
 		// Get current time
 		const unixTime = Math.round(Date.now() / 1000);
 
-		const { dataTxId, dataContentType, lastModifiedDate, size, name, fileId, driveId } = baseFileMetaData;
+		const { dataTxId, fileId, driveId } = originalFileMetaData;
 
-		const fileMetaData = await ArFSPrivateFileMetadataTransactionData.from(
-			name,
-			size,
-			lastModifiedDate,
-			dataTxId,
-			dataContentType,
-			fileId,
-			driveKey
-		);
 		const fileMetadataPrototype = new ArFSPrivateFileMetaDataPrototype(
-			fileMetaData,
+			fileTransactionData,
 			unixTime,
 			driveId,
 			fileId,
@@ -594,23 +586,24 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			metaDataTrxId: metaDataTrx.id,
 			metaDataTrxReward: metaDataTrx.reward,
 			dataTrxId: dataTxId,
-			fileKey: fileMetaData.fileKey
+			fileKey: fileTransactionData.fileKey
 		};
 	}
 
 	async movePublicFile({
-		baseFileMetaData,
+		originalFileMetaData,
+		fileTransactionData,
 		newParentFolderId,
 		fileMetaDataBaseReward
-	}: ArFSMoveFileParams): Promise<ArFSMoveFileResult> {
+	}: ArFSMovePublicFileParams): Promise<ArFSMoveFileResult> {
 		// Get current time
 		const unixTime = Math.round(Date.now() / 1000);
 
-		const { dataTxId, dataContentType, lastModifiedDate, size, name, fileId, driveId } = baseFileMetaData;
+		const { dataTxId, fileId, driveId } = originalFileMetaData;
 
 		// Prepare meta data transaction
 		const fileMetadata = new ArFSPublicFileMetaDataPrototype(
-			new ArFSPublicFileMetadataTransactionData(name, size, lastModifiedDate, dataTxId, dataContentType),
+			fileTransactionData,
 			unixTime,
 			driveId,
 			fileId,

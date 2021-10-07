@@ -100,11 +100,8 @@ export class PrivateDriveKeyData {
 	}
 }
 
-export const stubTransactionID = '0000000000000000000000000000000000000000000';
-export const stubEntityID = '00000000-0000-0000-0000-000000000000';
-const stubSize = 654321;
-const stubUnixTime = 1632236156;
-const stubDataContentType = 'application/json';
+const stubTransactionID = '0000000000000000000000000000000000000000000';
+const stubEntityID = '00000000-0000-0000-0000-000000000000';
 
 interface RecursiveBulkUploadParams {
 	parentFolderId: FolderID;
@@ -220,29 +217,27 @@ export class ArDrive extends ArDriveAnonymous {
 	async movePublicFile(fileId: FileID, newParentFolderId: FolderID): Promise<ArFSResult> {
 		const driveId = await this.getDriveIdAndAssertDrive(newParentFolderId);
 
-		const baseFileMetaData = await this.getPublicFile(fileId);
+		const originalFileMetaData = await this.getPublicFile(fileId);
 
-		const stubbedFileTransactionData = new ArFSPublicFileMetadataTransactionData(
-			baseFileMetaData.name,
-			stubSize,
-			stubUnixTime,
-			stubTransactionID,
-			stubDataContentType
-		);
-
-		const moveBaseCosts = await this.estimateAndAssertCostOfMoveFile(stubbedFileTransactionData);
-
-		const actualDriveId = baseFileMetaData.driveId;
-
-		if (driveId !== actualDriveId) {
+		if (driveId !== originalFileMetaData.driveId) {
 			throw new Error('File should stay in the same drive!');
 		}
 
+		const fileTransactionData = new ArFSPublicFileMetadataTransactionData(
+			originalFileMetaData.name,
+			originalFileMetaData.size,
+			originalFileMetaData.lastModifiedDate,
+			originalFileMetaData.dataTxId,
+			originalFileMetaData.dataContentType
+		);
+
+		const moveBaseCosts = await this.estimateAndAssertCostOfMoveFile(fileTransactionData);
 		const fileMetaDataBaseReward = { reward: moveBaseCosts.metaDataBaseReward, feeMultiple: this.feeMultiple };
 
 		// Move file will create a new meta data tx with identical meta data except for a new parentFolderId
 		const moveFileResult = await this.arFsDao.movePublicFile({
-			baseFileMetaData,
+			originalFileMetaData,
+			fileTransactionData,
 			newParentFolderId,
 			fileMetaDataBaseReward
 		});
@@ -265,34 +260,32 @@ export class ArDrive extends ArDriveAnonymous {
 
 	async movePrivateFile(fileId: FileID, newParentFolderId: FolderID, driveKey: DriveKey): Promise<ArFSResult> {
 		const driveId = await this.getDriveIdAndAssertDrive(newParentFolderId, driveKey);
-		const baseFileMetaData = await this.getPrivateFile(fileId, driveKey);
+		const originalFileMetaData = await this.getPrivateFile(fileId, driveKey);
 
-		const stubbedFileTransactionData = await ArFSPrivateFileMetadataTransactionData.from(
-			baseFileMetaData.name,
-			stubSize,
-			stubUnixTime,
-			stubTransactionID,
-			stubDataContentType,
-			stubEntityID,
-			await this.stubDriveKey()
-		);
-
-		const moveBaseCosts = await this.estimateAndAssertCostOfMoveFile(stubbedFileTransactionData);
-
-		const actualDriveId = baseFileMetaData.driveId;
-
-		if (driveId !== actualDriveId) {
+		if (driveId !== originalFileMetaData.driveId) {
 			throw new Error('File should stay in the same drive!');
 		}
+
+		const fileTransactionData = await ArFSPrivateFileMetadataTransactionData.from(
+			originalFileMetaData.name,
+			originalFileMetaData.size,
+			originalFileMetaData.lastModifiedDate,
+			originalFileMetaData.dataTxId,
+			originalFileMetaData.dataContentType,
+			fileId,
+			driveKey
+		);
+
+		const moveBaseCosts = await this.estimateAndAssertCostOfMoveFile(fileTransactionData);
 
 		const fileMetaDataBaseReward = { reward: moveBaseCosts.metaDataBaseReward, feeMultiple: this.feeMultiple };
 
 		// Move file will create a new meta data tx with identical meta data except for a new parentFolderId
 		const moveFileResult = await this.arFsDao.movePrivateFile({
-			baseFileMetaData,
+			originalFileMetaData,
+			fileTransactionData,
 			newParentFolderId,
-			fileMetaDataBaseReward,
-			driveKey
+			fileMetaDataBaseReward
 		});
 
 		return Promise.resolve({
@@ -873,7 +866,6 @@ export class ArDrive extends ArDriveAnonymous {
 
 	async getPrivateDrive(driveId: DriveID, driveKey: DriveKey): Promise<ArFSPrivateDrive> {
 		const driveEntity = await this.arFsDao.getPrivateDrive(driveId, driveKey);
-
 		return Promise.resolve(driveEntity);
 	}
 
@@ -1113,10 +1105,6 @@ export class ArDrive extends ArDriveAnonymous {
 
 	async getDriveIdForFolderId(folderId: FolderID): Promise<DriveID> {
 		return this.arFsDao.getDriveIdForFolderId(folderId);
-	}
-
-	async stubDriveKey(): Promise<DriveKey> {
-		return deriveDriveKey('stubPassword', stubEntityID, JSON.stringify((this.wallet as JWKWallet).getPrivateKey()));
 	}
 
 	// Provides for stubbing metadata during cost estimations since the data trx ID won't yet be known
