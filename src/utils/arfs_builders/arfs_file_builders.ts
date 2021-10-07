@@ -64,8 +64,6 @@ export class ArFSPublicFileBuilder extends ArFSFileBuilder<ArFSPublicFile> {
 				throw new Error('Invalid file state');
 			}
 
-			// TODO: WHY IS THE ArFSPublicFile type missing these fields?
-
 			return Promise.resolve(
 				new ArFSPublicFile(
 					this.appName,
