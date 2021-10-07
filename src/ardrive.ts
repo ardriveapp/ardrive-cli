@@ -100,8 +100,8 @@ export class PrivateDriveKeyData {
 	}
 }
 
-const stubTransactionID = '0000000000000000000000000000000000000000000';
-const stubEntityID = '00000000-0000-0000-0000-000000000000';
+export const stubTransactionID = '0000000000000000000000000000000000000000000';
+export const stubEntityID = '00000000-0000-0000-0000-000000000000';
 const stubSize = 654321;
 const stubUnixTime = 1632236156;
 const stubDataContentType = 'application/json';
@@ -1014,8 +1014,8 @@ export class ArDrive extends ArDriveAnonymous {
 		metaData: ArFSObjectTransactionData,
 		drivePrivacy: DrivePrivacy
 	): Promise<FileUploadBaseCosts> {
-		if (decryptedFileSize < 0) {
-			throw new Error('File size should be non-negative number!');
+		if (decryptedFileSize < 0 || !Number.isInteger(decryptedFileSize)) {
+			throw new Error('File size should be non-negative integer number!');
 		}
 
 		let fileSize = decryptedFileSize;

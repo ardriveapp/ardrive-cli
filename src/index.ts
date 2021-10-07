@@ -8,6 +8,7 @@ import { ArFSDAO, ArFSDAOAnonymous } from './arfsdao';
 import { ARDataPriceEstimator } from './utils/ar_data_price_estimator';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
 import { FeeMultiple } from './types';
+import { CommunityOracle } from './community/community_oracle';
 
 if (require.main === module) {
 	// declare all parameters
@@ -38,6 +39,7 @@ export interface ArDriveSettings extends ArDriveSettingsAnonymous {
 	wallet: Wallet;
 	walletDao?: WalletDAO;
 	priceEstimator?: ARDataPriceEstimator;
+	communityOracle?: CommunityOracle;
 	feeMultiple?: FeeMultiple;
 	dryRun?: boolean;
 }
@@ -45,6 +47,7 @@ export interface ArDriveSettings extends ArDriveSettingsAnonymous {
 export function arDriveFactory({
 	arweave = cliArweave,
 	priceEstimator = new ARDataPriceRegressionEstimator(),
+	communityOracle = new ArDriveCommunityOracle(arweave),
 	wallet,
 	walletDao = cliWalletDao,
 	dryRun,
@@ -54,7 +57,7 @@ export function arDriveFactory({
 		wallet,
 		walletDao,
 		new ArFSDAO(wallet, arweave, dryRun, CLI_APP_NAME, CLI_APP_VERSION),
-		new ArDriveCommunityOracle(arweave),
+		communityOracle,
 		CLI_APP_NAME,
 		CLI_APP_VERSION,
 		priceEstimator,

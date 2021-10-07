@@ -1,29 +1,60 @@
+import Arweave from 'arweave';
 import { expect } from 'chai';
 import { SinonStubbedInstance, stub } from 'sinon';
 import { arDriveFactory } from '../../src';
-import { ArDrive } from '../../src/ardrive';
+import { ArDrive, stubTransactionID } from '../../src/ardrive';
+import { ArFSPublicFileMetadataTransactionData, ArFSPublicFolderTransactionData } from '../../src/arfs_trx_data_types';
 import { TipType } from '../../src/types';
 import { readJWKFile } from '../../src/utils';
 import { ArweaveOracle } from '../../src/utils/arweave_oracle';
 import { ARDataPriceRegressionEstimator } from '../../src/utils/ar_data_price_regression_estimator';
 import { GatewayOracle } from '../../src/utils/gateway_oracle';
+import { WalletDAO } from '../../src/wallet_new';
+import { expectAsyncErrorThrow } from '../../src/utils/test_helpers';
+import { ArDriveCommunityOracle } from '../../src/community/ardrive_community_oracle';
+import { CommunityOracle } from '../../src/community/community_oracle';
 
 describe('ArDrive class', () => {
 	let arDrive: ArDrive;
-	let spyedOracle: SinonStubbedInstance<ArweaveOracle>;
-	let calculator: ARDataPriceRegressionEstimator;
+	let arweaveOracleStub: SinonStubbedInstance<ArweaveOracle>;
+	let communityOracleStub: SinonStubbedInstance<CommunityOracle>;
+	let priceEstimator: ARDataPriceRegressionEstimator;
+	let walletDao: SinonStubbedInstance<WalletDAO>;
+	const fakeArweave = Arweave.init({
+		host: 'localhost',
+		port: 443,
+		protocol: 'https',
+		timeout: 600000
+	});
 	const wallet = readJWKFile('./test_wallet.json');
+	const stubPublicFileTransactionData = new ArFSPublicFileMetadataTransactionData(
+		'stubName',
+		12345,
+		0,
+		stubTransactionID,
+		'application/json'
+	);
+	const stubPublicFolderTransactionData = new ArFSPublicFolderTransactionData('stubName');
 
-	before(() => {
+	beforeEach(async () => {
 		// Set pricing algo up as x = y (bytes = Winston)
-		spyedOracle = stub(new GatewayOracle());
-		spyedOracle.getWinstonPriceForByteCount.callsFake((input) => Promise.resolve(input));
-		calculator = new ARDataPriceRegressionEstimator(true, spyedOracle);
+		arweaveOracleStub = stub(new GatewayOracle());
+		arweaveOracleStub.getWinstonPriceForByteCount.callsFake((input) => Promise.resolve(input));
+		communityOracleStub = stub(new ArDriveCommunityOracle(fakeArweave));
+		priceEstimator = new ARDataPriceRegressionEstimator(true, arweaveOracleStub);
+		walletDao = stub(new WalletDAO(fakeArweave, 'Integration Test', '1.0'));
+		walletDao.walletHasBalance.callsFake(() => {
+			return Promise.resolve(true);
+		});
+		const unknownDao = walletDao as unknown;
 		arDrive = arDriveFactory({
 			wallet: wallet,
-			priceEstimator: new ARDataPriceRegressionEstimator(),
+			priceEstimator: priceEstimator,
+			communityOracle: communityOracleStub,
 			feeMultiple: 1.0,
-			dryRun: true
+			dryRun: true,
+			arweave: fakeArweave,
+			walletDao: unknownDao as WalletDAO
 		});
 	});
 
@@ -69,6 +100,79 @@ describe('ArDrive class', () => {
 			];
 			inputsAndExpectedOutputs.forEach(([input, expectedOutput]) => {
 				expect(arDrive.getTipTags(input as TipType)).to.deep.equal(expectedOutput);
+			});
+		});
+	});
+
+	// TODO: Move these to unit test file
+	describe('estimateAndAssertCostOfFileUpload function', () => {
+		it('throws an error when decryptedFileSize is negative', async () => {
+			await expectAsyncErrorThrow(() =>
+				arDrive.estimateAndAssertCostOfFileUpload(-1, stubPublicFileTransactionData, 'private')
+			);
+		});
+
+		it('throws an error when decryptedFileSize is not an integer', async () => {
+			await expectAsyncErrorThrow(() =>
+				arDrive.estimateAndAssertCostOfFileUpload(0.1, stubPublicFileTransactionData, 'private')
+			);
+		});
+
+		it('throws an error when there is an insufficient wallet balance', async () => {
+			walletDao.walletHasBalance.callsFake(() => {
+				return Promise.resolve(false);
+			});
+			walletDao.getWalletWinstonBalance.callsFake(() => {
+				return Promise.resolve(0);
+			});
+			await expectAsyncErrorThrow(() =>
+				arDrive.estimateAndAssertCostOfFileUpload(1, stubPublicFileTransactionData, 'private')
+			);
+		});
+
+		it('returns the correct reward and tip data', async () => {
+			walletDao.walletHasBalance.callsFake(() => {
+				return Promise.resolve(true);
+			});
+			communityOracleStub.getCommunityWinstonTip.callsFake(() => {
+				return Promise.resolve('98765');
+			});
+
+			const actual = await arDrive.estimateAndAssertCostOfFileUpload(
+				1234567,
+				stubPublicFileTransactionData,
+				'private'
+			);
+			expect(actual).to.deep.equal({
+				metaDataBaseReward: '147',
+				fileDataBaseReward: '1234576',
+				communityWinstonTip: '98765'
+			});
+		});
+	});
+
+	// TODO: Move these to unit test file
+	describe('estimateAndAssertCostOfFolderUpload function', () => {
+		it('throws an error when there is an insufficient wallet balance', async () => {
+			walletDao.walletHasBalance.callsFake(() => {
+				return Promise.resolve(false);
+			});
+			walletDao.getWalletWinstonBalance.callsFake(() => {
+				return Promise.resolve(0);
+			});
+			await expectAsyncErrorThrow(() =>
+				arDrive.estimateAndAssertCostOfFolderUpload(stubPublicFolderTransactionData)
+			);
+		});
+
+		it('returns the correct reward and tip data', async () => {
+			walletDao.walletHasBalance.callsFake(() => {
+				return Promise.resolve(true);
+			});
+
+			const actual = await arDrive.estimateAndAssertCostOfFolderUpload(stubPublicFileTransactionData);
+			expect(actual).to.deep.equal({
+				metaDataBaseReward: '147'
 			});
 		});
 	});
