@@ -2,15 +2,16 @@ import Arweave from 'arweave';
 import { expect } from 'chai';
 import { SinonSpiedInstance, SinonStubbedInstance, spy, stub } from 'sinon';
 import { arDriveFactory } from '../../src';
-import { ArDrive, ArFSResult } from '../../src/ardrive';
-import { readJWKFile } from '../../src/utils';
+import { ArDrive, ArFSResult, PrivateDriveKeyData, stubEntityID } from '../../src/ardrive';
+import { readJWKFile, urlEncodeHashKey } from '../../src/utils';
 import { ArweaveOracle } from '../../src/utils/arweave_oracle';
 import { ARDataPriceRegressionEstimator } from '../../src/utils/ar_data_price_regression_estimator';
 import { GatewayOracle } from '../../src/utils/gateway_oracle';
-import { WalletDAO } from '../../src/wallet_new';
+import { JWKWallet, WalletDAO } from '../../src/wallet_new';
 import { ArDriveCommunityOracle } from '../../src/community/ardrive_community_oracle';
 import { CommunityOracle } from '../../src/community/community_oracle';
 import { ArFSDAO } from '../../src/arfsdao';
+import { deriveDriveKey } from 'ardrive-core-js';
 
 const entityIdRegex = /^([a-f]|[0-9]){8}-([a-f]|[0-9]){4}-([a-f]|[0-9]){4}-([a-f]|[0-9]){4}-([a-f]|[0-9]){12}$/;
 const expectedTrxIdLength = 43;
@@ -76,6 +77,24 @@ describe('ArDrive class', () => {
 			});
 			const result = await arDrive.createPublicDrive('TEST_DRIVE');
 			assertCreateDriveExpectations(result, 75, 21);
+		});
+	});
+
+	describe('createPrivateDrive function', () => {
+		it('returns the correct ArFSResult', async () => {
+			walletDao.walletHasBalance.callsFake(() => {
+				return Promise.resolve(true);
+			});
+
+			const stubDriveKey = await deriveDriveKey(
+				'stubPassword',
+				stubEntityID,
+				JSON.stringify((wallet as JWKWallet).getPrivateKey())
+			);
+			const stubPrivateDriveData: PrivateDriveKeyData = { driveId: stubEntityID, driveKey: stubDriveKey };
+
+			const result = await arDrive.createPrivateDrive('TEST_DRIVE', stubPrivateDriveData);
+			assertCreateDriveExpectations(result, 91, 37, urlEncodeHashKey(stubDriveKey));
 		});
 	});
 });
