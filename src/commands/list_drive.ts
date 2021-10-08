@@ -12,7 +12,7 @@ new CLICommand({
 		const parameters = new ParametersHelper(options, cliWalletDao);
 		const driveId = parameters.getRequiredParameterValue(DriveIdParameter);
 		let children: (ArFSPrivateFileOrFolderWithPaths | ArFSPublicFileOrFolderWithPaths)[];
-		const maxDepth = await parameters.getMaxDepth();
+		const maxDepth = await parameters.getMaxDepth(Number.POSITIVE_INFINITY);
 
 		if (await parameters.getIsPrivate()) {
 			const wallet = await parameters.getRequiredWallet();
