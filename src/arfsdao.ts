@@ -24,9 +24,11 @@ import {
 	ArFSPublicFileMetaDataPrototype,
 	ArFSPublicFolderMetaDataPrototype,
 	ArFSPrivateFileDataPrototype,
+	ArFSFileMetaDataPrototype,
 	ArFSPrivateFileMetaDataPrototype
 } from './arfs_prototypes';
 import {
+	ArFSFileMetadataTransactionData,
 	ArFSObjectTransactionData,
 	ArFSPrivateDriveTransactionData,
 	ArFSPrivateFileDataTransactionData,
@@ -124,6 +126,11 @@ export interface ArFSMoveParams<O extends ArFSFileOrFolderEntity, T extends ArFS
 	newParentFolderId: FolderID;
 	metaDataBaseReward: RewardSettings;
 }
+
+export type ArFSMoveFileParams<
+	O extends ArFSPublicFile | ArFSPrivateFile,
+	T extends ArFSFileMetadataTransactionData
+> = ArFSMoveParams<O, T>;
 
 export type ArFSMovePublicFileParams = ArFSMoveParams<ArFSPublicFile, ArFSPublicFileMetadataTransactionData>;
 export type ArFSMovePrivateFileParams = ArFSMoveParams<ArFSPrivateFile, ArFSPrivateFileMetadataTransactionData>;
@@ -564,7 +571,76 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		};
 	}
 
-	async movePrivateFile({
+	async moveFile<
+		O extends ArFSPublicFile | ArFSPrivateFile,
+		T extends ArFSFileMetadataTransactionData,
+		P extends ArFSFileMetaDataPrototype,
+		R extends ArFSMoveFileResult
+	>(
+		params: ArFSMoveFileParams<O, T>,
+		metaDataFactory: (unixTime: UnixTime, driveId: DriveID, fileId: FileID, newParentFolderId: FolderID) => P,
+		resultFactory: (metaDataTrx: Transaction, dataTxId: TransactionID, transactionData: T) => R
+	): Promise<R> {
+		const { metaDataBaseReward, transactionData, originalMetaData, newParentFolderId } = params;
+		// Get current time
+		const unixTime = Math.round(Date.now() / 1000);
+
+		const { dataTxId, fileId, driveId } = originalMetaData;
+
+		const fileMetadataPrototype = metaDataFactory(unixTime, driveId, fileId, newParentFolderId);
+
+		// Prepare meta data transaction
+		const metaDataTrx = await this.prepareArFSObjectTransaction(fileMetadataPrototype, metaDataBaseReward);
+
+		// Upload meta data
+		if (!this.dryRun) {
+			const metaDataUploader = await this.arweave.transactions.getUploader(metaDataTrx);
+			while (!metaDataUploader.isComplete) {
+				await metaDataUploader.uploadChunk();
+			}
+		}
+
+		return resultFactory(metaDataTrx, dataTxId, transactionData);
+	}
+
+	async movePrivateFile(params: ArFSMovePrivateFileParams): Promise<ArFSMovePrivateFileResult> {
+		const metaDataFactory = (
+			unixTime: number,
+			driveId: string,
+			fileId: string,
+			newParentFolderId: string
+		): ArFSPrivateFileMetaDataPrototype => {
+			return new ArFSPrivateFileMetaDataPrototype(
+				params.transactionData,
+				unixTime,
+				driveId,
+				fileId,
+				newParentFolderId
+			);
+		};
+
+		const resultFactory = (
+			metaDataTrx: Transaction,
+			dataTxId: string,
+			transactionData: ArFSPrivateFileMetadataTransactionData
+		): ArFSMovePrivateFileResult => {
+			return {
+				metaDataTrxId: metaDataTrx.id,
+				metaDataTrxReward: metaDataTrx.reward,
+				dataTrxId: dataTxId,
+				fileKey: transactionData.fileKey
+			};
+		};
+
+		return this.moveFile<
+			ArFSPrivateFile,
+			ArFSPrivateFileMetadataTransactionData,
+			ArFSPrivateFileMetaDataPrototype,
+			ArFSMovePrivateFileResult
+		>(params, metaDataFactory, resultFactory);
+	}
+
+	async oldmovePrivateFile({
 		originalMetaData,
 		transactionData,
 		newParentFolderId,
