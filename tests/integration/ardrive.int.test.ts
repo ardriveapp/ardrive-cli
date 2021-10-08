@@ -1,15 +1,13 @@
 import Arweave from 'arweave';
 import { expect } from 'chai';
-import { SinonSpiedInstance, SinonStubbedInstance, spy, stub } from 'sinon';
+import { stub } from 'sinon';
 import { arDriveFactory } from '../../src';
-import { ArDrive, ArFSResult, PrivateDriveKeyData, stubEntityID } from '../../src/ardrive';
+import { ArFSResult, PrivateDriveKeyData, stubEntityID } from '../../src/ardrive';
 import { readJWKFile, urlEncodeHashKey } from '../../src/utils';
-import { ArweaveOracle } from '../../src/utils/arweave_oracle';
 import { ARDataPriceRegressionEstimator } from '../../src/utils/ar_data_price_regression_estimator';
 import { GatewayOracle } from '../../src/utils/gateway_oracle';
 import { JWKWallet, WalletDAO } from '../../src/wallet_new';
 import { ArDriveCommunityOracle } from '../../src/community/ardrive_community_oracle';
-import { CommunityOracle } from '../../src/community/community_oracle';
 import { ArFSDAO } from '../../src/arfsdao';
 import { deriveDriveKey } from 'ardrive-core-js';
 
@@ -17,49 +15,44 @@ const entityIdRegex = /^([a-f]|[0-9]){8}-([a-f]|[0-9]){4}-([a-f]|[0-9]){4}-([a-f
 const expectedTrxIdLength = 43;
 
 describe('ArDrive class', () => {
-	let arDrive: ArDrive;
-	let arweaveOracleStub: SinonStubbedInstance<ArweaveOracle>;
-	let communityOracleStub: SinonStubbedInstance<CommunityOracle>;
-	let priceEstimator: ARDataPriceRegressionEstimator;
-	let walletDao: SinonStubbedInstance<WalletDAO>;
-	let fakeArweave: Arweave;
-	let mockarfsDao: SinonSpiedInstance<ArFSDAO>;
 	const wallet = readJWKFile('./test_wallet.json');
 	const stubArweaveAddress = 'abcdefghijklmnopqrxtuvwxyz123456789ABCDEFGH';
 
+	const fakeArweave = Arweave.init({
+		host: 'localhost',
+		port: 443,
+		protocol: 'https',
+		timeout: 600000
+	});
+
+	const arweaveOracle = new GatewayOracle();
+	const communityOracle = new ArDriveCommunityOracle(fakeArweave);
+	const priceEstimator = new ARDataPriceRegressionEstimator(true, arweaveOracle);
+	const walletDao = new WalletDAO(fakeArweave, 'Integration Test', '1.0');
+	const arfsDao = new ArFSDAO(wallet, fakeArweave, true, 'Integration Test', '1.0');
+
+	const arDrive = arDriveFactory({
+		wallet: wallet,
+		priceEstimator: priceEstimator,
+		communityOracle: communityOracle,
+		feeMultiple: 1.0,
+		dryRun: true,
+		arweave: fakeArweave,
+		walletDao,
+		arfsDao
+	});
+
 	beforeEach(async () => {
 		// Set pricing algo up as x = y (bytes = Winston)
-		arweaveOracleStub = stub(new GatewayOracle());
-		arweaveOracleStub.getWinstonPriceForByteCount.callsFake((input) => Promise.resolve(input));
-		fakeArweave = Arweave.init({
-			host: 'localhost',
-			port: 443,
-			protocol: 'https',
-			timeout: 600000
-		});
-		communityOracleStub = stub(new ArDriveCommunityOracle(fakeArweave));
-		priceEstimator = new ARDataPriceRegressionEstimator(true, arweaveOracleStub);
-		walletDao = stub(new WalletDAO(fakeArweave, 'Integration Test', '1.0'));
-		mockarfsDao = spy(new ArFSDAO(wallet, fakeArweave, true, 'Integration Test', '1.0'));
-		const unknownWalletDao = walletDao as unknown;
-		const unknownArfsDao = mockarfsDao as unknown;
-		arDrive = arDriveFactory({
-			wallet: wallet,
-			priceEstimator: priceEstimator,
-			communityOracle: communityOracleStub,
-			feeMultiple: 1.0,
-			dryRun: true,
-			arweave: fakeArweave,
-			walletDao: unknownWalletDao as WalletDAO,
-			arfsDao: unknownArfsDao as ArFSDAO
-		});
+		stub(arweaveOracle, 'getWinstonPriceForByteCount').callsFake((input) => Promise.resolve(input));
 	});
 
 	describe('sendCommunityTip function', () => {
 		it('returns the correct TipResult', async () => {
-			communityOracleStub.selectTokenHolder.callsFake(() => {
+			stub(communityOracle, 'selectTokenHolder').callsFake(() => {
 				return Promise.resolve(stubArweaveAddress);
 			});
+
 			const result = await arDrive.sendCommunityTip('12345');
 
 			// Can't know the txID ahead of time without mocking arweave deeply
@@ -72,9 +65,10 @@ describe('ArDrive class', () => {
 
 	describe('createPublicDrive function', () => {
 		it('returns the correct ArFSResult', async () => {
-			walletDao.walletHasBalance.callsFake(() => {
+			stub(walletDao, 'walletHasBalance').callsFake(() => {
 				return Promise.resolve(true);
 			});
+
 			const result = await arDrive.createPublicDrive('TEST_DRIVE');
 			assertCreateDriveExpectations(result, 75, 21);
 		});
@@ -82,7 +76,7 @@ describe('ArDrive class', () => {
 
 	describe('createPrivateDrive function', () => {
 		it('returns the correct ArFSResult', async () => {
-			walletDao.walletHasBalance.callsFake(() => {
+			stub(walletDao, 'walletHasBalance').callsFake(() => {
 				return Promise.resolve(true);
 			});
 
