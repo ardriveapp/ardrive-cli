@@ -92,7 +92,6 @@ export class ParametersHelper {
 			return Number.POSITIVE_INFINITY;
 		}
 
-		// Max depth is 0 when user does not supply a value default
 		const maxDepthValue = Number(this.getParameterValue(MaxDepthParameter) ?? defaultDepth);
 
 		if ((maxDepthValue !== Number.POSITIVE_INFINITY && !Number.isInteger(maxDepthValue)) || maxDepthValue < 0) {
