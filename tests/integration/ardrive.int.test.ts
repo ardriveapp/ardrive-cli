@@ -2,14 +2,15 @@ import Arweave from 'arweave';
 import { expect } from 'chai';
 import { stub } from 'sinon';
 import { arDriveFactory } from '../../src';
-import { ArFSResult, PrivateDriveKeyData, stubEntityID } from '../../src/ardrive';
+import { ArFSResult, PrivateDriveKeyData, stubEntityID, stubTransactionID } from '../../src/ardrive';
 import { readJWKFile, urlEncodeHashKey } from '../../src/utils';
 import { ARDataPriceRegressionEstimator } from '../../src/utils/ar_data_price_regression_estimator';
 import { GatewayOracle } from '../../src/utils/gateway_oracle';
 import { JWKWallet, WalletDAO } from '../../src/wallet_new';
 import { ArDriveCommunityOracle } from '../../src/community/ardrive_community_oracle';
-import { ArFSDAO } from '../../src/arfsdao';
+import { ArFSDAO, ArFSPrivateDrive, ArFSPublicDrive } from '../../src/arfsdao';
 import { deriveDriveKey } from 'ardrive-core-js';
+import { DriveKey } from '../../src/types';
 
 const entityIdRegex = /^([a-f]|[0-9]){8}-([a-f]|[0-9]){4}-([a-f]|[0-9]){4}-([a-f]|[0-9]){4}-([a-f]|[0-9]){12}$/;
 const expectedTrxIdLength = 43;
@@ -17,6 +18,38 @@ const expectedTrxIdLength = 43;
 describe('ArDrive class', () => {
 	const wallet = readJWKFile('./test_wallet.json');
 	const stubArweaveAddress = 'abcdefghijklmnopqrxtuvwxyz123456789ABCDEFGH';
+	const getStubDriveKey = async (): Promise<DriveKey> => {
+		return deriveDriveKey('stubPassword', stubEntityID, JSON.stringify((wallet as JWKWallet).getPrivateKey()));
+	};
+	const stubPublicDrive = new ArFSPublicDrive(
+		'Integration Test',
+		'1.0',
+		'0.11',
+		'application/json',
+		stubEntityID,
+		'drive',
+		'STUB DRIVE',
+		stubTransactionID,
+		0,
+		'public',
+		stubEntityID
+	);
+	const stubPrivateDrive = new ArFSPrivateDrive(
+		'Integration Test',
+		'1.0',
+		'0.11',
+		'application/json',
+		stubEntityID,
+		'drive',
+		'STUB DRIVE',
+		stubTransactionID,
+		0,
+		'public',
+		stubEntityID,
+		'password',
+		'stubCipher',
+		'stubIV'
+	);
 
 	const fakeArweave = Arweave.init({
 		host: 'localhost',
@@ -80,15 +113,48 @@ describe('ArDrive class', () => {
 				return Promise.resolve(true);
 			});
 
-			const stubDriveKey = await deriveDriveKey(
-				'stubPassword',
-				stubEntityID,
-				JSON.stringify((wallet as JWKWallet).getPrivateKey())
-			);
-			const stubPrivateDriveData: PrivateDriveKeyData = { driveId: stubEntityID, driveKey: stubDriveKey };
+			const stubDriveKey = await getStubDriveKey();
+			const stubPrivateDriveData: PrivateDriveKeyData = {
+				driveId: stubEntityID,
+				driveKey: stubDriveKey
+			};
 
 			const result = await arDrive.createPrivateDrive('TEST_DRIVE', stubPrivateDriveData);
 			assertCreateDriveExpectations(result, 91, 37, urlEncodeHashKey(stubDriveKey));
+		});
+	});
+
+	describe('createPublicFolder function', () => {
+		it('returns the correct ArFSResult', async () => {
+			stub(walletDao, 'walletHasBalance').callsFake(() => {
+				return Promise.resolve(true);
+			});
+			stub(arfsDao, 'getDriveIdForFolderId').callsFake(() => {
+				return Promise.resolve(stubEntityID);
+			});
+			stub(arfsDao, 'getPublicDrive').callsFake(() => {
+				return Promise.resolve(stubPublicDrive);
+			});
+
+			const result = await arDrive.createPublicFolder('TEST_FOLDER', stubEntityID);
+			assertCreateFolderExpectations(result, 22);
+		});
+	});
+
+	describe('createPrivateFolder function', () => {
+		it('returns the correct ArFSResult', async () => {
+			stub(walletDao, 'walletHasBalance').callsFake(() => {
+				return Promise.resolve(true);
+			});
+			stub(arfsDao, 'getDriveIdForFolderId').callsFake(() => {
+				return Promise.resolve(stubEntityID);
+			});
+			stub(arfsDao, 'getPrivateDrive').callsFake(() => {
+				return Promise.resolve(stubPrivateDrive);
+			});
+			const stubDriveKey = await getStubDriveKey();
+			const result = await arDrive.createPrivateFolder('TEST_FOLDER', stubEntityID, stubDriveKey);
+			assertCreateFolderExpectations(result, 38, urlEncodeHashKey(stubDriveKey));
 		});
 	});
 });
@@ -118,7 +184,6 @@ function assertCreateDriveExpectations(
 
 	// There should be no tips
 	expect(result.tips).to.be.empty;
-	expect(result.created[1].entityId).to.match(entityIdRegex);
 
 	// Ensure that the fees look healthy
 	expect(Object.keys(result.fees).length).to.equal(2);
@@ -126,4 +191,24 @@ function assertCreateDriveExpectations(
 	expect(Object.values(result.fees)[0]).to.equal(driveFee);
 	expect(Object.keys(result.fees)[1].length).to.equal(expectedTrxIdLength);
 	expect(Object.values(result.fees)[1]).to.equal(folderFee);
+}
+
+function assertCreateFolderExpectations(result: ArFSResult, folderFee: number, expectedDriveKey?: string) {
+	// Ensure that 1 arfs entity was created
+	expect(result.created.length).to.equal(1);
+
+	// Ensure that the folder entity looks healthy
+	expect(result.created[0].dataTxId).to.be.undefined;
+	expect(result.created[0].entityId).to.match(entityIdRegex);
+	expect(result.created[0].key).to.equal(expectedDriveKey);
+	expect(result.created[0].metadataTxId.length).to.equal(expectedTrxIdLength);
+	expect(result.created[0].type).to.equal('folder');
+
+	// There should be no tips
+	expect(result.tips).to.be.empty;
+
+	// Ensure that the fees look healthy
+	expect(Object.keys(result.fees).length).to.equal(1);
+	expect(Object.keys(result.fees)[0].length).to.equal(expectedTrxIdLength);
+	expect(Object.values(result.fees)[0]).to.equal(folderFee);
 }
