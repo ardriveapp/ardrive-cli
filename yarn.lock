@@ -1585,7 +1585,6 @@ __metadata:
     source-map-support: ^0.5.20
     ts-node: ^10.2.1
     ts-sinon: ^2.0.1
-    tsc-files: ^1.1.2
     typescript: ^4.2.3
     uuid: ^8.3.2
   bin:
@@ -7098,17 +7097,6 @@ __metadata:
     "@types/sinon-chai": ^3.2.4
     sinon: ^9.0.3
   checksum: c274652c3e16393b1767b20c03c8631d3226b56b1f100e75e04fec0ea891cdc221415d953e9ad95d5f3e55e7c91c9b223c7b73620853ccba311d70f9d517b718
-  languageName: node
-  linkType: hard
-
-"tsc-files@npm:^1.1.2":
-  version: 1.1.2
-  resolution: "tsc-files@npm:1.1.2"
-  peerDependencies:
-    typescript: ">=3"
-  bin:
-    tsc-files: lib/index.js
-  checksum: 6e5a3a53f53b5b8d608fc1de9f1877137ea0e154b90f3985e03810c1c3125e4513a9f64b6b17d4463e4f21691a7c22280f93963829dd3931f98dcc3691ecd0a4
   languageName: node
   linkType: hard
 

@@ -57,8 +57,7 @@
 		"sinon": "^11.1.2",
 		"source-map-support": "^0.5.20",
 		"ts-node": "^10.2.1",
-		"ts-sinon": "^2.0.1",
-		"tsc-files": "^1.1.2"
+		"ts-sinon": "^2.0.1"
 	},
 	"scripts": {
 		"clean": "rimraf [lib .nyc_output node_modules]",

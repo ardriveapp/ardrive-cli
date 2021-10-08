@@ -9,7 +9,7 @@ import {
 import Arweave from 'arweave';
 import { ArFSFileOrFolderEntity, graphQLURL } from '../../arfsdao';
 import { buildQuery } from '../../query';
-import { DriveID, EntityID, FileID, FolderID, TransactionID } from '../../types';
+import { ArweaveAddress, DriveID, EntityID, FileID, FolderID, TransactionID, UnixTime } from '../../types';
 
 export abstract class ArFSMetadataEntityBuilder<T extends ArFSEntity> {
 	appName?: string;
@@ -20,7 +20,7 @@ export abstract class ArFSMetadataEntityBuilder<T extends ArFSEntity> {
 	entityType?: EntityType;
 	name?: string;
 	txId?: TransactionID;
-	unixTime?: number;
+	unixTime?: UnixTime;
 
 	constructor(protected readonly entityId: EntityID, protected readonly arweave: Arweave) {}
 
@@ -30,14 +30,16 @@ export abstract class ArFSMetadataEntityBuilder<T extends ArFSEntity> {
 	/**
 	 * Parses data for builder fields from either the provided GQL tags, or from a fresh request to Arweave for tag data
 	 *
-	 * @param tags (optional) a pre-fetched GQL node containing the txID and tags that will be parsed out of the on-chain data
+	 * @param node (optional) a pre-fetched GQL node containing the txID and tags that will be parsed out of the on-chain data
+	 *
+	 * @param owner (optional) filter all transactions out by owner's public arweave address
 	 *
 	 * @returns an array of unparsed tags
 	 */
-	protected async parseFromArweaveNode(node?: GQLNodeInterface): Promise<GQLTagInterface[]> {
+	protected async parseFromArweaveNode(node?: GQLNodeInterface, owner?: ArweaveAddress): Promise<GQLTagInterface[]> {
 		const unparsedTags: GQLTagInterface[] = [];
 		if (!node) {
-			const gqlQuery = buildQuery(this.getGqlQueryParameters());
+			const gqlQuery = buildQuery(this.getGqlQueryParameters(), undefined, owner);
 
 			const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 
@@ -87,8 +89,8 @@ export abstract class ArFSMetadataEntityBuilder<T extends ArFSEntity> {
 		return unparsedTags;
 	}
 
-	async build(node?: GQLNodeInterface): Promise<T> {
-		await this.parseFromArweaveNode(node);
+	async build(node?: GQLNodeInterface, owner?: ArweaveAddress): Promise<T> {
+		await this.parseFromArweaveNode(node, owner);
 		return this.buildEntity();
 	}
 }

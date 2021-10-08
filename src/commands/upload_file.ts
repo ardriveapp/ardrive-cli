@@ -1,32 +1,26 @@
-import { GatewayOracle } from 'ardrive-core-js';
 import { ArFSFileToUpload, ArFSFolderToUpload, isFolder, wrapFileOrFolder } from '../arfs_file_wrapper';
 import { arDriveFactory } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import {
 	BoostParameter,
 	DestinationFileNameParameter,
-	DriveKeyParameter,
-	DrivePasswordParameter,
+	DrivePrivacyParameters,
 	DryRunParameter,
 	LocalFilePathParameter,
 	LocalFilesParameter,
-	ParentFolderIdParameter,
-	WalletFileParameter
+	ParentFolderIdParameter
 } from '../parameter_declarations';
-import { FeeMultiple } from '../types';
+import { DriveKey, FeeMultiple, FolderID } from '../types';
 import { readJWKFile } from '../utils';
-import { ARDataPriceEstimator } from '../utils/ar_data_price_estimator';
-import { ARDataPriceOracleEstimator } from '../utils/ar_data_price_oracle_estimator';
-import { ARDataPriceRegressionEstimator } from '../utils/ar_data_price_regression_estimator';
 
 /* eslint-disable no-console */
 
 interface UploadFileParameter {
-	parentFolderId: string;
+	parentFolderId: FolderID;
 	wrappedEntity: ArFSFileToUpload | ArFSFolderToUpload;
 	destinationFileName?: string;
 	drivePassword?: string;
-	driveKey?: string;
+	driveKey?: DriveKey;
 }
 
 new CLICommand({
@@ -36,11 +30,9 @@ new CLICommand({
 		LocalFilePathParameter,
 		DestinationFileNameParameter,
 		LocalFilesParameter,
-		DrivePasswordParameter,
-		DriveKeyParameter,
-		WalletFileParameter,
 		BoostParameter,
-		DryRunParameter
+		DryRunParameter,
+		...DrivePrivacyParameters
 	],
 	async action(options) {
 		const filesToUpload: UploadFileParameter[] = (function (): UploadFileParameter[] {
@@ -91,20 +83,9 @@ new CLICommand({
 			const parameters = new ParametersHelper(options);
 
 			const wallet = readJWKFile(options.walletFile);
-			const priceEstimator: ARDataPriceEstimator = (() => {
-				if (
-					filesToUpload.length > ARDataPriceRegressionEstimator.sampleByteVolumes.length ||
-					isFolder(filesToUpload[0].wrappedEntity)
-				) {
-					return new ARDataPriceRegressionEstimator(false, new GatewayOracle());
-				} else {
-					return new ARDataPriceOracleEstimator();
-				}
-			})();
 
 			const arDrive = arDriveFactory({
 				wallet: wallet,
-				priceEstimator: priceEstimator,
 				feeMultiple: options.boost as FeeMultiple,
 				dryRun: options.dryRun
 			});
@@ -126,7 +107,6 @@ new CLICommand({
 									destinationFileName
 								);
 							} else {
-								wrappedEntity;
 								return arDrive.uploadPrivateFile(
 									parentFolderId,
 									wrappedEntity,
