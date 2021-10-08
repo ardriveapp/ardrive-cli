@@ -1,9 +1,8 @@
+import { ArFSPrivateFile, ArFSPublicFile } from '../arfsdao';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { GetAllRevisionsParameter, FileIdParameter, DrivePrivacyParameters } from '../parameter_declarations';
 import { arDriveAnonymousFactory, arDriveFactory, cliWalletDao } from '..';
 import { FileID } from '../types';
-
-/* eslint-disable no-console */
 
 new CLICommand({
 	name: 'file-info',
@@ -13,7 +12,7 @@ new CLICommand({
 		const fileId: FileID = parameters.getRequiredParameterValue(FileIdParameter);
 		// const shouldGetAllRevisions: boolean = options.getAllRevisions;
 
-		const result = await (async function () {
+		const result: Partial<ArFSPublicFile | ArFSPrivateFile> = await (async function () {
 			if (await parameters.getIsPrivate()) {
 				const wallet = await parameters.getRequiredWallet();
 				const arDrive = arDriveFactory({ wallet: wallet });
@@ -27,6 +26,10 @@ new CLICommand({
 				return arDrive.getPublicFile(fileId /*, shouldGetAllRevisions*/);
 			}
 		})();
+
+		// TODO: Fix base types so deleting un-used values is not necessary
+		delete result.syncStatus;
+
 		console.log(JSON.stringify(result, null, 4));
 		process.exit(0);
 	}

@@ -2,8 +2,6 @@ import { cliWalletDao } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { SeedPhraseParameter } from '../parameter_declarations';
 
-/* eslint-disable no-console */
-
 new CLICommand({
 	name: 'generate-wallet',
 	parameters: [SeedPhraseParameter],

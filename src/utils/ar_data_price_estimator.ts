@@ -1,20 +1,20 @@
-import type { ArDriveCommunityTip } from '../types';
+import type { ArDriveCommunityTip, ByteCount } from '../types';
 
 export const arPerWinston = 0.000_000_000_001;
 
 export interface ARDataPriceEstimator {
-	getBaseWinstonPriceForByteCount(byteCount: number): Promise<number>;
-	getARPriceForByteCount: (byteCount: number, arDriveCommunityTip: ArDriveCommunityTip) => Promise<number>;
+	getBaseWinstonPriceForByteCount(byteCount: ByteCount): Promise<number>;
+	getARPriceForByteCount: (byteCount: ByteCount, arDriveCommunityTip: ArDriveCommunityTip) => Promise<number>;
 }
 
 export abstract class AbstractARDataPriceEstimator implements ARDataPriceEstimator {
-	abstract getBaseWinstonPriceForByteCount(byteCount: number): Promise<number>;
+	abstract getBaseWinstonPriceForByteCount(byteCount: ByteCount): Promise<number>;
 
 	/**
 	 * Estimates the price in AR for a given byte count, including the ArDrive community tip
 	 */
 	async getARPriceForByteCount(
-		byteCount: number,
+		byteCount: ByteCount,
 		{ minWinstonFee, tipPercentage }: ArDriveCommunityTip
 	): Promise<number> {
 		const winstonPrice = await this.getBaseWinstonPriceForByteCount(byteCount);
@@ -27,14 +27,14 @@ export abstract class AbstractARDataPriceEstimator implements ARDataPriceEstimat
 }
 
 export interface ARDataCapacityEstimator {
-	getByteCountForWinston: (winston: number) => Promise<number>;
-	getByteCountForAR: (arPrice: number, arDriveCommunityTip: ArDriveCommunityTip) => Promise<number>;
+	getByteCountForWinston: (winston: number) => Promise<ByteCount>;
+	getByteCountForAR: (arPrice: number, arDriveCommunityTip: ArDriveCommunityTip) => Promise<ByteCount>;
 }
 
 // prettier-ignore
 export abstract class AbstractARDataPriceAndCapacityEstimator extends AbstractARDataPriceEstimator implements ARDataCapacityEstimator
 {
-	abstract getByteCountForWinston(winston: number): Promise<number>;
+	abstract getByteCountForWinston(winston: number): Promise<ByteCount>;
 
 	/**
 	 * Estimates the number of bytes that can be stored for a given amount of AR

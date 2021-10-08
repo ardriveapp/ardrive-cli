@@ -14,6 +14,9 @@ import {
 import { cliWalletDao } from '..';
 import { DriveID, DriveKey } from '../types';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ParameterOptions = any;
+
 /**
  * @type {ParametersHelper}
  * A class that assists with handling Commander options during common ArDrive CLI workflows
@@ -24,7 +27,7 @@ export class ParametersHelper {
 	 * @param {any} options The object containing the parameterName: value mapping
 	 * An immutable instance of ParametersHelper holding the parsed values of the parameters
 	 */
-	constructor(private readonly options: any, private readonly walletDao: WalletDAO = cliWalletDao) {}
+	constructor(private readonly options: ParameterOptions, private readonly walletDao: WalletDAO = cliWalletDao) {}
 
 	/**
 	 * @returns {Promise<boolean>}

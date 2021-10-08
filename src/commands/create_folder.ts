@@ -10,8 +10,6 @@ import { arDriveFactory } from '..';
 import { Wallet } from '../wallet_new';
 import { FeeMultiple } from '../types';
 
-/* eslint-disable no-console */
-
 new CLICommand({
 	name: 'create-folder',
 	parameters: [

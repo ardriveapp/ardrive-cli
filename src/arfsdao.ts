@@ -27,6 +27,7 @@ import {
 	ArFSPrivateFileMetaDataPrototype
 } from './arfs_prototypes';
 import {
+	ArFSObjectTransactionData,
 	ArFSPrivateDriveTransactionData,
 	ArFSPrivateFileDataTransactionData,
 	ArFSPrivateFileMetadataTransactionData,
@@ -51,7 +52,10 @@ import {
 	CURRENT_ARFS_VERSION,
 	CipherIV,
 	RewardSettings,
-	EntityID
+	DataContentType,
+	EntityID,
+	UnixTime,
+	ByteCount
 } from './types';
 import { CreateTransactionInterface } from 'arweave/node/common';
 import { ArFSPrivateDriveBuilder, ArFSPublicDriveBuilder } from './utils/arfs_builders/arfs_drive_builders';
@@ -84,6 +88,25 @@ export interface ArFSUploadFileResult {
 	fileId: FileID;
 }
 
+export interface ArFSMoveFileResult {
+	metaDataTrxId: TransactionID;
+	metaDataTrxReward: TransactionID;
+	dataTrxId: TransactionID;
+}
+
+export interface ArFSMovePrivateFileResult extends ArFSMoveFileResult {
+	fileKey: FileKey;
+}
+
+export interface ArFSMovePublicFolderResult {
+	metaDataTrxId: TransactionID;
+	metaDataTrxReward: TransactionID;
+}
+
+export interface ArFSMovePrivateFolderResult extends ArFSMovePublicFolderResult {
+	driveKey: DriveKey;
+}
+
 export interface ArFSUploadPrivateFileResult extends ArFSUploadFileResult {
 	fileKey: FileKey;
 }
@@ -94,6 +117,18 @@ export interface ArFSCreatePrivateDriveResult extends ArFSCreateDriveResult {
 export interface ArFSCreatePrivateFolderResult extends ArFSCreateFolderResult {
 	driveKey: DriveKey;
 }
+
+export interface ArFSMoveParams<O extends ArFSFileOrFolderEntity, T extends ArFSObjectTransactionData> {
+	originalMetaData: O;
+	transactionData: T;
+	newParentFolderId: FolderID;
+	metaDataBaseReward: RewardSettings;
+}
+
+export type ArFSMovePublicFileParams = ArFSMoveParams<ArFSPublicFile, ArFSPublicFileMetadataTransactionData>;
+export type ArFSMovePrivateFileParams = ArFSMoveParams<ArFSPrivateFile, ArFSPrivateFileMetadataTransactionData>;
+export type ArFSMovePublicFolderParams = ArFSMoveParams<ArFSPublicFolder, ArFSPublicFolderTransactionData>;
+export type ArFSMovePrivateFolderParams = ArFSMoveParams<ArFSPrivateFolder, ArFSPrivateFolderTransactionData>;
 
 export abstract class ArFSDAOType {
 	protected abstract readonly arweave: Arweave;
@@ -159,7 +194,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		return this.getDriveID(folderId, 'Folder-Id');
 	}
 
-	async getPublicDrive(driveId: string): Promise<ArFSPublicDrive> {
+	async getPublicDrive(driveId: DriveID): Promise<ArFSPublicDrive> {
 		const gqlQuery = buildQuery([
 			{ name: 'Drive-Id', value: driveId },
 			{ name: 'Entity-Type', value: 'drive' },
@@ -180,7 +215,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		return driveBuilder.build();
 	}
 
-	async getPublicFolder(folderId: string): Promise<ArFSPublicFolder> {
+	async getPublicFolder(folderId: FolderID): Promise<ArFSPublicFolder> {
 		const gqlQuery = buildQuery([{ name: 'Folder-Id', value: folderId }]);
 
 		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
@@ -197,7 +232,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		return await folderBuilder.build();
 	}
 
-	async getPublicFile(fileId: string): Promise<ArFSPublicFile> {
+	async getPublicFile(fileId: FileID): Promise<ArFSPublicFile> {
 		return new ArFSPublicFileBuilder(fileId, this.arweave).build();
 	}
 
@@ -522,6 +557,152 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			driveId,
 			rootFolderId,
 			driveKey
+		};
+	}
+
+	async movePrivateFile({
+		originalMetaData,
+		transactionData,
+		newParentFolderId,
+		metaDataBaseReward
+	}: ArFSMovePrivateFileParams): Promise<ArFSMovePrivateFileResult> {
+		// Get current time
+		const unixTime = Math.round(Date.now() / 1000);
+
+		const { dataTxId, fileId, driveId } = originalMetaData;
+
+		const fileMetadataPrototype = new ArFSPrivateFileMetaDataPrototype(
+			transactionData,
+			unixTime,
+			driveId,
+			fileId,
+			newParentFolderId
+		);
+
+		// Prepare meta data transaction
+		const metaDataTrx = await this.prepareArFSObjectTransaction(fileMetadataPrototype, metaDataBaseReward);
+
+		// Upload meta data
+		if (!this.dryRun) {
+			const metaDataUploader = await this.arweave.transactions.getUploader(metaDataTrx);
+			while (!metaDataUploader.isComplete) {
+				await metaDataUploader.uploadChunk();
+			}
+		}
+
+		return {
+			metaDataTrxId: metaDataTrx.id,
+			metaDataTrxReward: metaDataTrx.reward,
+			dataTrxId: dataTxId,
+			fileKey: transactionData.fileKey
+		};
+	}
+
+	async movePublicFile({
+		originalMetaData,
+		transactionData,
+		newParentFolderId,
+		metaDataBaseReward
+	}: ArFSMovePublicFileParams): Promise<ArFSMoveFileResult> {
+		// Get current time
+		const unixTime = Math.round(Date.now() / 1000);
+
+		const { dataTxId, fileId, driveId } = originalMetaData;
+
+		// Prepare meta data transaction
+		const fileMetadata = new ArFSPublicFileMetaDataPrototype(
+			transactionData,
+			unixTime,
+			driveId,
+			fileId,
+			newParentFolderId
+		);
+		const metaDataTrx = await this.prepareArFSObjectTransaction(fileMetadata, metaDataBaseReward);
+
+		// Upload meta data
+		if (!this.dryRun) {
+			const metaDataUploader = await this.arweave.transactions.getUploader(metaDataTrx);
+			while (!metaDataUploader.isComplete) {
+				await metaDataUploader.uploadChunk();
+			}
+		}
+
+		return {
+			metaDataTrxId: metaDataTrx.id,
+			metaDataTrxReward: metaDataTrx.reward,
+			dataTrxId: dataTxId
+		};
+	}
+
+	async movePrivateFolder({
+		originalMetaData,
+		transactionData,
+		newParentFolderId,
+		metaDataBaseReward
+	}: ArFSMovePrivateFolderParams): Promise<ArFSMovePrivateFolderResult> {
+		// Get current time
+		const unixTime = Math.round(Date.now() / 1000);
+
+		const { entityId, driveId } = originalMetaData;
+
+		const folderMetadataPrototype = new ArFSPrivateFolderMetaDataPrototype(
+			unixTime,
+			driveId,
+			entityId,
+			transactionData,
+			newParentFolderId
+		);
+
+		// Prepare meta data transaction
+		const metaDataTrx = await this.prepareArFSObjectTransaction(folderMetadataPrototype, metaDataBaseReward);
+
+		// Upload meta data
+		if (!this.dryRun) {
+			const metaDataUploader = await this.arweave.transactions.getUploader(metaDataTrx);
+			while (!metaDataUploader.isComplete) {
+				await metaDataUploader.uploadChunk();
+			}
+		}
+
+		return {
+			metaDataTrxId: metaDataTrx.id,
+			metaDataTrxReward: metaDataTrx.reward,
+			driveKey: transactionData.driveKey
+		};
+	}
+
+	async movePublicFolder({
+		originalMetaData,
+		transactionData,
+		newParentFolderId,
+		metaDataBaseReward
+	}: ArFSMovePublicFolderParams): Promise<ArFSMovePublicFolderResult> {
+		// Get current time
+		const unixTime = Math.round(Date.now() / 1000);
+
+		const { entityId, driveId } = originalMetaData;
+
+		// Prepare meta data transaction
+		const folderMetadata = new ArFSPublicFolderMetaDataPrototype(
+			transactionData,
+			unixTime,
+			driveId,
+			entityId,
+			newParentFolderId
+		);
+		const metaDataTrx = await this.prepareArFSObjectTransaction(folderMetadata, metaDataBaseReward);
+
+		// Upload meta data
+		if (!this.dryRun) {
+			const metaDataUploader = await this.arweave.transactions.getUploader(metaDataTrx);
+			while (!metaDataUploader.isComplete) {
+				await metaDataUploader.uploadChunk();
+			}
+		}
+
+		return {
+			metaDataTrxId: metaDataTrx.id,
+			metaDataTrxReward: metaDataTrx.reward
 		};
 	}
 
@@ -886,7 +1067,7 @@ export class ArFSPublicDrive extends ArFSEntity implements ArFSDriveEntity {
 		readonly entityType: EntityType,
 		readonly name: string,
 		readonly txId: TransactionID,
-		readonly unixTime: number,
+		readonly unixTime: UnixTime,
 		readonly drivePrivacy: DrivePrivacy,
 		readonly rootFolderId: FolderID
 	) {
@@ -904,7 +1085,7 @@ export class ArFSPrivateDrive extends ArFSEntity implements ArFSDriveEntity {
 		readonly entityType: EntityType,
 		readonly name: string,
 		readonly txId: TransactionID,
-		readonly unixTime: number,
+		readonly unixTime: UnixTime,
 		readonly drivePrivacy: DrivePrivacy,
 		readonly rootFolderId: FolderID,
 		readonly driveAuthMode: DriveAuthMode,
@@ -916,23 +1097,23 @@ export class ArFSPrivateDrive extends ArFSEntity implements ArFSDriveEntity {
 }
 
 export class ArFSFileOrFolderEntity extends ArFSEntity implements ArFSFileFolderEntity {
-	lastModifiedDate!: never;
-	folderId?: string;
+	folderId?: FolderID;
 
 	constructor(
 		appName: string,
 		appVersion: string,
 		arFS: string,
-		contentType: string,
-		driveId: string,
-		entityType: string,
+		contentType: ContentType,
+		driveId: DriveID,
+		entityType: EntityType,
 		name: string,
-		txId: string,
-		unixTime: number,
-		readonly parentFolderId: string,
-		readonly entityId: string
+		txId: TransactionID,
+		unixTime: UnixTime,
+		public lastModifiedDate: UnixTime,
+		readonly parentFolderId: FolderID,
+		readonly entityId: EntityID
 	) {
-		super(appName, appVersion, arFS, contentType, driveId, entityType, name, 0, txId, unixTime);
+		super(appName, appVersion, arFS, contentType, driveId, entityType, name, lastModifiedDate, txId, unixTime);
 	}
 }
 
@@ -958,6 +1139,7 @@ export class ArFSPublicFileOrFolderWithPaths extends ArFSFileOrFolderEntity impl
 			entity.name,
 			entity.txId,
 			entity.unixTime,
+			entity.lastModifiedDate,
 			entity.parentFolderId,
 			entity.entityId
 		);
@@ -985,6 +1167,7 @@ export class ArFSPrivateFileOrFolderWithPaths extends ArFSFileOrFolderEntity imp
 			entity.name,
 			entity.txId,
 			entity.unixTime,
+			entity.lastModifiedDate,
 			entity.parentFolderId,
 			entity.entityId
 		);
@@ -1005,10 +1188,14 @@ export class ArFSPublicFile extends ArFSFileOrFolderEntity {
 		readonly driveId: DriveID,
 		readonly entityType: EntityType,
 		readonly name: string,
-		readonly txId: string,
-		readonly unixTime: number,
+		readonly txId: TransactionID,
+		readonly unixTime: UnixTime,
 		readonly parentFolderId: FolderID,
-		readonly fileId: FileID
+		readonly fileId: FileID,
+		readonly size: ByteCount,
+		readonly lastModifiedDate: UnixTime,
+		readonly dataTxId: TransactionID,
+		readonly dataContentType: DataContentType
 	) {
 		super(
 			appName,
@@ -1020,6 +1207,7 @@ export class ArFSPublicFile extends ArFSFileOrFolderEntity {
 			name,
 			txId,
 			unixTime,
+			lastModifiedDate,
 			parentFolderId,
 			fileId
 		);
@@ -1036,11 +1224,15 @@ export class ArFSPrivateFile extends ArFSFileOrFolderEntity {
 		readonly entityType: EntityType,
 		readonly name: string,
 		readonly txId: TransactionID,
-		readonly unixTime: number,
+		readonly unixTime: UnixTime,
 		readonly parentFolderId: FolderID,
 		readonly fileId: FileID,
+		readonly size: ByteCount,
+		readonly lastModifiedDate: UnixTime,
+		readonly dataTxId: TransactionID,
+		readonly dataContentType: DataContentType,
 		readonly cipher: string,
-		readonly cipherIV: string
+		readonly cipherIV: CipherIV
 	) {
 		super(
 			appName,
@@ -1052,6 +1244,7 @@ export class ArFSPrivateFile extends ArFSFileOrFolderEntity {
 			name,
 			txId,
 			unixTime,
+			lastModifiedDate,
 			parentFolderId,
 			fileId
 		);
@@ -1068,7 +1261,7 @@ export class ArFSPublicFolder extends ArFSFileOrFolderEntity {
 		readonly entityType: EntityType,
 		readonly name: string,
 		readonly txId: TransactionID,
-		readonly unixTime: number,
+		readonly unixTime: UnixTime,
 		readonly parentFolderId: FolderID,
 		readonly entityId: FolderID
 	) {
@@ -1082,6 +1275,7 @@ export class ArFSPublicFolder extends ArFSFileOrFolderEntity {
 			name,
 			txId,
 			unixTime,
+			0,
 			parentFolderId,
 			entityId
 		);
@@ -1096,12 +1290,12 @@ export class ArFSPrivateFolder extends ArFSFileOrFolderEntity {
 		readonly driveId: DriveID,
 		readonly entityType: EntityType,
 		readonly name: string,
-		readonly txId: string,
-		readonly unixTime: number,
+		readonly txId: TransactionID,
+		readonly unixTime: UnixTime,
 		readonly parentFolderId: FolderID,
 		readonly entityId: FolderID,
 		readonly cipher: string,
-		readonly cipherIV: string
+		readonly cipherIV: CipherIV
 	) {
 		super(
 			appName,
@@ -1113,6 +1307,7 @@ export class ArFSPrivateFolder extends ArFSFileOrFolderEntity {
 			name,
 			txId,
 			unixTime,
+			0,
 			parentFolderId,
 			entityId
 		);

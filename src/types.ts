@@ -20,7 +20,8 @@ export type CipherIV = string;
 export type DriveKey = Buffer;
 export type FileKey = Buffer;
 
-export type Bytes = number;
+export type UnixTime = number;
+export type ByteCount = number;
 export type DataContentType = string;
 
 export type TransactionID = string; // TODO: make a type that checks lengths

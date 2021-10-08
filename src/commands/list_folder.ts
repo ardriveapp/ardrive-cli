@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { arDriveAnonymousFactory, arDriveFactory } from '..';
 import { ArFSPrivateFileOrFolderWithPaths, ArFSPublicFileOrFolderWithPaths } from '../arfsdao';
 import { CLICommand, ParametersHelper } from '../CLICommand';
@@ -32,14 +31,21 @@ new CLICommand({
 			children = await arDrive.listPublicFolder(folderId, maxDepth);
 		}
 
+		const sortedChildren = children.sort((a, b) => alphabeticalOrder(a.path, b.path)) as (
+			| Partial<ArFSPrivateFileOrFolderWithPaths>
+			| Partial<ArFSPublicFileOrFolderWithPaths>
+		)[];
+
+		// TODO: Fix base types so deleting un-used values is not necessary
+		sortedChildren.map((fileOrFolderMetaData) => {
+			if (fileOrFolderMetaData.entityType === 'folder') {
+				delete fileOrFolderMetaData.lastModifiedDate;
+			}
+			delete fileOrFolderMetaData.syncStatus;
+		});
+
 		// Display data
-		console.log(
-			JSON.stringify(
-				children.sort((a, b) => alphabeticalOrder(a.path, b.path)),
-				null,
-				4
-			)
-		);
+		console.log(JSON.stringify(sortedChildren, null, 4));
 		process.exit(0);
 	}
 });
