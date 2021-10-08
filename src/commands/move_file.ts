@@ -10,8 +10,6 @@ import { Wallet } from '../wallet_new';
 import { arDriveFactory } from '..';
 import { FeeMultiple } from '../types';
 
-/* eslint-disable no-console */
-
 new CLICommand({
 	name: 'move-file',
 	parameters: [FileIdParameter, ParentFolderIdParameter, BoostParameter, DryRunParameter, ...DrivePrivacyParameters],

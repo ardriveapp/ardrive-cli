@@ -9,8 +9,6 @@ import {
 	WalletFileParameter
 } from '../parameter_declarations';
 
-/* eslint-disable no-console */
-
 new CLICommand({
 	name: 'send-ar',
 	parameters: [ArAmountParameter, DestinationAddressParameter, WalletFileParameter, BoostParameter, DryRunParameter],

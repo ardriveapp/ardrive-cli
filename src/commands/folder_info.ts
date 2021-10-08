@@ -4,8 +4,6 @@ import { FolderID } from '../types';
 import { GetAllRevisionsParameter, FolderIdParameter, DrivePrivacyParameters } from '../parameter_declarations';
 import { arDriveAnonymousFactory, arDriveFactory } from '..';
 
-/* eslint-disable no-console */
-
 new CLICommand({
 	name: 'folder-info',
 	parameters: [FolderIdParameter, GetAllRevisionsParameter, ...DrivePrivacyParameters],

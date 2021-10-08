@@ -3,8 +3,6 @@ import { CLICommand } from '../CLICommand';
 import { ConfirmationsParameter, TransactionIdParameter } from '../parameter_declarations';
 import { fetchMempool } from '../utils';
 
-/* eslint-disable no-console */
-
 new CLICommand({
 	name: 'tx-status',
 	parameters: [TransactionIdParameter, ConfirmationsParameter],

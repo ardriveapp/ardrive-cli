@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { arDriveAnonymousFactory, arDriveFactory } from '..';
 import { ArFSPrivateFileOrFolderWithPaths, ArFSPublicFileOrFolderWithPaths } from '../arfsdao';
 import { CLICommand, ParametersHelper } from '../CLICommand';
