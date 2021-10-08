@@ -98,12 +98,12 @@ export interface ArFSMovePrivateFileResult extends ArFSMoveFileResult {
 	fileKey: FileKey;
 }
 
-export interface ArFSMoveFolderResult {
+export interface ArFSMovePublicFolderResult {
 	metaDataTrxId: TransactionID;
 	metaDataTrxReward: TransactionID;
 }
 
-export interface ArFSMovePrivateFolderResult extends ArFSMoveFolderResult {
+export interface ArFSMovePrivateFolderResult extends ArFSMovePublicFolderResult {
 	driveKey: DriveKey;
 }
 
@@ -679,7 +679,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		transactionData,
 		newParentFolderId,
 		metaDataBaseReward
-	}: ArFSMovePublicFolderParams): Promise<ArFSMoveFolderResult> {
+	}: ArFSMovePublicFolderParams): Promise<ArFSMovePublicFolderResult> {
 		// Get current time
 		const unixTime = Math.round(Date.now() / 1000);
 
