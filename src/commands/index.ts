@@ -1,5 +1,4 @@
 import { CLICommand } from '../CLICommand';
-import { showHelp } from '../utils';
 import '../parameter_declarations';
 import './create_drive';
 import './drive_info';
@@ -19,14 +18,4 @@ import './file_info';
 import './move_file';
 import './move_folder';
 
-const program = CLICommand.program;
-
 CLICommand.parse();
-const opts = program.opts();
-if (
-	opts.help ||
-	(Object.getOwnPropertyNames(opts).length === 0 && Object.getOwnPropertyNames(program.arguments).length === 0)
-) {
-	showHelp();
-	process.exit(0);
-}
