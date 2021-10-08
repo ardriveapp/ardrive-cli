@@ -116,6 +116,11 @@ export class WalletDAO {
 		if (rewardSettings.reward) {
 			trxAttributes.reward = rewardSettings.reward;
 		}
+
+		// TODO: Use a mock arweave server instead
+		if (process.env.NODE_ENV === 'test') {
+			trxAttributes.last_tx = 'STUB';
+		}
 		const transaction = await this.arweave.createTransaction(trxAttributes, jwkWallet.getPrivateKey());
 		if (rewardSettings.feeMultiple && rewardSettings.feeMultiple > 1.0) {
 			// Round up with ceil because fractional Winston will cause an Arweave API failure

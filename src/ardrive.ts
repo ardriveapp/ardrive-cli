@@ -100,8 +100,8 @@ export class PrivateDriveKeyData {
 	}
 }
 
-const stubTransactionID = '0000000000000000000000000000000000000000000';
-const stubEntityID = '00000000-0000-0000-0000-000000000000';
+export const stubTransactionID = '0000000000000000000000000000000000000000000';
+export const stubEntityID = '00000000-0000-0000-0000-000000000000';
 
 interface RecursiveBulkUploadParams {
 	parentFolderId: FolderID;
