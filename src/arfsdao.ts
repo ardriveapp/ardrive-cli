@@ -416,6 +416,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		driveId,
 		driveKey,
 		parentFolderId,
+		rewardSettings,
 		syncParentFolderId = true
 	}: CreatePrivateFolderSettings): Promise<ArFSCreatePrivateFolderResult> {
 		if (parentFolderId && syncParentFolderId) {
@@ -453,7 +454,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			folderData,
 			parentFolderId
 		);
-		const folderTrx = await this.prepareArFSObjectTransaction(folderMetadata);
+		const folderTrx = await this.prepareArFSObjectTransaction(folderMetadata, rewardSettings);
 
 		// Execute the upload
 		if (!this.dryRun) {
