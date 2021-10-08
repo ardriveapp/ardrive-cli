@@ -88,15 +88,18 @@ export class ParametersHelper {
 	}
 
 	public async getMaxDepth(): Promise<number> {
-		if (await this.getParameterValue(AllParameter)) {
+		if (this.getParameterValue(AllParameter)) {
 			return Number.POSITIVE_INFINITY;
-		} else {
-			const value = Number(await this.getParameterValue(MaxDepthParameter));
-			if(!Number.isInteger(value) || value < 0) {
-				throw new Error('maxDepth should be a non-negative integer!')
-			}
-			return value;
 		}
+
+		// Max depth is 0 when user does not supply a value default
+		const maxDepthValue = Number(this.getParameterValue(MaxDepthParameter) ?? 0);
+
+		if (!Number.isInteger(maxDepthValue) || maxDepthValue < 0) {
+			throw new Error('maxDepth should be a non-negative integer!');
+		}
+
+		return maxDepthValue;
 	}
 
 	/**
