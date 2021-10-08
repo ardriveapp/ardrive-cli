@@ -45,7 +45,7 @@ const commandDescriptorForbiddenWalletFileAndSeedPhrase: CommandDescriptor = {
 	parameters: [WalletFileParameter, SeedPhraseParameter],
 	action
 };
-const parsedCommandOptionsBothEspecified = {
+const parsedCommandOptionsBothSpecified = {
 	[WalletFileParameter]: nonEmptyValue,
 	[SeedPhraseParameter]: nonEmptyValue
 };
@@ -95,7 +95,7 @@ describe('CLICommand class', () => {
 		expect(function () {
 			assertConjunctionParameters(
 				commandDescriptorForbiddenWalletFileAndSeedPhrase,
-				parsedCommandOptionsBothEspecified
+				parsedCommandOptionsBothSpecified
 			);
 		}).to.throw();
 	});
