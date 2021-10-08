@@ -1,29 +1,31 @@
-import { arDriveAnonymousFactory, arDriveFactory } from '..';
-import { ArFSPrivateFileOrFolderWithPaths, ArFSPublicFileOrFolderWithPaths } from '../arfsdao';
+import { arDriveFactory, cliArweave, cliWalletDao } from '..';
+import { ArDriveAnonymous } from '../ardrive';
+import { ArFSDAOAnonymous, ArFSPrivateFileOrFolderWithPaths, ArFSPublicFileOrFolderWithPaths } from '../arfsdao';
 import { CLICommand, ParametersHelper } from '../CLICommand';
-import { DrivePrivacyParameters, ParentFolderIdParameter, TreeDepthParams } from '../parameter_declarations';
+import { DriveIdParameter, DrivePrivacyParameters, TreeDepthParams } from '../parameter_declarations';
 import { alphabeticalOrder } from '../utils/sort_functions';
 
 new CLICommand({
-	name: 'list-folder',
-	parameters: [ParentFolderIdParameter, ...TreeDepthParams, ...DrivePrivacyParameters],
+	name: 'list-drive',
+	parameters: [DriveIdParameter, ...TreeDepthParams, ...DrivePrivacyParameters],
 	async action(options) {
-		const parameters = new ParametersHelper(options);
-		const folderId = parameters.getRequiredParameterValue(ParentFolderIdParameter);
+		const parameters = new ParametersHelper(options, cliWalletDao);
+		const driveId = parameters.getRequiredParameterValue(DriveIdParameter);
 		let children: (ArFSPrivateFileOrFolderWithPaths | ArFSPublicFileOrFolderWithPaths)[];
 		const maxDepth = await parameters.getMaxDepth();
 
 		if (await parameters.getIsPrivate()) {
 			const wallet = await parameters.getRequiredWallet();
 			const arDrive = arDriveFactory({ wallet });
-
-			const driveId = await arDrive.getDriveIdForFolderId(folderId);
 			const driveKey = await parameters.getDriveKey(driveId);
-
-			children = await arDrive.listPrivateFolder(folderId, driveKey, maxDepth);
+			const drive = await arDrive.getPrivateDrive(driveId, driveKey);
+			const rootFolderId = drive.rootFolderId;
+			children = await arDrive.listPrivateFolder(rootFolderId, driveKey, maxDepth, true);
 		} else {
-			const arDrive = arDriveAnonymousFactory();
-			children = await arDrive.listPublicFolder(folderId, maxDepth);
+			const arDrive = new ArDriveAnonymous(new ArFSDAOAnonymous(cliArweave));
+			const drive = await arDrive.getPublicDrive(driveId);
+			const rootFolderId = drive.rootFolderId;
+			children = await arDrive.listPublicFolder(rootFolderId, maxDepth, true);
 		}
 
 		const sortedChildren = children.sort((a, b) => alphabeticalOrder(a.path, b.path)) as (

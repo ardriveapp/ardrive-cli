@@ -9,7 +9,9 @@
         "prettier"
     ],
     "rules": {
-        "no-console": 1,
-        "prettier/prettier": 2
+        "no-console": 0,
+        "prettier/prettier": 2,
+        "no-unused-vars": "off",
+        "@typescript-eslint/no-unused-vars": ["error"]
     }
 }

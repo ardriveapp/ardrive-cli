@@ -49,7 +49,6 @@ function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliA
 	command = command.action(async (options) => {
 		assertConjunctionParameters(commandDescriptor, options);
 		await commandDescriptor.action(options).catch((err) => {
-			// eslint-disable-next-line no-console
 			console.log(err.message);
 			process.exit(1);
 		});

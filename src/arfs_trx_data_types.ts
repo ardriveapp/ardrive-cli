@@ -6,7 +6,17 @@ import {
 	driveEncrypt,
 	fileEncrypt
 } from 'ardrive-core-js';
-import { CipherIV, DataContentType, DriveKey, FileID, FileKey, FolderID, TransactionID } from './types';
+import {
+	ByteCount,
+	CipherIV,
+	DataContentType,
+	DriveKey,
+	FileID,
+	FileKey,
+	FolderID,
+	TransactionID,
+	UnixTime
+} from './types';
 
 export interface ArFSObjectTransactionData {
 	asTransactionData(): string | Buffer;
@@ -89,7 +99,8 @@ export class ArFSPrivateFolderTransactionData extends ArFSFolderTransactionData 
 		readonly name: string,
 		readonly cipher: CipherType,
 		readonly cipherIV: CipherIV,
-		readonly encryptedFolderData: Buffer
+		readonly encryptedFolderData: Buffer,
+		readonly driveKey: DriveKey
 	) {
 		super();
 	}
@@ -103,7 +114,7 @@ export class ArFSPrivateFolderTransactionData extends ArFSFolderTransactionData 
 				})
 			)
 		);
-		return new ArFSPrivateFolderTransactionData(name, cipher, cipherIV, data);
+		return new ArFSPrivateFolderTransactionData(name, cipher, cipherIV, data, driveKey);
 	}
 
 	asTransactionData(): Buffer {
@@ -121,8 +132,8 @@ export abstract class ArFSFileMetadataTransactionData implements ArFSObjectTrans
 export class ArFSPublicFileMetadataTransactionData extends ArFSFileMetadataTransactionData {
 	constructor(
 		private readonly name: string,
-		private readonly size: number,
-		private readonly lastModifiedDate: number,
+		private readonly size: ByteCount,
+		private readonly lastModifiedDate: UnixTime,
 		private readonly dataTxId: TransactionID,
 		private readonly dataContentType: DataContentType
 	) {
@@ -153,8 +164,8 @@ export class ArFSPrivateFileMetadataTransactionData extends ArFSFileMetadataTran
 
 	static async from(
 		name: string,
-		size: number,
-		lastModifiedDate: number,
+		size: ByteCount,
+		lastModifiedDate: UnixTime,
 		dataTxId: TransactionID,
 		dataContentType: DataContentType,
 		fileId: FileID,

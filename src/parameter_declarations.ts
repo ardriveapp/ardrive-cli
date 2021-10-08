@@ -4,6 +4,7 @@ export const WalletFileParameter = 'walletFile';
 export const SeedPhraseParameter = 'seedPhrase';
 export const DrivePasswordParameter = 'drivePassword';
 export const DriveNameParameter = 'driveName';
+export const FolderNameParameter = 'folderName';
 export const DriveKeyParameter = 'driveKey';
 export const AddressParameter = 'address';
 export const DriveIdParameter = 'driveId';
@@ -12,6 +13,7 @@ export const DestinationAddressParameter = 'destAddress';
 export const TransactionIdParameter = 'txId';
 export const ConfirmationsParameter = 'confirmations';
 export const FolderIdParameter = 'folderId';
+export const FileIdParameter = 'fileId';
 export const ParentFolderIdParameter = 'parentFolderId';
 export const LocalFilePathParameter = 'localFilePath';
 export const DestinationFileNameParameter = 'destFileName';
@@ -21,6 +23,11 @@ export const AllParameter = 'all';
 export const MaxDepthParameter = 'maxDepth';
 export const BoostParameter = 'boost';
 export const DryRunParameter = 'dryRun';
+
+// Aggregates for convenience
+export const DriveCreationPrivacyParameters = [DrivePasswordParameter, WalletFileParameter, SeedPhraseParameter];
+export const DrivePrivacyParameters = [DriveKeyParameter, ...DriveCreationPrivacyParameters];
+export const TreeDepthParams = [AllParameter, MaxDepthParameter];
 
 /**
  * Note: importing this file will declare all the above parameters
@@ -66,6 +73,13 @@ Parameter.declare({
 });
 
 Parameter.declare({
+	name: FolderNameParameter,
+	aliases: ['-n', '--folder-name'],
+	description: `the name for the new folder`,
+	required: true
+});
+
+Parameter.declare({
 	name: AddressParameter,
 	aliases: ['-a', '--address'],
 	description: 'the address',
@@ -108,7 +122,7 @@ Parameter.declare({
 
 Parameter.declare({
 	name: ParentFolderIdParameter,
-	aliases: ['-f', '--parent-folder-id'],
+	aliases: ['-pf', '--parent-folder-id'],
 	description: `the ArFS folder ID for the folder in which this file will reside (i.e. its parent folder)
 		• To upload the file to the root of a drive, use the root folder ID of the drive`,
 	required: true
@@ -118,6 +132,13 @@ Parameter.declare({
 	name: FolderIdParameter,
 	aliases: ['-f', '--folder-id'],
 	description: `the ArFS folder ID for the folder to query`,
+	required: true
+});
+
+Parameter.declare({
+	name: FileIdParameter,
+	aliases: ['-f', '--file-id'],
+	description: `the ArFS file ID for the file to query`,
 	required: true
 });
 
@@ -173,7 +194,8 @@ Parameter.declare({
 	name: AllParameter,
 	aliases: ['--all'],
 	description: `(OPTIONAL) gets all contents within this folder, including child files/folders`,
-	type: 'boolean'
+	type: 'boolean',
+	forbiddenConjunctionParameters: [MaxDepthParameter]
 });
 
 Parameter.declare({

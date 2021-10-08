@@ -15,7 +15,7 @@ import {
 } from './arfs_trx_data_types';
 import Transaction from 'arweave/node/lib/transaction';
 import { ContentType, DrivePrivacy, GQLTagInterface } from 'ardrive-core-js';
-import { DataContentType, DriveID, FileID, FolderID } from './types';
+import { DataContentType, DriveID, FileID, FolderID, UnixTime } from './types';
 
 export abstract class ArFSObjectMetadataPrototype {
 	abstract protectedTags: string[];
@@ -33,8 +33,8 @@ export abstract class ArFSObjectMetadataPrototype {
 }
 
 export abstract class ArFSDriveMetaDataPrototype extends ArFSObjectMetadataPrototype {
-	abstract unixTime: number;
-	abstract driveId: string;
+	abstract unixTime: UnixTime;
+	abstract driveId: DriveID;
 	abstract objectData: ArFSDriveTransactionData;
 	abstract readonly privacy: DrivePrivacy;
 	abstract readonly contentType: ContentType;
@@ -62,8 +62,8 @@ export class ArFSPublicDriveMetaDataPrototype extends ArFSDriveMetaDataPrototype
 
 	constructor(
 		readonly objectData: ArFSPublicDriveTransactionData,
-		readonly unixTime: number,
-		readonly driveId: string
+		readonly unixTime: UnixTime,
+		readonly driveId: DriveID
 	) {
 		super();
 	}
@@ -79,8 +79,8 @@ export class ArFSPrivateDriveMetaDataPrototype extends ArFSDriveMetaDataPrototyp
 	readonly contentType: ContentType = 'application/octet-stream';
 
 	constructor(
-		readonly unixTime: number,
-		readonly driveId: string,
+		readonly unixTime: UnixTime,
+		readonly driveId: DriveID,
 		readonly objectData: ArFSPrivateDriveTransactionData
 	) {
 		super();
@@ -99,7 +99,7 @@ export class ArFSPrivateDriveMetaDataPrototype extends ArFSDriveMetaDataPrototyp
 }
 
 export abstract class ArFSFolderMetaDataPrototype extends ArFSObjectMetadataPrototype {
-	abstract unixTime: number;
+	abstract unixTime: UnixTime;
 	abstract driveId: DriveID;
 	abstract folderId: FolderID;
 	abstract objectData: ArFSFolderTransactionData;
@@ -128,7 +128,7 @@ export class ArFSPublicFolderMetaDataPrototype extends ArFSFolderMetaDataPrototy
 
 	constructor(
 		readonly objectData: ArFSPublicFolderTransactionData,
-		readonly unixTime: number,
+		readonly unixTime: UnixTime,
 		readonly driveId: DriveID,
 		readonly folderId: FolderID,
 		readonly parentFolderId?: FolderID
@@ -142,7 +142,7 @@ export class ArFSPrivateFolderMetaDataPrototype extends ArFSFolderMetaDataProtot
 	readonly contentType: ContentType = 'application/octet-stream';
 
 	constructor(
-		readonly unixTime: number,
+		readonly unixTime: UnixTime,
 		readonly driveId: DriveID,
 		readonly folderId: FolderID,
 		readonly objectData: ArFSPrivateFolderTransactionData,
@@ -163,7 +163,7 @@ export class ArFSPrivateFolderMetaDataPrototype extends ArFSFolderMetaDataProtot
 }
 
 export abstract class ArFSFileMetaDataPrototype extends ArFSObjectMetadataPrototype {
-	abstract unixTime: number;
+	abstract unixTime: UnixTime;
 	abstract driveId: DriveID;
 	abstract fileId: FileID;
 	abstract objectData: ArFSFileMetadataTransactionData;
@@ -188,7 +188,7 @@ export class ArFSPublicFileMetaDataPrototype extends ArFSFileMetaDataPrototype {
 
 	constructor(
 		readonly objectData: ArFSPublicFileMetadataTransactionData,
-		readonly unixTime: number,
+		readonly unixTime: UnixTime,
 		readonly driveId: DriveID,
 		readonly fileId: FileID,
 		readonly parentFolderId: FolderID
@@ -202,7 +202,7 @@ export class ArFSPrivateFileMetaDataPrototype extends ArFSFileMetaDataPrototype 
 
 	constructor(
 		readonly objectData: ArFSPrivateFileMetadataTransactionData,
-		readonly unixTime: number,
+		readonly unixTime: UnixTime,
 		readonly driveId: DriveID,
 		readonly fileId: FileID,
 		readonly parentFolderId: FolderID

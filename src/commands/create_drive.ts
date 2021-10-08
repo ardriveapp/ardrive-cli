@@ -1,29 +1,18 @@
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import {
 	BoostParameter,
+	DriveCreationPrivacyParameters,
 	DriveNameParameter,
-	DrivePasswordParameter,
-	DryRunParameter,
-	SeedPhraseParameter,
-	WalletFileParameter
+	DryRunParameter
 } from '../parameter_declarations';
 import { arDriveFactory } from '..';
 import { JWKWallet, Wallet } from '../wallet_new';
 import { FeeMultiple } from '../types';
 import { PrivateDriveKeyData } from '../ardrive';
 
-/* eslint-disable no-console */
-
 new CLICommand({
 	name: 'create-drive',
-	parameters: [
-		WalletFileParameter,
-		SeedPhraseParameter,
-		DriveNameParameter,
-		DrivePasswordParameter,
-		BoostParameter,
-		DryRunParameter
-	],
+	parameters: [...DriveCreationPrivacyParameters, DriveNameParameter, BoostParameter, DryRunParameter],
 	async action(options) {
 		const parameters = new ParametersHelper(options);
 		const wallet: Wallet = await parameters.getRequiredWallet();

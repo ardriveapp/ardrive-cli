@@ -1,4 +1,5 @@
 import regression, { DataPoint } from 'regression';
+import { ByteCount } from '../types';
 import { ARDataPrice } from './ar_data_price';
 
 /**
@@ -32,7 +33,7 @@ export class ARDataPriceRegression {
 	 * @returns the ARDataPrice predicted by the regression model for an upload of size `numBytes`
 	 * @throws {@link Error} if `numBytes` is negative or not an integer
 	 */
-	predictedPriceForByteCount(numBytes: number): ARDataPrice {
+	predictedPriceForByteCount(numBytes: ByteCount): ARDataPrice {
 		if (numBytes < 0 || !Number.isInteger(numBytes)) {
 			throw new Error(`numBytes (${numBytes}) should be a positive integer`);
 		}
