@@ -1,17 +1,12 @@
 import { arDriveAnonymousFactory, arDriveFactory } from '..';
 import { ArFSPrivateFileOrFolderWithPaths, ArFSPublicFileOrFolderWithPaths } from '../arfsdao';
 import { CLICommand, ParametersHelper } from '../CLICommand';
-import {
-	AllParameter,
-	DrivePrivacyParameters,
-	MaxDepthParameter,
-	ParentFolderIdParameter
-} from '../parameter_declarations';
+import { DrivePrivacyParameters, ParentFolderIdParameter, TreeDepthParams } from '../parameter_declarations';
 import { alphabeticalOrder } from '../utils/sort_functions';
 
 new CLICommand({
 	name: 'list-folder',
-	parameters: [ParentFolderIdParameter, AllParameter, MaxDepthParameter, ...DrivePrivacyParameters],
+	parameters: [ParentFolderIdParameter, ...TreeDepthParams, ...DrivePrivacyParameters],
 	async action(options) {
 		const parameters = new ParametersHelper(options);
 		const folderId = parameters.getRequiredParameterValue(ParentFolderIdParameter);

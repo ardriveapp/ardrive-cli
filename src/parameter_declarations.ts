@@ -27,6 +27,7 @@ export const DryRunParameter = 'dryRun';
 // Aggregates for convenience
 export const DriveCreationPrivacyParameters = [DrivePasswordParameter, WalletFileParameter, SeedPhraseParameter];
 export const DrivePrivacyParameters = [DriveKeyParameter, ...DriveCreationPrivacyParameters];
+export const TreeDepthParams = [AllParameter, MaxDepthParameter];
 
 /**
  * Note: importing this file will declare all the above parameters
