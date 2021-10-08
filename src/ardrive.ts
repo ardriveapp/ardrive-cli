@@ -217,29 +217,29 @@ export class ArDrive extends ArDriveAnonymous {
 	async movePublicFile(fileId: FileID, newParentFolderId: FolderID): Promise<ArFSResult> {
 		const driveId = await this.getDriveIdAndAssertDrive(newParentFolderId);
 
-		const originalMetaData = await this.getPublicFile(fileId);
+		const originalFileMetaData = await this.getPublicFile(fileId);
 
-		if (driveId !== originalMetaData.driveId) {
+		if (driveId !== originalFileMetaData.driveId) {
 			throw new Error('File should stay in the same drive!');
 		}
 
-		const transactionData = new ArFSPublicFileMetadataTransactionData(
-			originalMetaData.name,
-			originalMetaData.size,
-			originalMetaData.lastModifiedDate,
-			originalMetaData.dataTxId,
-			originalMetaData.dataContentType
+		const fileTransactionData = new ArFSPublicFileMetadataTransactionData(
+			originalFileMetaData.name,
+			originalFileMetaData.size,
+			originalFileMetaData.lastModifiedDate,
+			originalFileMetaData.dataTxId,
+			originalFileMetaData.dataContentType
 		);
 
-		const moveBaseCosts = await this.estimateAndAssertCostOfMoveFile(transactionData);
-		const metaDataBaseReward = { reward: moveBaseCosts.metaDataBaseReward, feeMultiple: this.feeMultiple };
+		const moveFileBaseCosts = await this.estimateAndAssertCostOfMoveFile(fileTransactionData);
+		const fileMetaDataBaseReward = { reward: moveFileBaseCosts.metaDataBaseReward, feeMultiple: this.feeMultiple };
 
 		// Move file will create a new meta data tx with identical meta data except for a new parentFolderId
 		const moveFileResult = await this.arFsDao.movePublicFile({
-			originalMetaData,
-			transactionData,
+			originalMetaData: originalFileMetaData,
+			transactionData: fileTransactionData,
 			newParentFolderId,
-			metaDataBaseReward
+			metaDataBaseReward: fileMetaDataBaseReward
 		});
 
 		return Promise.resolve({
@@ -260,32 +260,31 @@ export class ArDrive extends ArDriveAnonymous {
 
 	async movePrivateFile(fileId: FileID, newParentFolderId: FolderID, driveKey: DriveKey): Promise<ArFSResult> {
 		const driveId = await this.getDriveIdAndAssertDrive(newParentFolderId, driveKey);
-		const originalMetaData = await this.getPrivateFile(fileId, driveKey);
+		const originalFileMetaData = await this.getPrivateFile(fileId, driveKey);
 
-		if (driveId !== originalMetaData.driveId) {
+		if (driveId !== originalFileMetaData.driveId) {
 			throw new Error('File should stay in the same drive!');
 		}
 
-		const transactionData = await ArFSPrivateFileMetadataTransactionData.from(
-			originalMetaData.name,
-			originalMetaData.size,
-			originalMetaData.lastModifiedDate,
-			originalMetaData.dataTxId,
-			originalMetaData.dataContentType,
+		const fileTransactionData = await ArFSPrivateFileMetadataTransactionData.from(
+			originalFileMetaData.name,
+			originalFileMetaData.size,
+			originalFileMetaData.lastModifiedDate,
+			originalFileMetaData.dataTxId,
+			originalFileMetaData.dataContentType,
 			fileId,
 			driveKey
 		);
 
-		const moveBaseCosts = await this.estimateAndAssertCostOfMoveFile(transactionData);
-
-		const metaDataBaseReward = { reward: moveBaseCosts.metaDataBaseReward, feeMultiple: this.feeMultiple };
+		const moveFileBaseCosts = await this.estimateAndAssertCostOfMoveFile(fileTransactionData);
+		const fileMetaDataBaseReward = { reward: moveFileBaseCosts.metaDataBaseReward, feeMultiple: this.feeMultiple };
 
 		// Move file will create a new meta data tx with identical meta data except for a new parentFolderId
 		const moveFileResult = await this.arFsDao.movePrivateFile({
-			originalMetaData,
-			transactionData,
+			originalMetaData: originalFileMetaData,
+			transactionData: fileTransactionData,
 			newParentFolderId,
-			metaDataBaseReward
+			metaDataBaseReward: fileMetaDataBaseReward
 		});
 
 		return Promise.resolve({
@@ -308,23 +307,25 @@ export class ArDrive extends ArDriveAnonymous {
 	async movePublicFolder(folderId: FolderID, newParentFolderId: FolderID): Promise<ArFSResult> {
 		const parentFolderDriveId = await this.getDriveIdAndAssertDrive(newParentFolderId);
 
-		const originalMetaData = await this.getPublicFolder(folderId);
+		const originalFolderMetaData = await this.getPublicFolder(folderId);
 
-		if (parentFolderDriveId !== originalMetaData.driveId) {
+		if (parentFolderDriveId !== originalFolderMetaData.driveId) {
 			throw new Error('Folder should stay in the same drive!');
 		}
 
-		const transactionData = new ArFSPublicFolderTransactionData(originalMetaData.name);
-		const { metaDataBaseReward: baseReward } = await this.estimateAndAssertCostOfFolderUpload(transactionData);
+		const folderTransactionData = new ArFSPublicFolderTransactionData(originalFolderMetaData.name);
+		const { metaDataBaseReward: baseReward } = await this.estimateAndAssertCostOfFolderUpload(
+			folderTransactionData
+		);
 
-		const metaDataBaseReward = { reward: baseReward, feeMultiple: this.feeMultiple };
+		const folderMetaDataBaseReward = { reward: baseReward, feeMultiple: this.feeMultiple };
 
 		// Move folder will create a new meta data tx with identical meta data except for a new parentFolderId
 		const moveFolderResult = await this.arFsDao.movePublicFolder({
-			originalMetaData,
-			transactionData,
+			originalMetaData: originalFolderMetaData,
+			transactionData: folderTransactionData,
 			newParentFolderId,
-			metaDataBaseReward
+			metaDataBaseReward: folderMetaDataBaseReward
 		});
 
 		return Promise.resolve({
@@ -344,23 +345,28 @@ export class ArDrive extends ArDriveAnonymous {
 
 	async movePrivateFolder(folderId: FolderID, newParentFolderId: FolderID, driveKey: DriveKey): Promise<ArFSResult> {
 		const parentFolderDriveId = await this.getDriveIdAndAssertDrive(newParentFolderId, driveKey);
-		const originalMetaData = await this.getPrivateFolder(folderId, driveKey);
+		const originalFolderMetaData = await this.getPrivateFolder(folderId, driveKey);
 
-		if (parentFolderDriveId !== originalMetaData.driveId) {
+		if (parentFolderDriveId !== originalFolderMetaData.driveId) {
 			throw new Error('Folder should stay in the same drive!');
 		}
 
-		const transactionData = await ArFSPrivateFolderTransactionData.from(originalMetaData.name, driveKey);
-		const { metaDataBaseReward: baseReward } = await this.estimateAndAssertCostOfFolderUpload(transactionData);
+		const folderTransactionData = await ArFSPrivateFolderTransactionData.from(
+			originalFolderMetaData.name,
+			driveKey
+		);
+		const { metaDataBaseReward: baseReward } = await this.estimateAndAssertCostOfFolderUpload(
+			folderTransactionData
+		);
 
-		const metaDataBaseReward = { reward: baseReward, feeMultiple: this.feeMultiple };
+		const folderMetaDataBaseReward = { reward: baseReward, feeMultiple: this.feeMultiple };
 
 		// Move folder will create a new meta data tx with identical meta data except for a new parentFolderId
 		const moveFolderResult = await this.arFsDao.movePrivateFolder({
-			originalMetaData,
-			transactionData,
+			originalMetaData: originalFolderMetaData,
+			transactionData: folderTransactionData,
 			newParentFolderId,
-			metaDataBaseReward
+			metaDataBaseReward: folderMetaDataBaseReward
 		});
 
 		return Promise.resolve({
