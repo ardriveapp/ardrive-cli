@@ -27,6 +27,7 @@ export const DryRunParameter = 'dryRun';
 // Aggregates for convenience
 export const DriveCreationPrivacyParameters = [DrivePasswordParameter, WalletFileParameter, SeedPhraseParameter];
 export const DrivePrivacyParameters = [DriveKeyParameter, ...DriveCreationPrivacyParameters];
+export const TreeDepthParams = [AllParameter, MaxDepthParameter];
 
 /**
  * Note: importing this file will declare all the above parameters
@@ -121,7 +122,7 @@ Parameter.declare({
 
 Parameter.declare({
 	name: ParentFolderIdParameter,
-	aliases: ['-f', '--parent-folder-id'],
+	aliases: ['-pf', '--parent-folder-id'],
 	description: `the ArFS folder ID for the folder in which this file will reside (i.e. its parent folder)
 		• To upload the file to the root of a drive, use the root folder ID of the drive`,
 	required: true
@@ -136,7 +137,7 @@ Parameter.declare({
 
 Parameter.declare({
 	name: FileIdParameter,
-	aliases: ['-i', '--file-id'],
+	aliases: ['-f', '--file-id'],
 	description: `the ArFS file ID for the file to query`,
 	required: true
 });
@@ -163,7 +164,8 @@ Parameter.declare({
 		• parent folder ID (optional)
 			• --parent-folder-id used, otherwise
 			• all parent folder IDs should reside in the same drive
-		• Can NOT be used in conjunction with --local-file-path`
+		• Can NOT be used in conjunction with --local-file-path`,
+	forbiddenConjunctionParameters: [LocalFilePathParameter]
 });
 
 Parameter.declare({
@@ -192,7 +194,8 @@ Parameter.declare({
 	name: AllParameter,
 	aliases: ['--all'],
 	description: `(OPTIONAL) gets all contents within this folder, including child files/folders`,
-	type: 'boolean'
+	type: 'boolean',
+	forbiddenConjunctionParameters: [MaxDepthParameter]
 });
 
 Parameter.declare({

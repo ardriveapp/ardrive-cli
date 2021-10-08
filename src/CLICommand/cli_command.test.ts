@@ -1,23 +1,54 @@
 import { expect } from 'chai';
 import { Command } from 'commander';
 import { SinonStubbedInstance, stub } from 'sinon';
-import { CLICommand, CommandDescriptor } from './cli_command';
+import { assertConjunctionParameters, CLICommand, CommandDescriptor } from './cli_command';
 
-import { DriveNameParameter } from '../parameter_declarations';
+import {
+	DriveNameParameter,
+	DrivePasswordParameter,
+	SeedPhraseParameter,
+	WalletFileParameter
+} from '../parameter_declarations';
 import { CliApiObject } from './cli';
 import { baseArgv } from './test_constants';
 
 const MY_DRIVE_NAME = 'My awesome drive!';
-const driveNameCommandName = 'drive-name-test';
+const testingCommandName = 'drive-name-test';
 const driveNameCommandDescription: CommandDescriptor = {
-	name: driveNameCommandName,
+	name: testingCommandName,
 	parameters: [DriveNameParameter],
 	async action(option) {
 		/** This code here will run after argv is parsed */
 		expect(option.driveNameTest).to.equal(MY_DRIVE_NAME);
 	}
 };
-const driveNameArgv: string[] = [...baseArgv, driveNameCommandName, '--drive-name', MY_DRIVE_NAME];
+const driveNameArgv: string[] = [...baseArgv, testingCommandName, '--drive-name', MY_DRIVE_NAME];
+async function action() {
+	// eslint-disable-next-line no-console
+	console.log('DUMMY ACTION');
+}
+const nonEmptyValue = 'non-empty value';
+const commandDescriptorRequiredWallet: CommandDescriptor = {
+	name: testingCommandName,
+	parameters: [
+		WalletFileParameter,
+		{ name: DrivePasswordParameter, requiredConjunctionParameters: [WalletFileParameter] }
+	],
+	action
+};
+const parsedOptionsMissingWallet = {
+	[WalletFileParameter]: undefined,
+	[DrivePasswordParameter]: nonEmptyValue
+};
+const commandDescriptorForbiddenWalletFileAndSeedPhrase: CommandDescriptor = {
+	name: testingCommandName,
+	parameters: [WalletFileParameter, SeedPhraseParameter],
+	action
+};
+const parsedCommandOptionsBothSpecified = {
+	[WalletFileParameter]: nonEmptyValue,
+	[SeedPhraseParameter]: nonEmptyValue
+};
 
 process.exit = (n: number) => {
 	process.exit(n);
@@ -40,7 +71,6 @@ describe('CLICommand class', () => {
 	const program: CliApiObject = new Command() as CliApiObject;
 
 	before(() => {
-		CLICommand.argv = driveNameArgv;
 		stubbedProgram = new TestCliApiObject(program);
 	});
 
@@ -51,12 +81,22 @@ describe('CLICommand class', () => {
 	});
 
 	it('The library parses the given argv', () => {
-		CLICommand.parse(stubbedProgram);
+		CLICommand.parse(stubbedProgram, driveNameArgv);
 		expect(stubbedProgram.parse.calledOnce).to.be.true;
 	});
 
-	it("CLICommand won't allow to declare a command after parsed", () => {
-		expect(() => new CLICommand(driveNameCommandDescription, stubbedProgram)).to.throw;
-		expect(stubbedProgram.parse.notCalled);
+	it('Assert required in conjunction parameters', () => {
+		expect(function () {
+			assertConjunctionParameters(commandDescriptorRequiredWallet, parsedOptionsMissingWallet);
+		}).to.throw();
+	});
+
+	it('Assert forbidden in conjunction parameters', () => {
+		expect(function () {
+			assertConjunctionParameters(
+				commandDescriptorForbiddenWalletFileAndSeedPhrase,
+				parsedCommandOptionsBothSpecified
+			);
+		}).to.throw();
 	});
 });

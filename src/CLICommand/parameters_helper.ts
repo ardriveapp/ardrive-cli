@@ -4,13 +4,18 @@ import * as fs from 'fs';
 import { deriveDriveKey, JWKInterface } from 'ardrive-core-js';
 import {
 	AddressParameter,
+	AllParameter,
 	DriveKeyParameter,
 	DrivePasswordParameter,
+	MaxDepthParameter,
 	SeedPhraseParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
 import { cliWalletDao } from '..';
 import { DriveID, DriveKey } from '../types';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ParameterOptions = any;
 
 /**
  * @type {ParametersHelper}
@@ -22,7 +27,7 @@ export class ParametersHelper {
 	 * @param {any} options The object containing the parameterName: value mapping
 	 * An immutable instance of ParametersHelper holding the parsed values of the parameters
 	 */
-	constructor(private readonly options: any, private readonly walletDao: WalletDAO = cliWalletDao) {}
+	constructor(private readonly options: ParameterOptions, private readonly walletDao: WalletDAO = cliWalletDao) {}
 
 	/**
 	 * @returns {Promise<boolean>}
@@ -80,6 +85,20 @@ export class ParametersHelper {
 			return derivedDriveKey;
 		}
 		throw new Error(`No drive key or password provided!`);
+	}
+
+	public async getMaxDepth(defaultDepth: number): Promise<number> {
+		if (this.getParameterValue(AllParameter)) {
+			return Number.POSITIVE_INFINITY;
+		}
+
+		const maxDepthValue = Number(this.getParameterValue(MaxDepthParameter) ?? defaultDepth);
+
+		if ((maxDepthValue !== Number.POSITIVE_INFINITY && !Number.isInteger(maxDepthValue)) || maxDepthValue < 0) {
+			throw new Error('maxDepth should be a non-negative integer!');
+		}
+
+		return maxDepthValue;
 	}
 
 	/**

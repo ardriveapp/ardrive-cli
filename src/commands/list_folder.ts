@@ -1,17 +1,17 @@
-/* eslint-disable no-console */
 import { arDriveAnonymousFactory, arDriveFactory } from '..';
 import { ArFSPrivateFileOrFolderWithPaths, ArFSPublicFileOrFolderWithPaths } from '../arfsdao';
 import { CLICommand, ParametersHelper } from '../CLICommand';
-import { DrivePrivacyParameters, ParentFolderIdParameter } from '../parameter_declarations';
+import { DrivePrivacyParameters, ParentFolderIdParameter, TreeDepthParams } from '../parameter_declarations';
 import { alphabeticalOrder } from '../utils/sort_functions';
 
 new CLICommand({
 	name: 'list-folder',
-	parameters: [ParentFolderIdParameter, ...DrivePrivacyParameters],
+	parameters: [ParentFolderIdParameter, ...TreeDepthParams, ...DrivePrivacyParameters],
 	async action(options) {
 		const parameters = new ParametersHelper(options);
 		const folderId = parameters.getRequiredParameterValue(ParentFolderIdParameter);
 		let children: (ArFSPrivateFileOrFolderWithPaths | ArFSPublicFileOrFolderWithPaths)[];
+		const maxDepth = await parameters.getMaxDepth(0);
 
 		if (await parameters.getIsPrivate()) {
 			const wallet = await parameters.getRequiredWallet();
@@ -20,10 +20,10 @@ new CLICommand({
 			const driveId = await arDrive.getDriveIdForFolderId(folderId);
 			const driveKey = await parameters.getDriveKey(driveId);
 
-			children = await arDrive.listPrivateFolder(folderId, driveKey);
+			children = await arDrive.listPrivateFolder(folderId, driveKey, maxDepth);
 		} else {
 			const arDrive = arDriveAnonymousFactory();
-			children = await arDrive.listPublicFolder(folderId);
+			children = await arDrive.listPublicFolder(folderId, maxDepth);
 		}
 
 		const sortedChildren = children.sort((a, b) => alphabeticalOrder(a.path, b.path)) as (

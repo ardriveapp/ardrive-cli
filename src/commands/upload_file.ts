@@ -13,8 +13,6 @@ import {
 import { DriveKey, FeeMultiple, FolderID } from '../types';
 import { readJWKFile } from '../utils';
 
-/* eslint-disable no-console */
-
 interface UploadFileParameter {
 	parentFolderId: FolderID;
 	wrappedEntity: ArFSFileToUpload | ArFSFolderToUpload;

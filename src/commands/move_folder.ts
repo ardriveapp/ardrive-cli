@@ -2,7 +2,7 @@ import { CLICommand, ParametersHelper } from '../CLICommand';
 import {
 	BoostParameter,
 	DryRunParameter,
-	FileIdParameter,
+	FolderIdParameter,
 	ParentFolderIdParameter,
 	DrivePrivacyParameters
 } from '../parameter_declarations';
@@ -11,12 +11,18 @@ import { arDriveFactory } from '..';
 import { FeeMultiple } from '../types';
 
 new CLICommand({
-	name: 'move-file',
-	parameters: [FileIdParameter, ParentFolderIdParameter, BoostParameter, DryRunParameter, ...DrivePrivacyParameters],
+	name: 'move-folder',
+	parameters: [
+		FolderIdParameter,
+		ParentFolderIdParameter,
+		BoostParameter,
+		DryRunParameter,
+		...DrivePrivacyParameters
+	],
 	async action(options) {
 		const parameters = new ParametersHelper(options);
 
-		const { fileId, parentFolderId, boost, dryRun } = options;
+		const { folderId, parentFolderId, boost, dryRun } = options;
 
 		const wallet: Wallet = await parameters.getRequiredWallet();
 		const ardrive = arDriveFactory({
@@ -25,17 +31,18 @@ new CLICommand({
 			dryRun: dryRun
 		});
 
-		const createDriveResult = await (async function () {
+		const moveFolderResult = await (async function () {
 			if (await parameters.getIsPrivate()) {
-				const driveId = await ardrive.getDriveIdForFolderId(parentFolderId);
+				const driveId = await ardrive.getDriveIdForFolderId(folderId);
 				const driveKey = await parameters.getDriveKey(driveId);
 
-				return ardrive.movePrivateFile(fileId, parentFolderId, driveKey);
+				return ardrive.movePrivateFolder(folderId, parentFolderId, driveKey);
 			} else {
-				return ardrive.movePublicFile(fileId, parentFolderId);
+				return ardrive.movePublicFolder(folderId, parentFolderId);
 			}
 		})();
-		console.log(JSON.stringify(createDriveResult, null, 4));
+
+		console.log(JSON.stringify(moveFolderResult, null, 4));
 
 		process.exit(0);
 	}

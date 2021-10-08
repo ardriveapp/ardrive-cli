@@ -175,12 +175,17 @@ describe('ParametersHelper class', () => {
 		// 	]);
 		// });
 
-		it('throws when none of --wallet-file, -w, --seed-phrase, or -s option are provided', () => {
+		it('throws when none of --wallet-file, -w, --seed-phrase, or -s option are provided', (done) => {
 			declareCommandWithParams(program, [], async (options) => {
 				const parameters = new ParametersHelper(options);
-				// TODO: Couldn't figure out how to expect an async func to throw without chai-as-promised
-				const wallet = await parameters.getRequiredWallet().catch(() => null);
-				expect(wallet).to.be.null;
+				await parameters
+					.getRequiredWallet()
+					.then((wallet) => {
+						done(`It shouldn't have returned a wallet: ${wallet}`);
+					})
+					.catch(() => {
+						done();
+					});
 			});
 			CLICommand.parse(program, [...baseArgv, testCommandName]);
 		});
@@ -363,5 +368,13 @@ describe('ParametersHelper class', () => {
 			});
 			CLICommand.parse(program, [...baseArgv, testCommandName]);
 		});
+	});
+
+	describe('getMaxDepth method', () => {
+		it(`Defaults to zero`);
+		it(`Does not accept a decimal`);
+		it(`Does not accept a negative integer`);
+		it(`Max depth is infinity when --all is specified`);
+		it(`Custom positive value is providen`);
 	});
 });

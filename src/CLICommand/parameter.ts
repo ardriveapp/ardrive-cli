@@ -1,7 +1,8 @@
 export type ParameterName = string;
 export type ParameterType = 'single-value' | 'boolean' | 'array';
+export type ParameterOverridenConfig = Partial<ParameterConfig> & Pick<ParameterConfig, 'name'>;
 
-export interface ParameterData {
+export interface ParameterConfig {
 	name: ParameterName;
 	aliases: ParameterName[];
 	description: string;
@@ -9,15 +10,26 @@ export interface ParameterData {
 	default?: string;
 	required?: boolean;
 	forbiddenConjunctionParameters?: ParameterName[];
-	requireedConjunctionParameters?: ParameterName[];
+	requiredConjunctionParameters?: ParameterName[];
 }
 
-export class Parameter implements ParameterData {
-	private parameterData: ParameterData;
-	private static parameters: ParameterData[] = [];
+export class Parameter implements ParameterConfig {
+	public readonly name;
+	private parameterData: ParameterConfig;
+	private static parameters: ParameterConfig[] = [];
 
-	constructor(public readonly name: ParameterName) {
-		this.parameterData = Parameter.get(name);
+	constructor(arg: ParameterName | ParameterOverridenConfig) {
+		const argAsParameterName = arg as ParameterName;
+		const argAsOverridenConfig = arg as ParameterOverridenConfig;
+		const overridenConfig = (function () {
+			if (typeof arg === 'string') {
+				return undefined;
+			} else {
+				return argAsOverridenConfig;
+			}
+		})();
+		this.name = overridenConfig?.name || argAsParameterName;
+		this.parameterData = Object.assign(Parameter.get(this.name), overridenConfig);
 	}
 
 	public get aliases(): ParameterName[] {
@@ -40,24 +52,37 @@ export class Parameter implements ParameterData {
 		return !!this.parameterData.required;
 	}
 
-	public static declare(parameter: ParameterData): void {
+	public get forbiddenParametersInConjunction(): ParameterName[] {
+		return Array.isArray(this.parameterData.forbiddenConjunctionParameters)
+			? this.parameterData.forbiddenConjunctionParameters.slice()
+			: [];
+	}
+
+	public get requiredParametersInConjunction(): ParameterName[] {
+		return Array.isArray(this.parameterData.requiredConjunctionParameters)
+			? this.parameterData.requiredConjunctionParameters.slice()
+			: [];
+	}
+
+	public static declare(parameter: ParameterConfig): void {
 		Parameter.parameters.push(parameter);
 	}
 
 	/**
 	 * @name reset
 	 * For testing purposes only. It will just remove all parameters declaration
-	 * @returns {ParameterData[]} the removed parameters
+	 * @returns {ParameterConfig[]} the removed parameters
 	 */
-	public static reset(): ParameterData[] {
+	public static reset(): ParameterConfig[] {
 		return this.parameters.splice(0, this.parameters.length);
 	}
 
-	public static get(parameterName: ParameterName): ParameterData {
+	public static get(parameterName: ParameterName): ParameterConfig {
 		const param = Parameter.parameters.find((p) => p.name === parameterName);
 		if (!param) {
 			throw new Error(`No such parameter ${parameterName}`);
 		}
-		return param;
+		// It uses Object.assign in order to return a copy of the instance instead of the original one, so modifying it won't affect the original
+		return Object.assign({}, param);
 	}
 }
