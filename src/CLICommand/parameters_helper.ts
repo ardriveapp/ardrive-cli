@@ -87,15 +87,15 @@ export class ParametersHelper {
 		throw new Error(`No drive key or password provided!`);
 	}
 
-	public async getMaxDepth(): Promise<number> {
+	public async getMaxDepth(defaultDepth: number): Promise<number> {
 		if (this.getParameterValue(AllParameter)) {
 			return Number.POSITIVE_INFINITY;
 		}
 
 		// Max depth is 0 when user does not supply a value default
-		const maxDepthValue = Number(this.getParameterValue(MaxDepthParameter) ?? 0);
+		const maxDepthValue = Number(this.getParameterValue(MaxDepthParameter) ?? defaultDepth);
 
-		if (!Number.isInteger(maxDepthValue) || maxDepthValue < 0) {
+		if ((maxDepthValue !== Number.POSITIVE_INFINITY && !Number.isInteger(maxDepthValue)) || maxDepthValue < 0) {
 			throw new Error('maxDepth should be a non-negative integer!');
 		}
 
