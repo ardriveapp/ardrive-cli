@@ -42,6 +42,7 @@ export interface ArDriveSettings extends ArDriveSettingsAnonymous {
 	communityOracle?: CommunityOracle;
 	feeMultiple?: FeeMultiple;
 	dryRun?: boolean;
+	arfsDao?: ArFSDAO;
 }
 
 export function arDriveFactory({
@@ -51,12 +52,13 @@ export function arDriveFactory({
 	wallet,
 	walletDao = cliWalletDao,
 	dryRun,
-	feeMultiple
+	feeMultiple,
+	arfsDao = new ArFSDAO(wallet, arweave, dryRun, CLI_APP_NAME, CLI_APP_VERSION)
 }: ArDriveSettings): ArDrive {
 	return new ArDrive(
 		wallet,
 		walletDao,
-		new ArFSDAO(wallet, arweave, dryRun, CLI_APP_NAME, CLI_APP_VERSION),
+		arfsDao,
 		communityOracle,
 		CLI_APP_NAME,
 		CLI_APP_VERSION,
