@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { Command } from 'commander';
+import { showHelp } from '../utils';
 import { CliApiObject, ParsedArguments } from './cli';
 import { Parameter, ParameterName, ParameterOverridenConfig } from './parameter';
 
@@ -12,8 +13,7 @@ export interface CommandDescriptor {
 
 const program: CliApiObject = new Command() as CliApiObject;
 
-// Set up command line option parsing
-program.option('-h, --help', 'Get help');
+// Disable default commander help docs
 program.addHelpCommand(false);
 
 /**
@@ -117,6 +117,11 @@ export class CLICommand {
 	}
 
 	public static parse(program: CliApiObject = this.program, argv: string[] = process.argv): void {
+		if (argv.length < 3 || argv.includes('-h') || argv.includes('--help') || argv.includes('help')) {
+			showHelp();
+			process.exit(0);
+		}
+
 		program.parse(argv);
 	}
 }
