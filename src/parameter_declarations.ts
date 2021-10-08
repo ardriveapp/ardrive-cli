@@ -27,6 +27,7 @@ export const DryRunParameter = 'dryRun';
 // Aggregates for convenience
 export const DriveCreationPrivacyParameters = [DrivePasswordParameter, WalletFileParameter, SeedPhraseParameter];
 export const DrivePrivacyParameters = [DriveKeyParameter, ...DriveCreationPrivacyParameters];
+export const TreeDepthParams = [AllParameter, MaxDepthParameter];
 
 /**
  * Note: importing this file will declare all the above parameters
@@ -163,7 +164,8 @@ Parameter.declare({
 		• parent folder ID (optional)
 			• --parent-folder-id used, otherwise
 			• all parent folder IDs should reside in the same drive
-		• Can NOT be used in conjunction with --local-file-path`
+		• Can NOT be used in conjunction with --local-file-path`,
+	forbiddenConjunctionParameters: [LocalFilePathParameter]
 });
 
 Parameter.declare({
@@ -192,7 +194,8 @@ Parameter.declare({
 	name: AllParameter,
 	aliases: ['--all'],
 	description: `(OPTIONAL) gets all contents within this folder, including child files/folders`,
-	type: 'boolean'
+	type: 'boolean',
+	forbiddenConjunctionParameters: [MaxDepthParameter]
 });
 
 Parameter.declare({
