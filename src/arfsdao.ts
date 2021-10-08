@@ -311,6 +311,9 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		maxDepth: number,
 		includeRoot: boolean
 	): Promise<ArFSPublicFileOrFolderWithPaths[]> {
+		if ((maxDepth !== Number.POSITIVE_INFINITY && !Number.isInteger(maxDepth)) || maxDepth < 0) {
+			throw new Error('maxDepth should be a non-negative integer!');
+		}
 
 		const folder = await this.getPublicFolder(folderId);
 
@@ -1028,6 +1031,9 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		maxDepth: number,
 		includeRoot: boolean
 	): Promise<ArFSPrivateFileOrFolderWithPaths[]> {
+		if ((maxDepth !== Number.POSITIVE_INFINITY && !Number.isInteger(maxDepth)) || maxDepth < 0) {
+			throw new Error('maxDepth should be a non-negative integer!');
+		}
 
 		const folder = await this.getPrivateFolder(folderId, driveKey);
 
