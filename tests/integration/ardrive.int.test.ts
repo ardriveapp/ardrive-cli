@@ -9,12 +9,13 @@ import { GatewayOracle } from '../../src/utils/gateway_oracle';
 import { JWKWallet, WalletDAO } from '../../src/wallet_new';
 import { ArDriveCommunityOracle } from '../../src/community/ardrive_community_oracle';
 import { ArFSDAO, ArFSPrivateDrive, ArFSPrivateFolder, ArFSPublicDrive, ArFSPublicFolder } from '../../src/arfsdao';
-import { deriveDriveKey } from 'ardrive-core-js';
+import { deriveDriveKey, DrivePrivacy } from 'ardrive-core-js';
 import { ArFS_O_11, DriveKey, Winston } from '../../src/types';
 import { ArFSFileToUpload, wrapFileOrFolder } from '../../src/arfs_file_wrapper';
 
 const entityIdRegex = /^([a-f]|[0-9]){8}-([a-f]|[0-9]){4}-([a-f]|[0-9]){4}-([a-f]|[0-9]){4}-([a-f]|[0-9]){12}$/;
 const trxIdRegex = /^([a-zA-Z]|[0-9]|-|_){43}$/;
+const fileKeyRegex = /^([a-zA-Z]|[0-9]|-|_|\/|\+){43}$/;
 
 describe('ArDrive class', () => {
 	const wallet = readJWKFile('./test_wallet.json');
@@ -269,6 +270,31 @@ describe('ArDrive class', () => {
 				assertUploadFileExpectations(result, 3204, 166, 0, '10000000');
 			});
 		});
+
+		describe('uploadPrivateFile', () => {
+			it('returns the correct ArFSResult', async () => {
+				stub(walletDao, 'walletHasBalance').callsFake(() => {
+					return Promise.resolve(true);
+				});
+				stub(arfsDao, 'getDriveIdForFolderId').callsFake(() => {
+					return Promise.resolve(stubEntityID);
+				});
+				stub(arfsDao, 'getPrivateDrive').callsFake(() => {
+					return Promise.resolve(stubPrivateDrive);
+				});
+				stub(arfsDao, 'getPrivateFolder').callsFake(() => {
+					return Promise.resolve(stubPrivateFolder);
+				});
+				const wrappedFile = wrapFileOrFolder('test_wallet.json');
+				const stubDriveKey = await getStubDriveKey();
+				const result = await arDrive.uploadPrivateFile(
+					stubEntityID,
+					new ArFSFileToUpload('test_wallet.json', wrappedFile.fileStats),
+					stubDriveKey
+				);
+				assertUploadFileExpectations(result, 3216, 182, 0, '10000000', 'private');
+			});
+		});
 	});
 });
 
@@ -332,16 +358,21 @@ function assertUploadFileExpectations(
 	metadataFee: number,
 	tipFee: number,
 	expectedTip: Winston,
-	expectedFileKey?: string
+	drivePrivacy: DrivePrivacy
 ) {
-	console.log(`${JSON.stringify(result, null, 4)}`);
 	// Ensure that 1 arfs entity was created
 	expect(result.created.length).to.equal(1);
 
 	// Ensure that the file data entity looks healthy
 	expect(result.created[0].dataTxId).to.match(trxIdRegex);
 	expect(result.created[0].entityId).to.match(entityIdRegex);
-	expect(result.created[0].key).to.equal(expectedFileKey);
+	switch (drivePrivacy) {
+		case 'public':
+			expect(result.created[0].key).to.equal(undefined);
+			break;
+		case 'private':
+			expect(result.created[0].key).to.match(fileKeyRegex);
+	}
 	expect(result.created[0].metadataTxId).to.match(trxIdRegex);
 	expect(result.created[0].type).to.equal('file');
 
