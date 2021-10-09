@@ -22,7 +22,7 @@ new CLICommand({
 	async action(options) {
 		const parameters = new ParametersHelper(options);
 
-		const { folderId, parentFolderId, boost, dryRun } = options;
+		const { folderId, parentFolderId: newParentFolderId, boost, dryRun } = options;
 
 		const wallet: Wallet = await parameters.getRequiredWallet();
 		const ardrive = arDriveFactory({
@@ -36,9 +36,9 @@ new CLICommand({
 				const driveId = await ardrive.getDriveIdForFolderId(folderId);
 				const driveKey = await parameters.getDriveKey(driveId);
 
-				return ardrive.movePrivateFolder(folderId, parentFolderId, driveKey);
+				return ardrive.movePrivateFolder({ folderId, newParentFolderId, driveKey });
 			} else {
-				return ardrive.movePublicFolder(folderId, parentFolderId);
+				return ardrive.movePublicFolder({ folderId, newParentFolderId });
 			}
 		})();
 
