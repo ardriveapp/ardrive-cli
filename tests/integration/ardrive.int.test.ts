@@ -8,7 +8,15 @@ import { ARDataPriceRegressionEstimator } from '../../src/utils/ar_data_price_re
 import { GatewayOracle } from '../../src/utils/gateway_oracle';
 import { JWKWallet, WalletDAO } from '../../src/wallet_new';
 import { ArDriveCommunityOracle } from '../../src/community/ardrive_community_oracle';
-import { ArFSDAO, ArFSPrivateDrive, ArFSPrivateFolder, ArFSPublicDrive, ArFSPublicFolder } from '../../src/arfsdao';
+import {
+	ArFSDAO,
+	ArFSPrivateDrive,
+	ArFSPrivateFile,
+	ArFSPrivateFolder,
+	ArFSPublicDrive,
+	ArFSPublicFile,
+	ArFSPublicFolder
+} from '../../src/arfsdao';
 import { deriveDriveKey, DrivePrivacy } from 'ardrive-core-js';
 import { ArFS_O_11, DriveKey, Winston } from '../../src/types';
 import { ArFSFileToUpload, wrapFileOrFolder } from '../../src/arfs_file_wrapper';
@@ -77,6 +85,42 @@ describe('ArDrive class', () => {
 		0,
 		stubEntityID,
 		stubEntityID,
+		'stubCipher',
+		'stubIV'
+	);
+	const stubPublicFile = new ArFSPublicFile(
+		'Integration Test',
+		'1.0',
+		ArFS_O_11,
+		'application/json',
+		stubEntityID,
+		'file',
+		'STUB NAME',
+		stubTransactionID,
+		0,
+		stubEntityID,
+		stubEntityID,
+		1234567890,
+		0,
+		stubTransactionID,
+		'application/json'
+	);
+	const stubPrivateFile = new ArFSPrivateFile(
+		'Integration Test',
+		'1.0',
+		ArFS_O_11,
+		'application/json',
+		stubEntityID,
+		'file',
+		'STUB NAME',
+		stubTransactionID,
+		0,
+		stubEntityID,
+		stubEntityID,
+		1234567890,
+		0,
+		stubTransactionID,
+		'application/json',
 		'stubCipher',
 		'stubIV'
 	);
@@ -295,6 +339,52 @@ describe('ArDrive class', () => {
 				assertUploadFileExpectations(result, 3216, 182, 0, '10000000', 'private');
 			});
 		});
+
+		describe('movePublicFile', () => {
+			it('returns the correct ArFSResult', async () => {
+				stub(walletDao, 'walletHasBalance').callsFake(() => {
+					return Promise.resolve(true);
+				});
+				stub(arfsDao, 'getDriveIdForFolderId').callsFake(() => {
+					return Promise.resolve(stubEntityID);
+				});
+				stub(arfsDao, 'getPublicDrive').callsFake(() => {
+					return Promise.resolve(stubPublicDrive);
+				});
+				stub(arfsDao, 'getPublicFolder').callsFake(() => {
+					return Promise.resolve(stubPublicFolder);
+				});
+				stub(arfsDao, 'getPublicFile').callsFake(() => {
+					return Promise.resolve(stubPublicFile);
+				});
+
+				const result = await arDrive.movePublicFile(stubEntityID, stubEntityID);
+				assertMoveFileExpectations(result, 153, 'public');
+			});
+		});
+
+		describe('movePrivateFile', () => {
+			it('returns the correct ArFSResult', async () => {
+				stub(walletDao, 'walletHasBalance').callsFake(() => {
+					return Promise.resolve(true);
+				});
+				stub(arfsDao, 'getDriveIdForFolderId').callsFake(() => {
+					return Promise.resolve(stubEntityID);
+				});
+				stub(arfsDao, 'getPrivateDrive').callsFake(() => {
+					return Promise.resolve(stubPrivateDrive);
+				});
+				stub(arfsDao, 'getPrivateFolder').callsFake(() => {
+					return Promise.resolve(stubPrivateFolder);
+				});
+				stub(arfsDao, 'getPrivateFile').callsFake(() => {
+					return Promise.resolve(stubPrivateFile);
+				});
+				const stubDriveKey = await getStubDriveKey();
+				const result = await arDrive.movePrivateFile(stubEntityID, stubEntityID, stubDriveKey);
+				assertMoveFileExpectations(result, 169, 'private');
+			});
+		});
 	});
 });
 
@@ -407,4 +497,33 @@ function assertUploadFileExpectations(
 	expect(feeKeys[2]).to.match(trxIdRegex);
 	expect(feeKeys[2]).to.equal(uploadTip.txId);
 	expect(result.fees[uploadTip.txId]).to.equal(tipFee);
+}
+
+function assertMoveFileExpectations(result: ArFSResult, fileFee: number, drivePrivacy: DrivePrivacy) {
+	// Ensure that 1 arfs entity was created
+	expect(result.created.length).to.equal(1);
+
+	// Ensure that the file entity looks healthy
+	const fileEntity = result.created[0];
+	expect(fileEntity.dataTxId).to.match(trxIdRegex);
+	expect(fileEntity.entityId).to.match(entityIdRegex);
+	switch (drivePrivacy) {
+		case 'public':
+			expect(fileEntity.key).to.equal(undefined);
+			break;
+		case 'private':
+			expect(fileEntity.key).to.match(fileKeyRegex);
+	}
+	expect(fileEntity.metadataTxId).to.match(trxIdRegex);
+	expect(fileEntity.type).to.equal('file');
+
+	// There should be no tips
+	expect(result.tips).to.be.empty;
+
+	// Ensure that the fees look healthy
+	const feeKeys = Object.keys(result.fees);
+	expect(feeKeys.length).to.equal(1);
+	expect(feeKeys[0]).to.match(trxIdRegex);
+	expect(feeKeys[0]).to.equal(fileEntity.metadataTxId);
+	expect(result.fees[fileEntity.metadataTxId]).to.equal(fileFee);
 }
