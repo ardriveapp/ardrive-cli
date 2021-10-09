@@ -10,10 +10,11 @@ import { JWKWallet, WalletDAO } from '../../src/wallet_new';
 import { ArDriveCommunityOracle } from '../../src/community/ardrive_community_oracle';
 import { ArFSDAO, ArFSPrivateDrive, ArFSPrivateFolder, ArFSPublicDrive, ArFSPublicFolder } from '../../src/arfsdao';
 import { deriveDriveKey } from 'ardrive-core-js';
-import { ArFS_O_11, DriveKey } from '../../src/types';
+import { ArFS_O_11, DriveKey, Winston } from '../../src/types';
+import { ArFSFileToUpload, wrapFileOrFolder } from '../../src/arfs_file_wrapper';
 
 const entityIdRegex = /^([a-f]|[0-9]){8}-([a-f]|[0-9]){4}-([a-f]|[0-9]){4}-([a-f]|[0-9]){4}-([a-f]|[0-9]){12}$/;
-const expectedTrxIdLength = 43;
+const trxIdRegex = /^([a-zA-Z]|[0-9]|-|_){43}$/;
 
 describe('ArDrive class', () => {
 	const wallet = readJWKFile('./test_wallet.json');
@@ -118,7 +119,7 @@ describe('ArDrive class', () => {
 				const result = await arDrive.sendCommunityTip('12345');
 
 				// Can't know the txID ahead of time without mocking arweave deeply
-				expect(result.tipData.txId.length).to.equal(expectedTrxIdLength);
+				expect(result.tipData.txId).to.match(trxIdRegex);
 				expect(result.tipData.recipient).to.equal(stubArweaveAddress);
 				expect(result.tipData.winston).to.equal('12345');
 				expect(result.reward).to.equal('0');
@@ -244,6 +245,31 @@ describe('ArDrive class', () => {
 			});
 		});
 	});
+
+	describe('file function', () => {
+		describe('uploadPublicFile', () => {
+			it('returns the correct ArFSResult', async () => {
+				stub(walletDao, 'walletHasBalance').callsFake(() => {
+					return Promise.resolve(true);
+				});
+				stub(arfsDao, 'getDriveIdForFolderId').callsFake(() => {
+					return Promise.resolve(stubEntityID);
+				});
+				stub(arfsDao, 'getPublicDrive').callsFake(() => {
+					return Promise.resolve(stubPublicDrive);
+				});
+				stub(arfsDao, 'getPublicFolder').callsFake(() => {
+					return Promise.resolve(stubPublicFolder);
+				});
+				const wrappedFile = wrapFileOrFolder('test_wallet.json');
+				const result = await arDrive.uploadPublicFile(
+					stubEntityID,
+					new ArFSFileToUpload('test_wallet.json', wrappedFile.fileStats)
+				);
+				assertUploadFileExpectations(result, 3204, 166, 0, '10000000');
+			});
+		});
+	});
 });
 
 function assertCreateDriveExpectations(
@@ -259,14 +285,14 @@ function assertCreateDriveExpectations(
 	expect(result.created[0].dataTxId).to.be.undefined;
 	expect(result.created[0].entityId).to.match(entityIdRegex);
 	expect(result.created[0].key).to.equal(expectedDriveKey);
-	expect(result.created[0].metadataTxId.length).to.equal(expectedTrxIdLength);
+	expect(result.created[0].metadataTxId).to.match(trxIdRegex);
 	expect(result.created[0].type).to.equal('drive');
 
 	// Ensure that the root folder entity looks healthy
 	expect(result.created[1].dataTxId).to.be.undefined;
 	expect(result.created[1].entityId).to.match(entityIdRegex);
 	expect(result.created[1].key).to.equal(expectedDriveKey);
-	expect(result.created[1].metadataTxId.length).to.equal(expectedTrxIdLength);
+	expect(result.created[1].metadataTxId).to.equal(trxIdRegex);
 	expect(result.created[1].type).to.equal('folder');
 
 	// There should be no tips
@@ -274,9 +300,9 @@ function assertCreateDriveExpectations(
 
 	// Ensure that the fees look healthy
 	expect(Object.keys(result.fees).length).to.equal(2);
-	expect(Object.keys(result.fees)[0].length).to.equal(expectedTrxIdLength);
+	expect(Object.keys(result.fees)[0]).to.match(trxIdRegex);
 	expect(Object.values(result.fees)[0]).to.equal(driveFee);
-	expect(Object.keys(result.fees)[1].length).to.equal(expectedTrxIdLength);
+	expect(Object.keys(result.fees)[1]).to.match(trxIdRegex);
 	expect(Object.values(result.fees)[1]).to.equal(folderFee);
 }
 
@@ -288,7 +314,7 @@ function assertCreateFolderExpectations(result: ArFSResult, folderFee: number, e
 	expect(result.created[0].dataTxId).to.be.undefined;
 	expect(result.created[0].entityId).to.match(entityIdRegex);
 	expect(result.created[0].key).to.equal(expectedDriveKey);
-	expect(result.created[0].metadataTxId.length).to.equal(expectedTrxIdLength);
+	expect(result.created[0].metadataTxId).to.match(trxIdRegex);
 	expect(result.created[0].type).to.equal('folder');
 
 	// There should be no tips
@@ -296,6 +322,49 @@ function assertCreateFolderExpectations(result: ArFSResult, folderFee: number, e
 
 	// Ensure that the fees look healthy
 	expect(Object.keys(result.fees).length).to.equal(1);
-	expect(Object.keys(result.fees)[0].length).to.equal(expectedTrxIdLength);
+	expect(Object.keys(result.fees)[0]).to.match(trxIdRegex);
 	expect(Object.values(result.fees)[0]).to.equal(folderFee);
+}
+
+function assertUploadFileExpectations(
+	result: ArFSResult,
+	fileFee: number,
+	metadataFee: number,
+	tipFee: number,
+	expectedTip: Winston,
+	expectedFileKey?: string
+) {
+	console.log(`${JSON.stringify(result, null, 4)}`);
+	// Ensure that 1 arfs entity was created
+	expect(result.created.length).to.equal(1);
+
+	// Ensure that the file data entity looks healthy
+	expect(result.created[0].dataTxId).to.match(trxIdRegex);
+	expect(result.created[0].entityId).to.match(entityIdRegex);
+	expect(result.created[0].key).to.equal(expectedFileKey);
+	expect(result.created[0].metadataTxId).to.match(trxIdRegex);
+	expect(result.created[0].type).to.equal('file');
+
+	// There should be 1 tip
+	expect(result.tips.length).to.equal(1);
+	const uploadTip = result.tips[0];
+	expect(uploadTip.txId).to.match(trxIdRegex);
+	expect(uploadTip.winston).to.equal(expectedTip);
+	expect(uploadTip.recipient).to.match(trxIdRegex);
+
+	// Ensure that the fees look healthy
+	expect(Object.keys(result.fees).length).to.equal(3);
+
+	const feeKeys = Object.keys(result.fees);
+	expect(feeKeys[0]).to.match(trxIdRegex);
+	expect(feeKeys[0]).to.equal(result.created[0].dataTxId);
+	expect(result.fees[result.created[0].dataTxId]).to.equal(fileFee);
+
+	expect(feeKeys[1]).to.match(trxIdRegex);
+	expect(feeKeys[1]).to.equal(result.created[0].metadataTxId);
+	expect(result.fees[result.created[0].metadataTxId]).to.equal(metadataFee);
+
+	expect(feeKeys[2]).to.match(trxIdRegex);
+	expect(feeKeys[2]).to.equal(uploadTip.txId);
+	expect(result.fees[uploadTip.txId]).to.equal(tipFee);
 }
