@@ -267,7 +267,7 @@ describe('ArDrive class', () => {
 					stubEntityID,
 					new ArFSFileToUpload('test_wallet.json', wrappedFile.fileStats)
 				);
-				assertUploadFileExpectations(result, 3204, 166, 0, '10000000');
+				assertUploadFileExpectations(result, 3204, 166, 0, '10000000', 'public');
 			});
 		});
 
@@ -318,7 +318,7 @@ function assertCreateDriveExpectations(
 	expect(result.created[1].dataTxId).to.be.undefined;
 	expect(result.created[1].entityId).to.match(entityIdRegex);
 	expect(result.created[1].key).to.equal(expectedDriveKey);
-	expect(result.created[1].metadataTxId).to.equal(trxIdRegex);
+	expect(result.created[1].metadataTxId).to.match(trxIdRegex);
 	expect(result.created[1].type).to.equal('folder');
 
 	// There should be no tips
