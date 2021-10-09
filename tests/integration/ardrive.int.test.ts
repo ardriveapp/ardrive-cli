@@ -308,28 +308,33 @@ function assertCreateDriveExpectations(
 	expect(result.created.length).to.equal(2);
 
 	// Ensure that the drive entity looks healthy
-	expect(result.created[0].dataTxId).to.be.undefined;
-	expect(result.created[0].entityId).to.match(entityIdRegex);
-	expect(result.created[0].key).to.equal(expectedDriveKey);
-	expect(result.created[0].metadataTxId).to.match(trxIdRegex);
-	expect(result.created[0].type).to.equal('drive');
+	const driveEntity = result.created[0];
+	expect(driveEntity.dataTxId).to.be.undefined;
+	expect(driveEntity.entityId).to.match(entityIdRegex);
+	expect(driveEntity.key).to.equal(expectedDriveKey);
+	expect(driveEntity.metadataTxId).to.match(trxIdRegex);
+	expect(driveEntity.type).to.equal('drive');
 
 	// Ensure that the root folder entity looks healthy
-	expect(result.created[1].dataTxId).to.be.undefined;
-	expect(result.created[1].entityId).to.match(entityIdRegex);
-	expect(result.created[1].key).to.equal(expectedDriveKey);
-	expect(result.created[1].metadataTxId).to.match(trxIdRegex);
-	expect(result.created[1].type).to.equal('folder');
+	const rootFolderEntity = result.created[1];
+	expect(rootFolderEntity.dataTxId).to.be.undefined;
+	expect(rootFolderEntity.entityId).to.match(entityIdRegex);
+	expect(rootFolderEntity.key).to.equal(expectedDriveKey);
+	expect(rootFolderEntity.metadataTxId).to.match(trxIdRegex);
+	expect(rootFolderEntity.type).to.equal('folder');
 
 	// There should be no tips
 	expect(result.tips).to.be.empty;
 
 	// Ensure that the fees look healthy
-	expect(Object.keys(result.fees).length).to.equal(2);
-	expect(Object.keys(result.fees)[0]).to.match(trxIdRegex);
-	expect(Object.values(result.fees)[0]).to.equal(driveFee);
-	expect(Object.keys(result.fees)[1]).to.match(trxIdRegex);
-	expect(Object.values(result.fees)[1]).to.equal(folderFee);
+	const feeKeys = Object.keys(result.fees);
+	expect(feeKeys.length).to.equal(2);
+	expect(feeKeys[0]).to.equal(driveEntity.metadataTxId);
+	expect(feeKeys[0]).to.match(trxIdRegex);
+	expect(result.fees[driveEntity.metadataTxId]).to.equal(driveFee);
+	expect(feeKeys[1]).to.equal(rootFolderEntity.metadataTxId);
+	expect(feeKeys[1]).to.match(trxIdRegex);
+	expect(result.fees[rootFolderEntity.metadataTxId]).to.equal(folderFee);
 }
 
 function assertCreateFolderExpectations(result: ArFSResult, folderFee: number, expectedDriveKey?: string) {
@@ -337,19 +342,22 @@ function assertCreateFolderExpectations(result: ArFSResult, folderFee: number, e
 	expect(result.created.length).to.equal(1);
 
 	// Ensure that the folder entity looks healthy
-	expect(result.created[0].dataTxId).to.be.undefined;
-	expect(result.created[0].entityId).to.match(entityIdRegex);
-	expect(result.created[0].key).to.equal(expectedDriveKey);
-	expect(result.created[0].metadataTxId).to.match(trxIdRegex);
-	expect(result.created[0].type).to.equal('folder');
+	const folderEntity = result.created[0];
+	expect(folderEntity.dataTxId).to.be.undefined;
+	expect(folderEntity.entityId).to.match(entityIdRegex);
+	expect(folderEntity.key).to.equal(expectedDriveKey);
+	expect(folderEntity.metadataTxId).to.match(trxIdRegex);
+	expect(folderEntity.type).to.equal('folder');
 
 	// There should be no tips
 	expect(result.tips).to.be.empty;
 
 	// Ensure that the fees look healthy
-	expect(Object.keys(result.fees).length).to.equal(1);
-	expect(Object.keys(result.fees)[0]).to.match(trxIdRegex);
-	expect(Object.values(result.fees)[0]).to.equal(folderFee);
+	const feeKeys = Object.keys(result.fees);
+	expect(feeKeys.length).to.equal(1);
+	expect(feeKeys[0]).to.match(trxIdRegex);
+	expect(feeKeys[0]).to.equal(folderEntity.metadataTxId);
+	expect(result.fees[folderEntity.metadataTxId]).to.equal(folderFee);
 }
 
 function assertUploadFileExpectations(
@@ -364,17 +372,18 @@ function assertUploadFileExpectations(
 	expect(result.created.length).to.equal(1);
 
 	// Ensure that the file data entity looks healthy
-	expect(result.created[0].dataTxId).to.match(trxIdRegex);
-	expect(result.created[0].entityId).to.match(entityIdRegex);
+	const fileEntity = result.created[0];
+	expect(fileEntity.dataTxId).to.match(trxIdRegex);
+	expect(fileEntity.entityId).to.match(entityIdRegex);
 	switch (drivePrivacy) {
 		case 'public':
-			expect(result.created[0].key).to.equal(undefined);
+			expect(fileEntity.key).to.equal(undefined);
 			break;
 		case 'private':
-			expect(result.created[0].key).to.match(fileKeyRegex);
+			expect(fileEntity.key).to.match(fileKeyRegex);
 	}
-	expect(result.created[0].metadataTxId).to.match(trxIdRegex);
-	expect(result.created[0].type).to.equal('file');
+	expect(fileEntity.metadataTxId).to.match(trxIdRegex);
+	expect(fileEntity.type).to.equal('file');
 
 	// There should be 1 tip
 	expect(result.tips.length).to.equal(1);
@@ -388,12 +397,12 @@ function assertUploadFileExpectations(
 
 	const feeKeys = Object.keys(result.fees);
 	expect(feeKeys[0]).to.match(trxIdRegex);
-	expect(feeKeys[0]).to.equal(result.created[0].dataTxId);
-	expect(result.fees[result.created[0].dataTxId]).to.equal(fileFee);
+	expect(feeKeys[0]).to.equal(fileEntity.dataTxId);
+	expect(result.fees[fileEntity.dataTxId]).to.equal(fileFee);
 
 	expect(feeKeys[1]).to.match(trxIdRegex);
-	expect(feeKeys[1]).to.equal(result.created[0].metadataTxId);
-	expect(result.fees[result.created[0].metadataTxId]).to.equal(metadataFee);
+	expect(feeKeys[1]).to.equal(fileEntity.metadataTxId);
+	expect(result.fees[fileEntity.metadataTxId]).to.equal(metadataFee);
 
 	expect(feeKeys[2]).to.match(trxIdRegex);
 	expect(feeKeys[2]).to.equal(uploadTip.txId);
