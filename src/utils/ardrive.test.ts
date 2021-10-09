@@ -1,7 +1,6 @@
 import Arweave from 'arweave';
 import { expect } from 'chai';
 import { SinonStubbedInstance, stub } from 'sinon';
-import { arDriveFactory } from '../../src';
 import { ArDrive, stubEntityID, stubTransactionID } from '../../src/ardrive';
 import {
 	ArFSPublicDriveTransactionData,
@@ -17,13 +16,14 @@ import { WalletDAO } from '../../src/wallet_new';
 import { expectAsyncErrorThrow } from '../../src/utils/test_helpers';
 import { ArDriveCommunityOracle } from '../../src/community/ardrive_community_oracle';
 import { CommunityOracle } from '../../src/community/community_oracle';
+import { ArFSDAO } from '../arfsdao';
 
 describe('ArDrive class', () => {
 	let arDrive: ArDrive;
 	let arweaveOracleStub: SinonStubbedInstance<ArweaveOracle>;
 	let communityOracleStub: SinonStubbedInstance<CommunityOracle>;
 	let priceEstimator: ARDataPriceRegressionEstimator;
-	let walletDao: SinonStubbedInstance<WalletDAO>;
+	let walletDao: WalletDAO;
 	const fakeArweave = Arweave.init({
 		host: 'localhost',
 		port: 443,
@@ -47,20 +47,18 @@ describe('ArDrive class', () => {
 		arweaveOracleStub.getWinstonPriceForByteCount.callsFake((input) => Promise.resolve(input));
 		communityOracleStub = stub(new ArDriveCommunityOracle(fakeArweave));
 		priceEstimator = new ARDataPriceRegressionEstimator(true, arweaveOracleStub);
-		walletDao = stub(new WalletDAO(fakeArweave, 'Integration Test', '1.0'));
-		walletDao.walletHasBalance.callsFake(() => {
-			return Promise.resolve(true);
-		});
-		const unknownDao = walletDao as unknown;
-		arDrive = arDriveFactory({
-			wallet: wallet,
-			priceEstimator: priceEstimator,
-			communityOracle: communityOracleStub,
-			feeMultiple: 1.0,
-			dryRun: true,
-			arweave: fakeArweave,
-			walletDao: unknownDao as WalletDAO
-		});
+		walletDao = new WalletDAO(fakeArweave, 'Unit Test', '1.0');
+		arDrive = new ArDrive(
+			wallet,
+			walletDao,
+			new ArFSDAO(wallet, fakeArweave, true, 'Unit Test', '1.0'),
+			communityOracleStub,
+			'Unit Test',
+			'1.0',
+			priceEstimator,
+			1.0,
+			true
+		);
 	});
 
 	describe('encryptedDataSize function', () => {
@@ -94,8 +92,8 @@ describe('ArDrive class', () => {
 	describe('getTipTags function', () => {
 		it('returns the expected tags', () => {
 			const baseTags = [
-				{ name: 'App-Name', value: 'ArDrive-CLI' },
-				{ name: 'App-Version', value: '2.0' }
+				{ name: 'App-Name', value: 'Unit Test' },
+				{ name: 'App-Version', value: '1.0' }
 			];
 			const inputsAndExpectedOutputs = [
 				[undefined, [...baseTags, { name: 'Tip-Type', value: 'data upload' }]],
@@ -121,10 +119,10 @@ describe('ArDrive class', () => {
 		});
 
 		it('throws an error when there is an insufficient wallet balance', async () => {
-			walletDao.walletHasBalance.callsFake(() => {
+			stub(walletDao, 'walletHasBalance').callsFake(() => {
 				return Promise.resolve(false);
 			});
-			walletDao.getWalletWinstonBalance.callsFake(() => {
+			stub(walletDao, 'getWalletWinstonBalance').callsFake(() => {
 				return Promise.resolve(0);
 			});
 			await expectAsyncErrorThrow(() =>
@@ -133,11 +131,11 @@ describe('ArDrive class', () => {
 		});
 
 		it('returns the correct reward and tip data', async () => {
-			walletDao.walletHasBalance.callsFake(() => {
+			stub(walletDao, 'walletHasBalance').callsFake(() => {
 				return Promise.resolve(true);
 			});
 			communityOracleStub.getCommunityWinstonTip.callsFake(() => {
-				return Promise.resolve('98765');
+				return Promise.resolve('9876543210');
 			});
 
 			const actual = await arDrive.estimateAndAssertCostOfFileUpload(
@@ -148,17 +146,17 @@ describe('ArDrive class', () => {
 			expect(actual).to.deep.equal({
 				metaDataBaseReward: '147',
 				fileDataBaseReward: '1234576',
-				communityWinstonTip: '98765'
+				communityWinstonTip: '9876543210'
 			});
 		});
 	});
 
 	describe('estimateAndAssertCostOfFolderUpload function', () => {
 		it('throws an error when there is an insufficient wallet balance', async () => {
-			walletDao.walletHasBalance.callsFake(() => {
+			stub(walletDao, 'walletHasBalance').callsFake(() => {
 				return Promise.resolve(false);
 			});
-			walletDao.getWalletWinstonBalance.callsFake(() => {
+			stub(walletDao, 'getWalletWinstonBalance').callsFake(() => {
 				return Promise.resolve(0);
 			});
 			await expectAsyncErrorThrow(() =>
@@ -167,7 +165,7 @@ describe('ArDrive class', () => {
 		});
 
 		it('returns the correct reward data', async () => {
-			walletDao.walletHasBalance.callsFake(() => {
+			stub(walletDao, 'walletHasBalance').callsFake(() => {
 				return Promise.resolve(true);
 			});
 
@@ -180,10 +178,10 @@ describe('ArDrive class', () => {
 
 	describe('estimateAndAssertCostOfDriveCreation function', () => {
 		it('throws an error when there is an insufficient wallet balance', async () => {
-			walletDao.walletHasBalance.callsFake(() => {
+			stub(walletDao, 'walletHasBalance').callsFake(() => {
 				return Promise.resolve(false);
 			});
-			walletDao.getWalletWinstonBalance.callsFake(() => {
+			stub(walletDao, 'getWalletWinstonBalance').callsFake(() => {
 				return Promise.resolve(0);
 			});
 			await expectAsyncErrorThrow(() =>
@@ -195,7 +193,7 @@ describe('ArDrive class', () => {
 		});
 
 		it('returns the correct reward data', async () => {
-			walletDao.walletHasBalance.callsFake(() => {
+			stub(walletDao, 'walletHasBalance').callsFake(() => {
 				return Promise.resolve(true);
 			});
 
@@ -212,17 +210,17 @@ describe('ArDrive class', () => {
 
 	describe('estimateAndAssertCostOfMoveFile function', () => {
 		it('throws an error when there is an insufficient wallet balance', async () => {
-			walletDao.walletHasBalance.callsFake(() => {
+			stub(walletDao, 'walletHasBalance').callsFake(() => {
 				return Promise.resolve(false);
 			});
-			walletDao.getWalletWinstonBalance.callsFake(() => {
+			stub(walletDao, 'getWalletWinstonBalance').callsFake(() => {
 				return Promise.resolve(0);
 			});
 			await expectAsyncErrorThrow(() => arDrive.estimateAndAssertCostOfMoveFile(stubPublicFileTransactionData));
 		});
 
 		it('returns the correct reward data', async () => {
-			walletDao.walletHasBalance.callsFake(() => {
+			stub(walletDao, 'walletHasBalance').callsFake(() => {
 				return Promise.resolve(true);
 			});
 

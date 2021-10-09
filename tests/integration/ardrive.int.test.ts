@@ -1,8 +1,7 @@
 import Arweave from 'arweave';
 import { expect } from 'chai';
 import { stub } from 'sinon';
-import { arDriveFactory } from '../../src';
-import { ArFSResult, PrivateDriveKeyData, stubEntityID, stubTransactionID } from '../../src/ardrive';
+import { ArDrive, ArFSResult, PrivateDriveKeyData, stubEntityID, stubTransactionID } from '../../src/ardrive';
 import { readJWKFile, urlEncodeHashKey } from '../../src/utils';
 import { ARDataPriceRegressionEstimator } from '../../src/utils/ar_data_price_regression_estimator';
 import { GatewayOracle } from '../../src/utils/gateway_oracle';
@@ -138,16 +137,17 @@ describe('ArDrive class', () => {
 	const walletDao = new WalletDAO(fakeArweave, 'Integration Test', '1.0');
 	const arfsDao = new ArFSDAO(wallet, fakeArweave, true, 'Integration Test', '1.0');
 
-	const arDrive = arDriveFactory({
-		wallet: wallet,
-		priceEstimator: priceEstimator,
-		communityOracle: communityOracle,
-		feeMultiple: 1.0,
-		dryRun: true,
-		arweave: fakeArweave,
+	const arDrive = new ArDrive(
+		wallet,
 		walletDao,
-		arfsDao
-	});
+		arfsDao,
+		communityOracle,
+		'Integration Test',
+		'1.0',
+		priceEstimator,
+		1.0,
+		true
+	);
 
 	beforeEach(async () => {
 		// Set pricing algo up as x = y (bytes = Winston)
