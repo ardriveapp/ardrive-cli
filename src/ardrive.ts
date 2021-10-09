@@ -117,6 +117,26 @@ interface RecursivePrivateBulkUploadParams extends RecursiveBulkUploadParams {
 	driveKey: DriveKey;
 	folderData: ArFSPrivateFolderTransactionData;
 }
+
+interface CreatePublicFolderParams {
+	folderName: string;
+	driveId: DriveID;
+	parentFolderId?: FolderID;
+}
+
+interface CreatePrivateFolderParams extends CreatePublicFolderParams {
+	driveKey: DriveKey;
+}
+
+interface MovePublicFolderParams {
+	folderId: FolderID;
+	newParentFolderId: FolderID;
+}
+
+interface MovePrivateFolderParams extends MovePublicFolderParams {
+	driveKey: DriveKey;
+}
+
 export abstract class ArDriveType {
 	protected abstract readonly arFsDao: ArFSDAOType;
 }
@@ -304,7 +324,7 @@ export class ArDrive extends ArDriveAnonymous {
 		});
 	}
 
-	async movePublicFolder(folderId: FolderID, newParentFolderId: FolderID): Promise<ArFSResult> {
+	async movePublicFolder({ folderId, newParentFolderId }: MovePublicFolderParams): Promise<ArFSResult> {
 		const parentFolderDriveId = await this.getDriveIdAndAssertDrive(newParentFolderId);
 
 		const originalFolderMetaData = await this.getPublicFolder(folderId);
@@ -343,7 +363,7 @@ export class ArDrive extends ArDriveAnonymous {
 		});
 	}
 
-	async movePrivateFolder(folderId: FolderID, newParentFolderId: FolderID, driveKey: DriveKey): Promise<ArFSResult> {
+	async movePrivateFolder({ folderId, newParentFolderId, driveKey }: MovePrivateFolderParams): Promise<ArFSResult> {
 		const parentFolderDriveId = await this.getDriveIdAndAssertDrive(newParentFolderId, driveKey);
 		const originalFolderMetaData = await this.getPrivateFolder(folderId, driveKey);
 
@@ -789,7 +809,7 @@ export class ArDrive extends ArDriveAnonymous {
 		};
 	}
 
-	async createPublicFolder(folderName: string, driveId: DriveID, parentFolderId?: FolderID): Promise<ArFSResult> {
+	async createPublicFolder({ folderName, driveId, parentFolderId }: CreatePublicFolderParams): Promise<ArFSResult> {
 		// Assert that there's enough AR available in the wallet
 		const folderData = new ArFSPublicFolderTransactionData(folderName);
 		const { metaDataBaseReward } = await this.estimateAndAssertCostOfFolderUpload(folderData);
@@ -818,12 +838,12 @@ export class ArDrive extends ArDriveAnonymous {
 		});
 	}
 
-	async createPrivateFolder(
-		folderName: string,
-		driveId: DriveID,
-		driveKey: DriveKey,
-		parentFolderId?: FolderID
-	): Promise<ArFSResult> {
+	async createPrivateFolder({
+		folderName,
+		driveId,
+		driveKey,
+		parentFolderId
+	}: CreatePrivateFolderParams): Promise<ArFSResult> {
 		// Assert that there's enough AR available in the wallet
 		const folderData = await ArFSPrivateFolderTransactionData.from(folderName, driveKey);
 

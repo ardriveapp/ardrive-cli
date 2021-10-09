@@ -31,13 +31,19 @@ new CLICommand({
 
 		const parentFolderId = parameters.getRequiredParameterValue(ParentFolderIdParameter);
 		const driveId = await ardrive.getDriveIdForFolderId(options.parentFolderId);
+		const folderName = options.folderName;
 
 		const createFolderResult = await (async function () {
 			if (await parameters.getIsPrivate()) {
 				const driveKey = await parameters.getDriveKey(driveId);
-				return ardrive.createPrivateFolder(options.folderName, driveId, driveKey, parentFolderId);
+				return ardrive.createPrivateFolder({
+					folderName,
+					driveId,
+					driveKey,
+					parentFolderId
+				});
 			} else {
-				return ardrive.createPublicFolder(options.folderName, driveId, parentFolderId);
+				return ardrive.createPublicFolder({ folderName, driveId, parentFolderId });
 			}
 		})();
 		console.log(JSON.stringify(createFolderResult, null, 4));
