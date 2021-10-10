@@ -9,7 +9,7 @@ import {
 import Arweave from 'arweave';
 import { ArFSFileOrFolderEntity, graphQLURL } from '../../arfsdao';
 import { buildQuery } from '../../query';
-import { ArweaveAddress, DriveID, EntityID, EntityKey, FileID, FolderID, TransactionID, UnixTime } from '../../types';
+import { ArweaveAddress, DriveID, EntityID, EntityKey, FolderID, TransactionID, UnixTime } from '../../types';
 
 export interface ArFSMetadataEntityBuilderParams {
 	entityId: EntityID;
@@ -116,10 +116,6 @@ export abstract class ArFSMetadataEntityBuilder<T extends ArFSEntity> {
 
 export abstract class ArFSFileOrFolderBuilder<T extends ArFSFileOrFolderEntity> extends ArFSMetadataEntityBuilder<T> {
 	parentFolderId?: FolderID;
-
-	constructor(protected readonly entityId: FileID | FolderID, protected readonly arweave: Arweave) {
-		super({ entityId, arweave });
-	}
 
 	protected async parseFromArweaveNode(node?: GQLNodeInterface): Promise<GQLTagInterface[]> {
 		const unparsedTags: GQLTagInterface[] = [];

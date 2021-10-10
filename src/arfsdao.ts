@@ -79,13 +79,6 @@ import {
 	movePublicFileResultFactory,
 	movePublicFolderResultFactory
 } from './arfs_entity_result_factory';
-import {
-	ArFSMetadataEntityBuilder,
-	ArFSMetadataEntityBuilderFactoryFunction,
-	ArFSMetadataEntityBuilderParams,
-	ArFSPrivateMetadataEntityBuilderParams,
-	ArFSPublicMetadataEntityBuilderParams
-} from './utils/arfs_builders/arfs_builders';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 
@@ -223,82 +216,20 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		return this.getDriveID(folderId, 'Folder-Id');
 	}
 
-	async getDrive<
-		R extends ArFSPublicDrive | ArFSPrivateDrive,
-		B extends ArFSMetadataEntityBuilder<R>,
-		P extends ArFSMetadataEntityBuilderParams,
-		F extends ArFSMetadataEntityBuilderFactoryFunction<R, B, P>
-	>(driveId: DriveID, builderFactory: F, builderFactoryParams: P, drivePrivacy: DrivePrivacy): Promise<R> {
-		const gqlQuery = buildQuery([
-			{ name: 'Drive-Id', value: driveId },
-			{ name: 'Entity-Type', value: 'drive' },
-			{ name: 'Drive-Privacy', value: drivePrivacy }
-		]);
-
-		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
-		const { data } = response.data;
-		const { transactions } = data;
-		const edges: GQLEdgeInterface[] = transactions.edges;
-
-		if (!edges.length) {
-			throw new Error(`${drivePrivacy} drive with Drive ID ${driveId} not found or is not ${drivePrivacy}!`);
-		}
-
-		const driveBuilder = builderFactory(builderFactoryParams);
-		return await driveBuilder.build();
-	}
-
 	async getPublicDrive(driveId: DriveID): Promise<ArFSPublicDrive> {
-		const driveBuilderFn = ({ entityId, arweave }: ArFSMetadataEntityBuilderParams) => {
-			return new ArFSPublicDriveBuilder({ entityId, arweave });
-		};
-		return this.getDrive<
-			ArFSPublicDrive,
-			ArFSPublicDriveBuilder,
-			ArFSPublicMetadataEntityBuilderParams,
-			ArFSMetadataEntityBuilderFactoryFunction<
-				ArFSPublicDrive,
-				ArFSPublicDriveBuilder,
-				ArFSPublicMetadataEntityBuilderParams
-			>
-		>(driveId, driveBuilderFn, { entityId: driveId, arweave: this.arweave }, 'public');
+		return new ArFSPublicDriveBuilder({ entityId: driveId, arweave: this.arweave }).build();
 	}
 
 	async getPrivateDrive(driveId: DriveID, driveKey: DriveKey): Promise<ArFSPrivateDrive> {
-		const driveBuilderFn = ({ entityId, arweave, key }: ArFSPrivateMetadataEntityBuilderParams) => {
-			return new ArFSPrivateDriveBuilder({ entityId, arweave, key });
-		};
-		return this.getDrive<
-			ArFSPrivateDrive,
-			ArFSPrivateDriveBuilder,
-			ArFSPrivateMetadataEntityBuilderParams,
-			ArFSMetadataEntityBuilderFactoryFunction<
-				ArFSPrivateDrive,
-				ArFSPrivateDriveBuilder,
-				ArFSPrivateMetadataEntityBuilderParams
-			>
-		>(driveId, driveBuilderFn, { entityId: driveId, arweave: this.arweave, key: driveKey }, 'private');
+		return new ArFSPrivateDriveBuilder({ entityId: driveId, arweave: this.arweave, key: driveKey }).build();
 	}
 
 	async getPublicFolder(folderId: FolderID): Promise<ArFSPublicFolder> {
-		const gqlQuery = buildQuery([{ name: 'Folder-Id', value: folderId }]);
-
-		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
-
-		const { data } = response.data;
-		const { transactions } = data;
-		const { edges } = transactions;
-
-		if (!edges.length) {
-			throw new Error(`Public folder with Folder ID ${folderId} not found!`);
-		}
-
-		const folderBuilder = new ArFSPublicFolderBuilder(folderId, this.arweave);
-		return await folderBuilder.build();
+		return new ArFSPublicFolderBuilder({ entityId: folderId, arweave: this.arweave }).build();
 	}
 
 	async getPublicFile(fileId: FileID): Promise<ArFSPublicFile> {
-		return new ArFSPublicFileBuilder(fileId, this.arweave).build();
+		return new ArFSPublicFileBuilder({ entityId: fileId, arweave: this.arweave }).build();
 	}
 
 	async getPublicFilesWithParentFolderIds(
@@ -326,7 +257,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 			const files: Promise<ArFSPublicFile>[] = edges.map(async (edge: GQLEdgeInterface) => {
 				const { node } = edge;
 				cursor = edge.cursor;
-				const fileBuilder = await ArFSPublicFileBuilder.fromArweaveNode(node, this.arweave);
+				const fileBuilder = ArFSPublicFileBuilder.fromArweaveNode(node, this.arweave);
 				return fileBuilder.build(node);
 			});
 			allFiles.push(...(await Promise.all(files)));
