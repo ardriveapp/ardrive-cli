@@ -394,17 +394,8 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		// Generate a new folder ID
 		const folderId = uuidv4();
 
-		// Get the current time so the app can display the "created" data later on
-		const unixTime = Math.round(Date.now() / 1000);
-
 		// Create a root folder metadata transaction
-		const folderMetadata = new ArFSPublicFolderMetaDataPrototype(
-			folderData,
-			unixTime,
-			driveId,
-			folderId,
-			parentFolderId
-		);
+		const folderMetadata = new ArFSPublicFolderMetaDataPrototype(folderData, driveId, folderId, parentFolderId);
 		const folderTrx = await this.prepareArFSObjectTransaction(folderMetadata, rewardSettings);
 
 		// Execute the upload
@@ -450,17 +441,8 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		// Generate a new folder ID
 		const folderId = uuidv4();
 
-		// Get the current time so the app can display the "created" data later on
-		const unixTime = Math.round(Date.now() / 1000);
-
 		// Create a folder metadata transaction
-		const folderMetadata = new ArFSPrivateFolderMetaDataPrototype(
-			unixTime,
-			driveId,
-			folderId,
-			folderData,
-			parentFolderId
-		);
+		const folderMetadata = new ArFSPrivateFolderMetaDataPrototype(driveId, folderId, folderData, parentFolderId);
 		const folderTrx = await this.prepareArFSObjectTransaction(folderMetadata, rewardSettings);
 
 		// Execute the upload
@@ -495,13 +477,9 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			syncParentFolderId: false
 		});
 
-		// Get the current time so the app can display the "created" data later on
-		const unixTime = Math.round(Date.now() / 1000);
-
 		// Create a drive metadata transaction
 		const driveMetaData = new ArFSPublicDriveMetaDataPrototype(
 			new ArFSPublicDriveTransactionData(driveName, rootFolderId),
-			unixTime,
 			driveId
 		);
 		const driveTrx = await this.prepareArFSObjectTransaction(driveMetaData, driveRewardSettings);
@@ -545,13 +523,10 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			driveKey
 		});
 
-		// Get the current time so the app can display the "created" data later on
-		const unixTime = Math.round(Date.now() / 1000);
-
 		const privateDriveData = await ArFSPrivateDriveTransactionData.from(driveName, rootFolderId, driveKey);
 
 		// Create a drive metadata transaction
-		const driveMetaData = new ArFSPrivateDriveMetaDataPrototype(unixTime, driveId, privateDriveData);
+		const driveMetaData = new ArFSPrivateDriveMetaDataPrototype(driveId, privateDriveData);
 		const driveTrx = await this.prepareArFSObjectTransaction(driveMetaData, driveRewardSettings);
 
 		// Execute the uploads
@@ -578,16 +553,14 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		R extends ArFSMoveFileResult
 	>(
 		params: ArFSMoveFileParams<O, T>,
-		metaDataFactory: (unixTime: UnixTime, driveId: DriveID, fileId: FileID, newParentFolderId: FolderID) => P,
+		metaDataFactory: (driveId: DriveID, fileId: FileID, newParentFolderId: FolderID) => P,
 		resultFactory: (metaDataTrx: Transaction, dataTxId: TransactionID, transactionData: T) => R
 	): Promise<R> {
 		const { metaDataBaseReward, transactionData, originalMetaData, newParentFolderId } = params;
-		// Get current time
-		const unixTime = Math.round(Date.now() / 1000);
 
 		const { dataTxId, fileId, driveId } = originalMetaData;
 
-		const fileMetadataPrototype = metaDataFactory(unixTime, driveId, fileId, newParentFolderId);
+		const fileMetadataPrototype = metaDataFactory(driveId, fileId, newParentFolderId);
 
 		// Prepare meta data transaction
 		const metaDataTrx = await this.prepareArFSObjectTransaction(fileMetadataPrototype, metaDataBaseReward);
@@ -604,21 +577,6 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	}
 
 	async movePrivateFile(params: ArFSMovePrivateFileParams): Promise<ArFSMovePrivateFileResult> {
-		const metaDataFactory = (
-			unixTime: number,
-			driveId: string,
-			fileId: string,
-			newParentFolderId: string
-		): ArFSPrivateFileMetaDataPrototype => {
-			return new ArFSPrivateFileMetaDataPrototype(
-				params.transactionData,
-				unixTime,
-				driveId,
-				fileId,
-				newParentFolderId
-			);
-		};
-
 		const resultFactory = (
 			metaDataTrx: Transaction,
 			dataTxId: string,
@@ -647,13 +605,11 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		metaDataBaseReward
 	}: ArFSMovePrivateFileParams): Promise<ArFSMovePrivateFileResult> {
 		// Get current time
-		const unixTime = Math.round(Date.now() / 1000);
 
 		const { dataTxId, fileId, driveId } = originalMetaData;
 
 		const fileMetadataPrototype = new ArFSPrivateFileMetaDataPrototype(
 			transactionData,
-			unixTime,
 			driveId,
 			fileId,
 			newParentFolderId
@@ -684,19 +640,10 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		newParentFolderId,
 		metaDataBaseReward
 	}: ArFSMovePublicFileParams): Promise<ArFSMoveFileResult> {
-		// Get current time
-		const unixTime = Math.round(Date.now() / 1000);
-
 		const { dataTxId, fileId, driveId } = originalMetaData;
 
 		// Prepare meta data transaction
-		const fileMetadata = new ArFSPublicFileMetaDataPrototype(
-			transactionData,
-			unixTime,
-			driveId,
-			fileId,
-			newParentFolderId
-		);
+		const fileMetadata = new ArFSPublicFileMetaDataPrototype(transactionData, driveId, fileId, newParentFolderId);
 		const metaDataTrx = await this.prepareArFSObjectTransaction(fileMetadata, metaDataBaseReward);
 
 		// Upload meta data
@@ -720,13 +667,9 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		newParentFolderId,
 		metaDataBaseReward
 	}: ArFSMovePrivateFolderParams): Promise<ArFSMovePrivateFolderResult> {
-		// Get current time
-		const unixTime = Math.round(Date.now() / 1000);
-
 		const { entityId, driveId } = originalMetaData;
 
 		const folderMetadataPrototype = new ArFSPrivateFolderMetaDataPrototype(
-			unixTime,
 			driveId,
 			entityId,
 			transactionData,
@@ -757,15 +700,11 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		newParentFolderId,
 		metaDataBaseReward
 	}: ArFSMovePublicFolderParams): Promise<ArFSMovePublicFolderResult> {
-		// Get current time
-		const unixTime = Math.round(Date.now() / 1000);
-
 		const { entityId, driveId } = originalMetaData;
 
 		// Prepare meta data transaction
 		const folderMetadata = new ArFSPublicFolderMetaDataPrototype(
 			transactionData,
-			unixTime,
 			driveId,
 			entityId,
 			newParentFolderId
@@ -800,9 +739,6 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		// Generate file ID
 		const fileId = uuidv4();
 
-		// Get current time
-		const unixTime = Math.round(Date.now() / 1000);
-
 		// Gather file information
 		const { fileSize, dataContentType, lastModifiedDateMS } = wrappedFile.gatherFileInfo();
 
@@ -831,7 +767,6 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 				dataTrx.id,
 				dataContentType
 			),
-			unixTime,
 			driveId,
 			fileId,
 			parentFolderId
@@ -870,9 +805,6 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		// Generate file ID
 		const fileId = uuidv4();
 
-		// Get current time
-		const unixTime = Math.round(Date.now() / 1000);
-
 		// Gather file information
 		const { fileSize, dataContentType, lastModifiedDateMS } = wrappedFile.gatherFileInfo();
 
@@ -903,7 +835,6 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		);
 		const fileMetadataPrototype = new ArFSPrivateFileMetaDataPrototype(
 			fileMetaData,
-			unixTime,
 			driveId,
 			fileId,
 			parentFolderId
