@@ -105,9 +105,12 @@ export interface ArFSUploadFileResult {
 	fileId: FileID;
 }
 
-export interface ArFSMovePublicFileResult {
+export interface ArFSMoveEntityResult {
 	metaDataTrxId: TransactionID;
 	metaDataTrxReward: TransactionID;
+}
+
+export interface ArFSMovePublicFileResult extends ArFSMoveEntityResult {
 	dataTrxId: TransactionID;
 }
 
@@ -115,10 +118,7 @@ export interface ArFSMovePrivateFileResult extends ArFSMovePublicFileResult {
 	fileKey: FileKey;
 }
 
-export interface ArFSMovePublicFolderResult {
-	metaDataTrxId: TransactionID;
-	metaDataTrxReward: TransactionID;
-}
+export type ArFSMovePublicFolderResult = ArFSMoveEntityResult;
 
 export interface ArFSMovePrivateFolderResult extends ArFSMovePublicFolderResult {
 	driveKey: DriveKey;
@@ -565,7 +565,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		T extends ArFSFileFolderEntity,
 		U extends ArFSObjectTransactionData,
 		V extends ArFSEntityMetaDataPrototype,
-		R // TODO: extends ArFSWriteResult
+		R extends ArFSMoveEntityResult
 	>(
 		params: ArFSMoveParams<T, U>,
 		metaDataFactory: MetaDataFactoryFunction<T, U, V>,

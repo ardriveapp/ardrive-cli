@@ -24,7 +24,7 @@ const entityIdRegex = /^([a-f]|[0-9]){8}-([a-f]|[0-9]){4}-([a-f]|[0-9]){4}-([a-f
 const trxIdRegex = /^([a-zA-Z]|[0-9]|-|_){43}$/;
 const fileKeyRegex = /^([a-zA-Z]|[0-9]|-|_|\/|\+){43}$/;
 
-describe('ArDrive class', () => {
+describe('ArDrive class - integrated', () => {
 	const wallet = readJWKFile('./test_wallet.json');
 	const stubArweaveAddress = 'abcdefghijklmnopqrxtuvwxyz123456789ABCDEFGH';
 	const getStubDriveKey = async (): Promise<DriveKey> => {
