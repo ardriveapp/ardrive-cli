@@ -14,7 +14,7 @@ new CLICommand({
 		// const shouldGetAllRevisions: boolean = options.getAllRevisions;
 
 		const result: Partial<ArFSPublicDrive | ArFSPrivateDrive> = await (async function () {
-			if (parameters.getIsPrivate()) {
+			if (await parameters.getIsPrivate()) {
 				const wallet = await parameters.getRequiredWallet();
 				const arDrive = arDriveFactory({ wallet: wallet });
 				const driveKey = await parameters.getDriveKey(driveId);
