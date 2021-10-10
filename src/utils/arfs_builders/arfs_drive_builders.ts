@@ -6,10 +6,9 @@ import {
 	GQLTagInterface,
 	Utf8ArrayToStr
 } from 'ardrive-core-js';
-import Arweave from 'arweave';
 import { ArFSPrivateDrive, ArFSPublicDrive } from '../../arfsdao';
-import { CipherIV, DriveID, DriveKey, FolderID } from '../../types';
-import { ArFSMetadataEntityBuilder } from './arfs_builders';
+import { CipherIV, DriveKey, FolderID } from '../../types';
+import { ArFSMetadataEntityBuilder, ArFSPrivateMetadataEntityBuilderParams } from './arfs_builders';
 
 export class ArFSPublicDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPublicDrive> {
 	drivePrivacy?: DrivePrivacy;
@@ -89,9 +88,11 @@ export class ArFSPrivateDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPriva
 	driveAuthMode?: DriveAuthMode;
 	cipher?: string;
 	cipherIV?: CipherIV;
+	private readonly driveKey: DriveKey;
 
-	constructor(driveId: DriveID, arweave: Arweave, private readonly driveKey: DriveKey) {
-		super(driveId, arweave);
+	constructor({ entityId: driveId, arweave, key: driveKey }: ArFSPrivateMetadataEntityBuilderParams) {
+		super({ entityId: driveId, arweave });
+		this.driveKey = driveKey;
 	}
 
 	getGqlQueryParameters(): GQLTagInterface[] {

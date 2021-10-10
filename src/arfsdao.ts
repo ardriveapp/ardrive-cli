@@ -79,6 +79,13 @@ import {
 	movePublicFileResultFactory,
 	movePublicFolderResultFactory
 } from './arfs_entity_result_factory';
+import {
+	ArFSMetadataEntityBuilder,
+	ArFSMetadataEntityBuilderFactoryFunction,
+	ArFSMetadataEntityBuilderParams,
+	ArFSPrivateMetadataEntityBuilderParams,
+	ArFSPublicMetadataEntityBuilderParams
+} from './utils/arfs_builders/arfs_builders';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 
@@ -216,25 +223,61 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		return this.getDriveID(folderId, 'Folder-Id');
 	}
 
-	async getPublicDrive(driveId: DriveID): Promise<ArFSPublicDrive> {
+	async getDrive<
+		R extends ArFSPublicDrive | ArFSPrivateDrive,
+		B extends ArFSMetadataEntityBuilder<R>,
+		P extends ArFSMetadataEntityBuilderParams,
+		F extends ArFSMetadataEntityBuilderFactoryFunction<R, B, P>
+	>(driveId: DriveID, builderFactory: F, builderFactoryParams: P, drivePrivacy: DrivePrivacy): Promise<R> {
 		const gqlQuery = buildQuery([
 			{ name: 'Drive-Id', value: driveId },
 			{ name: 'Entity-Type', value: 'drive' },
-			{ name: 'Drive-Privacy', value: 'public' }
+			{ name: 'Drive-Privacy', value: drivePrivacy }
 		]);
 
 		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
-
 		const { data } = response.data;
 		const { transactions } = data;
-		const { edges } = transactions;
+		const edges: GQLEdgeInterface[] = transactions.edges;
 
 		if (!edges.length) {
-			throw new Error(`Public drive with Drive ID ${driveId} not found!`);
+			throw new Error(`${drivePrivacy} drive with Drive ID ${driveId} not found or is not ${drivePrivacy}!`);
 		}
 
-		const driveBuilder = new ArFSPublicDriveBuilder(driveId, this.arweave);
-		return driveBuilder.build();
+		const driveBuilder = builderFactory(builderFactoryParams);
+		return await driveBuilder.build();
+	}
+
+	async getPublicDrive(driveId: DriveID): Promise<ArFSPublicDrive> {
+		const driveBuilderFn = ({ entityId, arweave }: ArFSMetadataEntityBuilderParams) => {
+			return new ArFSPublicDriveBuilder({ entityId, arweave });
+		};
+		return this.getDrive<
+			ArFSPublicDrive,
+			ArFSPublicDriveBuilder,
+			ArFSPublicMetadataEntityBuilderParams,
+			ArFSMetadataEntityBuilderFactoryFunction<
+				ArFSPublicDrive,
+				ArFSPublicDriveBuilder,
+				ArFSPublicMetadataEntityBuilderParams
+			>
+		>(driveId, driveBuilderFn, { entityId: driveId, arweave: this.arweave }, 'public');
+	}
+
+	async getPrivateDrive(driveId: DriveID, driveKey: DriveKey): Promise<ArFSPrivateDrive> {
+		const driveBuilderFn = ({ entityId, arweave, key }: ArFSPrivateMetadataEntityBuilderParams) => {
+			return new ArFSPrivateDriveBuilder({ entityId, arweave, key });
+		};
+		return this.getDrive<
+			ArFSPrivateDrive,
+			ArFSPrivateDriveBuilder,
+			ArFSPrivateMetadataEntityBuilderParams,
+			ArFSMetadataEntityBuilderFactoryFunction<
+				ArFSPrivateDrive,
+				ArFSPrivateDriveBuilder,
+				ArFSPrivateMetadataEntityBuilderParams
+			>
+		>(driveId, driveBuilderFn, { entityId: driveId, arweave: this.arweave, key: driveKey }, 'private');
 	}
 
 	async getPublicFolder(folderId: FolderID): Promise<ArFSPublicFolder> {
@@ -831,26 +874,6 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		// Sign the transaction
 		await this.arweave.transactions.sign(transaction, wallet.getPrivateKey());
 		return transaction;
-	}
-
-	async getPrivateDrive(driveId: DriveID, driveKey: DriveKey): Promise<ArFSPrivateDrive> {
-		const gqlQuery = buildQuery([
-			{ name: 'Drive-Id', value: driveId },
-			{ name: 'Entity-Type', value: 'drive' },
-			{ name: 'Drive-Privacy', value: 'private' }
-		]);
-
-		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
-		const { data } = response.data;
-		const { transactions } = data;
-		const edges: GQLEdgeInterface[] = transactions.edges;
-
-		if (!edges.length) {
-			throw new Error(`Private drive with Drive ID ${driveId} not found or is not private!`);
-		}
-
-		const drive = new ArFSPrivateDriveBuilder(driveId, this.arweave, driveKey);
-		return await drive.build();
 	}
 
 	async getPrivateFolder(folderId: FolderID, driveKey: DriveKey): Promise<ArFSPrivateFolder> {
