@@ -24,8 +24,8 @@ import {
 	ArFSPublicFileMetaDataPrototype,
 	ArFSPublicFolderMetaDataPrototype,
 	ArFSPrivateFileDataPrototype,
-	ArFSFileMetaDataPrototype,
-	ArFSPrivateFileMetaDataPrototype
+	ArFSPrivateFileMetaDataPrototype,
+	ArFSEntityMetaDataPrototype
 } from './arfs_prototypes';
 import {
 	ArFSFileMetadataTransactionData,
@@ -65,8 +65,23 @@ import { ArFSPrivateFileBuilder, ArFSPublicFileBuilder } from './utils/arfs_buil
 import { ArFSPrivateFolderBuilder, ArFSPublicFolderBuilder } from './utils/arfs_builders/arfs_folder_builders';
 import { latestRevisionFilter } from './utils/filter_methods';
 import { FolderHierarchy } from './folderHierarchy';
+import {
+	MetaDataFactoryFunction,
+	movePrivateFileMetaDataFactory,
+	movePrivateFolderMetaDataFactory,
+	movePublicFileMetaDataFactory,
+	movePublicFolderMetaDataFactory
+} from './arfs_meta_data_factory';
+import {
+	MoveEntityResultFactoryFunction,
+	movePrivateFileResultFactory,
+	movePrivateFolderResultFactory,
+	movePublicFileResultFactory,
+	movePublicFolderResultFactory
+} from './arfs_entity_result_factory';
 
 export const graphQLURL = 'https://arweave.net/graphql';
+
 export interface ArFSCreateDriveResult {
 	driveTrxId: TransactionID;
 	driveTrxReward: Winston;
@@ -90,13 +105,13 @@ export interface ArFSUploadFileResult {
 	fileId: FileID;
 }
 
-export interface ArFSMoveFileResult {
+export interface ArFSMovePublicFileResult {
 	metaDataTrxId: TransactionID;
 	metaDataTrxReward: TransactionID;
 	dataTrxId: TransactionID;
 }
 
-export interface ArFSMovePrivateFileResult extends ArFSMoveFileResult {
+export interface ArFSMovePrivateFileResult extends ArFSMovePublicFileResult {
 	fileKey: FileKey;
 }
 
@@ -546,21 +561,19 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		};
 	}
 
-	async moveFile<
-		O extends ArFSPublicFile | ArFSPrivateFile,
-		T extends ArFSFileMetadataTransactionData,
-		P extends ArFSFileMetaDataPrototype,
-		R extends ArFSMoveFileResult
+	async moveEntity<
+		T extends ArFSFileFolderEntity,
+		U extends ArFSObjectTransactionData,
+		V extends ArFSEntityMetaDataPrototype,
+		R // TODO: extends ArFSWriteResult
 	>(
-		params: ArFSMoveFileParams<O, T>,
-		metaDataFactory: (driveId: DriveID, fileId: FileID, newParentFolderId: FolderID) => P,
-		resultFactory: (metaDataTrx: Transaction, dataTxId: TransactionID, transactionData: T) => R
+		params: ArFSMoveParams<T, U>,
+		metaDataFactory: MetaDataFactoryFunction<T, U, V>,
+		resultFactory: MoveEntityResultFactoryFunction<R, U, T>
 	): Promise<R> {
 		const { metaDataBaseReward, transactionData, originalMetaData, newParentFolderId } = params;
 
-		const { dataTxId, fileId, driveId } = originalMetaData;
-
-		const fileMetadataPrototype = metaDataFactory(driveId, fileId, newParentFolderId);
+		const fileMetadataPrototype = metaDataFactory(newParentFolderId, originalMetaData, transactionData);
 
 		// Prepare meta data transaction
 		const metaDataTrx = await this.prepareArFSObjectTransaction(fileMetadataPrototype, metaDataBaseReward);
@@ -573,156 +586,43 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			}
 		}
 
-		return resultFactory(metaDataTrx, dataTxId, transactionData);
+		return resultFactory(transactionData, originalMetaData, metaDataTrx);
+	}
+
+	async movePublicFile(params: ArFSMovePublicFileParams): Promise<ArFSMovePublicFileResult> {
+		return this.moveEntity<
+			ArFSPublicFile,
+			ArFSPublicFileMetadataTransactionData,
+			ArFSPublicFileMetaDataPrototype,
+			ArFSMovePublicFileResult
+		>(params, movePublicFileMetaDataFactory, movePublicFileResultFactory);
 	}
 
 	async movePrivateFile(params: ArFSMovePrivateFileParams): Promise<ArFSMovePrivateFileResult> {
-		const resultFactory = (
-			metaDataTrx: Transaction,
-			dataTxId: string,
-			transactionData: ArFSPrivateFileMetadataTransactionData
-		): ArFSMovePrivateFileResult => {
-			return {
-				metaDataTrxId: metaDataTrx.id,
-				metaDataTrxReward: metaDataTrx.reward,
-				dataTrxId: dataTxId,
-				fileKey: transactionData.fileKey
-			};
-		};
-
-		return this.moveFile<
+		return this.moveEntity<
 			ArFSPrivateFile,
 			ArFSPrivateFileMetadataTransactionData,
 			ArFSPrivateFileMetaDataPrototype,
 			ArFSMovePrivateFileResult
-		>(params, metaDataFactory, resultFactory);
+		>(params, movePrivateFileMetaDataFactory, movePrivateFileResultFactory);
 	}
 
-	async oldmovePrivateFile({
-		originalMetaData,
-		transactionData,
-		newParentFolderId,
-		metaDataBaseReward
-	}: ArFSMovePrivateFileParams): Promise<ArFSMovePrivateFileResult> {
-		// Get current time
-
-		const { dataTxId, fileId, driveId } = originalMetaData;
-
-		const fileMetadataPrototype = new ArFSPrivateFileMetaDataPrototype(
-			transactionData,
-			driveId,
-			fileId,
-			newParentFolderId
-		);
-
-		// Prepare meta data transaction
-		const metaDataTrx = await this.prepareArFSObjectTransaction(fileMetadataPrototype, metaDataBaseReward);
-
-		// Upload meta data
-		if (!this.dryRun) {
-			const metaDataUploader = await this.arweave.transactions.getUploader(metaDataTrx);
-			while (!metaDataUploader.isComplete) {
-				await metaDataUploader.uploadChunk();
-			}
-		}
-
-		return {
-			metaDataTrxId: metaDataTrx.id,
-			metaDataTrxReward: metaDataTrx.reward,
-			dataTrxId: dataTxId,
-			fileKey: transactionData.fileKey
-		};
+	async movePublicFolder(params: ArFSMovePublicFolderParams): Promise<ArFSMovePublicFolderResult> {
+		return this.moveEntity<
+			ArFSPublicFolder,
+			ArFSPublicFolderTransactionData,
+			ArFSPublicFolderMetaDataPrototype,
+			ArFSMovePublicFolderResult
+		>(params, movePublicFolderMetaDataFactory, movePublicFolderResultFactory);
 	}
 
-	async movePublicFile({
-		originalMetaData,
-		transactionData,
-		newParentFolderId,
-		metaDataBaseReward
-	}: ArFSMovePublicFileParams): Promise<ArFSMoveFileResult> {
-		const { dataTxId, fileId, driveId } = originalMetaData;
-
-		// Prepare meta data transaction
-		const fileMetadata = new ArFSPublicFileMetaDataPrototype(transactionData, driveId, fileId, newParentFolderId);
-		const metaDataTrx = await this.prepareArFSObjectTransaction(fileMetadata, metaDataBaseReward);
-
-		// Upload meta data
-		if (!this.dryRun) {
-			const metaDataUploader = await this.arweave.transactions.getUploader(metaDataTrx);
-			while (!metaDataUploader.isComplete) {
-				await metaDataUploader.uploadChunk();
-			}
-		}
-
-		return {
-			metaDataTrxId: metaDataTrx.id,
-			metaDataTrxReward: metaDataTrx.reward,
-			dataTrxId: dataTxId
-		};
-	}
-
-	async movePrivateFolder({
-		originalMetaData,
-		transactionData,
-		newParentFolderId,
-		metaDataBaseReward
-	}: ArFSMovePrivateFolderParams): Promise<ArFSMovePrivateFolderResult> {
-		const { entityId, driveId } = originalMetaData;
-
-		const folderMetadataPrototype = new ArFSPrivateFolderMetaDataPrototype(
-			driveId,
-			entityId,
-			transactionData,
-			newParentFolderId
-		);
-
-		// Prepare meta data transaction
-		const metaDataTrx = await this.prepareArFSObjectTransaction(folderMetadataPrototype, metaDataBaseReward);
-
-		// Upload meta data
-		if (!this.dryRun) {
-			const metaDataUploader = await this.arweave.transactions.getUploader(metaDataTrx);
-			while (!metaDataUploader.isComplete) {
-				await metaDataUploader.uploadChunk();
-			}
-		}
-
-		return {
-			metaDataTrxId: metaDataTrx.id,
-			metaDataTrxReward: metaDataTrx.reward,
-			driveKey: transactionData.driveKey
-		};
-	}
-
-	async movePublicFolder({
-		originalMetaData,
-		transactionData,
-		newParentFolderId,
-		metaDataBaseReward
-	}: ArFSMovePublicFolderParams): Promise<ArFSMovePublicFolderResult> {
-		const { entityId, driveId } = originalMetaData;
-
-		// Prepare meta data transaction
-		const folderMetadata = new ArFSPublicFolderMetaDataPrototype(
-			transactionData,
-			driveId,
-			entityId,
-			newParentFolderId
-		);
-		const metaDataTrx = await this.prepareArFSObjectTransaction(folderMetadata, metaDataBaseReward);
-
-		// Upload meta data
-		if (!this.dryRun) {
-			const metaDataUploader = await this.arweave.transactions.getUploader(metaDataTrx);
-			while (!metaDataUploader.isComplete) {
-				await metaDataUploader.uploadChunk();
-			}
-		}
-
-		return {
-			metaDataTrxId: metaDataTrx.id,
-			metaDataTrxReward: metaDataTrx.reward
-		};
+	async movePrivateFolder(params: ArFSMovePrivateFolderParams): Promise<ArFSMovePrivateFolderResult> {
+		return this.moveEntity<
+			ArFSPrivateFolder,
+			ArFSPrivateFolderTransactionData,
+			ArFSPrivateFolderMetaDataPrototype,
+			ArFSMovePrivateFolderResult
+		>(params, movePrivateFolderMetaDataFactory, movePrivateFolderResultFactory);
 	}
 
 	async uploadPublicFile(
