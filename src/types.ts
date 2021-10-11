@@ -17,8 +17,9 @@ export type DriveID = string;
 export type EntityID = DriveID | FolderID | FileID;
 
 export type CipherIV = string;
-export type DriveKey = Buffer;
-export type FileKey = Buffer;
+export type EntityKey = Buffer;
+export type DriveKey = EntityKey;
+export type FileKey = EntityKey;
 
 export type UnixTime = number;
 export type ByteCount = number;

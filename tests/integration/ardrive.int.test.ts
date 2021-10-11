@@ -1,7 +1,7 @@
 import Arweave from 'arweave';
 import { expect } from 'chai';
 import { stub } from 'sinon';
-import { ArDrive, ArFSResult, PrivateDriveKeyData, stubEntityID, stubTransactionID } from '../../src/ardrive';
+import { ArDrive, ArFSResult, stubEntityID, stubTransactionID } from '../../src/ardrive';
 import { readJWKFile, urlEncodeHashKey } from '../../src/utils';
 import { ARDataPriceRegressionEstimator } from '../../src/utils/ar_data_price_regression_estimator';
 import { GatewayOracle } from '../../src/utils/gateway_oracle';
@@ -14,7 +14,8 @@ import {
 	ArFSPrivateFolder,
 	ArFSPublicDrive,
 	ArFSPublicFile,
-	ArFSPublicFolder
+	ArFSPublicFolder,
+	PrivateDriveKeyData
 } from '../../src/arfsdao';
 import { deriveDriveKey, DrivePrivacy } from 'ardrive-core-js';
 import { ArFS_O_11, DriveKey, Winston } from '../../src/types';
