@@ -306,12 +306,16 @@ describe('ArDrive class', () => {
 				stub(arfsDao, 'getPublicFolder').callsFake(() => {
 					return Promise.resolve(stubPublicFolder);
 				});
+
+				stub(communityOracle, 'getCommunityWinstonTip').resolves('1');
+				stub(communityOracle, 'selectTokenHolder').resolves(stubArweaveAddress);
+
 				const wrappedFile = wrapFileOrFolder('test_wallet.json');
 				const result = await arDrive.uploadPublicFile(
 					stubEntityID,
 					new ArFSFileToUpload('test_wallet.json', wrappedFile.fileStats)
 				);
-				assertUploadFileExpectations(result, 3204, 166, 0, '10000000', 'public');
+				assertUploadFileExpectations(result, 3204, 166, 0, '1', 'public');
 			});
 		});
 
@@ -329,6 +333,10 @@ describe('ArDrive class', () => {
 				stub(arfsDao, 'getPrivateFolder').callsFake(() => {
 					return Promise.resolve(stubPrivateFolder);
 				});
+
+				stub(communityOracle, 'getCommunityWinstonTip').resolves('1');
+				stub(communityOracle, 'selectTokenHolder').resolves(stubArweaveAddress);
+
 				const wrappedFile = wrapFileOrFolder('test_wallet.json');
 				const stubDriveKey = await getStubDriveKey();
 				const result = await arDrive.uploadPrivateFile(
@@ -336,7 +344,7 @@ describe('ArDrive class', () => {
 					new ArFSFileToUpload('test_wallet.json', wrappedFile.fileStats),
 					stubDriveKey
 				);
-				assertUploadFileExpectations(result, 3216, 182, 0, '10000000', 'private');
+				assertUploadFileExpectations(result, 3216, 182, 0, '1', 'private');
 			});
 		});
 
