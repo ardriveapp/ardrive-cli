@@ -1,8 +1,8 @@
-import { ArFSPrivateFile, ArFSPublicFile } from '../arfsdao';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { GetAllRevisionsParameter, FileIdParameter, DrivePrivacyParameters } from '../parameter_declarations';
 import { arDriveAnonymousFactory, arDriveFactory, cliWalletDao } from '..';
 import { FileID } from '../types';
+import { ArFSPrivateFile, ArFSPublicFile } from '../arfs_entities';
 
 new CLICommand({
 	name: 'file-info',

@@ -7,7 +7,8 @@ import {
 	GQLTransactionsResultInterface
 } from 'ardrive-core-js';
 import Arweave from 'arweave';
-import { ArFSFileOrFolderEntity, graphQLURL } from '../../arfsdao';
+import { graphQLURL } from '../../arfsdao';
+import { ArFSFileOrFolderEntity } from '../../arfs_entities';
 import { buildQuery } from '../../query';
 import { ArweaveAddress, DriveID, EntityID, EntityKey, FolderID, TransactionID, UnixTime } from '../../types';
 

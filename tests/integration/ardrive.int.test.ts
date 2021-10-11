@@ -7,19 +7,18 @@ import { ARDataPriceRegressionEstimator } from '../../src/utils/ar_data_price_re
 import { GatewayOracle } from '../../src/utils/gateway_oracle';
 import { JWKWallet, WalletDAO } from '../../src/wallet_new';
 import { ArDriveCommunityOracle } from '../../src/community/ardrive_community_oracle';
+import { ArFSDAO, PrivateDriveKeyData } from '../../src/arfsdao';
+import { deriveDriveKey, DrivePrivacy } from 'ardrive-core-js';
+import { ArFS_O_11, DriveKey, Winston } from '../../src/types';
+import { ArFSFileToUpload, wrapFileOrFolder } from '../../src/arfs_file_wrapper';
 import {
-	ArFSDAO,
 	ArFSPrivateDrive,
 	ArFSPrivateFile,
 	ArFSPrivateFolder,
 	ArFSPublicDrive,
 	ArFSPublicFile,
-	ArFSPublicFolder,
-	PrivateDriveKeyData
-} from '../../src/arfsdao';
-import { deriveDriveKey, DrivePrivacy } from 'ardrive-core-js';
-import { ArFS_O_11, DriveKey, Winston } from '../../src/types';
-import { ArFSFileToUpload, wrapFileOrFolder } from '../../src/arfs_file_wrapper';
+	ArFSPublicFolder
+} from '../../src/arfs_entities';
 
 const entityIdRegex = /^([a-f]|[0-9]){8}-([a-f]|[0-9]){4}-([a-f]|[0-9]){4}-([a-f]|[0-9]){4}-([a-f]|[0-9]){12}$/;
 const trxIdRegex = /^([a-zA-Z]|[0-9]|-|_){43}$/;
