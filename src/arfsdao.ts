@@ -387,10 +387,10 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 	async createDrive<R extends ArFSCreateDriveResult>(
 		driveRewardSettings: RewardSettings,
+		generateDriveIdFn: GenerateDriveIdFn,
 		createFolderFn: CreateFolderFunction,
 		createMetadataFn: CreateDriveMetaDataFactory,
-		resultFactory: ArFSCreateDriveResultFactory<R>,
-		generateDriveIdFn: GenerateDriveIdFn
+		resultFactory: ArFSCreateDriveResultFactory<R>
 	): Promise<R> {
 		// Generate a new drive ID  for the new drive
 		const driveId = generateDriveIdFn();
@@ -431,6 +431,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	): Promise<ArFSCreateDriveResult> {
 		return this.createDrive<ArFSCreateDriveResult>(
 			driveRewardSettings,
+			() => uuidv4(),
 			async (driveId) => {
 				const folderData = new ArFSPublicFolderTransactionData(driveName);
 				return this.createPublicFolder({
@@ -448,8 +449,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 					)
 				);
 			},
-			(result) => result, // No change
-			() => uuidv4()
+			(result) => result // No change
 		);
 	}
 
@@ -461,6 +461,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	): Promise<ArFSCreatePrivateDriveResult> {
 		return this.createDrive(
 			driveRewardSettings,
+			() => newDriveData.driveId,
 			async (driveId) => {
 				const folderData = await ArFSPrivateFolderTransactionData.from(driveName, newDriveData.driveKey);
 				return this.createPrivateFolder({
@@ -481,8 +482,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			},
 			(result) => {
 				return { ...result, driveKey: newDriveData.driveKey }; // Add drive key for private return type
-			},
-			() => newDriveData.driveId
+			}
 		);
 	}
 

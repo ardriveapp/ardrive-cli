@@ -587,7 +587,7 @@ export class ArDrive extends ArDriveAnonymous {
 			throw new Error(`dataSize must be non-negative, integer value! ${dataSize} is invalid!`);
 		}
 		if (dataSize > Number.MAX_SAFE_INTEGER - 16) {
-			throw new Error(`Max unencrypted dataSize allowed is ${Number.MAX_SAFE_INTEGER - 16}!`);
+			throw new Error(`Max un-encrypted dataSize allowed is ${Number.MAX_SAFE_INTEGER - 16}!`);
 		}
 		const modulo16 = dataSize % 16;
 		return dataSize - modulo16 + 16;
