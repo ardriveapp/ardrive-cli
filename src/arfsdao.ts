@@ -8,11 +8,13 @@ import {
 	ArFSEntity,
 	ArFSFileFolderEntity,
 	ContentType,
+	deriveDriveKey,
 	DriveAuthMode,
 	DrivePrivacy,
 	EntityType,
 	GQLEdgeInterface,
 	GQLTagInterface,
+	JWKInterface,
 	uploadDataChunk
 } from 'ardrive-core-js';
 import {
@@ -26,7 +28,8 @@ import {
 	ArFSPrivateFileDataPrototype,
 	ArFSPrivateFileMetaDataPrototype,
 	ArFSEntityMetaDataPrototype,
-	ArFSFolderMetaDataPrototype
+	ArFSFolderMetaDataPrototype,
+	ArFSDriveMetaDataPrototype
 } from './arfs_prototypes';
 import {
 	ArFSFileMetadataTransactionData,
@@ -90,6 +93,15 @@ import {
 
 export const graphQLURL = 'https://arweave.net/graphql';
 
+export class PrivateDriveKeyData {
+	private constructor(readonly driveId: DriveID, readonly driveKey: DriveKey) {}
+
+	static async from(drivePassword: string, privateKey: JWKInterface): Promise<PrivateDriveKeyData> {
+		const driveId = uuidv4();
+		const driveKey = await deriveDriveKey(drivePassword, driveId, JSON.stringify(privateKey));
+		return new PrivateDriveKeyData(driveId, driveKey);
+	}
+}
 export interface ArFSCreateDriveResult {
 	driveTrxId: TransactionID;
 	driveTrxReward: Winston;
@@ -164,6 +176,12 @@ export type FolderMetaDataPrototypeFactory<T extends ArFSFolderMetaDataPrototype
 	parentFolderId?: FolderID
 ) => T;
 export type GetDriveFunction<T extends ArFSPublicDrive | ArFSPrivateDrive> = () => Promise<T>;
+export type CreateFolderFunction = (driveId: DriveID) => Promise<ArFSCreateFolderResult>;
+export type CreateDriveMetadataFunction = (
+	driveID: DriveID,
+	rootFolderId: FolderID
+) => Promise<ArFSDriveMetaDataPrototype>;
+export type CreateDriveResultFactory<T extends ArFSCreateDriveResult> = (result: ArFSCreateDriveResult) => T;
 
 export abstract class ArFSDAOType {
 	protected abstract readonly arweave: Arweave;
@@ -455,32 +473,24 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		);
 	}
 
-	async createPublicDrive(
-		driveName: string,
+	async createDrive<R extends ArFSCreateDriveResult>(
 		driveRewardSettings: RewardSettings,
-		rootFolderRewardSettings: RewardSettings
-	): Promise<ArFSCreateDriveResult> {
+		createFolderFn: CreateFolderFunction,
+		createMetadataFn: CreateDriveMetadataFunction,
+		resultFactory: CreateDriveResultFactory<R>
+	): Promise<R> {
 		// Generate a new drive ID  for the new drive
 		const driveId = uuidv4();
 
 		// Create root folder
-		const folderData = new ArFSPublicFolderTransactionData(driveName);
 		const {
 			folderTrxId: rootFolderTrxId,
 			folderTrxReward: rootFolderTrxReward,
 			folderId: rootFolderId
-		} = await this.createPublicFolder({
-			folderData,
-			driveId,
-			rewardSettings: rootFolderRewardSettings,
-			syncParentFolderId: false
-		});
+		} = await createFolderFn(driveId);
 
 		// Create a drive metadata transaction
-		const driveMetaData = new ArFSPublicDriveMetaDataPrototype(
-			new ArFSPublicDriveTransactionData(driveName, rootFolderId),
-			driveId
-		);
+		const driveMetaData = await createMetadataFn(driveId, rootFolderId);
 		const driveTrx = await this.prepareArFSObjectTransaction(driveMetaData, driveRewardSettings);
 
 		// Execute the upload
@@ -491,58 +501,74 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			}
 		}
 
-		return {
+		return resultFactory({
 			driveTrxId: driveTrx.id,
 			driveTrxReward: driveTrx.reward,
 			rootFolderTrxId: rootFolderTrxId,
 			rootFolderTrxReward: rootFolderTrxReward,
 			driveId: driveId,
 			rootFolderId: rootFolderId
-		};
+		});
+	}
+
+	async createPublicDrive(
+		driveName: string,
+		driveRewardSettings: RewardSettings,
+		rootFolderRewardSettings: RewardSettings
+	): Promise<ArFSCreateDriveResult> {
+		return this.createDrive<ArFSCreateDriveResult>(
+			driveRewardSettings,
+			async (driveId) => {
+				const folderData = new ArFSPublicFolderTransactionData(driveName);
+				return this.createPublicFolder({
+					folderData,
+					driveId,
+					rewardSettings: rootFolderRewardSettings,
+					syncParentFolderId: false
+				});
+			},
+			(driveId, rootFolderId) => {
+				return Promise.resolve(
+					new ArFSPublicDriveMetaDataPrototype(
+						new ArFSPublicDriveTransactionData(driveName, rootFolderId),
+						driveId
+					)
+				);
+			},
+			(result) => result // No change
+		);
 	}
 
 	async createPrivateDrive(
 		driveName: string,
-		driveKey: DriveKey,
-		driveId: DriveID,
+		newDriveData: PrivateDriveKeyData,
 		driveRewardSettings: RewardSettings,
 		rootFolderRewardSettings: RewardSettings
 	): Promise<ArFSCreatePrivateDriveResult> {
-		// Create root folder
-		const folderData = await ArFSPrivateFolderTransactionData.from(driveName, driveKey);
-		const {
-			folderTrxId: rootFolderTrxId,
-			folderTrxReward: rootFolderTrxReward,
-			folderId: rootFolderId
-		} = await this.createPrivateFolder({
-			folderData,
-			driveId,
-			rewardSettings: rootFolderRewardSettings,
-			syncParentFolderId: false,
-			driveKey
-		});
-
-		const privateDriveData = await ArFSPrivateDriveTransactionData.from(driveName, rootFolderId, driveKey);
-
-		// Create a drive metadata transaction
-		const driveMetaData = new ArFSPrivateDriveMetaDataPrototype(driveId, privateDriveData);
-		const driveTrx = await this.prepareArFSObjectTransaction(driveMetaData, driveRewardSettings);
-
-		// Execute the uploads
-		if (!this.dryRun) {
-			const driveUploader = await this.arweave.transactions.getUploader(driveTrx);
-			await driveUploader.uploadChunk();
-		}
-
-		return {
-			driveTrxId: driveTrx.id,
-			driveTrxReward: driveTrx.reward,
-			rootFolderTrxId,
-			rootFolderTrxReward,
-			driveId,
-			rootFolderId,
-			driveKey
-		};
+		return this.createDrive(
+			driveRewardSettings,
+			async (driveId) => {
+				const folderData = await ArFSPrivateFolderTransactionData.from(driveName, newDriveData.driveKey);
+				return this.createPrivateFolder({
+					folderData,
+					driveId,
+					rewardSettings: rootFolderRewardSettings,
+					syncParentFolderId: false,
+					driveKey: newDriveData.driveKey
+				});
+			},
+			async (driveId, rootFolderId) => {
+				return Promise.resolve(
+					new ArFSPrivateDriveMetaDataPrototype(
+						driveId,
+						await ArFSPrivateDriveTransactionData.from(driveName, rootFolderId, newDriveData.driveKey)
+					)
+				);
+			},
+			(result) => {
+				return { ...result, driveKey: newDriveData.driveKey }; // Add drive key for private return type
+			}
+		);
 	}
 
 	async moveEntity<
