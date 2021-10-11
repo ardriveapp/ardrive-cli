@@ -73,11 +73,6 @@ export class ArFSPublicDriveMetaDataPrototype extends ArFSDriveMetaDataPrototype
 	constructor(readonly objectData: ArFSPublicDriveTransactionData, readonly driveId: DriveID) {
 		super();
 	}
-
-	addTagsToTransaction(transaction: Transaction): void {
-		super.addTagsToTransaction(transaction);
-		transaction.addTag('Content-Type', 'application/json');
-	}
 }
 
 export class ArFSPrivateDriveMetaDataPrototype extends ArFSDriveMetaDataPrototype {
