@@ -67,10 +67,6 @@ export class ArFSPublicDriveMetaDataPrototype extends ArFSDriveMetaDataPrototype
 	) {
 		super();
 	}
-
-	addTagsToTransaction(transaction: Transaction): void {
-		super.addTagsToTransaction(transaction);
-	}
 }
 
 export class ArFSPrivateDriveMetaDataPrototype extends ArFSDriveMetaDataPrototype {
