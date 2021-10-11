@@ -8,7 +8,7 @@ import {
 import { arDriveFactory } from '..';
 import { JWKWallet, Wallet } from '../wallet_new';
 import { FeeMultiple } from '../types';
-import { PrivateDriveKeyData } from '../ardrive';
+import { PrivateDriveKeyData } from '../arfsdao';
 
 new CLICommand({
 	name: 'create-drive',
