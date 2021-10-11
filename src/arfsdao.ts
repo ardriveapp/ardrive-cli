@@ -26,13 +26,9 @@ import {
 	ArFSPublicFileMetaDataPrototype,
 	ArFSPublicFolderMetaDataPrototype,
 	ArFSPrivateFileDataPrototype,
-	ArFSPrivateFileMetaDataPrototype,
-	ArFSEntityMetaDataPrototype,
-	ArFSFolderMetaDataPrototype,
-	ArFSDriveMetaDataPrototype
+	ArFSPrivateFileMetaDataPrototype
 } from './arfs_prototypes';
 import {
-	ArFSFileMetadataTransactionData,
 	ArFSFolderTransactionData,
 	ArFSObjectTransactionData,
 	ArFSPrivateDriveTransactionData,
@@ -68,13 +64,7 @@ import { ArFSPrivateFileBuilder, ArFSPublicFileBuilder } from './utils/arfs_buil
 import { ArFSPrivateFolderBuilder, ArFSPublicFolderBuilder } from './utils/arfs_builders/arfs_folder_builders';
 import { latestRevisionFilter } from './utils/filter_methods';
 import { FolderHierarchy } from './folderHierarchy';
-import {
-	MetaDataFactoryFunction,
-	movePrivateFileMetaDataFactory,
-	movePrivateFolderMetaDataFactory,
-	movePublicFileMetaDataFactory,
-	movePublicFolderMetaDataFactory
-} from './arfs_meta_data_factory';
+import { CreateDriveMetaDataFactory, FolderMetaDataFactory, MoveEntityMetaDataFactory } from './arfs_meta_data_factory';
 import {
 	ArFSCreateDriveResult,
 	ArFSCreateFolderResult,
@@ -110,31 +100,13 @@ export class PrivateDriveKeyData {
 
 export interface ArFSMoveParams<O extends ArFSFileOrFolderEntity, T extends ArFSObjectTransactionData> {
 	originalMetaData: O;
-	transactionData: T;
 	newParentFolderId: FolderID;
 	metaDataBaseReward: RewardSettings;
+	transactionData: T;
 }
 
-export type ArFSMoveFileParams<
-	O extends ArFSPublicFile | ArFSPrivateFile,
-	T extends ArFSFileMetadataTransactionData
-> = ArFSMoveParams<O, T>;
-
-export type ArFSMovePublicFileParams = ArFSMoveParams<ArFSPublicFile, ArFSPublicFileMetadataTransactionData>;
-export type ArFSMovePrivateFileParams = ArFSMoveParams<ArFSPrivateFile, ArFSPrivateFileMetadataTransactionData>;
-export type ArFSMovePublicFolderParams = ArFSMoveParams<ArFSPublicFolder, ArFSPublicFolderTransactionData>;
-export type ArFSMovePrivateFolderParams = ArFSMoveParams<ArFSPrivateFolder, ArFSPrivateFolderTransactionData>;
-
-export type FolderMetaDataPrototypeFactory<T extends ArFSFolderMetaDataPrototype> = (
-	folderId: FolderID,
-	parentFolderId?: FolderID
-) => T;
 export type GetDriveFunction<T extends ArFSPublicDrive | ArFSPrivateDrive> = () => Promise<T>;
 export type CreateFolderFunction = (driveId: DriveID) => Promise<ArFSCreateFolderResult>;
-export type CreateDriveMetadataFunction = (
-	driveID: DriveID,
-	rootFolderId: FolderID
-) => Promise<ArFSDriveMetaDataPrototype>;
 
 export abstract class ArFSDAOType {
 	protected abstract readonly arweave: Arweave;
@@ -336,12 +308,11 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	async createFolder<
 		T extends ArFSFolderTransactionData,
 		S extends CreateFolderSettings<T>,
-		D extends ArFSPublicDrive | ArFSPrivateDrive,
-		M extends ArFSFolderMetaDataPrototype
+		D extends ArFSPublicDrive | ArFSPrivateDrive
 	>(
 		{ driveId, rewardSettings, parentFolderId, syncParentFolderId = true }: S,
 		getDriveFn: GetDriveFunction<D>,
-		folderPrototypeFactory: FolderMetaDataPrototypeFactory<M>
+		folderPrototypeFactory: FolderMetaDataFactory
 	): Promise<ArFSCreateFolderResult> {
 		if (parentFolderId && syncParentFolderId) {
 			// Assert that drive ID is consistent with parent folder ID
@@ -391,12 +362,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		parentFolderId,
 		syncParentFolderId = true
 	}: CreatePublicFolderSettings): Promise<ArFSCreateFolderResult> {
-		return this.createFolder<
-			ArFSPublicFolderTransactionData,
-			CreatePublicFolderSettings,
-			ArFSPublicDrive,
-			ArFSPublicFolderMetaDataPrototype
-		>(
+		return this.createFolder<ArFSPublicFolderTransactionData, CreatePublicFolderSettings, ArFSPublicDrive>(
 			{ folderData, driveId, rewardSettings, parentFolderId, syncParentFolderId },
 			() => this.getPublicDrive(driveId),
 			(folderId, parentFolderId) =>
@@ -413,12 +379,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		rewardSettings,
 		syncParentFolderId = true
 	}: CreatePrivateFolderSettings): Promise<ArFSCreateFolderResult> {
-		return this.createFolder<
-			ArFSPrivateFolderTransactionData,
-			CreatePrivateFolderSettings,
-			ArFSPrivateDrive,
-			ArFSPrivateFolderMetaDataPrototype
-		>(
+		return this.createFolder<ArFSPrivateFolderTransactionData, CreatePrivateFolderSettings, ArFSPrivateDrive>(
 			{ folderData, driveId, rewardSettings, parentFolderId, syncParentFolderId, driveKey },
 			() => this.getPrivateDrive(driveId, driveKey),
 			(folderId, parentFolderId) =>
@@ -429,7 +390,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	async createDrive<R extends ArFSCreateDriveResult>(
 		driveRewardSettings: RewardSettings,
 		createFolderFn: CreateFolderFunction,
-		createMetadataFn: CreateDriveMetadataFunction,
+		createMetadataFn: CreateDriveMetaDataFactory,
 		resultFactory: ArFSCreateDriveResultFactory<R>
 	): Promise<R> {
 		// Generate a new drive ID  for the new drive
@@ -524,22 +485,15 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		);
 	}
 
-	async moveEntity<
-		T extends ArFSFileFolderEntity,
-		U extends ArFSObjectTransactionData,
-		V extends ArFSEntityMetaDataPrototype,
-		R extends ArFSMoveEntityResult
-	>(
-		params: ArFSMoveParams<T, U>,
-		metaDataFactory: MetaDataFactoryFunction<T, U, V>,
+	async moveEntity<R extends ArFSMoveEntityResult>(
+		metaDataBaseReward: RewardSettings,
+		metaDataFactory: MoveEntityMetaDataFactory,
 		resultFactory: ArFSMoveEntityResultFactory<R>
 	): Promise<R> {
-		const { metaDataBaseReward, transactionData, originalMetaData, newParentFolderId } = params;
-
-		const fileMetadataPrototype = metaDataFactory(newParentFolderId, originalMetaData, transactionData);
+		const metadataPrototype = metaDataFactory();
 
 		// Prepare meta data transaction
-		const metaDataTrx = await this.prepareArFSObjectTransaction(fileMetadataPrototype, metaDataBaseReward);
+		const metaDataTrx = await this.prepareArFSObjectTransaction(metadataPrototype, metaDataBaseReward);
 
 		// Upload meta data
 		if (!this.dryRun) {
@@ -552,46 +506,90 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return resultFactory({ metaDataTrxId: metaDataTrx.id, metaDataTrxReward: metaDataTrx.reward });
 	}
 
-	async movePublicFile(params: ArFSMovePublicFileParams): Promise<ArFSMovePublicFileResult> {
-		return this.moveEntity<
-			ArFSPublicFile,
-			ArFSPublicFileMetadataTransactionData,
-			ArFSPublicFileMetaDataPrototype,
-			ArFSMovePublicFileResult
-		>(params, movePublicFileMetaDataFactory, (results) => {
-			return { ...results, dataTrxId: params.originalMetaData.dataTxId };
-		});
+	async movePublicFile({
+		metaDataBaseReward,
+		originalMetaData,
+		transactionData,
+		newParentFolderId
+	}: ArFSMoveParams<ArFSPublicFile, ArFSPublicFileMetadataTransactionData>): Promise<ArFSMovePublicFileResult> {
+		return this.moveEntity<ArFSMovePublicFileResult>(
+			metaDataBaseReward,
+			() => {
+				return new ArFSPublicFileMetaDataPrototype(
+					transactionData,
+					originalMetaData.driveId,
+					originalMetaData.fileId,
+					newParentFolderId
+				);
+			},
+			(results) => {
+				return { ...results, dataTrxId: originalMetaData.dataTxId };
+			}
+		);
 	}
 
-	async movePrivateFile(params: ArFSMovePrivateFileParams): Promise<ArFSMovePrivateFileResult> {
-		return this.moveEntity<
-			ArFSPrivateFile,
-			ArFSPrivateFileMetadataTransactionData,
-			ArFSPrivateFileMetaDataPrototype,
-			ArFSMovePrivateFileResult
-		>(params, movePrivateFileMetaDataFactory, (results) => {
-			return { ...results, dataTrxId: params.originalMetaData.dataTxId, fileKey: params.transactionData.fileKey };
-		});
+	async movePrivateFile({
+		metaDataBaseReward,
+		originalMetaData,
+		transactionData,
+		newParentFolderId
+	}: ArFSMoveParams<ArFSPrivateFile, ArFSPrivateFileMetadataTransactionData>): Promise<ArFSMovePrivateFileResult> {
+		return this.moveEntity<ArFSMovePrivateFileResult>(
+			metaDataBaseReward,
+			() => {
+				return new ArFSPrivateFileMetaDataPrototype(
+					transactionData,
+					originalMetaData.driveId,
+					originalMetaData.fileId,
+					newParentFolderId
+				);
+			},
+			(results) => {
+				return { ...results, dataTrxId: originalMetaData.dataTxId, fileKey: transactionData.fileKey };
+			}
+		);
 	}
 
-	async movePublicFolder(params: ArFSMovePublicFolderParams): Promise<ArFSMovePublicFolderResult> {
-		return this.moveEntity<
-			ArFSPublicFolder,
-			ArFSPublicFolderTransactionData,
-			ArFSPublicFolderMetaDataPrototype,
-			ArFSMovePublicFolderResult
-		>(params, movePublicFolderMetaDataFactory, (results) => results);
+	async movePublicFolder({
+		metaDataBaseReward,
+		originalMetaData,
+		transactionData,
+		newParentFolderId
+	}: ArFSMoveParams<ArFSPublicFolder, ArFSPublicFolderTransactionData>): Promise<ArFSMovePublicFolderResult> {
+		return this.moveEntity<ArFSMovePublicFolderResult>(
+			metaDataBaseReward,
+			() => {
+				return new ArFSPublicFolderMetaDataPrototype(
+					transactionData,
+					originalMetaData.driveId,
+					originalMetaData.entityId,
+					newParentFolderId
+				);
+			},
+			(results) => results
+		);
 	}
 
-	async movePrivateFolder(params: ArFSMovePrivateFolderParams): Promise<ArFSMovePrivateFolderResult> {
-		return this.moveEntity<
-			ArFSPrivateFolder,
-			ArFSPrivateFolderTransactionData,
-			ArFSPrivateFolderMetaDataPrototype,
-			ArFSMovePrivateFolderResult
-		>(params, movePrivateFolderMetaDataFactory, (results) => {
-			return { ...results, driveKey: params.transactionData.driveKey };
-		});
+	async movePrivateFolder({
+		metaDataBaseReward,
+		originalMetaData,
+		transactionData,
+		newParentFolderId
+	}: ArFSMoveParams<ArFSPrivateFolder, ArFSPrivateFolderTransactionData>): Promise<ArFSMovePrivateFolderResult> {
+		return this.moveEntity<ArFSMovePrivateFolderResult>(
+			metaDataBaseReward,
+			() => {
+				return new ArFSPrivateFolderMetaDataPrototype(
+					originalMetaData.driveId,
+					originalMetaData.entityId,
+					transactionData,
+					newParentFolderId
+				);
+			},
+			(results) => {
+				return { ...results, driveKey: transactionData.driveKey };
+			}
+		);
 	}
 
 	async uploadPublicFile(
