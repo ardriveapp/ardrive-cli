@@ -52,8 +52,6 @@ import {
 	FileID,
 	DriveKey,
 	TransactionID,
-	Winston,
-	FileKey,
 	DEFAULT_APP_NAME,
 	DEFAULT_APP_VERSION,
 	CURRENT_ARFS_VERSION,
@@ -78,11 +76,18 @@ import {
 	movePublicFolderMetaDataFactory
 } from './arfs_meta_data_factory';
 import {
-	MoveEntityResultFactoryFunction,
-	movePrivateFileResultFactory,
-	movePrivateFolderResultFactory,
-	movePublicFileResultFactory,
-	movePublicFolderResultFactory
+	ArFSCreateDriveResult,
+	ArFSCreateFolderResult,
+	ArFSCreatePrivateDriveResult,
+	ArFSMoveEntityResult,
+	ArFSMovePrivateFileResult,
+	ArFSMovePrivateFolderResult,
+	ArFSMovePublicFileResult,
+	ArFSMovePublicFolderResult,
+	ArFSUploadFileResult,
+	ArFSUploadPrivateFileResult,
+	ArFSCreateDriveResultFactory,
+	ArFSMoveEntityResultFactory
 } from './arfs_entity_result_factory';
 import {
 	ArFSMetadataEntityBuilder,
@@ -101,57 +106,6 @@ export class PrivateDriveKeyData {
 		const driveKey = await deriveDriveKey(drivePassword, driveId, JSON.stringify(privateKey));
 		return new PrivateDriveKeyData(driveId, driveKey);
 	}
-}
-export interface ArFSCreateDriveResult {
-	driveTrxId: TransactionID;
-	driveTrxReward: Winston;
-	rootFolderTrxId: TransactionID;
-	rootFolderTrxReward: Winston;
-	driveId: DriveID;
-	rootFolderId: FolderID;
-}
-
-export interface ArFSCreateFolderResult {
-	folderTrxId: TransactionID;
-	folderTrxReward: Winston;
-	folderId: FolderID;
-}
-
-export type ArFSCreateFolderResultFactory<R extends ArFSCreateFolderResult> = (result: ArFSCreateFolderResult) => R;
-
-export interface ArFSUploadFileResult {
-	dataTrxId: TransactionID;
-	dataTrxReward: Winston;
-	metaDataTrxId: TransactionID;
-	metaDataTrxReward: TransactionID;
-	fileId: FileID;
-}
-
-export interface ArFSMoveEntityResult {
-	metaDataTrxId: TransactionID;
-	metaDataTrxReward: TransactionID;
-}
-
-export interface ArFSMovePublicFileResult extends ArFSMoveEntityResult {
-	dataTrxId: TransactionID;
-}
-
-export interface ArFSMovePrivateFileResult extends ArFSMovePublicFileResult {
-	fileKey: FileKey;
-}
-
-export type ArFSMovePublicFolderResult = ArFSMoveEntityResult;
-
-export interface ArFSMovePrivateFolderResult extends ArFSMovePublicFolderResult {
-	driveKey: DriveKey;
-}
-
-export interface ArFSUploadPrivateFileResult extends ArFSUploadFileResult {
-	fileKey: FileKey;
-}
-
-export interface ArFSCreatePrivateDriveResult extends ArFSCreateDriveResult {
-	driveKey: DriveKey;
 }
 
 export interface ArFSMoveParams<O extends ArFSFileOrFolderEntity, T extends ArFSObjectTransactionData> {
@@ -181,7 +135,6 @@ export type CreateDriveMetadataFunction = (
 	driveID: DriveID,
 	rootFolderId: FolderID
 ) => Promise<ArFSDriveMetaDataPrototype>;
-export type CreateDriveResultFactory<T extends ArFSCreateDriveResult> = (result: ArFSCreateDriveResult) => T;
 
 export abstract class ArFSDAOType {
 	protected abstract readonly arweave: Arweave;
@@ -427,7 +380,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			}
 		}
 
-		return { folderTrxId: folderTrx.id, folderTrxReward: folderTrx.reward, folderId };
+		return { metaDataTrxId: folderTrx.id, metaDataTrxReward: folderTrx.reward, folderId };
 	}
 
 	// Convenience wrapper for folder creation in a known-public use case
@@ -477,15 +430,15 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		driveRewardSettings: RewardSettings,
 		createFolderFn: CreateFolderFunction,
 		createMetadataFn: CreateDriveMetadataFunction,
-		resultFactory: CreateDriveResultFactory<R>
+		resultFactory: ArFSCreateDriveResultFactory<R>
 	): Promise<R> {
 		// Generate a new drive ID  for the new drive
 		const driveId = uuidv4();
 
 		// Create root folder
 		const {
-			folderTrxId: rootFolderTrxId,
-			folderTrxReward: rootFolderTrxReward,
+			metaDataTrxId: rootFolderTrxId,
+			metaDataTrxReward: rootFolderTrxReward,
 			folderId: rootFolderId
 		} = await createFolderFn(driveId);
 
@@ -502,8 +455,8 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		}
 
 		return resultFactory({
-			driveTrxId: driveTrx.id,
-			driveTrxReward: driveTrx.reward,
+			metaDataTrxId: driveTrx.id,
+			metaDataTrxReward: driveTrx.reward,
 			rootFolderTrxId: rootFolderTrxId,
 			rootFolderTrxReward: rootFolderTrxReward,
 			driveId: driveId,
@@ -579,7 +532,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	>(
 		params: ArFSMoveParams<T, U>,
 		metaDataFactory: MetaDataFactoryFunction<T, U, V>,
-		resultFactory: MoveEntityResultFactoryFunction<R, U, T>
+		resultFactory: ArFSMoveEntityResultFactory<R>
 	): Promise<R> {
 		const { metaDataBaseReward, transactionData, originalMetaData, newParentFolderId } = params;
 
@@ -596,7 +549,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			}
 		}
 
-		return resultFactory(transactionData, originalMetaData, metaDataTrx);
+		return resultFactory({ metaDataTrxId: metaDataTrx.id, metaDataTrxReward: metaDataTrx.reward });
 	}
 
 	async movePublicFile(params: ArFSMovePublicFileParams): Promise<ArFSMovePublicFileResult> {
@@ -605,7 +558,9 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			ArFSPublicFileMetadataTransactionData,
 			ArFSPublicFileMetaDataPrototype,
 			ArFSMovePublicFileResult
-		>(params, movePublicFileMetaDataFactory, movePublicFileResultFactory);
+		>(params, movePublicFileMetaDataFactory, (results) => {
+			return { ...results, dataTrxId: params.originalMetaData.dataTxId };
+		});
 	}
 
 	async movePrivateFile(params: ArFSMovePrivateFileParams): Promise<ArFSMovePrivateFileResult> {
@@ -614,7 +569,9 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			ArFSPrivateFileMetadataTransactionData,
 			ArFSPrivateFileMetaDataPrototype,
 			ArFSMovePrivateFileResult
-		>(params, movePrivateFileMetaDataFactory, movePrivateFileResultFactory);
+		>(params, movePrivateFileMetaDataFactory, (results) => {
+			return { ...results, dataTrxId: params.originalMetaData.dataTxId, fileKey: params.transactionData.fileKey };
+		});
 	}
 
 	async movePublicFolder(params: ArFSMovePublicFolderParams): Promise<ArFSMovePublicFolderResult> {
@@ -623,7 +580,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			ArFSPublicFolderTransactionData,
 			ArFSPublicFolderMetaDataPrototype,
 			ArFSMovePublicFolderResult
-		>(params, movePublicFolderMetaDataFactory, movePublicFolderResultFactory);
+		>(params, movePublicFolderMetaDataFactory, (results) => results);
 	}
 
 	async movePrivateFolder(params: ArFSMovePrivateFolderParams): Promise<ArFSMovePrivateFolderResult> {
@@ -632,7 +589,9 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			ArFSPrivateFolderTransactionData,
 			ArFSPrivateFolderMetaDataPrototype,
 			ArFSMovePrivateFolderResult
-		>(params, movePrivateFolderMetaDataFactory, movePrivateFolderResultFactory);
+		>(params, movePrivateFolderMetaDataFactory, (results) => {
+			return { ...results, driveKey: params.transactionData.driveKey };
+		});
 	}
 
 	async uploadPublicFile(
