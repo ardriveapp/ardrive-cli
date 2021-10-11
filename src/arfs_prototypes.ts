@@ -66,10 +66,6 @@ export class ArFSPublicDriveMetaDataPrototype extends ArFSDriveMetaDataPrototype
 	readonly privacy: DrivePrivacy = 'public';
 	readonly contentType: ContentType = 'application/json';
 
-	get protectedTags(): string[] {
-		return ['Content-Type', ...super.protectedTags];
-	}
-
 	constructor(readonly objectData: ArFSPublicDriveTransactionData, readonly driveId: DriveID) {
 		super();
 	}
