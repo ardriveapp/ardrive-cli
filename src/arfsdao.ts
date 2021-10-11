@@ -79,6 +79,12 @@ import {
 	movePublicFileResultFactory,
 	movePublicFolderResultFactory
 } from './arfs_entity_result_factory';
+import {
+	ArFSMetadataEntityBuilder,
+	ArFSMetadataEntityBuilderFactoryFunction,
+	ArFSMetadataEntityBuilderParams,
+	ArFSPrivateMetadataEntityBuilderParams
+} from './utils/arfs_builders/arfs_builders';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 
@@ -216,6 +222,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		return this.getDriveID(folderId, 'Folder-Id');
 	}
 
+	// Convenience function for known-public use cases
 	async getPublicDrive(driveId: DriveID): Promise<ArFSPublicDrive> {
 		return new ArFSPublicDriveBuilder({ entityId: driveId, arweave: this.arweave }).build();
 	}
@@ -803,8 +810,33 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return transaction;
 	}
 
+	// Generic function for generic privacy use cases
+	async getDrive<
+		R extends ArFSPublicDrive | ArFSPrivateDrive,
+		B extends ArFSMetadataEntityBuilder<R>,
+		P extends ArFSMetadataEntityBuilderParams,
+		F extends ArFSMetadataEntityBuilderFactoryFunction<R, B, P>
+	>(builderFactory: F, builderFactoryParams: P): Promise<R> {
+		const driveBuilder = builderFactory(builderFactoryParams);
+		return await driveBuilder.build();
+	}
+
+	// Convenience function for known-private use cases
 	async getPrivateDrive(driveId: DriveID, driveKey: DriveKey): Promise<ArFSPrivateDrive> {
-		return new ArFSPrivateDriveBuilder({ entityId: driveId, arweave: this.arweave, key: driveKey }).build();
+		// Exemplifies use of the generic case although utilizing a ArFSPrivateDriveBuilder on its own would suffice
+		const driveBuilderFn = ({ entityId, arweave, key }: ArFSPrivateMetadataEntityBuilderParams) => {
+			return new ArFSPrivateDriveBuilder({ entityId, arweave, key });
+		};
+		return this.getDrive<
+			ArFSPrivateDrive,
+			ArFSPrivateDriveBuilder,
+			ArFSPrivateMetadataEntityBuilderParams,
+			ArFSMetadataEntityBuilderFactoryFunction<
+				ArFSPrivateDrive,
+				ArFSPrivateDriveBuilder,
+				ArFSPrivateMetadataEntityBuilderParams
+			>
+		>(driveBuilderFn, { entityId: driveId, arweave: this.arweave, key: driveKey });
 	}
 
 	async getPrivateFolder(folderId: FolderID, driveKey: DriveKey): Promise<ArFSPrivateFolder> {
