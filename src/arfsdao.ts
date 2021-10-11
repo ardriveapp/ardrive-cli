@@ -220,10 +220,6 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		return new ArFSPublicDriveBuilder({ entityId: driveId, arweave: this.arweave }).build();
 	}
 
-	async getPrivateDrive(driveId: DriveID, driveKey: DriveKey): Promise<ArFSPrivateDrive> {
-		return new ArFSPrivateDriveBuilder({ entityId: driveId, arweave: this.arweave, key: driveKey }).build();
-	}
-
 	async getPublicFolder(folderId: FolderID): Promise<ArFSPublicFolder> {
 		return new ArFSPublicFolderBuilder({ entityId: folderId, arweave: this.arweave }).build();
 	}
@@ -805,6 +801,10 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		// Sign the transaction
 		await this.arweave.transactions.sign(transaction, wallet.getPrivateKey());
 		return transaction;
+	}
+
+	async getPrivateDrive(driveId: DriveID, driveKey: DriveKey): Promise<ArFSPrivateDrive> {
+		return new ArFSPrivateDriveBuilder({ entityId: driveId, arweave: this.arweave, key: driveKey }).build();
 	}
 
 	async getPrivateFolder(folderId: FolderID, driveKey: DriveKey): Promise<ArFSPrivateFolder> {
