@@ -1,17 +1,4 @@
-import {
-	ArFSDAO,
-	ArFSDAOAnonymous,
-	ArFSDAOType,
-	ArFSPublicFolder,
-	ArFSPrivateDrive,
-	ArFSPublicFileOrFolderWithPaths,
-	ArFSPrivateFolder,
-	ArFSPrivateFileOrFolderWithPaths,
-	ArFSPublicFile,
-	ArFSPrivateFile,
-	ArFSPublicDrive,
-	PrivateDriveKeyData
-} from './arfsdao';
+import { ArFSDAO, PrivateDriveKeyData } from './arfsdao';
 import { CommunityOracle } from './community/community_oracle';
 import { deriveDriveKey, DrivePrivacy, GQLTagInterface, winstonToAr } from 'ardrive-core-js';
 import {
@@ -44,6 +31,17 @@ import {
 	ArFSPublicFolderTransactionData
 } from './arfs_trx_data_types';
 import { urlEncodeHashKey } from './utils';
+import { ArFSDAOAnonymous, ArFSDAOType } from './arfsdao_anonymous';
+import {
+	ArFSPrivateDrive,
+	ArFSPrivateFile,
+	ArFSPrivateFileOrFolderWithPaths,
+	ArFSPrivateFolder,
+	ArFSPublicDrive,
+	ArFSPublicFile,
+	ArFSPublicFileOrFolderWithPaths,
+	ArFSPublicFolder
+} from './arfs_entities';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 

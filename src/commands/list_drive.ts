@@ -1,6 +1,7 @@
 import { arDriveFactory, cliArweave, cliWalletDao } from '..';
 import { ArDriveAnonymous } from '../ardrive';
-import { ArFSDAOAnonymous, ArFSPrivateFileOrFolderWithPaths, ArFSPublicFileOrFolderWithPaths } from '../arfsdao';
+import { ArFSDAOAnonymous } from '../arfsdao_anonymous';
+import { ArFSPrivateFileOrFolderWithPaths, ArFSPublicFileOrFolderWithPaths } from '../arfs_entities';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { DriveIdParameter, DrivePrivacyParameters, TreeDepthParams } from '../parameter_declarations';
 import { alphabeticalOrder } from '../utils/sort_functions';

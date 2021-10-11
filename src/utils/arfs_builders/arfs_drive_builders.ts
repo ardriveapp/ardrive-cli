@@ -6,7 +6,7 @@ import {
 	GQLTagInterface,
 	Utf8ArrayToStr
 } from 'ardrive-core-js';
-import { ArFSPrivateDrive, ArFSPublicDrive } from '../../arfsdao';
+import { ArFSPrivateDrive, ArFSPublicDrive } from '../../arfs_entities';
 import { CipherIV, DriveKey, FolderID } from '../../types';
 import { ArFSMetadataEntityBuilder, ArFSPrivateMetadataEntityBuilderParams } from './arfs_builders';
 

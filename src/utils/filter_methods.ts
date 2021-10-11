@@ -1,4 +1,4 @@
-import { ArFSFileOrFolderEntity } from '../arfsdao';
+import { ArFSFileOrFolderEntity } from '../arfs_entities';
 
 /**
  * @name lastRevisionFilter is a standard JS find/filter function intended to

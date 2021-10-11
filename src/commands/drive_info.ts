@@ -1,8 +1,8 @@
 import { CLICommand, ParametersHelper } from '../CLICommand';
-import { ArFSPrivateDrive, ArFSPublicDrive } from '../arfsdao';
 import { DriveID } from '../types';
 import { DriveIdParameter, GetAllRevisionsParameter, DrivePrivacyParameters } from '../parameter_declarations';
 import { arDriveAnonymousFactory, arDriveFactory } from '..';
+import { ArFSPrivateDrive, ArFSPublicDrive } from '../arfs_entities';
 
 new CLICommand({
 	name: 'drive-info',

@@ -1,4 +1,4 @@
-import { ArFSFileOrFolderEntity } from './arfsdao';
+import { ArFSFileOrFolderEntity } from './arfs_entities';
 import { FolderID } from './types';
 
 export class FolderTreeNode {

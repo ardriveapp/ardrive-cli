@@ -7,7 +7,7 @@ import {
 	Utf8ArrayToStr
 } from 'ardrive-core-js';
 import Arweave from 'arweave';
-import { ArFSPrivateFile, ArFSPublicFile } from '../../arfsdao';
+import { ArFSPrivateFile, ArFSPublicFile } from '../../arfs_entities';
 import { ByteCount, CipherIV, DriveKey, FileID, TransactionID, UnixTime } from '../../types';
 import { ArFSFileOrFolderBuilder } from './arfs_builders';
 

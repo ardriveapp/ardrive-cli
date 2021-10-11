@@ -4,11 +4,12 @@ import { Wallet, WalletDAO } from './wallet_new';
 import Arweave from 'arweave';
 import { ArDriveCommunityOracle } from './community/ardrive_community_oracle';
 import { ArDrive, ArDriveAnonymous } from './ardrive';
-import { ArFSDAO, ArFSDAOAnonymous } from './arfsdao';
+import { ArFSDAO } from './arfsdao';
 import { ARDataPriceEstimator } from './utils/ar_data_price_estimator';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
 import { FeeMultiple } from './types';
 import { CommunityOracle } from './community/community_oracle';
+import { ArFSDAOAnonymous } from './arfsdao_anonymous';
 
 if (require.main === module) {
 	// declare all parameters
