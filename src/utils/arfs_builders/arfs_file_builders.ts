@@ -32,7 +32,7 @@ export class ArFSPublicFileBuilder extends ArFSFileBuilder<ArFSPublicFile> {
 		if (!fileId) {
 			throw new Error('File-ID tag missing!');
 		}
-		const fileBuilder = new ArFSPublicFileBuilder(fileId, arweave);
+		const fileBuilder = new ArFSPublicFileBuilder({ entityId: fileId, arweave });
 		return fileBuilder;
 	}
 
@@ -93,7 +93,7 @@ export class ArFSPrivateFileBuilder extends ArFSFileBuilder<ArFSPrivateFile> {
 	cipherIV?: CipherIV;
 
 	constructor(readonly fileId: FileID, readonly arweave: Arweave, private readonly driveKey: DriveKey) {
-		super(fileId, arweave);
+		super({ entityId: fileId, arweave });
 	}
 
 	static fromArweaveNode(node: GQLNodeInterface, arweave: Arweave, driveKey: DriveKey): ArFSPrivateFileBuilder {

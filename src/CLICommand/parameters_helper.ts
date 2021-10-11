@@ -56,7 +56,7 @@ export class ParametersHelper {
 		} else if (seedPhrase) {
 			return await this.walletDao.generateJWKWallet(seedPhrase);
 		}
-		throw new Error('No wallet file neither seed phrase provided!');
+		throw new Error('Neither a wallet file nor seed phrase was provided!');
 	}
 
 	public async getOptionalWallet(): Promise<Wallet | null> {

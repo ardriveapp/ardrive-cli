@@ -9,7 +9,22 @@ import {
 import Arweave from 'arweave';
 import { ArFSFileOrFolderEntity, graphQLURL } from '../../arfsdao';
 import { buildQuery } from '../../query';
-import { ArweaveAddress, DriveID, EntityID, FileID, FolderID, TransactionID, UnixTime } from '../../types';
+import { ArweaveAddress, DriveID, EntityID, EntityKey, FolderID, TransactionID, UnixTime } from '../../types';
+
+export interface ArFSMetadataEntityBuilderParams {
+	entityId: EntityID;
+	arweave: Arweave;
+}
+export type ArFSPublicMetadataEntityBuilderParams = ArFSMetadataEntityBuilderParams;
+export interface ArFSPrivateMetadataEntityBuilderParams extends ArFSMetadataEntityBuilderParams {
+	key: EntityKey;
+}
+
+export type ArFSMetadataEntityBuilderFactoryFunction<
+	T extends ArFSEntity,
+	B extends ArFSMetadataEntityBuilder<T>,
+	P extends ArFSMetadataEntityBuilderParams
+> = (params: P) => B;
 
 export abstract class ArFSMetadataEntityBuilder<T extends ArFSEntity> {
 	appName?: string;
@@ -21,8 +36,13 @@ export abstract class ArFSMetadataEntityBuilder<T extends ArFSEntity> {
 	name?: string;
 	txId?: TransactionID;
 	unixTime?: UnixTime;
+	protected readonly entityId: EntityID;
+	protected readonly arweave: Arweave;
 
-	constructor(protected readonly entityId: EntityID, protected readonly arweave: Arweave) {}
+	constructor({ entityId, arweave }: ArFSMetadataEntityBuilderParams) {
+		this.entityId = entityId;
+		this.arweave = arweave;
+	}
 
 	abstract getGqlQueryParameters(): GQLTagInterface[];
 	protected abstract buildEntity(): Promise<T>;
@@ -97,10 +117,6 @@ export abstract class ArFSMetadataEntityBuilder<T extends ArFSEntity> {
 
 export abstract class ArFSFileOrFolderBuilder<T extends ArFSFileOrFolderEntity> extends ArFSMetadataEntityBuilder<T> {
 	parentFolderId?: FolderID;
-
-	constructor(protected readonly entityId: FileID | FolderID, protected readonly arweave: Arweave) {
-		super(entityId, arweave);
-	}
 
 	protected async parseFromArweaveNode(node?: GQLNodeInterface): Promise<GQLTagInterface[]> {
 		const unparsedTags: GQLTagInterface[] = [];

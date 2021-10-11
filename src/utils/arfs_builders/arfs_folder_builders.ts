@@ -22,7 +22,7 @@ export class ArFSPublicFolderBuilder extends ArFSFolderBuilder<ArFSPublicFolder>
 		if (!folderId) {
 			throw new Error('Folder-ID tag missing!');
 		}
-		const folderBuilder = new ArFSPublicFolderBuilder(folderId, arweave);
+		const folderBuilder = new ArFSPublicFolderBuilder({ entityId: folderId, arweave });
 		return folderBuilder;
 	}
 
@@ -79,7 +79,7 @@ export class ArFSPrivateFolderBuilder extends ArFSFolderBuilder<ArFSPrivateFolde
 	cipherIV?: CipherIV;
 
 	constructor(readonly folderId: FolderID, readonly arweave: Arweave, protected readonly driveKey: DriveKey) {
-		super(folderId, arweave);
+		super({ entityId: folderId, arweave });
 	}
 
 	static fromArweaveNode(node: GQLNodeInterface, arweave: Arweave, driveKey: DriveKey): ArFSPrivateFolderBuilder {
