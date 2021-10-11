@@ -1,73 +1,52 @@
-import { ArFSFileFolderEntity } from 'ardrive-core-js';
-import Transaction from 'arweave/node/lib/transaction';
-import {
-	ArFSMovePrivateFileResult,
-	ArFSMovePrivateFolderResult,
-	ArFSMovePublicFileResult,
-	ArFSMovePublicFolderResult,
-	ArFSPrivateFile,
-	ArFSPrivateFolder,
-	ArFSPublicFile,
-	ArFSPublicFolder
-} from './arfsdao';
-import {
-	ArFSObjectTransactionData,
-	ArFSPrivateFileMetadataTransactionData,
-	ArFSPrivateFolderTransactionData,
-	ArFSPublicFileMetadataTransactionData,
-	ArFSPublicFolderTransactionData
-} from './arfs_trx_data_types';
+import { TransactionID, Winston, DriveID, FolderID, FileID, FileKey, DriveKey } from './types';
 
-export type MoveEntityResultFactoryFunction<R, T extends ArFSObjectTransactionData, U extends ArFSFileFolderEntity> = (
-	transactionData: T,
-	originalMetaData: U,
-	metaDataTrx: Transaction
-) => R;
+export interface ArFSWriteResult {
+	metaDataTrxId: TransactionID;
+	metaDataTrxReward: Winston;
+}
 
-export const movePublicFileResultFactory: MoveEntityResultFactoryFunction<
-	ArFSMovePublicFileResult,
-	ArFSPublicFileMetadataTransactionData,
-	ArFSPublicFile
-> = (_transactionData, originalMetaData, metaDataTrx) => {
-	return {
-		metaDataTrxId: metaDataTrx.id,
-		metaDataTrxReward: metaDataTrx.reward,
-		dataTrxId: originalMetaData.dataTxId
-	};
-};
+export interface ArFSCreateDriveResult extends ArFSWriteResult {
+	rootFolderTrxId: TransactionID;
+	rootFolderTrxReward: Winston;
+	driveId: DriveID;
+	rootFolderId: FolderID;
+}
 
-export const movePrivateFileResultFactory: MoveEntityResultFactoryFunction<
-	ArFSMovePrivateFileResult,
-	ArFSPrivateFileMetadataTransactionData,
-	ArFSPrivateFile
-> = (transactionData, originalMetaData, metaDataTrx) => {
-	return {
-		metaDataTrxId: metaDataTrx.id,
-		metaDataTrxReward: metaDataTrx.reward,
-		dataTrxId: originalMetaData.dataTxId,
-		fileKey: transactionData.fileKey
-	};
-};
+export interface ArFSCreateFolderResult extends ArFSWriteResult {
+	folderId: FolderID;
+}
 
-export const movePublicFolderResultFactory: MoveEntityResultFactoryFunction<
-	ArFSMovePublicFolderResult,
-	ArFSPublicFolderTransactionData,
-	ArFSPublicFolder
-> = (_transactionData, _originalMetaData, metaDataTrx) => {
-	return {
-		metaDataTrxId: metaDataTrx.id,
-		metaDataTrxReward: metaDataTrx.reward
-	};
-};
+export interface ArFSUploadFileResult extends ArFSWriteResult {
+	dataTrxId: TransactionID;
+	dataTrxReward: Winston;
+	fileId: FileID;
+}
 
-export const movePrivateFolderResultFactory: MoveEntityResultFactoryFunction<
-	ArFSMovePrivateFolderResult,
-	ArFSPrivateFolderTransactionData,
-	ArFSPrivateFolder
-> = (transactionData, _originalMetaData, metaDataTrx) => {
-	return {
-		metaDataTrxId: metaDataTrx.id,
-		metaDataTrxReward: metaDataTrx.reward,
-		driveKey: transactionData.driveKey
-	};
-};
+export type ArFSMoveEntityResult = ArFSWriteResult;
+
+export interface ArFSMoveFileResult extends ArFSMoveEntityResult {
+	dataTrxId: TransactionID;
+}
+
+type WithDriveKey = { driveKey: DriveKey };
+type WithFileKey = { fileKey: FileKey };
+
+export type ArFSCreatePublicDriveResult = ArFSCreateDriveResult;
+export type ArFSCreatePrivateDriveResult = ArFSCreateDriveResult & WithDriveKey;
+
+export type ArFSCreatePublicFolderResult = ArFSCreateFolderResult;
+export type ArFSCreatePrivateFolderResult = ArFSCreateFolderResult & WithDriveKey;
+
+export type ArFSUploadPublicFileResult = ArFSUploadFileResult;
+export type ArFSUploadPrivateFileResult = ArFSUploadFileResult & WithFileKey;
+
+export type ArFSMovePublicFolderResult = ArFSMoveEntityResult;
+export type ArFSMovePrivateFolderResult = ArFSMoveEntityResult & WithDriveKey;
+
+export type ArFSMovePublicFileResult = ArFSMoveFileResult;
+export type ArFSMovePrivateFileResult = ArFSMoveFileResult & WithFileKey;
+
+// Result factory function types
+export type ArFSMoveEntityResultFactory<R extends ArFSMoveEntityResult> = (result: ArFSMoveEntityResult) => R;
+export type ArFSCreateDriveResultFactory<R extends ArFSCreateDriveResult> = (result: ArFSCreateDriveResult) => R;
+export type ArFSCreateFolderResultFactory<R extends ArFSCreateFolderResult> = (result: ArFSCreateFolderResult) => R;

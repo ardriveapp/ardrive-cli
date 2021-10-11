@@ -497,7 +497,7 @@ export class ArDrive extends ArDriveAnonymous {
 		feeResults: ArFSFees;
 	}> {
 		// Create the parent folder
-		const { folderTrxId, folderTrxReward, folderId } = await this.arFsDao.createPublicFolder({
+		const { metaDataTrxId, metaDataTrxReward, folderId } = await this.arFsDao.createPublicFolder({
 			folderData: folderData,
 			driveId,
 			rewardSettings: {
@@ -509,11 +509,11 @@ export class ArDrive extends ArDriveAnonymous {
 		});
 
 		// Capture parent folder results
-		let uploadEntityFees: ArFSFees = { [folderTrxId]: +folderTrxReward };
+		let uploadEntityFees: ArFSFees = { [metaDataTrxId]: +metaDataTrxReward };
 		let uploadEntityResults: ArFSEntityData[] = [
 			{
 				type: 'folder',
-				metadataTxId: folderTrxId,
+				metadataTxId: metaDataTrxId,
 				entityId: folderId
 			}
 		];
@@ -587,7 +587,7 @@ export class ArDrive extends ArDriveAnonymous {
 			throw new Error(`dataSize must be non-negative, integer value! ${dataSize} is invalid!`);
 		}
 		if (dataSize > Number.MAX_SAFE_INTEGER - 16) {
-			throw new Error(`Max unencrypted dataSize allowed is ${Number.MAX_SAFE_INTEGER - 16}!`);
+			throw new Error(`Max un-encrypted dataSize allowed is ${Number.MAX_SAFE_INTEGER - 16}!`);
 		}
 		const modulo16 = dataSize % 16;
 		return dataSize - modulo16 + 16;
@@ -711,7 +711,7 @@ export class ArDrive extends ArDriveAnonymous {
 		feeResults: ArFSFees;
 	}> {
 		// Create parent folder
-		const { folderTrxId, folderTrxReward, folderId } = await this.arFsDao.createPrivateFolder({
+		const { metaDataTrxId, metaDataTrxReward, folderId } = await this.arFsDao.createPrivateFolder({
 			folderData: folderData,
 			driveId,
 			rewardSettings: {
@@ -724,11 +724,11 @@ export class ArDrive extends ArDriveAnonymous {
 		});
 
 		// Capture parent folder results
-		let uploadEntityFees: ArFSFees = { [folderTrxId]: +folderTrxReward };
+		let uploadEntityFees: ArFSFees = { [metaDataTrxId]: +metaDataTrxReward };
 		let uploadEntityResults: ArFSEntityData[] = [
 			{
 				type: 'folder',
-				metadataTxId: folderTrxId,
+				metadataTxId: metaDataTrxId,
 				entityId: folderId,
 				key: urlEncodeHashKey(driveKey)
 			}
@@ -805,7 +805,7 @@ export class ArDrive extends ArDriveAnonymous {
 		const { metaDataBaseReward } = await this.estimateAndAssertCostOfFolderUpload(folderData);
 
 		// Create the folder and retrieve its folder ID
-		const { folderTrxId, folderTrxReward, folderId } = await this.arFsDao.createPublicFolder({
+		const { metaDataTrxId, metaDataTrxReward, folderId } = await this.arFsDao.createPublicFolder({
 			folderData,
 			driveId,
 			rewardSettings: { reward: metaDataBaseReward, feeMultiple: this.feeMultiple },
@@ -817,13 +817,13 @@ export class ArDrive extends ArDriveAnonymous {
 			created: [
 				{
 					type: 'folder',
-					metadataTxId: folderTrxId,
+					metadataTxId: metaDataTrxId,
 					entityId: folderId
 				}
 			],
 			tips: [],
 			fees: {
-				[folderTrxId]: +folderTrxReward
+				[metaDataTrxId]: +metaDataTrxReward
 			}
 		});
 	}
@@ -840,7 +840,7 @@ export class ArDrive extends ArDriveAnonymous {
 		const { metaDataBaseReward } = await this.estimateAndAssertCostOfFolderUpload(folderData);
 
 		// Create the folder and retrieve its folder ID
-		const { folderTrxId, folderTrxReward, folderId } = await this.arFsDao.createPrivateFolder({
+		const { metaDataTrxId, metaDataTrxReward, folderId } = await this.arFsDao.createPrivateFolder({
 			folderData,
 			driveId,
 			rewardSettings: { reward: metaDataBaseReward, feeMultiple: this.feeMultiple },
@@ -853,14 +853,14 @@ export class ArDrive extends ArDriveAnonymous {
 			created: [
 				{
 					type: 'folder',
-					metadataTxId: folderTrxId,
+					metadataTxId: metaDataTrxId,
 					entityId: folderId,
 					key: urlEncodeHashKey(driveKey)
 				}
 			],
 			tips: [],
 			fees: {
-				[folderTrxId]: +folderTrxReward
+				[metaDataTrxId]: +metaDataTrxReward
 			}
 		});
 	}
@@ -888,7 +888,7 @@ export class ArDrive extends ArDriveAnonymous {
 			created: [
 				{
 					type: 'drive',
-					metadataTxId: createDriveResult.driveTrxId,
+					metadataTxId: createDriveResult.metaDataTrxId,
 					entityId: createDriveResult.driveId
 				},
 				{
@@ -899,7 +899,7 @@ export class ArDrive extends ArDriveAnonymous {
 			],
 			tips: [],
 			fees: {
-				[createDriveResult.driveTrxId]: +createDriveResult.driveTrxReward,
+				[createDriveResult.metaDataTrxId]: +createDriveResult.metaDataTrxReward,
 				[createDriveResult.rootFolderTrxId]: +createDriveResult.rootFolderTrxReward
 			}
 		});
@@ -934,7 +934,7 @@ export class ArDrive extends ArDriveAnonymous {
 			created: [
 				{
 					type: 'drive',
-					metadataTxId: createDriveResult.driveTrxId,
+					metadataTxId: createDriveResult.metaDataTrxId,
 					entityId: createDriveResult.driveId,
 					key: urlEncodeHashKey(createDriveResult.driveKey)
 				},
@@ -947,7 +947,7 @@ export class ArDrive extends ArDriveAnonymous {
 			],
 			tips: [],
 			fees: {
-				[createDriveResult.driveTrxId]: +createDriveResult.driveTrxReward,
+				[createDriveResult.metaDataTrxId]: +createDriveResult.metaDataTrxReward,
 				[createDriveResult.rootFolderTrxId]: +createDriveResult.rootFolderTrxReward
 			}
 		});
