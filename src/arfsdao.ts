@@ -105,7 +105,7 @@ export interface ArFSMoveParams<O extends ArFSFileOrFolderEntity, T extends ArFS
 	transactionData: T;
 }
 
-export type GetDriveFunction<T extends ArFSPublicDrive | ArFSPrivateDrive> = () => Promise<T>;
+export type GetDriveFunction = () => Promise<ArFSPublicDrive | ArFSPrivateDrive>;
 export type CreateFolderFunction = (driveId: DriveID) => Promise<ArFSCreateFolderResult>;
 
 export abstract class ArFSDAOType {
@@ -305,13 +305,9 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	}
 
 	// For generic use with public and private drives. Generic types should all be harmonious.
-	async createFolder<
-		T extends ArFSFolderTransactionData,
-		S extends CreateFolderSettings<T>,
-		D extends ArFSPublicDrive | ArFSPrivateDrive
-	>(
+	async createFolder<T extends ArFSFolderTransactionData, S extends CreateFolderSettings<T>>(
 		{ driveId, rewardSettings, parentFolderId, syncParentFolderId = true }: S,
-		getDriveFn: GetDriveFunction<D>,
+		getDriveFn: GetDriveFunction,
 		folderPrototypeFactory: FolderMetaDataFactory
 	): Promise<ArFSCreateFolderResult> {
 		if (parentFolderId && syncParentFolderId) {
@@ -362,7 +358,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		parentFolderId,
 		syncParentFolderId = true
 	}: CreatePublicFolderSettings): Promise<ArFSCreateFolderResult> {
-		return this.createFolder<ArFSPublicFolderTransactionData, CreatePublicFolderSettings, ArFSPublicDrive>(
+		return this.createFolder<ArFSPublicFolderTransactionData, CreatePublicFolderSettings>(
 			{ folderData, driveId, rewardSettings, parentFolderId, syncParentFolderId },
 			() => this.getPublicDrive(driveId),
 			(folderId, parentFolderId) =>
@@ -379,7 +375,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		rewardSettings,
 		syncParentFolderId = true
 	}: CreatePrivateFolderSettings): Promise<ArFSCreateFolderResult> {
-		return this.createFolder<ArFSPrivateFolderTransactionData, CreatePrivateFolderSettings, ArFSPrivateDrive>(
+		return this.createFolder<ArFSPrivateFolderTransactionData, CreatePrivateFolderSettings>(
 			{ folderData, driveId, rewardSettings, parentFolderId, syncParentFolderId, driveKey },
 			() => this.getPrivateDrive(driveId, driveKey),
 			(folderId, parentFolderId) =>
