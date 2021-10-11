@@ -461,20 +461,20 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	): Promise<ArFSCreatePrivateDriveResult> {
 		return this.createDrive(
 			driveRewardSettings,
-			async () => {
+			async (driveId) => {
 				const folderData = await ArFSPrivateFolderTransactionData.from(driveName, newDriveData.driveKey);
 				return this.createPrivateFolder({
 					folderData,
-					driveId: newDriveData.driveId,
+					driveId,
 					rewardSettings: rootFolderRewardSettings,
 					syncParentFolderId: false,
 					driveKey: newDriveData.driveKey
 				});
 			},
-			async (_driveId, rootFolderId) => {
+			async (driveId, rootFolderId) => {
 				return Promise.resolve(
 					new ArFSPrivateDriveMetaDataPrototype(
-						newDriveData.driveId,
+						driveId,
 						await ArFSPrivateDriveTransactionData.from(driveName, rootFolderId, newDriveData.driveKey)
 					)
 				);
