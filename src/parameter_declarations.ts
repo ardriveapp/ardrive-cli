@@ -69,7 +69,8 @@ Parameter.declare({
 Parameter.declare({
 	name: DriveNameParameter,
 	aliases: ['-n', '--drive-name'],
-	description: `the name for the new drive`
+	description: `the name for the new drive`,
+	required: true
 });
 
 Parameter.declare({
