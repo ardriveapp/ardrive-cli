@@ -100,8 +100,8 @@ export class PrivateDriveKeyData {
 	}
 }
 
-const stubTransactionID = '0000000000000000000000000000000000000000000';
-const stubEntityID = '00000000-0000-0000-0000-000000000000';
+export const stubTransactionID = '0000000000000000000000000000000000000000000';
+export const stubEntityID = '00000000-0000-0000-0000-000000000000';
 
 interface RecursiveBulkUploadParams {
 	parentFolderId: FolderID;
@@ -117,6 +117,26 @@ interface RecursivePrivateBulkUploadParams extends RecursiveBulkUploadParams {
 	driveKey: DriveKey;
 	folderData: ArFSPrivateFolderTransactionData;
 }
+
+interface CreatePublicFolderParams {
+	folderName: string;
+	driveId: DriveID;
+	parentFolderId?: FolderID;
+}
+
+interface CreatePrivateFolderParams extends CreatePublicFolderParams {
+	driveKey: DriveKey;
+}
+
+interface MovePublicFolderParams {
+	folderId: FolderID;
+	newParentFolderId: FolderID;
+}
+
+interface MovePrivateFolderParams extends MovePublicFolderParams {
+	driveKey: DriveKey;
+}
+
 export abstract class ArDriveType {
 	protected abstract readonly arFsDao: ArFSDAOType;
 }
@@ -304,7 +324,7 @@ export class ArDrive extends ArDriveAnonymous {
 		});
 	}
 
-	async movePublicFolder(folderId: FolderID, newParentFolderId: FolderID): Promise<ArFSResult> {
+	async movePublicFolder({ folderId, newParentFolderId }: MovePublicFolderParams): Promise<ArFSResult> {
 		const parentFolderDriveId = await this.getDriveIdAndAssertDrive(newParentFolderId);
 
 		const originalFolderMetaData = await this.getPublicFolder(folderId);
@@ -343,7 +363,7 @@ export class ArDrive extends ArDriveAnonymous {
 		});
 	}
 
-	async movePrivateFolder(folderId: FolderID, newParentFolderId: FolderID, driveKey: DriveKey): Promise<ArFSResult> {
+	async movePrivateFolder({ folderId, newParentFolderId, driveKey }: MovePrivateFolderParams): Promise<ArFSResult> {
 		const parentFolderDriveId = await this.getDriveIdAndAssertDrive(newParentFolderId, driveKey);
 		const originalFolderMetaData = await this.getPrivateFolder(folderId, driveKey);
 
@@ -573,7 +593,14 @@ export class ArDrive extends ArDriveAnonymous {
 
 	/** Computes the size of a private file encrypted with AES256-GCM */
 	encryptedDataSize(dataSize: ByteCount): ByteCount {
-		return (dataSize / 16 + 1) * 16;
+		if (dataSize < 0 || !Number.isInteger(dataSize)) {
+			throw new Error(`dataSize must be non-negative, integer value! ${dataSize} is invalid!`);
+		}
+		if (dataSize > Number.MAX_SAFE_INTEGER - 16) {
+			throw new Error(`Max unencrypted dataSize allowed is ${Number.MAX_SAFE_INTEGER - 16}!`);
+		}
+		const modulo16 = dataSize % 16;
+		return dataSize - modulo16 + 16;
 	}
 
 	async uploadPrivateFile(
@@ -782,7 +809,7 @@ export class ArDrive extends ArDriveAnonymous {
 		};
 	}
 
-	async createPublicFolder(folderName: string, driveId: DriveID, parentFolderId?: FolderID): Promise<ArFSResult> {
+	async createPublicFolder({ folderName, driveId, parentFolderId }: CreatePublicFolderParams): Promise<ArFSResult> {
 		// Assert that there's enough AR available in the wallet
 		const folderData = new ArFSPublicFolderTransactionData(folderName);
 		const { metaDataBaseReward } = await this.estimateAndAssertCostOfFolderUpload(folderData);
@@ -811,12 +838,12 @@ export class ArDrive extends ArDriveAnonymous {
 		});
 	}
 
-	async createPrivateFolder(
-		folderName: string,
-		driveId: DriveID,
-		driveKey: DriveKey,
-		parentFolderId?: FolderID
-	): Promise<ArFSResult> {
+	async createPrivateFolder({
+		folderName,
+		driveId,
+		driveKey,
+		parentFolderId
+	}: CreatePrivateFolderParams): Promise<ArFSResult> {
 		// Assert that there's enough AR available in the wallet
 		const folderData = await ArFSPrivateFolderTransactionData.from(folderName, driveKey);
 
@@ -1079,8 +1106,8 @@ export class ArDrive extends ArDriveAnonymous {
 		metaData: ArFSObjectTransactionData,
 		drivePrivacy: DrivePrivacy
 	): Promise<FileUploadBaseCosts> {
-		if (decryptedFileSize < 0) {
-			throw new Error('File size should be non-negative number!');
+		if (decryptedFileSize < 0 || !Number.isInteger(decryptedFileSize)) {
+			throw new Error('File size should be non-negative integer number!');
 		}
 
 		let fileSize = decryptedFileSize;

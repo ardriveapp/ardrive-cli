@@ -416,6 +416,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		driveId,
 		driveKey,
 		parentFolderId,
+		rewardSettings,
 		syncParentFolderId = true
 	}: CreatePrivateFolderSettings): Promise<ArFSCreatePrivateFolderResult> {
 		if (parentFolderId && syncParentFolderId) {
@@ -453,7 +454,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			folderData,
 			parentFolderId
 		);
-		const folderTrx = await this.prepareArFSObjectTransaction(folderMetadata);
+		const folderTrx = await this.prepareArFSObjectTransaction(folderMetadata, rewardSettings);
 
 		// Execute the upload
 		if (!this.dryRun) {
@@ -889,6 +890,12 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		if (rewardSettings.reward) {
 			trxAttributes.reward = rewardSettings.reward;
 		}
+
+		// TODO: Use a mock arweave server instead
+		if (process.env.NODE_ENV === 'test') {
+			trxAttributes.last_tx = 'STUB';
+		}
+
 		const transaction = await this.arweave.createTransaction(trxAttributes, wallet.getPrivateKey());
 
 		// If we've opted to boost the transaction, do so now

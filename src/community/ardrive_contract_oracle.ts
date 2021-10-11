@@ -23,7 +23,7 @@ export class ArDriveContractOracle implements ContractOracle {
 		 * Uses contract reader at index 0 first then descends down the list
 		 */
 		private readonly contractReaders: ContractReader[],
-		skipSetup = false
+		skipSetup = true
 	) {
 		if (!skipSetup) {
 			// Get contract data upon construction
