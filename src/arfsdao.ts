@@ -106,6 +106,7 @@ export interface ArFSMoveParams<O extends ArFSFileOrFolderEntity, T extends ArFS
 
 export type GetDriveFunction = () => Promise<ArFSPublicDrive | ArFSPrivateDrive>;
 export type CreateFolderFunction = (driveId: DriveID) => Promise<ArFSCreateFolderResult>;
+export type GenerateDriveIdFn = () => DriveID;
 
 export abstract class ArFSDAOType {
 	protected abstract readonly arweave: Arweave;
@@ -388,10 +389,11 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		driveRewardSettings: RewardSettings,
 		createFolderFn: CreateFolderFunction,
 		createMetadataFn: CreateDriveMetaDataFactory,
-		resultFactory: ArFSCreateDriveResultFactory<R>
+		resultFactory: ArFSCreateDriveResultFactory<R>,
+		generateDriveIdFn: GenerateDriveIdFn
 	): Promise<R> {
 		// Generate a new drive ID  for the new drive
-		const driveId = uuidv4();
+		const driveId = generateDriveIdFn();
 
 		// Create root folder
 		const {
@@ -446,7 +448,8 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 					)
 				);
 			},
-			(result) => result // No change
+			(result) => result, // No change
+			() => uuidv4()
 		);
 	}
 
@@ -478,7 +481,8 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			},
 			(result) => {
 				return { ...result, driveKey: newDriveData.driveKey }; // Add drive key for private return type
-			}
+			},
+			() => newDriveData.driveId
 		);
 	}
 
