@@ -20,11 +20,6 @@ export interface ArFSPrivateMetadataEntityBuilderParams extends ArFSMetadataEnti
 	key: EntityKey;
 }
 
-export type ArFSMetadataEntityBuilderFactoryFunction<
-	T extends ArFSEntity,
-	B extends ArFSMetadataEntityBuilder<T>,
-	P extends ArFSMetadataEntityBuilderParams
-> = (params: P) => B;
 export abstract class ArFSMetadataEntityBuilder<T extends ArFSEntity> {
 	appName?: string;
 	appVersion?: string;
