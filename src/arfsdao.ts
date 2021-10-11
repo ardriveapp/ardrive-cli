@@ -29,7 +29,6 @@ import {
 	ArFSPrivateFileMetaDataPrototype
 } from './arfs_prototypes';
 import {
-	ArFSFolderTransactionData,
 	ArFSObjectTransactionData,
 	ArFSPrivateDriveTransactionData,
 	ArFSPrivateFileDataTransactionData,
@@ -114,17 +113,19 @@ export abstract class ArFSDAOType {
 	protected abstract readonly appVersion: string;
 }
 
-export interface CreateFolderSettings<T extends ArFSFolderTransactionData> {
-	folderData: T;
+export interface CreateFolderSettings {
 	driveId: DriveID;
 	rewardSettings: RewardSettings;
 	parentFolderId?: FolderID;
 	syncParentFolderId?: boolean;
 }
 
-export type CreatePublicFolderSettings = CreateFolderSettings<ArFSPublicFolderTransactionData>;
+export interface CreatePublicFolderSettings extends CreateFolderSettings {
+	folderData: ArFSPublicFolderTransactionData;
+}
 
-export interface CreatePrivateFolderSettings extends CreateFolderSettings<ArFSPrivateFolderTransactionData> {
+export interface CreatePrivateFolderSettings extends CreateFolderSettings {
+	folderData: ArFSPrivateFolderTransactionData;
 	driveKey: DriveKey;
 }
 
@@ -305,8 +306,8 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	}
 
 	// For generic use with public and private drives. Generic types should all be harmonious.
-	async createFolder<T extends ArFSFolderTransactionData, S extends CreateFolderSettings<T>>(
-		{ driveId, rewardSettings, parentFolderId, syncParentFolderId = true }: S,
+	async createFolder(
+		{ driveId, rewardSettings, parentFolderId, syncParentFolderId = true }: CreateFolderSettings,
 		getDriveFn: GetDriveFunction,
 		folderPrototypeFactory: FolderMetaDataFactory
 	): Promise<ArFSCreateFolderResult> {
@@ -358,8 +359,8 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		parentFolderId,
 		syncParentFolderId = true
 	}: CreatePublicFolderSettings): Promise<ArFSCreateFolderResult> {
-		return this.createFolder<ArFSPublicFolderTransactionData, CreatePublicFolderSettings>(
-			{ folderData, driveId, rewardSettings, parentFolderId, syncParentFolderId },
+		return this.createFolder(
+			{ driveId, rewardSettings, parentFolderId, syncParentFolderId },
 			() => this.getPublicDrive(driveId),
 			(folderId, parentFolderId) =>
 				new ArFSPublicFolderMetaDataPrototype(folderData, driveId, folderId, parentFolderId)
@@ -375,8 +376,8 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		rewardSettings,
 		syncParentFolderId = true
 	}: CreatePrivateFolderSettings): Promise<ArFSCreateFolderResult> {
-		return this.createFolder<ArFSPrivateFolderTransactionData, CreatePrivateFolderSettings>(
-			{ folderData, driveId, rewardSettings, parentFolderId, syncParentFolderId, driveKey },
+		return this.createFolder(
+			{ driveId, rewardSettings, parentFolderId, syncParentFolderId },
 			() => this.getPrivateDrive(driveId, driveKey),
 			(folderId, parentFolderId) =>
 				new ArFSPrivateFolderMetaDataPrototype(driveId, folderId, folderData, parentFolderId)
