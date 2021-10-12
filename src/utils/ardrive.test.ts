@@ -1,7 +1,7 @@
 import Arweave from 'arweave';
 import { expect } from 'chai';
 import { SinonStubbedInstance, stub } from 'sinon';
-import { ArDrive, stubEntityID, stubTransactionID } from '../../src/ardrive';
+import { ArDrive } from '../../src/ardrive';
 import {
 	ArFSPublicDriveTransactionData,
 	ArFSPublicFileMetadataTransactionData,
@@ -17,6 +17,7 @@ import { expectAsyncErrorThrow } from '../../src/utils/test_helpers';
 import { ArDriveCommunityOracle } from '../../src/community/ardrive_community_oracle';
 import { CommunityOracle } from '../../src/community/community_oracle';
 import { ArFSDAO } from '../arfsdao';
+import { stubEntityID, stubTransactionID } from './stubs';
 
 describe('ArDrive class', () => {
 	let arDrive: ArDrive;
@@ -39,7 +40,7 @@ describe('ArDrive class', () => {
 		'application/json'
 	);
 	const stubPublicFolderTransactionData = new ArFSPublicFolderTransactionData('stubName');
-	const stubPublicDriveMetadataTransactionData = new ArFSPublicDriveTransactionData('stubName', stubEntityID);
+	const stubPublicDriveMetadataTransactionData = new ArFSPublicDriveTransactionData('stubName', stubEntityID());
 
 	beforeEach(async () => {
 		// Set pricing algo up as x = y (bytes = Winston)
