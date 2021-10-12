@@ -61,7 +61,7 @@ export class ArFSPublicFileBuilder extends ArFSFileBuilder<ArFSPublicFile> {
 			const dataString = await Utf8ArrayToStr(txData);
 			const dataJSON: FileMetaDataTransactionDataJson = await JSON.parse(dataString);
 
-			// Get the file name
+			// Get fields from data JSON
 			this.name = dataJSON.name;
 			this.size = dataJSON.size;
 			this.lastModifiedDate = dataJSON.lastModifiedDate;
@@ -158,7 +158,7 @@ export class ArFSPrivateFileBuilder extends ArFSFileBuilder<ArFSPrivateFile> {
 			const decryptedFileString: string = await Utf8ArrayToStr(decryptedFileBuffer);
 			const decryptedFileJSON: FileMetaDataTransactionDataJson = await JSON.parse(decryptedFileString);
 
-			// Get the file name
+			// Get fields from data JSON
 			this.name = decryptedFileJSON.name;
 			this.size = decryptedFileJSON.size;
 			this.lastModifiedDate = decryptedFileJSON.lastModifiedDate;
