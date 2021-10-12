@@ -12,7 +12,7 @@ import { ArFSPrivateFile, ArFSPublicFile } from '../../arfs_entities';
 import { ByteCount, CipherIV, DriveKey, FileID, TransactionID, UnixTime } from '../../types';
 import { ArFSFileOrFolderBuilder } from './arfs_builders';
 
-interface FileMetaDataTransactionDataJson {
+interface FileMetaDataTransactionData {
 	name: string;
 	size: ByteCount;
 	lastModifiedDate: UnixTime;
@@ -59,7 +59,7 @@ export class ArFSPublicFileBuilder extends ArFSFileBuilder<ArFSPublicFile> {
 		) {
 			const txData = await this.arweave.transactions.getData(this.txId, { decode: true });
 			const dataString = await Utf8ArrayToStr(txData);
-			const dataJSON: FileMetaDataTransactionDataJson = await JSON.parse(dataString);
+			const dataJSON: FileMetaDataTransactionData = await JSON.parse(dataString);
 
 			// Get fields from data JSON
 			this.name = dataJSON.name;
@@ -156,7 +156,7 @@ export class ArFSPrivateFileBuilder extends ArFSFileBuilder<ArFSPrivateFile> {
 
 			const decryptedFileBuffer: Buffer = await fileDecrypt(this.cipherIV, fileKey, dataBuffer);
 			const decryptedFileString: string = await Utf8ArrayToStr(decryptedFileBuffer);
-			const decryptedFileJSON: FileMetaDataTransactionDataJson = await JSON.parse(decryptedFileString);
+			const decryptedFileJSON: FileMetaDataTransactionData = await JSON.parse(decryptedFileString);
 
 			// Get fields from data JSON
 			this.name = decryptedFileJSON.name;
