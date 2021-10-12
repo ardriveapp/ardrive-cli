@@ -5,7 +5,7 @@ import { assertConjunctionParameters, CLICommand, CommandDescriptor } from './cl
 
 import {
 	DriveNameParameter,
-	DrivePasswordParameter,
+	UnsafeDrivePasswordParameter,
 	SeedPhraseParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
@@ -32,13 +32,13 @@ const commandDescriptorRequiredWallet: CommandDescriptor = {
 	name: testingCommandName,
 	parameters: [
 		WalletFileParameter,
-		{ name: DrivePasswordParameter, requiredConjunctionParameters: [WalletFileParameter] }
+		{ name: UnsafeDrivePasswordParameter, requiredConjunctionParameters: [WalletFileParameter] }
 	],
 	action
 };
 const parsedOptionsMissingWallet = {
 	[WalletFileParameter]: undefined,
-	[DrivePasswordParameter]: nonEmptyValue
+	[UnsafeDrivePasswordParameter]: nonEmptyValue
 };
 const commandDescriptorForbiddenWalletFileAndSeedPhrase: CommandDescriptor = {
 	name: testingCommandName,

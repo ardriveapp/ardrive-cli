@@ -34,8 +34,9 @@ new CLICommand({
 	],
 	async action(options) {
 		const filesToUpload: UploadFileParameter[] = (function (): UploadFileParameter[] {
-			if (options.drivePassword && options.driveKey) {
-				console.log(`Can not use --drive-password in conjunction with --drive-key`);
+			// TODO: SHOULDN'T THIS BE HANDLED BY PARAMETERS IN CONJUNCTION?
+			if (options.unsafeDrivePassword && options.driveKey) {
+				console.log(`Can not use --unsafe-drive-password in conjunction with --drive-key`);
 				process.exit(1);
 			}
 			if (options.localFiles) {
@@ -68,7 +69,7 @@ new CLICommand({
 				parentFolderId: options.parentFolderId,
 				wrappedEntity: wrapFileOrFolder(options.localFilePath),
 				destinationFileName: options.destFileName,
-				drivePassword: options.drivePassword,
+				drivePassword: options.unsafeDrivePassword,
 				driveKey: options.driveKey
 			};
 			if (!options.parentFolderId || !options.localFilePath) {

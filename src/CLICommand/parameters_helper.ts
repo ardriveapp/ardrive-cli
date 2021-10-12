@@ -6,7 +6,7 @@ import {
 	AddressParameter,
 	AllParameter,
 	DriveKeyParameter,
-	DrivePasswordParameter,
+	UnsafeDrivePasswordParameter,
 	MaxDepthParameter,
 	SeedPhraseParameter,
 	WalletFileParameter
@@ -35,7 +35,7 @@ export class ParametersHelper {
 	 */
 	public async getIsPrivate(): Promise<boolean> {
 		return (
-			this.getParameterValue(DrivePasswordParameter) !== undefined ||
+			this.getParameterValue(UnsafeDrivePasswordParameter) !== undefined ||
 			this.getParameterValue(DriveKeyParameter) !== undefined
 		);
 	}
@@ -74,7 +74,7 @@ export class ParametersHelper {
 		if (driveKey) {
 			return Buffer.from(driveKey, 'base64');
 		}
-		const drivePassword = this.getParameterValue(DrivePasswordParameter);
+		const drivePassword = this.getParameterValue(UnsafeDrivePasswordParameter);
 		if (drivePassword) {
 			const wallet: JWKWallet = (await this.getRequiredWallet()) as JWKWallet;
 			const derivedDriveKey: DriveKey = await deriveDriveKey(
