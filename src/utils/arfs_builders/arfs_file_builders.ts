@@ -1,6 +1,7 @@
 import {
 	ContentType,
 	deriveFileKey,
+	extToMime,
 	fileDecrypt,
 	GQLNodeInterface,
 	GQLTagInterface,
@@ -11,6 +12,13 @@ import { ArFSPrivateFile, ArFSPublicFile } from '../../arfs_entities';
 import { ByteCount, CipherIV, DriveKey, FileID, TransactionID, UnixTime } from '../../types';
 import { ArFSFileOrFolderBuilder } from './arfs_builders';
 
+interface FileMetaDataTransactionData {
+	name: string;
+	size: ByteCount;
+	lastModifiedDate: UnixTime;
+	dataTxId: TransactionID;
+	dataContentType: ContentType;
+}
 export abstract class ArFSFileBuilder<T extends ArFSPublicFile | ArFSPrivateFile> extends ArFSFileOrFolderBuilder<T> {
 	size?: ByteCount;
 	lastModifiedDate?: UnixTime;
@@ -51,14 +59,14 @@ export class ArFSPublicFileBuilder extends ArFSFileBuilder<ArFSPublicFile> {
 		) {
 			const txData = await this.arweave.transactions.getData(this.txId, { decode: true });
 			const dataString = await Utf8ArrayToStr(txData);
-			const dataJSON = await JSON.parse(dataString);
+			const dataJSON: FileMetaDataTransactionData = await JSON.parse(dataString);
 
-			// Get the file name
+			// Get fields from data JSON
 			this.name = dataJSON.name;
 			this.size = dataJSON.size;
 			this.lastModifiedDate = dataJSON.lastModifiedDate;
 			this.dataTxId = dataJSON.dataTxId;
-			this.dataContentType = dataJSON.dataContentType;
+			this.dataContentType = dataJSON.dataContentType ?? extToMime(this.name);
 
 			if (!this.name || !this.size || !this.lastModifiedDate || !this.dataTxId || !this.dataContentType) {
 				throw new Error('Invalid file state');
@@ -148,14 +156,14 @@ export class ArFSPrivateFileBuilder extends ArFSFileBuilder<ArFSPrivateFile> {
 
 			const decryptedFileBuffer: Buffer = await fileDecrypt(this.cipherIV, fileKey, dataBuffer);
 			const decryptedFileString: string = await Utf8ArrayToStr(decryptedFileBuffer);
-			const decryptedFileJSON = await JSON.parse(decryptedFileString);
+			const decryptedFileJSON: FileMetaDataTransactionData = await JSON.parse(decryptedFileString);
 
-			// Get the file name
+			// Get fields from data JSON
 			this.name = decryptedFileJSON.name;
 			this.size = decryptedFileJSON.size;
 			this.lastModifiedDate = decryptedFileJSON.lastModifiedDate;
 			this.dataTxId = decryptedFileJSON.dataTxId;
-			this.dataContentType = decryptedFileJSON.dataContentType;
+			this.dataContentType = decryptedFileJSON.dataContentType ?? extToMime(this.name);
 
 			if (!this.name || !this.size || !this.lastModifiedDate || !this.dataTxId || !this.dataContentType) {
 				throw new Error('Invalid file state');
