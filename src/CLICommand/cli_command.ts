@@ -47,8 +47,10 @@ function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliA
 		}
 	});
 	command = command.action(async (options) => {
-		assertConjunctionParameters(commandDescriptor, options);
-		await commandDescriptor.action(options).catch((err) => {
+		await (async function () {
+			assertConjunctionParameters(commandDescriptor, options);
+			await commandDescriptor.action(options);
+		})().catch((err) => {
 			console.log(err.message);
 			process.exit(1);
 		});
