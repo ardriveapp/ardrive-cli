@@ -231,6 +231,10 @@ export class ArDrive extends ArDriveAnonymous {
 			throw new Error('File should stay in the same drive!');
 		}
 
+		if (originalFileMetaData.parentFolderId === newParentFolderId) {
+			throw new Error(`File already has parent folder with ID: ${newParentFolderId}`);
+		}
+
 		const fileTransactionData = new ArFSPublicFileMetadataTransactionData(
 			originalFileMetaData.name,
 			originalFileMetaData.size,
@@ -272,6 +276,10 @@ export class ArDrive extends ArDriveAnonymous {
 
 		if (driveId !== originalFileMetaData.driveId) {
 			throw new Error('File should stay in the same drive!');
+		}
+
+		if (originalFileMetaData.parentFolderId === newParentFolderId) {
+			throw new Error(`File already has parent folder with ID: ${newParentFolderId}`);
 		}
 
 		const fileTransactionData = await ArFSPrivateFileMetadataTransactionData.from(
@@ -321,6 +329,14 @@ export class ArDrive extends ArDriveAnonymous {
 			throw new Error('Folder should stay in the same drive!');
 		}
 
+		if (originalFolderMetaData.parentFolderId === newParentFolderId) {
+			throw new Error(`Folder already has parent folder with ID: ${newParentFolderId}`);
+		}
+
+		if (originalFolderMetaData.parentFolderId === 'root folder') {
+			throw new Error(`The root folder cannot be moved!`);
+		}
+
 		const folderTransactionData = new ArFSPublicFolderTransactionData(originalFolderMetaData.name);
 		const { metaDataBaseReward: baseReward } = await this.estimateAndAssertCostOfFolderUpload(
 			folderTransactionData
@@ -357,6 +373,14 @@ export class ArDrive extends ArDriveAnonymous {
 
 		if (parentFolderDriveId !== originalFolderMetaData.driveId) {
 			throw new Error('Folder should stay in the same drive!');
+		}
+
+		if (originalFolderMetaData.parentFolderId === newParentFolderId) {
+			throw new Error(`Folder already has parent folder with ID: ${newParentFolderId}`);
+		}
+
+		if (originalFolderMetaData.parentFolderId === 'root folder') {
+			throw new Error(`The root folder cannot be moved!`);
 		}
 
 		const folderTransactionData = await ArFSPrivateFolderTransactionData.from(
