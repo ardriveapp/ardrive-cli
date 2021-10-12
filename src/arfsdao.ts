@@ -626,32 +626,9 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return new ArFSPrivateDriveBuilder({ entityId: driveId, arweave: this.arweave, key: driveKey }).build();
 	}
 
-	// Generic function for generic privacy use cases
-	async getFolder<
-		R extends ArFSPublicFolder | ArFSPrivateFolder,
-		B extends ArFSMetadataEntityBuilder<R>,
-		P extends ArFSMetadataEntityBuilderParams,
-		F extends ArFSMetadataEntityBuilderFactoryFunction<R, B, P>
-	>(builderFactory: F, builderFactoryParams: P): Promise<R> {
-		const folderBuilder = builderFactory(builderFactoryParams);
-		return await folderBuilder.build();
-	}
-
 	// Convenience function for known-private use cases
 	async getPrivateFolder(folderId: FolderID, driveKey: DriveKey): Promise<ArFSPrivateFolder> {
-		// Exemplifies use of the generic case although utilizing an ArFSPrivateFolderBuilder on its own would suffice
-		const folderBuilderFn = ({ entityId, arweave, key }: ArFSPrivateMetadataEntityBuilderParams) =>
-			new ArFSPrivateFolderBuilder(entityId, arweave, key);
-		return this.getFolder<
-			ArFSPrivateFolder,
-			ArFSPrivateFolderBuilder,
-			ArFSPrivateMetadataEntityBuilderParams,
-			ArFSMetadataEntityBuilderFactoryFunction<
-				ArFSPrivateFolder,
-				ArFSPrivateFolderBuilder,
-				ArFSPrivateMetadataEntityBuilderParams
-			>
-		>(folderBuilderFn, { entityId: folderId, arweave: this.arweave, key: driveKey });
+		return await new ArFSPrivateFolderBuilder(folderId, this.arweave, driveKey).build();
 	}
 
 	async getPrivateFile(fileId: FileID, driveKey: DriveKey): Promise<ArFSPrivateFile> {
