@@ -83,8 +83,8 @@ Parameter.declare({
 Parameter.declare({
 	name: AddressParameter,
 	aliases: ['-a', '--address'],
-	description: 'the address',
-	forbiddenConjunctionParameters: [DrivePasswordParameter, DriveKeyParameter]
+	description: 'the address'
+	// forbiddenConjunctionParameters: [DrivePasswordParameter, DriveKeyParameter]
 });
 
 Parameter.declare({

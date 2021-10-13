@@ -1,6 +1,6 @@
 import { ArFSDAO, PrivateDriveKeyData } from './arfsdao';
 import { CommunityOracle } from './community/community_oracle';
-import { deriveDriveKey, DrivePrivacy, GQLTagInterface, winstonToAr } from 'ardrive-core-js';
+import { ArFSDriveEntity, deriveDriveKey, DrivePrivacy, GQLTagInterface, winstonToAr } from 'ardrive-core-js';
 import {
 	TransactionID,
 	ArweaveAddress,
@@ -146,6 +146,14 @@ export class ArDriveAnonymous extends ArDriveType {
 
 	async getPublicFile(fileId: FileID): Promise<ArFSPublicFile> {
 		return this.arFsDao.getPublicFile(fileId);
+	}
+
+	async getAllDrivesForAddress(address: ArweaveAddress, driveKey?: DriveKey): Promise<ArFSDriveEntity[]> {
+		return this.arFsDao.getAllDrivesForAddress(address, driveKey);
+	}
+
+	async getLatestDriveIdForAddress(address: ArweaveAddress): Promise<DriveID> {
+		return this.arFsDao.getLatestDriveIdForAddress(address);
 	}
 
 	/**
