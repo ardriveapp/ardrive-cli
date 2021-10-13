@@ -9,6 +9,7 @@ import {
 import { Wallet } from '../wallet_new';
 import { arDriveFactory } from '..';
 import { FeeMultiple } from '../types';
+import { SUCCES_EXIT_CODE } from '../CLICommand/constants';
 
 new CLICommand({
 	name: 'move-folder',
@@ -44,6 +45,6 @@ new CLICommand({
 
 		console.log(JSON.stringify(moveFolderResult, null, 4));
 
-		process.exit(0);
+		return SUCCES_EXIT_CODE;
 	}
 });

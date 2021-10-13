@@ -1,5 +1,6 @@
 import { cliArweave } from '..';
 import { CLICommand } from '../CLICommand';
+import { ERROR_EXIT_CODE, SUCCES_EXIT_CODE } from '../CLICommand/constants';
 import { ConfirmationsParameter, TransactionIdParameter } from '../parameter_declarations';
 import { fetchMempool } from '../utils';
 
@@ -14,14 +15,14 @@ new CLICommand({
 
 		if (pending) {
 			console.log(`${txId}: Pending`);
-			process.exit(0);
+			return SUCCES_EXIT_CODE;
 		}
 
 		const confStatus = (await cliArweave.transactions.getStatus(txId)).confirmed;
 
 		if (!confStatus?.block_height) {
 			console.log(`${txId}: Not found`);
-			process.exit(1);
+			return ERROR_EXIT_CODE;
 		}
 
 		if (confStatus?.number_of_confirmations >= confirmationAmount) {
@@ -34,6 +35,6 @@ new CLICommand({
 			);
 		}
 
-		process.exit(0);
+		return SUCCES_EXIT_CODE;
 	}
 });

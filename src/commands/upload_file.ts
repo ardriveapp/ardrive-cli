@@ -12,6 +12,7 @@ import {
 } from '../parameter_declarations';
 import { DriveKey, FeeMultiple, FolderID } from '../types';
 import { readJWKFile } from '../utils';
+import { ERROR_EXIT_CODE, SUCCES_EXIT_CODE } from '../CLICommand/constants';
 
 interface UploadFileParameter {
 	parentFolderId: FolderID;
@@ -64,8 +65,7 @@ new CLICommand({
 				driveKey: options.driveKey
 			};
 			if (!options.parentFolderId || !options.localFilePath) {
-				console.log(`Bad file: ${JSON.stringify(singleParameter)}`);
-				process.exit(1);
+				throw new Error(`Bad file: ${JSON.stringify(singleParameter)}`);
 			}
 			return [singleParameter];
 		})();
@@ -119,9 +119,9 @@ new CLICommand({
 					console.log(JSON.stringify(result, null, 4));
 				})
 			);
-			process.exit(0);
+			return SUCCES_EXIT_CODE;
 		}
 		console.log(`No files to upload`);
-		process.exit(1);
+		return ERROR_EXIT_CODE;
 	}
 });

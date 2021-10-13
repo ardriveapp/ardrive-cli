@@ -2,13 +2,14 @@
 import { Command } from 'commander';
 import { showHelp } from '../utils';
 import { CliApiObject, ParsedArguments } from './cli';
+import { ERROR_EXIT_CODE, SUCCES_EXIT_CODE } from './constants';
 import { Parameter, ParameterName, ParameterOverridenConfig } from './parameter';
 
 export type CommandName = string;
 export interface CommandDescriptor {
 	name: CommandName;
 	parameters: (ParameterName | ParameterOverridenConfig)[];
-	action(options: ParsedArguments): Promise<void>;
+	action(options: ParsedArguments): Promise<number | void>;
 }
 
 const program: CliApiObject = new Command() as CliApiObject;
@@ -49,10 +50,11 @@ function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliA
 	command = command.action(async (options) => {
 		await (async function () {
 			assertConjunctionParameters(commandDescriptor, options);
-			await commandDescriptor.action(options);
+			const exitCode = await commandDescriptor.action(options);
+			exitProgram(exitCode || 0);
 		})().catch((err) => {
 			console.log(err.message);
-			process.exit(1);
+			exitProgram(ERROR_EXIT_CODE);
 		});
 	});
 }
@@ -124,7 +126,7 @@ export class CLICommand {
 	public static parse(program: CliApiObject = this.program, argv: string[] = process.argv): void {
 		if (argv.length < 3 || argv.includes('-h') || argv.includes('--help') || argv.includes('help')) {
 			showHelp();
-			process.exit(0);
+			exitProgram(SUCCES_EXIT_CODE);
 		}
 
 		program.parse(argv);
@@ -137,4 +139,8 @@ export class CLICommand {
 	public static _getAllCommandDescriptors(): CommandDescriptor[] {
 		return this.allCommandDescriptors;
 	}
+}
+
+function exitProgram(exitCode: number): void {
+	process.exitCode = exitCode;
 }

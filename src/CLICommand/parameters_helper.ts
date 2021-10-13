@@ -125,13 +125,11 @@ export class ParametersHelper {
 					message: 'Re-enter new drive password: '
 				});
 				if (confirmedPassword !== promptedPassword) {
-					console.log('Drive passwords do not match!');
-					process.exit(1);
+					throw new Error('Drive passwords do not match!');
 				}
 			}
 			if (!promptedPassword.password.length) {
-				console.log('New drive password must not be empty when --private is specified!');
-				process.exit(1);
+				throw new Error('New drive password must not be empty when --private is specified!');
 			}
 
 			return promptedPassword.password;
@@ -139,10 +137,9 @@ export class ParametersHelper {
 
 		const unsafePassword = this.getParameterValue(UnsafeDrivePasswordParameter);
 		if (!unsafePassword) {
-			console.log(
+			throw new Error(
 				'Password not detected for private drive operation! Please provide a password via the --private option (recommended) or the --unsafe-drive-password option (not recommended).'
 			);
-			process.exit(1);
 		}
 		return unsafePassword;
 	}

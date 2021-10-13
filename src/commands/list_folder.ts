@@ -1,6 +1,7 @@
 import { arDriveAnonymousFactory, arDriveFactory } from '..';
 import { ArFSPrivateFileOrFolderWithPaths, ArFSPublicFileOrFolderWithPaths } from '../arfs_entities';
 import { CLICommand, ParametersHelper } from '../CLICommand';
+import { SUCCES_EXIT_CODE } from '../CLICommand/constants';
 import { DrivePrivacyParameters, ParentFolderIdParameter, TreeDepthParams } from '../parameter_declarations';
 import { alphabeticalOrder } from '../utils/sort_functions';
 
@@ -41,6 +42,6 @@ new CLICommand({
 
 		// Display data
 		console.log(JSON.stringify(sortedChildren, null, 4));
-		process.exit(0);
+		return SUCCES_EXIT_CODE;
 	}
 });

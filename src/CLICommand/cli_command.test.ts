@@ -51,10 +51,6 @@ const parsedCommandOptionsBothSpecified = {
 	[SeedPhraseParameter]: nonEmptyValue
 };
 
-process.exit = (n: number) => {
-	process.exit(n);
-};
-
 class TestCliApiObject {
 	constructor(private readonly program: CliApiObject = new Command() as CliApiObject) {}
 	arguments = stub(this.program, 'arguments').returnsThis();
