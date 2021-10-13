@@ -24,7 +24,6 @@ import { ArFSDAO, PrivateDriveKeyData } from '../../src/arfsdao';
 import { deriveDriveKey, DrivePrivacy } from 'ardrive-core-js';
 import { DriveKey, Winston } from '../../src/types';
 import { ArFSFileToUpload, wrapFileOrFolder } from '../../src/arfs_file_wrapper';
-import { errorMessage } from '../../src/error_message';
 
 const entityIdRegex = /^([a-f]|[0-9]){8}-([a-f]|[0-9]){4}-([a-f]|[0-9]){4}-([a-f]|[0-9]){4}-([a-f]|[0-9]){12}$/;
 const trxIdRegex = /^([a-zA-Z]|[0-9]|-|_){43}$/;
@@ -145,7 +144,7 @@ describe('ArDrive class - integrated', () => {
 						folderId: stubEntityID,
 						newParentFolderId: stubEntityIDAltTwo // Alt ID Two will be in Children folder ids
 					}),
-					errorMessage: errorMessage.cannotMoveParentIntoChildFolder
+					errorMessage: 'Parent folder cannot be moved inside any of its children folders!'
 				});
 			});
 
@@ -155,7 +154,7 @@ describe('ArDrive class - integrated', () => {
 						folderId: stubEntityID,
 						newParentFolderId: stubEntityID // Stub ID will MATCH current parentFolderId field
 					}),
-					errorMessage: errorMessage.cannotMoveIntoSamePlace('Folder', stubEntityID)
+					errorMessage: `Folder already has parent folder with ID: ${stubEntityID}`
 				});
 			});
 
@@ -182,7 +181,7 @@ describe('ArDrive class - integrated', () => {
 						newParentFolderId: stubEntityIDAltTwo, // Alt ID Two will be in Children folder ids
 						driveKey: await getStubDriveKey()
 					}),
-					errorMessage: errorMessage.cannotMoveParentIntoChildFolder
+					errorMessage: 'Parent folder cannot be moved inside any of its children folders!'
 				});
 			});
 
@@ -193,7 +192,7 @@ describe('ArDrive class - integrated', () => {
 						newParentFolderId: stubEntityID, // Stub ID will MATCH current parentFolderId field
 						driveKey: await getStubDriveKey()
 					}),
-					errorMessage: errorMessage.cannotMoveIntoSamePlace('Folder', stubEntityID)
+					errorMessage: `Folder already has parent folder with ID: ${stubEntityID}`
 				});
 			});
 
