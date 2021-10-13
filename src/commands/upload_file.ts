@@ -33,18 +33,9 @@ new CLICommand({
 		...DrivePrivacyParameters
 	],
 	async action(options) {
-		const filesToUpload: UploadFileParameter[] = (function (): UploadFileParameter[] {
-			// TODO: SHOULDN'T THIS BE HANDLED BY PARAMETERS IN CONJUNCTION?
-			if (options.unsafeDrivePassword && options.driveKey) {
-				console.log(`Can not use --unsafe-drive-password in conjunction with --drive-key`);
-				process.exit(1);
-			}
+		const parameters = new ParametersHelper(options);
+		const filesToUpload: UploadFileParameter[] = await (async function (): Promise<UploadFileParameter[]> {
 			if (options.localFiles) {
-				if (options.localFilePath) {
-					console.log(`Can not use --local-files in conjunction with --localFilePath`);
-					process.exit(1);
-				}
-
 				const COLUMN_SEPARATOR = ',';
 				const ROW_SEPARATOR = '.';
 				const csvRows = options.localFiles.split(ROW_SEPARATOR);
@@ -69,7 +60,7 @@ new CLICommand({
 				parentFolderId: options.parentFolderId,
 				wrappedEntity: wrapFileOrFolder(options.localFilePath),
 				destinationFileName: options.destFileName,
-				drivePassword: options.unsafeDrivePassword,
+				drivePassword: await parameters.getDrivePassword(),
 				driveKey: options.driveKey
 			};
 			if (!options.parentFolderId || !options.localFilePath) {

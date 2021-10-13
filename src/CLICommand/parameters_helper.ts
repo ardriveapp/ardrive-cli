@@ -9,10 +9,12 @@ import {
 	UnsafeDrivePasswordParameter,
 	MaxDepthParameter,
 	SeedPhraseParameter,
-	WalletFileParameter
+	WalletFileParameter,
+	PrivateParameter
 } from '../parameter_declarations';
 import { cliWalletDao } from '..';
 import { DriveID, DriveKey } from '../types';
+import passwordPrompt from 'prompts';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ParameterOptions = any;
@@ -35,6 +37,7 @@ export class ParametersHelper {
 	 */
 	public async getIsPrivate(): Promise<boolean> {
 		return (
+			this.getParameterValue(PrivateParameter) !== undefined ||
 			this.getParameterValue(UnsafeDrivePasswordParameter) !== undefined ||
 			this.getParameterValue(DriveKeyParameter) !== undefined
 		);
@@ -70,11 +73,15 @@ export class ParametersHelper {
 	}
 
 	public async getDriveKey(driveId: DriveID): Promise<DriveKey> {
+		// Obtain drive key from one of:
+		// • --drive-key param
+		// • (--wallet-file or --seed-phrase) + (--unsafe-drive-password or --private password)
 		const driveKey = this.getParameterValue(DriveKeyParameter);
 		if (driveKey) {
 			return Buffer.from(driveKey, 'base64');
 		}
-		const drivePassword = this.getParameterValue(UnsafeDrivePasswordParameter);
+
+		const drivePassword = await this.getDrivePassword();
 		if (drivePassword) {
 			const wallet: JWKWallet = (await this.getRequiredWallet()) as JWKWallet;
 			const derivedDriveKey: DriveKey = await deriveDriveKey(
@@ -85,6 +92,59 @@ export class ParametersHelper {
 			return derivedDriveKey;
 		}
 		throw new Error(`No drive key or password provided!`);
+	}
+
+	public async getDrivePassword(isForNewDrive = false): Promise<string> {
+		if (this.getParameterValue(PrivateParameter)) {
+			// Try to get password from STDIN, then ENV.ARDRIVE_DRIVE_PW, then interactive secure prompt
+			try {
+				const stdInPassword = fs.readFileSync(process.stdin.fd).toString().replace(/\n*$/, '');
+				if (stdInPassword) {
+					return stdInPassword;
+				}
+			} catch (_err) {
+				// Do nothing
+			}
+
+			const envPassword = process.env['ARDRIVE_DRIVE_PW'];
+			if (envPassword) {
+				return envPassword;
+			}
+
+			const promptedPassword = await passwordPrompt({
+				type: 'text',
+				name: 'password',
+				style: 'password',
+				message: isForNewDrive ? 'Enter new drive password:' : 'Enter drive password:'
+			});
+			if (isForNewDrive) {
+				const confirmedPassword = await passwordPrompt({
+					type: 'text',
+					name: 'password',
+					style: 'password',
+					message: 'Re-enter new drive password: '
+				});
+				if (confirmedPassword !== promptedPassword) {
+					console.log('Drive passwords do not match!');
+					process.exit(1);
+				}
+			}
+			if (!promptedPassword.password.length) {
+				console.log('New drive password must not be empty when --private is specified!');
+				process.exit(1);
+			}
+
+			return promptedPassword.password;
+		}
+
+		const unsafePassword = this.getParameterValue(UnsafeDrivePasswordParameter);
+		if (!unsafePassword) {
+			console.log(
+				'Password not detected for private drive operation! Please provide a password via the --private option (recommended) or the --unsafe-drive-password option (not recommended).'
+			);
+			process.exit(1);
+		}
+		return unsafePassword;
 	}
 
 	public async getMaxDepth(defaultDepth: number): Promise<number> {

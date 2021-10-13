@@ -25,7 +25,7 @@ new CLICommand({
 		const createDriveResult = await (async function () {
 			if (await parameters.getIsPrivate()) {
 				const newDriveData = await PrivateDriveKeyData.from(
-					options.unsafeDrivePassword,
+					await parameters.getDrivePassword(true),
 					(wallet as JWKWallet).getPrivateKey()
 				);
 				return ardrive.createPrivateDrive(options.driveName, newDriveData);
