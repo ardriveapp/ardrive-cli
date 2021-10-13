@@ -1,9 +1,7 @@
+import { winstonToAr } from 'ardrive-core-js';
 import { cliWalletDao } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { AddressParameter, SeedPhraseParameter, WalletFileParameter } from '../parameter_declarations';
-
-const anArInWinston = 1_000_000_000_000;
-const numberOfDigitsAfterComma = 8;
 
 new CLICommand({
 	name: 'get-balance',
@@ -12,9 +10,9 @@ new CLICommand({
 		const parameters = new ParametersHelper(options);
 		const address = await parameters.getWalletAddress();
 		const balanceInWinston = await cliWalletDao.getAddressWinstonBalance(address);
-		const balanceInAR = balanceInWinston / anArInWinston;
-		const roundedBalanceInAR = balanceInAR.toFixed(numberOfDigitsAfterComma);
-		console.log(`${roundedBalanceInAR} AR`);
+		const balanceInAR = winstonToAr(balanceInWinston);
+		console.log(`${balanceInWinston}\tWinston`);
+		console.log(`${balanceInAR}\tAR`);
 		process.exit(0);
 	}
 });
