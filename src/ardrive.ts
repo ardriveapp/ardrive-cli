@@ -331,8 +331,10 @@ export class ArDrive extends ArDriveAnonymous {
 			throw new Error(`Folder already has parent folder with ID: ${newParentFolderId}`);
 		}
 
-		if (originalFolderMetaData.parentFolderId === 'root folder') {
-			throw new Error(`The root folder cannot be moved!`);
+		const childrenFolderIds = await this.arFsDao.getPublicChildrenFolderIds(folderId, parentFolderDriveId);
+
+		if (childrenFolderIds.includes(newParentFolderId)) {
+			throw new Error('Parent folder cannot be moved inside any of its children folders!');
 		}
 
 		const folderTransactionData = new ArFSPublicFolderTransactionData(originalFolderMetaData.name);
@@ -377,8 +379,14 @@ export class ArDrive extends ArDriveAnonymous {
 			throw new Error(`Folder already has parent folder with ID: ${newParentFolderId}`);
 		}
 
-		if (originalFolderMetaData.parentFolderId === 'root folder') {
-			throw new Error(`The root folder cannot be moved!`);
+		const childrenFolderIds = await this.arFsDao.getPrivateChildrenFolderIds(
+			folderId,
+			parentFolderDriveId,
+			driveKey
+		);
+
+		if (childrenFolderIds.includes(newParentFolderId)) {
+			throw new Error('Parent folder cannot be moved inside any of its children folders!');
 		}
 
 		const folderTransactionData = await ArFSPrivateFolderTransactionData.from(

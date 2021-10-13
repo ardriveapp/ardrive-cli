@@ -709,6 +709,21 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return latestRevisionsOnly ? allFiles.filter(latestRevisionFilter) : allFiles;
 	}
 
+	async getChildrenFolderIds(
+		folderId: FolderID,
+		allFolderEntitiesOfDrive: ArFSPublicFolder[] | ArFSPrivateFolder[]
+	): Promise<FolderID[]> {
+		const hierarchy = FolderHierarchy.newFromEntities(allFolderEntitiesOfDrive);
+		return hierarchy.folderIdSubtreeFromFolderId(folderId, Number.POSITIVE_INFINITY);
+	}
+
+	async getPrivateChildrenFolderIds(folderId: FolderID, driveId: DriveID, driveKey: DriveKey): Promise<FolderID[]> {
+		return this.getChildrenFolderIds(folderId, await this.getAllFoldersOfPrivateDrive(driveId, driveKey, true));
+	}
+	async getPublicChildrenFolderIds(folderId: FolderID, driveId: DriveID): Promise<FolderID[]> {
+		return this.getChildrenFolderIds(folderId, await this.getAllFoldersOfPublicDrive(driveId, true));
+	}
+
 	/**
 	 * Lists the children of certain private folder
 	 * @param {FolderID} folderId the folder ID to list children of
