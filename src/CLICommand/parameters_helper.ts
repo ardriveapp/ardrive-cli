@@ -124,7 +124,7 @@ export class ParametersHelper {
 					style: 'password',
 					message: 'Re-enter new drive password: '
 				});
-				if (confirmedPassword !== promptedPassword) {
+				if (confirmedPassword.password !== promptedPassword.password) {
 					throw new Error('Drive passwords do not match!');
 				}
 			}
