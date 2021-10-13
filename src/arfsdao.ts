@@ -711,7 +711,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 	async getChildrenFolderIds(
 		folderId: FolderID,
-		allFolderEntitiesOfDrive: ArFSPublicFolder[] | ArFSPrivateFolder[]
+		allFolderEntitiesOfDrive: ArFSFileOrFolderEntity[]
 	): Promise<FolderID[]> {
 		const hierarchy = FolderHierarchy.newFromEntities(allFolderEntitiesOfDrive);
 		return hierarchy.folderIdSubtreeFromFolderId(folderId, Number.MAX_SAFE_INTEGER);
