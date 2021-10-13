@@ -35,6 +35,7 @@ new CLICommand({
 		sortedChildren.map((fileOrFolderMetaData) => {
 			if (fileOrFolderMetaData.entityType === 'folder') {
 				delete fileOrFolderMetaData.lastModifiedDate;
+				delete fileOrFolderMetaData.size;
 			}
 			delete fileOrFolderMetaData.syncStatus;
 		});
