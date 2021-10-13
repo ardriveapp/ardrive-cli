@@ -332,7 +332,10 @@ export class ArDrive extends ArDriveAnonymous {
 			throw new Error(errorMessage.cannotMoveIntoSamePlace('Folder', newParentFolderId));
 		}
 
-		const childrenFolderIds = await this.arFsDao.getPublicChildrenFolderIds(folderId, parentFolderDriveId);
+		const childrenFolderIds = await this.arFsDao.getPublicChildrenFolderIds({
+			folderId,
+			driveId: parentFolderDriveId
+		});
 
 		if (childrenFolderIds.includes(newParentFolderId)) {
 			throw new Error(errorMessage.cannotMoveParentIntoChildFolder);
@@ -380,11 +383,11 @@ export class ArDrive extends ArDriveAnonymous {
 			throw new Error(errorMessage.cannotMoveIntoSamePlace('Folder', newParentFolderId));
 		}
 
-		const childrenFolderIds = await this.arFsDao.getPrivateChildrenFolderIds(
+		const childrenFolderIds = await this.arFsDao.getPrivateChildrenFolderIds({
 			folderId,
-			parentFolderDriveId,
+			driveId: parentFolderDriveId,
 			driveKey
-		);
+		});
 
 		if (childrenFolderIds.includes(newParentFolderId)) {
 			throw new Error(errorMessage.cannotMoveParentIntoChildFolder);
