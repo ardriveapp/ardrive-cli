@@ -40,7 +40,7 @@ describe('ArDrive class', () => {
 		'application/json'
 	);
 	const stubPublicFolderTransactionData = new ArFSPublicFolderTransactionData('stubName');
-	const stubPublicDriveMetadataTransactionData = new ArFSPublicDriveTransactionData('stubName', stubEntityID());
+	const stubPublicDriveMetadataTransactionData = new ArFSPublicDriveTransactionData('stubName', stubEntityID);
 
 	beforeEach(async () => {
 		// Set pricing algo up as x = y (bytes = Winston)
@@ -108,15 +108,15 @@ describe('ArDrive class', () => {
 
 	describe('estimateAndAssertCostOfFileUpload function', () => {
 		it('throws an error when decryptedFileSize is negative', async () => {
-			await expectAsyncErrorThrow(() =>
-				arDrive.estimateAndAssertCostOfFileUpload(-1, stubPublicFileTransactionData, 'private')
-			);
+			await expectAsyncErrorThrow({
+				promiseToError: arDrive.estimateAndAssertCostOfFileUpload(-1, stubPublicFileTransactionData, 'private')
+			});
 		});
 
 		it('throws an error when decryptedFileSize is not an integer', async () => {
-			await expectAsyncErrorThrow(() =>
-				arDrive.estimateAndAssertCostOfFileUpload(0.1, stubPublicFileTransactionData, 'private')
-			);
+			await expectAsyncErrorThrow({
+				promiseToError: arDrive.estimateAndAssertCostOfFileUpload(0.1, stubPublicFileTransactionData, 'private')
+			});
 		});
 
 		it('throws an error when there is an insufficient wallet balance', async () => {
@@ -126,9 +126,9 @@ describe('ArDrive class', () => {
 			stub(walletDao, 'getWalletWinstonBalance').callsFake(() => {
 				return Promise.resolve(0);
 			});
-			await expectAsyncErrorThrow(() =>
-				arDrive.estimateAndAssertCostOfFileUpload(1, stubPublicFileTransactionData, 'private')
-			);
+			await expectAsyncErrorThrow({
+				promiseToError: arDrive.estimateAndAssertCostOfFileUpload(1, stubPublicFileTransactionData, 'private')
+			});
 		});
 
 		it('returns the correct reward and tip data', async () => {
@@ -160,9 +160,9 @@ describe('ArDrive class', () => {
 			stub(walletDao, 'getWalletWinstonBalance').callsFake(() => {
 				return Promise.resolve(0);
 			});
-			await expectAsyncErrorThrow(() =>
-				arDrive.estimateAndAssertCostOfFolderUpload(stubPublicFolderTransactionData)
-			);
+			await expectAsyncErrorThrow({
+				promiseToError: arDrive.estimateAndAssertCostOfFolderUpload(stubPublicFolderTransactionData)
+			});
 		});
 
 		it('returns the correct reward data', async () => {
@@ -185,12 +185,12 @@ describe('ArDrive class', () => {
 			stub(walletDao, 'getWalletWinstonBalance').callsFake(() => {
 				return Promise.resolve(0);
 			});
-			await expectAsyncErrorThrow(() =>
-				arDrive.estimateAndAssertCostOfDriveCreation(
+			await expectAsyncErrorThrow({
+				promiseToError: arDrive.estimateAndAssertCostOfDriveCreation(
 					stubPublicDriveMetadataTransactionData,
 					stubPublicFolderTransactionData
 				)
-			);
+			});
 		});
 
 		it('returns the correct reward data', async () => {
@@ -217,7 +217,9 @@ describe('ArDrive class', () => {
 			stub(walletDao, 'getWalletWinstonBalance').callsFake(() => {
 				return Promise.resolve(0);
 			});
-			await expectAsyncErrorThrow(() => arDrive.estimateAndAssertCostOfMoveFile(stubPublicFileTransactionData));
+			await expectAsyncErrorThrow({
+				promiseToError: arDrive.estimateAndAssertCostOfMoveFile(stubPublicFileTransactionData)
+			});
 		});
 
 		it('returns the correct reward data', async () => {
