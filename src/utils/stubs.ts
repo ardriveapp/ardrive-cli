@@ -28,6 +28,7 @@ export const stubPublicDrive = new ArFSPublicDrive(
 	'public',
 	stubEntityID
 );
+
 export const stubPrivateDrive = new ArFSPrivateDrive(
 	'Integration Test',
 	'1.0',
@@ -44,6 +45,7 @@ export const stubPrivateDrive = new ArFSPrivateDrive(
 	'stubCipher',
 	'stubIV'
 );
+
 export const stubPublicFolder = new ArFSPublicFolder(
 	'Integration Test',
 	'1.0',
@@ -91,6 +93,7 @@ export const stubPublicFile = new ArFSPublicFile(
 	stubTransactionID,
 	'application/json'
 );
+
 export const stubPrivateFile = new ArFSPrivateFile(
 	'Integration Test',
 	'1.0',
