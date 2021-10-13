@@ -1,3 +1,4 @@
+import { ArFSFileMetadataTransactionData } from './arfs_trx_data_types';
 import { TransactionID, Winston, DriveID, FolderID, FileID, FileKey, DriveKey } from './types';
 
 export interface ArFSWriteResult {
@@ -50,3 +51,7 @@ export type ArFSMovePrivateFileResult = ArFSMoveFileResult & WithFileKey;
 export type ArFSMoveEntityResultFactory<R extends ArFSMoveEntityResult> = (result: ArFSMoveEntityResult) => R;
 export type ArFSCreateDriveResultFactory<R extends ArFSCreateDriveResult> = (result: ArFSCreateDriveResult) => R;
 export type ArFSCreateFolderResultFactory<R extends ArFSCreateFolderResult> = (result: ArFSCreateFolderResult) => R;
+export type ArFSUploadFileResultFactory<R extends ArFSUploadFileResult, D extends ArFSFileMetadataTransactionData> = (
+	result: ArFSUploadFileResult,
+	trxData: D
+) => R;
