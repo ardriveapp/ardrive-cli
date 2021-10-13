@@ -1,3 +1,4 @@
+import { winstonToAr } from 'ardrive-core-js';
 import { cliWalletDao } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { AddressParameter, SeedPhraseParameter, WalletFileParameter } from '../parameter_declarations';
@@ -8,8 +9,10 @@ new CLICommand({
 	async action(options) {
 		const parameters = new ParametersHelper(options);
 		const address = await parameters.getWalletAddress();
-		const balance = await cliWalletDao.getAddressWinstonBalance(address);
-		console.log(balance);
+		const balanceInWinston = await cliWalletDao.getAddressWinstonBalance(address);
+		const balanceInAR = winstonToAr(balanceInWinston);
+		console.log(`${balanceInWinston}\tWinston`);
+		console.log(`${balanceInAR}\tAR`);
 		process.exit(0);
 	}
 });

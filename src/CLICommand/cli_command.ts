@@ -96,11 +96,14 @@ export function assertForbidden(parameter: Parameter, options: any): void {
 }
 
 export class CLICommand {
+	private static allCommandDescriptors: CommandDescriptor[] = [];
+
 	/**
 	 * @param {CommandDescriptor} commandDescription an immutable representation of a command
 	 * @param {string[]} argv a custom argv for testing purposes
 	 */
 	constructor(private readonly commandDescription: CommandDescriptor, private readonly _program?: CliApiObject) {
+		CLICommand.allCommandDescriptors.push(commandDescription);
 		this.setCommand();
 	}
 
@@ -125,5 +128,13 @@ export class CLICommand {
 		}
 
 		program.parse(argv);
+	}
+
+	/**
+	 * For test purposes only
+	 * @returns {CommandDescriptor[]} all declared command descriptors
+	 */
+	public static _getAllCommandDescriptors(): CommandDescriptor[] {
+		return this.allCommandDescriptors;
 	}
 }

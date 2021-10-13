@@ -723,7 +723,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		maxDepth: number,
 		includeRoot: boolean
 	): Promise<ArFSPrivateFileOrFolderWithPaths[]> {
-		if ((maxDepth !== Number.POSITIVE_INFINITY && !Number.isInteger(maxDepth)) || maxDepth < 0) {
+		if (!Number.isInteger(maxDepth) || maxDepth < 0) {
 			throw new Error('maxDepth should be a non-negative integer!');
 		}
 

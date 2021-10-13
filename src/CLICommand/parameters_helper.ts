@@ -149,12 +149,12 @@ export class ParametersHelper {
 
 	public async getMaxDepth(defaultDepth: number): Promise<number> {
 		if (this.getParameterValue(AllParameter)) {
-			return Number.POSITIVE_INFINITY;
+			return Number.MAX_SAFE_INTEGER;
 		}
 
 		const maxDepthValue = Number(this.getParameterValue(MaxDepthParameter) ?? defaultDepth);
 
-		if ((maxDepthValue !== Number.POSITIVE_INFINITY && !Number.isInteger(maxDepthValue)) || maxDepthValue < 0) {
+		if (!Number.isInteger(maxDepthValue) || maxDepthValue < 0) {
 			throw new Error('maxDepth should be a non-negative integer!');
 		}
 

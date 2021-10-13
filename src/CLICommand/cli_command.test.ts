@@ -11,6 +11,7 @@ import {
 } from '../parameter_declarations';
 import { CliApiObject } from './cli';
 import { baseArgv } from './test_constants';
+import { Parameter } from './parameter';
 
 const MY_DRIVE_NAME = 'My awesome drive!';
 const testingCommandName = 'drive-name-test';
@@ -98,5 +99,29 @@ describe('CLICommand class', () => {
 				parsedCommandOptionsBothSpecified
 			);
 		}).to.throw();
+	});
+
+	it('No colliding parameters', () => {
+		const allCommandDescriptors = CLICommand._getAllCommandDescriptors();
+		allCommandDescriptors.forEach((command) => {
+			const parameters = command.parameters.map((param) => new Parameter(param));
+			parameters.forEach((parameter_1, index) => {
+				const allParametersExceptMe = parameters;
+				allParametersExceptMe.splice(index);
+				const collidingParameters = allParametersExceptMe.filter((parameter_2) => {
+					const areAllowedInConjunction = !parameter_2.forbiddenParametersInConjunction.includes(
+						parameter_1.name
+					);
+					if (areAllowedInConjunction) {
+						return parameter_2.aliases.find((alias) => parameter_1.aliases.includes(alias));
+					}
+					return false;
+				});
+				// if (collidingParameters.length) {
+				// 	debugger;
+				// }
+				expect(collidingParameters).to.be.empty;
+			});
+		});
 	});
 });
