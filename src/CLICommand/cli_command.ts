@@ -131,7 +131,7 @@ export class CLICommand {
 	}
 
 	/**
-	 * For test propuses only
+	 * For test purposes only
 	 * @returns {CommandDescriptor[]} all declared command descriptors
 	 */
 	public static _getAllCommandDescriptors(): CommandDescriptor[] {
