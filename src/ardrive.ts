@@ -320,8 +320,11 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	async movePublicFolder({ folderId, newParentFolderId }: MovePublicFolderParams): Promise<ArFSResult> {
-		const parentFolderDriveId = await this.getDriveIdAndAssertDrive(newParentFolderId);
+		if (folderId === newParentFolderId) {
+			throw new Error(errorMessage.folderCannotMoveIntoItself);
+		}
 
+		const parentFolderDriveId = await this.getDriveIdAndAssertDrive(newParentFolderId);
 		const originalFolderMetaData = await this.getPublicFolder(folderId);
 
 		if (parentFolderDriveId !== originalFolderMetaData.driveId) {
@@ -372,6 +375,10 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	async movePrivateFolder({ folderId, newParentFolderId, driveKey }: MovePrivateFolderParams): Promise<ArFSResult> {
+		if (folderId === newParentFolderId) {
+			throw new Error(errorMessage.folderCannotMoveIntoItself);
+		}
+
 		const parentFolderDriveId = await this.getDriveIdAndAssertDrive(newParentFolderId, driveKey);
 		const originalFolderMetaData = await this.getPrivateFolder(folderId, driveKey);
 
