@@ -24,12 +24,12 @@ new CLICommand({
 			+options.arAmount,
 			wallet,
 			options.destAddress,
-			options.boost,
+			{ feeMultiple: +options.boost },
 			options.dryRun,
 			[
-				{ name: 'appName', value: 'ArDrive-CLI' },
-				{ name: 'appVersion', value: '2.0' },
-				{ name: 'trxType', value: 'transfer' }
+				{ name: 'App-Name', value: 'ArDrive-CLI' },
+				{ name: 'App-Version', value: '2.0' },
+				{ name: 'Type', value: 'transfer' }
 			]
 		);
 
