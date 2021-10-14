@@ -152,7 +152,7 @@ describe('ArDrive class - integrated', () => {
 
 				await expectAsyncErrorThrow({
 					promiseToError: arDrive.movePublicFolder({
-						folderId: folderHierarchy.rootFolder.entityId,
+						folderId: folderHierarchy.parentFolder.entityId,
 						newParentFolderId: folderHierarchy.grandChildFolder.entityId
 					}),
 					errorMessage: 'Parent folder cannot be moved inside any of its children folders!'
@@ -240,7 +240,7 @@ describe('ArDrive class - integrated', () => {
 
 				await expectAsyncErrorThrow({
 					promiseToError: arDrive.movePrivateFolder({
-						folderId: folderHierarchy.rootFolder.entityId,
+						folderId: folderHierarchy.parentFolder.entityId,
 						newParentFolderId: folderHierarchy.grandChildFolder.entityId,
 						driveKey: await getStubDriveKey()
 					}),
