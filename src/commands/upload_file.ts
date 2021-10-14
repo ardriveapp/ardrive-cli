@@ -34,7 +34,6 @@ new CLICommand({
 		...DrivePrivacyParameters
 	],
 	async action(options) {
-		const parameters = new ParametersHelper(options);
 		const filesToUpload: UploadFileParameter[] = await (async function (): Promise<UploadFileParameter[]> {
 			if (options.localFiles) {
 				const COLUMN_SEPARATOR = ',';
@@ -60,9 +59,7 @@ new CLICommand({
 			const singleParameter = {
 				parentFolderId: options.parentFolderId,
 				wrappedEntity: wrapFileOrFolder(options.localFilePath),
-				destinationFileName: options.destFileName,
-				drivePassword: await parameters.getDrivePassword(),
-				driveKey: options.driveKey
+				destinationFileName: options.destFileName
 			};
 			if (!options.parentFolderId || !options.localFilePath) {
 				throw new Error(`Bad file: ${JSON.stringify(singleParameter)}`);
