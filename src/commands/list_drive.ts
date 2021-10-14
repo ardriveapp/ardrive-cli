@@ -3,7 +3,7 @@ import { ArDriveAnonymous } from '../ardrive';
 import { ArFSDAOAnonymous } from '../arfsdao_anonymous';
 import { ArFSPrivateFileOrFolderWithPaths, ArFSPublicFileOrFolderWithPaths } from '../arfs_entities';
 import { CLICommand, ParametersHelper } from '../CLICommand';
-import { SUCCES_EXIT_CODE } from '../CLICommand/constants';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 import { DriveIdParameter, DrivePrivacyParameters, TreeDepthParams } from '../parameter_declarations';
 import { alphabeticalOrder } from '../utils/sort_functions';
 
@@ -45,6 +45,6 @@ new CLICommand({
 
 		// Display data
 		console.log(JSON.stringify(sortedChildren, null, 4));
-		return SUCCES_EXIT_CODE;
+		return SUCCESS_EXIT_CODE;
 	}
 });

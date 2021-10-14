@@ -1,6 +1,6 @@
 import { cliArweave } from '..';
 import { CLICommand } from '../CLICommand';
-import { ERROR_EXIT_CODE, SUCCES_EXIT_CODE } from '../CLICommand/constants';
+import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 import { ConfirmationsParameter, TransactionIdParameter } from '../parameter_declarations';
 import { fetchMempool } from '../utils';
 
@@ -15,7 +15,7 @@ new CLICommand({
 
 		if (pending) {
 			console.log(`${txId}: Pending`);
-			return SUCCES_EXIT_CODE;
+			return SUCCESS_EXIT_CODE;
 		}
 
 		const confStatus = (await cliArweave.transactions.getStatus(txId)).confirmed;
@@ -35,6 +35,6 @@ new CLICommand({
 			);
 		}
 
-		return SUCCES_EXIT_CODE;
+		return SUCCESS_EXIT_CODE;
 	}
 });

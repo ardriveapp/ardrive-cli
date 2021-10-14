@@ -12,7 +12,7 @@ import {
 } from '../parameter_declarations';
 import { DriveKey, FeeMultiple, FolderID } from '../types';
 import { readJWKFile } from '../utils';
-import { ERROR_EXIT_CODE, SUCCES_EXIT_CODE } from '../CLICommand/constants';
+import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 
 interface UploadFileParameter {
 	parentFolderId: FolderID;
@@ -116,7 +116,7 @@ new CLICommand({
 					console.log(JSON.stringify(result, null, 4));
 				})
 			);
-			return SUCCES_EXIT_CODE;
+			return SUCCESS_EXIT_CODE;
 		}
 		console.log(`No files to upload`);
 		return ERROR_EXIT_CODE;

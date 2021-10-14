@@ -3,7 +3,7 @@ import { GetAllRevisionsParameter, FileIdParameter, DrivePrivacyParameters } fro
 import { arDriveAnonymousFactory, arDriveFactory, cliWalletDao } from '..';
 import { FileID } from '../types';
 import { ArFSPrivateFile, ArFSPublicFile } from '../arfs_entities';
-import { SUCCES_EXIT_CODE } from '../CLICommand/constants';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 
 new CLICommand({
 	name: 'file-info',
@@ -32,6 +32,6 @@ new CLICommand({
 		delete result.syncStatus;
 
 		console.log(JSON.stringify(result, null, 4));
-		return SUCCES_EXIT_CODE;
+		return SUCCESS_EXIT_CODE;
 	}
 });

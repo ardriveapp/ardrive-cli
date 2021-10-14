@@ -3,7 +3,7 @@ import { FolderID } from '../types';
 import { GetAllRevisionsParameter, FolderIdParameter, DrivePrivacyParameters } from '../parameter_declarations';
 import { arDriveAnonymousFactory, arDriveFactory } from '..';
 import { ArFSPrivateFolder, ArFSPublicFolder } from '../arfs_entities';
-import { SUCCES_EXIT_CODE } from '../CLICommand/constants';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 
 new CLICommand({
 	name: 'folder-info',
@@ -35,6 +35,6 @@ new CLICommand({
 		delete result.syncStatus;
 
 		console.log(JSON.stringify(result, null, 4));
-		return SUCCES_EXIT_CODE;
+		return SUCCESS_EXIT_CODE;
 	}
 });

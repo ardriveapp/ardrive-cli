@@ -1,5 +1,5 @@
 import { CLICommand } from '../CLICommand';
-import { SUCCES_EXIT_CODE } from '../CLICommand/constants';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 import { fetchMempool } from '../utils';
 
 new CLICommand({
@@ -8,6 +8,6 @@ new CLICommand({
 	async action() {
 		const transactionsInMempool = await fetchMempool();
 		console.log(JSON.stringify(transactionsInMempool, null, 4));
-		return SUCCES_EXIT_CODE;
+		return SUCCESS_EXIT_CODE;
 	}
 });

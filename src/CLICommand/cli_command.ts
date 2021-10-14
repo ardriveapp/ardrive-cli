@@ -2,7 +2,7 @@
 import { Command } from 'commander';
 import { showHelp } from '../utils';
 import { CliApiObject, ParsedArguments } from './cli';
-import { ERROR_EXIT_CODE, SUCCES_EXIT_CODE } from './constants';
+import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from './constants';
 import { Parameter, ParameterName, ParameterOverridenConfig } from './parameter';
 
 export type CommandName = string;
@@ -126,7 +126,7 @@ export class CLICommand {
 	public static parse(program: CliApiObject = this.program, argv: string[] = process.argv): void {
 		if (argv.length < 3 || argv.includes('-h') || argv.includes('--help') || argv.includes('help')) {
 			showHelp();
-			exitProgram(SUCCES_EXIT_CODE);
+			exitProgram(SUCCESS_EXIT_CODE);
 		}
 
 		program.parse(argv);

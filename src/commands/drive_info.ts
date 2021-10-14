@@ -3,7 +3,7 @@ import { DriveID } from '../types';
 import { DriveIdParameter, GetAllRevisionsParameter, DrivePrivacyParameters } from '../parameter_declarations';
 import { arDriveAnonymousFactory, arDriveFactory } from '..';
 import { ArFSPrivateDrive, ArFSPublicDrive } from '../arfs_entities';
-import { SUCCES_EXIT_CODE } from '../CLICommand/constants';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 
 new CLICommand({
 	name: 'drive-info',
@@ -31,6 +31,6 @@ new CLICommand({
 		delete result.syncStatus;
 
 		console.log(JSON.stringify(result, null, 4));
-		return SUCCES_EXIT_CODE;
+		return SUCCESS_EXIT_CODE;
 	}
 });

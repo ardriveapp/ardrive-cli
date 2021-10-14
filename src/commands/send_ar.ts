@@ -1,7 +1,7 @@
 import { cliWalletDao } from '..';
 import { CLICommand } from '../CLICommand';
 import { ParametersHelper } from '../CLICommand';
-import { SUCCES_EXIT_CODE } from '../CLICommand/constants';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 import {
 	ArAmountParameter,
 	BoostParameter,
@@ -35,6 +35,6 @@ new CLICommand({
 		);
 
 		console.log(JSON.stringify(arTransferResult, null, 4));
-		return SUCCES_EXIT_CODE;
+		return SUCCESS_EXIT_CODE;
 	}
 });

@@ -9,7 +9,7 @@ import { arDriveFactory } from '..';
 import { JWKWallet, Wallet } from '../wallet_new';
 import { FeeMultiple } from '../types';
 import { PrivateDriveKeyData } from '../arfsdao';
-import { SUCCES_EXIT_CODE } from '../CLICommand/constants';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 
 new CLICommand({
 	name: 'create-drive',
@@ -36,6 +36,6 @@ new CLICommand({
 		})();
 		console.log(JSON.stringify(createDriveResult, null, 4));
 
-		return SUCCES_EXIT_CODE;
+		return SUCCESS_EXIT_CODE;
 	}
 });
