@@ -34,10 +34,11 @@ new CLICommand({
 			| Partial<ArFSPublicFileOrFolderWithPaths>
 		)[];
 
-		// TODO: Fix base types so deleting un-used values is not necessary
+		// TODO: Fix base types so deleting un-used values is not necessary; Tickets: PE-525 + PE-556
 		sortedChildren.map((fileOrFolderMetaData) => {
 			if (fileOrFolderMetaData.entityType === 'folder') {
 				delete fileOrFolderMetaData.lastModifiedDate;
+				delete fileOrFolderMetaData.size;
 			}
 			delete fileOrFolderMetaData.syncStatus;
 		});
