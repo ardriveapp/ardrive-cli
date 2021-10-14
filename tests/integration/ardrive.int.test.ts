@@ -1,24 +1,32 @@
 import Arweave from 'arweave';
 import { expect } from 'chai';
 import { stub } from 'sinon';
-import { ArDrive, ArFSResult, stubEntityID, stubTransactionID } from '../../src/ardrive';
+import { ArDrive, ArFSResult } from '../../src/ardrive';
 import { readJWKFile, urlEncodeHashKey } from '../../src/utils';
+import {
+	stubArweaveAddress,
+	stubEntityID,
+	stubEntityIDAlt,
+	stubEntityIDChild,
+	stubEntityIDGrandchild,
+	stubEntityIDParent,
+	stubEntityIDRoot,
+	stubPrivateDrive,
+	stubPrivateFile,
+	stubPrivateFolder,
+	stubPublicDrive,
+	stubPublicFile,
+	stubPublicFolder
+} from '../../src/utils/stubs';
 import { ARDataPriceRegressionEstimator } from '../../src/utils/ar_data_price_regression_estimator';
 import { GatewayOracle } from '../../src/utils/gateway_oracle';
 import { JWKWallet, WalletDAO } from '../../src/wallet_new';
+import { expectAsyncErrorThrow } from '../../src/utils/test_helpers';
 import { ArDriveCommunityOracle } from '../../src/community/ardrive_community_oracle';
 import { ArFSDAO, PrivateDriveKeyData } from '../../src/arfsdao';
 import { deriveDriveKey, DrivePrivacy } from 'ardrive-core-js';
-import { ArFS_O_11, DriveKey, Winston } from '../../src/types';
+import { DriveKey, Winston } from '../../src/types';
 import { ArFSFileToUpload, wrapFileOrFolder } from '../../src/arfs_file_wrapper';
-import {
-	ArFSPrivateDrive,
-	ArFSPrivateFile,
-	ArFSPrivateFolder,
-	ArFSPublicDrive,
-	ArFSPublicFile,
-	ArFSPublicFolder
-} from '../../src/arfs_entities';
 
 const entityIdRegex = /^([a-f]|[0-9]){8}-([a-f]|[0-9]){4}-([a-f]|[0-9]){4}-([a-f]|[0-9]){4}-([a-f]|[0-9]){12}$/;
 const trxIdRegex = /^([a-zA-Z]|[0-9]|-|_){43}$/;
@@ -26,103 +34,10 @@ const fileKeyRegex = /^([a-zA-Z]|[0-9]|-|_|\/|\+){43}$/;
 
 describe('ArDrive class - integrated', () => {
 	const wallet = readJWKFile('./test_wallet.json');
-	const stubArweaveAddress = 'abcdefghijklmnopqrxtuvwxyz123456789ABCDEFGH';
+
 	const getStubDriveKey = async (): Promise<DriveKey> => {
 		return deriveDriveKey('stubPassword', stubEntityID, JSON.stringify((wallet as JWKWallet).getPrivateKey()));
 	};
-	const stubPublicDrive = new ArFSPublicDrive(
-		'Integration Test',
-		'1.0',
-		ArFS_O_11,
-		'application/json',
-		stubEntityID,
-		'drive',
-		'STUB DRIVE',
-		stubTransactionID,
-		0,
-		'public',
-		stubEntityID
-	);
-	const stubPrivateDrive = new ArFSPrivateDrive(
-		'Integration Test',
-		'1.0',
-		ArFS_O_11,
-		'application/octet-stream',
-		stubEntityID,
-		'drive',
-		'STUB DRIVE',
-		stubTransactionID,
-		0,
-		'public',
-		stubEntityID,
-		'password',
-		'stubCipher',
-		'stubIV'
-	);
-	const stubPublicFolder = new ArFSPublicFolder(
-		'Integration Test',
-		'1.0',
-		ArFS_O_11,
-		'application/json',
-		stubEntityID,
-		'folder',
-		'STUB NAME',
-		stubTransactionID,
-		0,
-		stubEntityID,
-		stubEntityID
-	);
-	const stubPrivateFolder = new ArFSPrivateFolder(
-		'Integration Test',
-		'1.0',
-		ArFS_O_11,
-		'application/json',
-		stubEntityID,
-		'folder',
-		'STUB NAME',
-		stubTransactionID,
-		0,
-		stubEntityID,
-		stubEntityID,
-		'stubCipher',
-		'stubIV'
-	);
-	const stubPublicFile = new ArFSPublicFile(
-		'Integration Test',
-		'1.0',
-		ArFS_O_11,
-		'application/json',
-		stubEntityID,
-		'file',
-		'STUB NAME',
-		stubTransactionID,
-		0,
-		stubEntityID,
-		stubEntityID,
-		1234567890,
-		0,
-		stubTransactionID,
-		'application/json'
-	);
-	const stubPrivateFile = new ArFSPrivateFile(
-		'Integration Test',
-		'1.0',
-		ArFS_O_11,
-		'application/json',
-		stubEntityID,
-		'file',
-		'STUB NAME',
-		stubTransactionID,
-		0,
-		stubEntityID,
-		stubEntityID,
-		1234567890,
-		0,
-		stubTransactionID,
-		'application/json',
-		'stubCipher',
-		'stubIV'
-	);
 
 	const fakeArweave = Arweave.init({
 		host: 'localhost',
@@ -149,9 +64,13 @@ describe('ArDrive class - integrated', () => {
 		true
 	);
 
-	beforeEach(async () => {
+	beforeEach(() => {
 		// Set pricing algo up as x = y (bytes = Winston)
 		stub(arweaveOracle, 'getWinstonPriceForByteCount').callsFake((input) => Promise.resolve(input));
+
+		// Declare common stubs
+		stub(walletDao, 'walletHasBalance').resolves(true);
+		stub(arfsDao, 'getDriveIdForFolderId').resolves(stubEntityID);
 	});
 
 	describe('utility function', () => {
@@ -171,10 +90,6 @@ describe('ArDrive class - integrated', () => {
 	});
 
 	describe('drive function', () => {
-		beforeEach(() => {
-			stub(walletDao, 'walletHasBalance').resolves(true);
-		});
-
 		describe('createPublicDrive', () => {
 			it('returns the correct ArFSResult', async () => {
 				const result = await arDrive.createPublicDrive('TEST_DRIVE');
@@ -197,11 +112,6 @@ describe('ArDrive class - integrated', () => {
 	});
 
 	describe('folder function', () => {
-		beforeEach(() => {
-			stub(walletDao, 'walletHasBalance').resolves(true);
-			stub(arfsDao, 'getDriveIdForFolderId').resolves(stubEntityID);
-		});
-
 		describe('createPublicFolder', () => {
 			it('returns the correct ArFSResult', async () => {
 				stub(arfsDao, 'getPublicDrive').resolves(stubPublicDrive);
@@ -225,98 +135,281 @@ describe('ArDrive class - integrated', () => {
 		});
 
 		describe('movePublicFolder', () => {
-			it('returns the correct ArFSResult', async () => {
-				stub(arfsDao, 'getPublicDrive').resolves(stubPublicDrive);
-				stub(arfsDao, 'getPublicFolder').resolves(stubPublicFolder);
+			const folderHierarchy = {
+				rootFolder: stubPublicFolder(stubEntityIDRoot, 'root folder'),
+				parentFolder: stubPublicFolder(stubEntityIDParent, stubEntityIDRoot),
+				childFolder: stubPublicFolder(stubEntityIDChild, stubEntityIDParent),
+				grandChildFolder: stubPublicFolder(stubEntityIDGrandchild, stubEntityIDChild)
+			};
+			it('throws an error if it is being moved inside any of its children folders', async () => {
+				stub(arfsDao, 'getPublicFolder').resolves(folderHierarchy.rootFolder);
+				stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityID);
+				stub(arfsDao, 'getPublicChildrenFolderIds').resolves([
+					folderHierarchy.parentFolder.entityId,
+					folderHierarchy.childFolder.entityId,
+					folderHierarchy.grandChildFolder.entityId
+				]);
 
-				// TODO: SHOULD WE ALLOW MOVE TO SELF?
+				await expectAsyncErrorThrow({
+					promiseToError: arDrive.movePublicFolder({
+						folderId: folderHierarchy.parentFolder.entityId,
+						newParentFolderId: folderHierarchy.grandChildFolder.entityId
+					}),
+					errorMessage: 'Parent folder cannot be moved inside any of its children folders!'
+				});
+			});
+
+			it('throws an error if the new parent folder id matches its current parent folder id', async () => {
+				stub(arfsDao, 'getPublicFolder').resolves(folderHierarchy.childFolder);
+				stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityID);
+				stub(arfsDao, 'getPublicChildrenFolderIds').resolves([folderHierarchy.grandChildFolder.entityId]);
+
+				await expectAsyncErrorThrow({
+					promiseToError: arDrive.movePublicFolder({
+						folderId: folderHierarchy.childFolder.entityId,
+						newParentFolderId: folderHierarchy.parentFolder.entityId
+					}),
+					errorMessage: `Folder already has parent folder with ID: ${folderHierarchy.parentFolder.entityId}`
+				});
+			});
+
+			it('throws an error if the new parent folder id matches its own folder id', async () => {
+				stub(arfsDao, 'getPublicFolder').resolves(folderHierarchy.parentFolder);
+				stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityID);
+				stub(arfsDao, 'getPublicChildrenFolderIds').resolves([
+					folderHierarchy.childFolder.entityId,
+					folderHierarchy.grandChildFolder.entityId
+				]);
+
+				await expectAsyncErrorThrow({
+					promiseToError: arDrive.movePublicFolder({
+						folderId: folderHierarchy.parentFolder.entityId,
+						newParentFolderId: folderHierarchy.parentFolder.entityId
+					}),
+					errorMessage: 'Folders cannot be moved into themselves!'
+				});
+			});
+
+			it('throws an error if the folder is being moved to a different drive', async () => {
+				stub(arfsDao, 'getPublicFolder').resolves(folderHierarchy.parentFolder);
+				stub(arfsDao, 'getPublicChildrenFolderIds').resolves([
+					folderHierarchy.childFolder.entityId,
+					folderHierarchy.grandChildFolder.entityId
+				]);
+
+				stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityIDAlt); // Returns different Drive ID
+
+				await expectAsyncErrorThrow({
+					promiseToError: arDrive.movePublicFolder({
+						folderId: 'not used here',
+						newParentFolderId: 'we will error for drive ID reasons'
+					}),
+					errorMessage: 'Entity must stay in the same drive!'
+				});
+			});
+
+			it('returns the correct ArFSResult', async () => {
+				stub(arfsDao, 'getPublicFolder').resolves(folderHierarchy.grandChildFolder);
+				stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityID);
+				stub(arfsDao, 'getPublicChildrenFolderIds').resolves([]);
+
 				const result = await arDrive.movePublicFolder({
-					folderId: stubEntityID,
-					newParentFolderId: stubEntityID
+					folderId: folderHierarchy.grandChildFolder.entityId,
+					newParentFolderId: folderHierarchy.parentFolder.entityId
 				});
 				assertCreateFolderExpectations(result, 20);
 			});
 		});
 
 		describe('movePrivateFolder', () => {
-			it('returns the correct ArFSResult', async () => {
-				stub(arfsDao, 'getPrivateDrive').resolves(stubPrivateDrive);
-				stub(arfsDao, 'getPrivateFolder').resolves(stubPrivateFolder);
+			const folderHierarchy = {
+				rootFolder: stubPrivateFolder(stubEntityIDRoot, 'root folder'),
+				parentFolder: stubPrivateFolder(stubEntityIDParent, stubEntityIDRoot),
+				childFolder: stubPrivateFolder(stubEntityIDChild, stubEntityIDParent),
+				grandChildFolder: stubPrivateFolder(stubEntityIDGrandchild, stubEntityIDChild)
+			};
 
-				const stubDriveKey = await getStubDriveKey();
-				// TODO: SHOULD WE ALLOW MOVE TO SELF?
-				const result = await arDrive.movePrivateFolder({
-					folderId: stubEntityID,
-					newParentFolderId: stubEntityID,
-					driveKey: stubDriveKey
+			it('throws an error if it is being moved inside any of its children folders', async () => {
+				stub(arfsDao, 'getPrivateFolder').resolves(folderHierarchy.rootFolder);
+				stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityID);
+				stub(arfsDao, 'getPrivateChildrenFolderIds').resolves([
+					folderHierarchy.parentFolder.entityId,
+					folderHierarchy.childFolder.entityId,
+					folderHierarchy.grandChildFolder.entityId
+				]);
+
+				await expectAsyncErrorThrow({
+					promiseToError: arDrive.movePrivateFolder({
+						folderId: folderHierarchy.parentFolder.entityId,
+						newParentFolderId: folderHierarchy.grandChildFolder.entityId,
+						driveKey: await getStubDriveKey()
+					}),
+					errorMessage: 'Parent folder cannot be moved inside any of its children folders!'
 				});
-				assertCreateFolderExpectations(result, 36, urlEncodeHashKey(stubDriveKey));
+			});
+
+			it('throws an error if the new parent folder id matches its current parent folder id', async () => {
+				stub(arfsDao, 'getPrivateFolder').resolves(folderHierarchy.childFolder);
+				stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityID);
+				stub(arfsDao, 'getPrivateChildrenFolderIds').resolves([folderHierarchy.grandChildFolder.entityId]);
+
+				await expectAsyncErrorThrow({
+					promiseToError: arDrive.movePrivateFolder({
+						folderId: folderHierarchy.childFolder.entityId,
+						newParentFolderId: folderHierarchy.parentFolder.entityId,
+						driveKey: await getStubDriveKey()
+					}),
+					errorMessage: `Folder already has parent folder with ID: ${folderHierarchy.parentFolder.entityId}`
+				});
+			});
+
+			it('throws an error if the new parent folder id matches its own folder id', async () => {
+				stub(arfsDao, 'getPrivateFolder').resolves(folderHierarchy.parentFolder);
+				stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityID);
+				stub(arfsDao, 'getPrivateChildrenFolderIds').resolves([
+					folderHierarchy.childFolder.entityId,
+					folderHierarchy.grandChildFolder.entityId
+				]);
+
+				await expectAsyncErrorThrow({
+					promiseToError: arDrive.movePrivateFolder({
+						folderId: folderHierarchy.parentFolder.entityId,
+						newParentFolderId: folderHierarchy.parentFolder.entityId,
+						driveKey: await getStubDriveKey()
+					}),
+					errorMessage: 'Folders cannot be moved into themselves!'
+				});
+			});
+
+			it('throws an error if the folder is being moved to a different drive', async () => {
+				stub(arfsDao, 'getPrivateFolder').resolves(folderHierarchy.parentFolder);
+				stub(arfsDao, 'getPrivateChildrenFolderIds').resolves([
+					folderHierarchy.childFolder.entityId,
+					folderHierarchy.grandChildFolder.entityId
+				]);
+
+				stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityIDAlt); // Returns different Drive ID
+
+				await expectAsyncErrorThrow({
+					promiseToError: arDrive.movePrivateFolder({
+						folderId: 'not used here',
+						newParentFolderId: 'we will error for drive ID reasons',
+						driveKey: await getStubDriveKey()
+					}),
+					errorMessage: 'Entity must stay in the same drive!'
+				});
+			});
+
+			it('returns the correct ArFSResult', async () => {
+				stub(arfsDao, 'getPrivateFolder').resolves(folderHierarchy.grandChildFolder);
+				stub(arfsDao, 'getPrivateChildrenFolderIds').resolves([]);
+				stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityID);
+
+				const result = await arDrive.movePrivateFolder({
+					folderId: folderHierarchy.grandChildFolder.entityId,
+					newParentFolderId: folderHierarchy.parentFolder.entityId,
+					driveKey: await getStubDriveKey()
+				});
+				assertCreateFolderExpectations(result, 36, urlEncodeHashKey(await getStubDriveKey()));
 			});
 		});
-	});
 
-	describe('file function', () => {
-		beforeEach(() => {
-			stub(walletDao, 'walletHasBalance').resolves(true);
-			stub(arfsDao, 'getDriveIdForFolderId').resolves(stubEntityID);
-		});
+		describe('file function', () => {
+			describe('uploadPublicFile', () => {
+				it('returns the correct ArFSResult', async () => {
+					stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityID);
+					stub(arfsDao, 'getPublicFolder').resolves(stubPublicFolder());
 
-		describe('uploadPublicFile', () => {
-			it('returns the correct ArFSResult', async () => {
-				stub(arfsDao, 'getPublicDrive').resolves(stubPublicDrive);
-				stub(arfsDao, 'getPublicFolder').resolves(stubPublicFolder);
+					stub(communityOracle, 'getCommunityWinstonTip').resolves('1');
+					stub(communityOracle, 'selectTokenHolder').resolves(stubArweaveAddress);
 
-				stub(communityOracle, 'getCommunityWinstonTip').resolves('1');
-				stub(communityOracle, 'selectTokenHolder').resolves(stubArweaveAddress);
-
-				const wrappedFile = wrapFileOrFolder('test_wallet.json');
-				const result = await arDrive.uploadPublicFile(
-					stubEntityID,
-					new ArFSFileToUpload('test_wallet.json', wrappedFile.fileStats)
-				);
-				assertUploadFileExpectations(result, 3204, 166, 0, '1', 'public');
+					const wrappedFile = wrapFileOrFolder('test_wallet.json');
+					const result = await arDrive.uploadPublicFile(
+						stubEntityID,
+						new ArFSFileToUpload('test_wallet.json', wrappedFile.fileStats)
+					);
+					assertUploadFileExpectations(result, 3204, 166, 0, '1', 'public');
+				});
 			});
-		});
 
-		describe('uploadPrivateFile', () => {
-			it('returns the correct ArFSResult', async () => {
-				stub(arfsDao, 'getPrivateDrive').resolves(stubPrivateDrive);
-				stub(arfsDao, 'getPrivateFolder').resolves(stubPrivateFolder);
+			describe('uploadPrivateFile', () => {
+				it('returns the correct ArFSResult', async () => {
+					stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityID);
+					stub(arfsDao, 'getPrivateFolder').resolves(stubPrivateFolder());
 
-				stub(communityOracle, 'getCommunityWinstonTip').resolves('1');
-				stub(communityOracle, 'selectTokenHolder').resolves(stubArweaveAddress);
+					stub(communityOracle, 'getCommunityWinstonTip').resolves('1');
+					stub(communityOracle, 'selectTokenHolder').resolves(stubArweaveAddress);
 
-				const wrappedFile = wrapFileOrFolder('test_wallet.json');
-				const stubDriveKey = await getStubDriveKey();
-				const result = await arDrive.uploadPrivateFile(
-					stubEntityID,
-					new ArFSFileToUpload('test_wallet.json', wrappedFile.fileStats),
-					stubDriveKey
-				);
-				assertUploadFileExpectations(result, 3216, 182, 0, '1', 'private');
+					const wrappedFile = wrapFileOrFolder('test_wallet.json');
+					const stubDriveKey = await getStubDriveKey();
+					const result = await arDrive.uploadPrivateFile(
+						stubEntityID,
+						new ArFSFileToUpload('test_wallet.json', wrappedFile.fileStats),
+						stubDriveKey
+					);
+					assertUploadFileExpectations(result, 3216, 182, 0, '1', 'private');
+				});
 			});
-		});
 
-		describe('movePublicFile', () => {
-			it('returns the correct ArFSResult', async () => {
-				stub(arfsDao, 'getPublicDrive').resolves(stubPublicDrive);
-				stub(arfsDao, 'getPublicFolder').resolves(stubPublicFolder);
-				stub(arfsDao, 'getPublicFile').resolves(stubPublicFile);
+			describe('movePublicFile', () => {
+				beforeEach(() => {
+					stub(arfsDao, 'getPublicFile').resolves(stubPublicFile);
+				});
 
-				const result = await arDrive.movePublicFile(stubEntityID, stubEntityID);
-				assertMoveFileExpectations(result, 153, 'public');
+				it('throws an error if the new parent folder id matches its current parent folder id', async () => {
+					stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityID);
+
+					await expectAsyncErrorThrow({ promiseToError: arDrive.movePublicFile(stubEntityID, stubEntityID) });
+				});
+
+				it('throws an error if the file is being moved to a different drive', async () => {
+					stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityIDAlt); // Returns different drive ID
+
+					await expectAsyncErrorThrow({
+						promiseToError: arDrive.movePublicFile(stubEntityID, stubEntityID),
+						errorMessage: 'Entity must stay in the same drive!'
+					});
+				});
+
+				it('returns the correct ArFSResult', async () => {
+					stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityID);
+					const result = await arDrive.movePublicFile(stubEntityID, stubEntityIDAlt);
+					assertMoveFileExpectations(result, 153, 'public');
+				});
 			});
-		});
 
-		describe('movePrivateFile', () => {
-			it('returns the correct ArFSResult', async () => {
-				stub(arfsDao, 'getPrivateDrive').resolves(stubPrivateDrive);
-				stub(arfsDao, 'getPrivateFolder').resolves(stubPrivateFolder);
-				stub(arfsDao, 'getPrivateFile').resolves(stubPrivateFile);
+			describe('movePrivateFile', () => {
+				beforeEach(() => {
+					stub(arfsDao, 'getPrivateFile').resolves(stubPrivateFile);
+				});
 
-				const stubDriveKey = await getStubDriveKey();
-				const result = await arDrive.movePrivateFile(stubEntityID, stubEntityID, stubDriveKey);
-				assertMoveFileExpectations(result, 169, 'private');
+				it('throws an error if the new parent folder id matches its current parent folder id', async () => {
+					stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityID);
+
+					await expectAsyncErrorThrow({
+						promiseToError: arDrive.movePrivateFile(stubEntityID, stubEntityID, await getStubDriveKey())
+					});
+				});
+
+				it('throws an error if the file is being moved to a different drive', async () => {
+					stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityIDAlt); // Returns different drive ID
+
+					await expectAsyncErrorThrow({
+						promiseToError: arDrive.movePrivateFile(stubEntityID, stubEntityID, await getStubDriveKey()),
+						errorMessage: 'Entity must stay in the same drive!'
+					});
+				});
+
+				it('returns the correct ArFSResult', async () => {
+					stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityID);
+
+					const result = await arDrive.movePrivateFile(
+						stubEntityID,
+						stubEntityIDAlt,
+						await getStubDriveKey()
+					);
+					assertMoveFileExpectations(result, 169, 'private');
+				});
 			});
 		});
 	});
@@ -422,7 +515,8 @@ function assertUploadFileExpectations(
 	const feeKeys = Object.keys(result.fees);
 	expect(feeKeys[0]).to.match(trxIdRegex);
 	expect(feeKeys[0]).to.equal(fileEntity.dataTxId);
-	expect(result.fees[fileEntity.dataTxId]).to.equal(fileFee);
+	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+	expect(result.fees[fileEntity.dataTxId!]).to.equal(fileFee);
 
 	expect(feeKeys[1]).to.match(trxIdRegex);
 	expect(feeKeys[1]).to.equal(fileEntity.metadataTxId);

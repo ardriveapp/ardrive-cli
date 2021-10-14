@@ -72,11 +72,11 @@ describe('ARDataPriceEstimator class', () => {
 		});
 
 		it('throws an error when provided winston value is a negative integer', async () => {
-			await expectAsyncErrorThrow(() => calculator.getByteCountForWinston(-1));
+			await expectAsyncErrorThrow({ promiseToError: calculator.getByteCountForWinston(-1) });
 		});
 
 		it('throws an error when provided winston value is represented as a decimal', async () => {
-			await expectAsyncErrorThrow(() => calculator.getByteCountForWinston(0.1));
+			await expectAsyncErrorThrow({ promiseToError: calculator.getByteCountForWinston(0.1) });
 		});
 
 		it('makes three oracle calls after the first price estimation request', async () => {

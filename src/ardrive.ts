@@ -42,6 +42,8 @@ import {
 	ArFSPublicFileOrFolderWithPaths,
 	ArFSPublicFolder
 } from './arfs_entities';
+import { stubEntityID, stubTransactionID } from './utils/stubs';
+import { errorMessage } from './error_message';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 
@@ -87,9 +89,6 @@ export interface DriveUploadBaseCosts {
 	driveMetaDataBaseReward: Winston;
 	rootFolderMetaDataBaseReward: Winston;
 }
-
-export const stubTransactionID = '0000000000000000000000000000000000000000000';
-export const stubEntityID = '00000000-0000-0000-0000-000000000000';
 
 interface RecursiveBulkUploadParams {
 	parentFolderId: FolderID;
@@ -228,7 +227,11 @@ export class ArDrive extends ArDriveAnonymous {
 		const originalFileMetaData = await this.getPublicFile(fileId);
 
 		if (driveId !== originalFileMetaData.driveId) {
-			throw new Error('File should stay in the same drive!');
+			throw new Error(errorMessage.cannotMoveToDifferentDrive);
+		}
+
+		if (originalFileMetaData.parentFolderId === newParentFolderId) {
+			throw new Error(errorMessage.cannotMoveIntoSamePlace('File', newParentFolderId));
 		}
 
 		const fileTransactionData = new ArFSPublicFileMetadataTransactionData(
@@ -271,7 +274,11 @@ export class ArDrive extends ArDriveAnonymous {
 		const originalFileMetaData = await this.getPrivateFile(fileId, driveKey);
 
 		if (driveId !== originalFileMetaData.driveId) {
-			throw new Error('File should stay in the same drive!');
+			throw new Error(errorMessage.cannotMoveToDifferentDrive);
+		}
+
+		if (originalFileMetaData.parentFolderId === newParentFolderId) {
+			throw new Error(errorMessage.cannotMoveIntoSamePlace('File', newParentFolderId));
 		}
 
 		const fileTransactionData = await ArFSPrivateFileMetadataTransactionData.from(
@@ -313,12 +320,28 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	async movePublicFolder({ folderId, newParentFolderId }: MovePublicFolderParams): Promise<ArFSResult> {
-		const parentFolderDriveId = await this.getDriveIdAndAssertDrive(newParentFolderId);
+		if (folderId === newParentFolderId) {
+			throw new Error(errorMessage.folderCannotMoveIntoItself);
+		}
 
+		const parentFolderDriveId = await this.getDriveIdAndAssertDrive(newParentFolderId);
 		const originalFolderMetaData = await this.getPublicFolder(folderId);
 
 		if (parentFolderDriveId !== originalFolderMetaData.driveId) {
-			throw new Error('Folder should stay in the same drive!');
+			throw new Error(errorMessage.cannotMoveToDifferentDrive);
+		}
+
+		if (originalFolderMetaData.parentFolderId === newParentFolderId) {
+			throw new Error(errorMessage.cannotMoveIntoSamePlace('Folder', newParentFolderId));
+		}
+
+		const childrenFolderIds = await this.arFsDao.getPublicChildrenFolderIds({
+			folderId,
+			driveId: parentFolderDriveId
+		});
+
+		if (childrenFolderIds.includes(newParentFolderId)) {
+			throw new Error(errorMessage.cannotMoveParentIntoChildFolder);
 		}
 
 		const folderTransactionData = new ArFSPublicFolderTransactionData(originalFolderMetaData.name);
@@ -352,11 +375,29 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	async movePrivateFolder({ folderId, newParentFolderId, driveKey }: MovePrivateFolderParams): Promise<ArFSResult> {
+		if (folderId === newParentFolderId) {
+			throw new Error(errorMessage.folderCannotMoveIntoItself);
+		}
+
 		const parentFolderDriveId = await this.getDriveIdAndAssertDrive(newParentFolderId, driveKey);
 		const originalFolderMetaData = await this.getPrivateFolder(folderId, driveKey);
 
 		if (parentFolderDriveId !== originalFolderMetaData.driveId) {
-			throw new Error('Folder should stay in the same drive!');
+			throw new Error(errorMessage.cannotMoveToDifferentDrive);
+		}
+
+		if (originalFolderMetaData.parentFolderId === newParentFolderId) {
+			throw new Error(errorMessage.cannotMoveIntoSamePlace('Folder', newParentFolderId));
+		}
+
+		const childrenFolderIds = await this.arFsDao.getPrivateChildrenFolderIds({
+			folderId,
+			driveId: parentFolderDriveId,
+			driveKey
+		});
+
+		if (childrenFolderIds.includes(newParentFolderId)) {
+			throw new Error(errorMessage.cannotMoveParentIntoChildFolder);
 		}
 
 		const folderTransactionData = await ArFSPrivateFolderTransactionData.from(
