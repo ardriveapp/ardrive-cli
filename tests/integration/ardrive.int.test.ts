@@ -201,8 +201,8 @@ describe('ArDrive class - integrated', () => {
 
 				await expectAsyncErrorThrow({
 					promiseToError: arDrive.movePublicFolder({
-						folderId: folderHierarchy.childFolder.entityId,
-						newParentFolderId: folderHierarchy.parentFolder.entityId
+						folderId: 'not used here',
+						newParentFolderId: 'we will error for drive ID reasons'
 					}),
 					errorMessage: 'Entity must stay in the same drive!'
 				});
@@ -292,8 +292,8 @@ describe('ArDrive class - integrated', () => {
 
 				await expectAsyncErrorThrow({
 					promiseToError: arDrive.movePrivateFolder({
-						folderId: folderHierarchy.childFolder.entityId,
-						newParentFolderId: folderHierarchy.parentFolder.entityId,
+						folderId: 'not used here',
+						newParentFolderId: 'we will error for drive ID reasons',
 						driveKey: await getStubDriveKey()
 					}),
 					errorMessage: 'Entity must stay in the same drive!'
