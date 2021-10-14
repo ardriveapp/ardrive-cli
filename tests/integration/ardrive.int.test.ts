@@ -186,7 +186,7 @@ describe('ArDrive class - integrated', () => {
 						folderId: folderHierarchy.parentFolder.entityId,
 						newParentFolderId: folderHierarchy.parentFolder.entityId
 					}),
-					errorMessage: 'Folders cannot be moved into itself!'
+					errorMessage: 'Folders cannot be moved into themselves!'
 				});
 			});
 
@@ -277,7 +277,7 @@ describe('ArDrive class - integrated', () => {
 						newParentFolderId: folderHierarchy.parentFolder.entityId,
 						driveKey: await getStubDriveKey()
 					}),
-					errorMessage: 'Folders cannot be moved into itself!'
+					errorMessage: 'Folders cannot be moved into themselves!'
 				});
 			});
 
