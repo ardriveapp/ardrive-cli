@@ -14,13 +14,19 @@ new CLICommand({
 	parameters: [ArAmountParameter, DestinationAddressParameter, WalletFileParameter, BoostParameter, DryRunParameter],
 	async action(options) {
 		const parameters = new ParametersHelper(options);
+		const digitsOfPrecission = options.arAmount.split('.')[1].replace(/0*$/, '');
+		if (digitsOfPrecission.length > 12) {
+			throw new Error(`The AR amount must have a maximum of 12 digits of precision`);
+		}
+		const arAmount: number = +options.arAmount;
+		const destAddress: string = options.destAddress;
 		const wallet = await parameters.getRequiredWallet();
 		const walletAddress = await wallet.getAddress();
 		console.log(walletAddress);
-		console.log(`arAmount: ${options.arAmount}`);
-		console.log(`destAddress: ${options.destAddress}`);
+		console.log(`arAmount: ${arAmount.toFixed(12)}`);
+		console.log(`destAddress: ${destAddress}`);
 		const arTransferResult = await cliWalletDao.sendARToAddress(
-			+options.arAmount,
+			arAmount,
 			wallet,
 			options.destAddress,
 			options.boost,
