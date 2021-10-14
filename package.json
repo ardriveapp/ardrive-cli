@@ -65,7 +65,7 @@
 		"test": "nyc mocha",
 		"coverage": "nyc --reporter text mocha",
 		"typecheck": "tsc --noemit",
-		"build": "yarn clean && tsc",
+		"build": "yarn clean && tsc --project ./tsconfig.prod.json",
 		"ci": "yarn build && yarn test",
 		"version": "yarn run format && git add -A src",
 		"postversion": "git push && git push --tags",
