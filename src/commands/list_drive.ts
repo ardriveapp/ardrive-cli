@@ -3,6 +3,7 @@ import { ArDriveAnonymous } from '../ardrive';
 import { ArFSDAOAnonymous } from '../arfsdao_anonymous';
 import { ArFSPrivateFileOrFolderWithPaths, ArFSPublicFileOrFolderWithPaths } from '../arfs_entities';
 import { CLICommand, ParametersHelper } from '../CLICommand';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 import { DriveIdParameter, DrivePrivacyParameters, TreeDepthParams } from '../parameter_declarations';
 import { alphabeticalOrder } from '../utils/sort_functions';
 
@@ -18,7 +19,7 @@ new CLICommand({
 		if (await parameters.getIsPrivate()) {
 			const wallet = await parameters.getRequiredWallet();
 			const arDrive = arDriveFactory({ wallet });
-			const driveKey = await parameters.getDriveKey(driveId);
+			const driveKey = await parameters.getDriveKey({ driveId });
 			const drive = await arDrive.getPrivateDrive(driveId, driveKey);
 			const rootFolderId = drive.rootFolderId;
 			children = await arDrive.listPrivateFolder(rootFolderId, driveKey, maxDepth, true);
@@ -45,6 +46,6 @@ new CLICommand({
 
 		// Display data
 		console.log(JSON.stringify(sortedChildren, null, 4));
-		process.exit(0);
+		return SUCCESS_EXIT_CODE;
 	}
 });

@@ -3,6 +3,7 @@ import { DriveID } from '../types';
 import { DriveIdParameter, GetAllRevisionsParameter, DrivePrivacyParameters } from '../parameter_declarations';
 import { arDriveAnonymousFactory, arDriveFactory } from '..';
 import { ArFSPrivateDrive, ArFSPublicDrive } from '../arfs_entities';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 
 new CLICommand({
 	name: 'drive-info',
@@ -17,7 +18,7 @@ new CLICommand({
 			if (await parameters.getIsPrivate()) {
 				const wallet = await parameters.getRequiredWallet();
 				const arDrive = arDriveFactory({ wallet: wallet });
-				const driveKey = await parameters.getDriveKey(driveId);
+				const driveKey = await parameters.getDriveKey({ driveId });
 
 				return arDrive.getPrivateDrive(driveId, driveKey /*, shouldGetAllRevisions*/);
 			} else {
@@ -30,6 +31,6 @@ new CLICommand({
 		delete result.syncStatus;
 
 		console.log(JSON.stringify(result, null, 4));
-		process.exit(0);
+		return SUCCESS_EXIT_CODE;
 	}
 });
