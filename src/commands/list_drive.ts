@@ -19,7 +19,7 @@ new CLICommand({
 		if (await parameters.getIsPrivate()) {
 			const wallet = await parameters.getRequiredWallet();
 			const arDrive = arDriveFactory({ wallet });
-			const driveKey = await parameters.getDriveKey(driveId);
+			const driveKey = await parameters.getDriveKey({ driveId });
 			const drive = await arDrive.getPrivateDrive(driveId, driveKey);
 			const rootFolderId = drive.rootFolderId;
 			children = await arDrive.listPrivateFolder(rootFolderId, driveKey, maxDepth, true);

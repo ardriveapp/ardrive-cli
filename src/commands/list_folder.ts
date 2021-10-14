@@ -19,7 +19,7 @@ new CLICommand({
 			const arDrive = arDriveFactory({ wallet });
 
 			const driveId = await arDrive.getDriveIdForFolderId(folderId);
-			const driveKey = await parameters.getDriveKey(driveId);
+			const driveKey = await parameters.getDriveKey({ driveId });
 
 			children = await arDrive.listPrivateFolder(folderId, driveKey, maxDepth);
 		} else {

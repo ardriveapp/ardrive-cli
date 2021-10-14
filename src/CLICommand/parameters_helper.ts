@@ -19,6 +19,14 @@ import passwordPrompt from 'prompts';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ParameterOptions = any;
 
+interface GetDriveKeyParams {
+	driveId: DriveID;
+	drivePassword?: string;
+	useCache?: boolean;
+}
+
+const staticDriveKeyCache: { [key: string]: Buffer } = {};
+
 /**
  * @type {ParametersHelper}
  * A class that assists with handling Commander options during common ArDrive CLI workflows
@@ -72,16 +80,26 @@ export class ParametersHelper {
 		);
 	}
 
-	public async getDriveKey(driveId: DriveID): Promise<DriveKey> {
+	public async getDriveKey({ driveId, drivePassword, useCache = false }: GetDriveKeyParams): Promise<DriveKey> {
 		// Obtain drive key from one of:
 		// • --drive-key param
 		// • (--wallet-file or --seed-phrase) + (--unsafe-drive-password or --private password)
-		const driveKey = this.getParameterValue(DriveKeyParameter);
-		if (driveKey) {
-			return Buffer.from(driveKey, 'base64');
+
+		if (useCache) {
+			const cachedDriveKey = staticDriveKeyCache[driveId];
+			if (cachedDriveKey) {
+				return cachedDriveKey;
+			}
 		}
 
-		const drivePassword = await this.getDrivePassword();
+		const driveKey = this.getParameterValue(DriveKeyParameter);
+		if (driveKey) {
+			const paramDriveKey = Buffer.from(driveKey, 'base64');
+			staticDriveKeyCache[driveId] = paramDriveKey;
+			return paramDriveKey;
+		}
+
+		drivePassword = drivePassword ?? (await this.getDrivePassword());
 		if (drivePassword) {
 			const wallet: JWKWallet = (await this.getRequiredWallet()) as JWKWallet;
 			const derivedDriveKey: DriveKey = await deriveDriveKey(
@@ -89,9 +107,10 @@ export class ParametersHelper {
 				driveId,
 				JSON.stringify(wallet.getPrivateKey())
 			);
+			staticDriveKeyCache[driveId] = derivedDriveKey;
 			return derivedDriveKey;
 		}
-		throw new Error(`No drive key or password provided!`);
+		throw new Error(`No drive key or password provided for drive ID ${driveId}!`);
 	}
 
 	public async getDrivePassword(isForNewDrive = false): Promise<string> {

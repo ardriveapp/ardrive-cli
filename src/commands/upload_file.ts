@@ -79,12 +79,20 @@ new CLICommand({
 
 			await Promise.all(
 				filesToUpload.map(async (fileToUpload) => {
-					const { parentFolderId, wrappedEntity, destinationFileName } = fileToUpload;
+					const {
+						parentFolderId,
+						wrappedEntity,
+						destinationFileName,
+						drivePassword,
+						driveKey: fileDriveKey
+					} = fileToUpload;
 
 					const result = await (async () => {
 						if (await parameters.getIsPrivate()) {
 							const driveId = await arDrive.getDriveIdForFolderId(parentFolderId);
-							const driveKey = await parameters.getDriveKey(driveId);
+							const driveKey =
+								fileDriveKey ??
+								(await parameters.getDriveKey({ driveId, drivePassword, useCache: true }));
 
 							if (isFolder(wrappedEntity)) {
 								return arDrive.createPrivateFolderAndUploadChildren(

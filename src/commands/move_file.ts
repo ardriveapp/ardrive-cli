@@ -29,7 +29,7 @@ new CLICommand({
 		const createDriveResult = await (async function () {
 			if (await parameters.getIsPrivate()) {
 				const driveId = await ardrive.getDriveIdForFolderId(parentFolderId);
-				const driveKey = await parameters.getDriveKey(driveId);
+				const driveKey = await parameters.getDriveKey({ driveId });
 
 				return ardrive.movePrivateFile(fileId, parentFolderId, driveKey);
 			} else {

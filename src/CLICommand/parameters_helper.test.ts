@@ -331,9 +331,9 @@ describe('ParametersHelper class', () => {
 		it('returns the correct drive key given a valid --wallet-file and --unsafe-drive-password', () => {
 			declareCommandWithParams(program, [WalletFileParameter, UnsafeDrivePasswordParameter], async (options) => {
 				const parameters = new ParametersHelper(options);
-				expect(urlEncodeHashKey(await parameters.getDriveKey('00000000-0000-0000-0000-000000000000'))).to.equal(
-					'Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg'
-				);
+				expect(
+					urlEncodeHashKey(await parameters.getDriveKey({ driveId: '00000000-0000-0000-0000-000000000000' }))
+				).to.equal('Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg');
 			});
 			CLICommand.parse(program, [
 				...baseArgv,
@@ -348,9 +348,9 @@ describe('ParametersHelper class', () => {
 		it('returns the drive key provided by the --drive-key option', () => {
 			declareCommandWithParams(program, [DriveKeyParameter], async (options) => {
 				const parameters = new ParametersHelper(options);
-				expect(urlEncodeHashKey(await parameters.getDriveKey('00000000-0000-0000-0000-000000000000'))).to.equal(
-					'Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg'
-				);
+				expect(
+					urlEncodeHashKey(await parameters.getDriveKey({ driveId: '00000000-0000-0000-0000-000000000000' }))
+				).to.equal('Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg');
 			});
 			CLICommand.parse(program, [
 				...baseArgv,
@@ -363,7 +363,9 @@ describe('ParametersHelper class', () => {
 		it('throws when none of --wallet-file, -w, --seed-phrase, -s, --drive-key, or -k option are provided', () => {
 			declareCommandWithParams(program, [], async (options) => {
 				const parameters = new ParametersHelper(options);
-				const driveKey = await parameters.getDriveKey('00000000-0000-0000-0000-000000000000').catch(() => null);
+				const driveKey = await parameters
+					.getDriveKey({ driveId: '00000000-0000-0000-0000-000000000000' })
+					.catch(() => null);
 				expect(driveKey).to.be.null;
 			});
 			CLICommand.parse(program, [...baseArgv, testCommandName]);
