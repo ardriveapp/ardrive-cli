@@ -27,6 +27,7 @@ const fileKeyRegex = /^([a-zA-Z]|[0-9]|-|_|\/|\+){43}$/;
 describe('ArDrive class - integrated', () => {
 	const wallet = readJWKFile('./test_wallet.json');
 	const stubArweaveAddress = 'abcdefghijklmnopqrxtuvwxyz123456789ABCDEFGH';
+	const stubbedEnoughBalance = 1_000_000_000_000;
 	const getStubDriveKey = async (): Promise<DriveKey> => {
 		return deriveDriveKey('stubPassword', stubEntityID, JSON.stringify((wallet as JWKWallet).getPrivateKey()));
 	};
@@ -158,6 +159,7 @@ describe('ArDrive class - integrated', () => {
 		describe('sendCommunityTip', () => {
 			it('returns the correct TipResult', async () => {
 				stub(communityOracle, 'selectTokenHolder').resolves(stubArweaveAddress);
+				stub(walletDao, 'getAddressWinstonBalance').resolves(stubbedEnoughBalance);
 
 				const result = await arDrive.sendCommunityTip('12345');
 
@@ -269,6 +271,8 @@ describe('ArDrive class - integrated', () => {
 				stub(communityOracle, 'getCommunityWinstonTip').resolves('1');
 				stub(communityOracle, 'selectTokenHolder').resolves(stubArweaveAddress);
 
+				stub(walletDao, 'getAddressWinstonBalance').resolves(stubbedEnoughBalance);
+
 				const wrappedFile = wrapFileOrFolder('test_wallet.json');
 				const result = await arDrive.uploadPublicFile(
 					stubEntityID,
@@ -285,6 +289,8 @@ describe('ArDrive class - integrated', () => {
 
 				stub(communityOracle, 'getCommunityWinstonTip').resolves('1');
 				stub(communityOracle, 'selectTokenHolder').resolves(stubArweaveAddress);
+
+				stub(walletDao, 'getAddressWinstonBalance').resolves(stubbedEnoughBalance);
 
 				const wrappedFile = wrapFileOrFolder('test_wallet.json');
 				const stubDriveKey = await getStubDriveKey();
