@@ -19,7 +19,6 @@ new CLICommand({
 		console.log(walletAddress);
 		console.log(`arAmount: ${options.arAmount}`);
 		console.log(`destAddress: ${options.destAddress}`);
-		console.log(await cliWalletDao.getAddressWinstonBalance(options.destAddress));
 		const arTransferResult = await cliWalletDao.sendARToAddress(
 			+options.arAmount,
 			wallet,
