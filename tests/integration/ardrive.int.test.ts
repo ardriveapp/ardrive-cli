@@ -141,7 +141,7 @@ describe('ArDrive class - integrated', () => {
 				childFolder: stubPublicFolder(stubEntityIDChild, stubEntityIDParent),
 				grandChildFolder: stubPublicFolder(stubEntityIDGrandchild, stubEntityIDChild)
 			};
-			it('throws an error if its being moved inside any of its children folders', async () => {
+			it('throws an error if it is being moved inside any of its children folders', async () => {
 				stub(arfsDao, 'getPublicFolder').resolves(folderHierarchy.rootFolder);
 				stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityID);
 				stub(arfsDao, 'getPublicChildrenFolderIds').resolves([
@@ -229,7 +229,7 @@ describe('ArDrive class - integrated', () => {
 				grandChildFolder: stubPrivateFolder(stubEntityIDGrandchild, stubEntityIDChild)
 			};
 
-			it('throws an error if its being moved inside any of its children folders', async () => {
+			it('throws an error if it is being moved inside any of its children folders', async () => {
 				stub(arfsDao, 'getPrivateFolder').resolves(folderHierarchy.rootFolder);
 				stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityID);
 				stub(arfsDao, 'getPrivateChildrenFolderIds').resolves([
