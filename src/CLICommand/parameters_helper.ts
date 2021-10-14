@@ -25,13 +25,13 @@ interface GetDriveKeyParams {
 	useCache?: boolean;
 }
 
-const staticDriveKeyCache: { [key: string]: Buffer } = {};
-
 /**
  * @type {ParametersHelper}
  * A class that assists with handling Commander options during common ArDrive CLI workflows
  */
 export class ParametersHelper {
+	private static readonly driveKeyCache: { [key: string]: DriveKey } = {};
+
 	/**
 	 * @returns {ParametersHelper}
 	 * @param {any} options The object containing the parameterName: value mapping
@@ -86,7 +86,7 @@ export class ParametersHelper {
 		// • (--wallet-file or --seed-phrase) + (--unsafe-drive-password or --private password)
 
 		if (useCache) {
-			const cachedDriveKey = staticDriveKeyCache[driveId];
+			const cachedDriveKey = ParametersHelper.driveKeyCache[driveId];
 			if (cachedDriveKey) {
 				return cachedDriveKey;
 			}
@@ -95,7 +95,7 @@ export class ParametersHelper {
 		const driveKey = this.getParameterValue(DriveKeyParameter);
 		if (driveKey) {
 			const paramDriveKey = Buffer.from(driveKey, 'base64');
-			staticDriveKeyCache[driveId] = paramDriveKey;
+			ParametersHelper.driveKeyCache[driveId] = paramDriveKey;
 			return paramDriveKey;
 		}
 
@@ -107,7 +107,7 @@ export class ParametersHelper {
 				driveId,
 				JSON.stringify(wallet.getPrivateKey())
 			);
-			staticDriveKeyCache[driveId] = derivedDriveKey;
+			ParametersHelper.driveKeyCache[driveId] = derivedDriveKey;
 			return derivedDriveKey;
 		}
 		throw new Error(`No drive key or password provided for drive ID ${driveId}!`);
