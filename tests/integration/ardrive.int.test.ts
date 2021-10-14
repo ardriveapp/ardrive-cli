@@ -137,7 +137,7 @@ describe('ArDrive class - integrated', () => {
 		describe('movePublicFolder', () => {
 			const folderHierarchy = {
 				rootFolder: stubPublicFolder(stubEntityIDRoot, 'root folder'),
-				parentFolder: stubPublicFolder(stubEntityIDParent, stubEntityIDParent),
+				parentFolder: stubPublicFolder(stubEntityIDParent, stubEntityIDRoot),
 				childFolder: stubPublicFolder(stubEntityIDChild, stubEntityIDParent),
 				grandChildFolder: stubPublicFolder(stubEntityIDGrandchild, stubEntityIDChild)
 			};
@@ -224,7 +224,7 @@ describe('ArDrive class - integrated', () => {
 		describe('movePrivateFolder', () => {
 			const folderHierarchy = {
 				rootFolder: stubPrivateFolder(stubEntityIDRoot, 'root folder'),
-				parentFolder: stubPrivateFolder(stubEntityIDParent, stubEntityIDParent),
+				parentFolder: stubPrivateFolder(stubEntityIDParent, stubEntityIDRoot),
 				childFolder: stubPrivateFolder(stubEntityIDChild, stubEntityIDParent),
 				grandChildFolder: stubPrivateFolder(stubEntityIDGrandchild, stubEntityIDChild)
 			};
