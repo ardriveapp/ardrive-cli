@@ -31,7 +31,8 @@ new CLICommand({
 				{ name: 'App-Name', value: 'ArDrive-CLI' },
 				{ name: 'App-Version', value: '2.0' },
 				{ name: 'Type', value: 'transfer' }
-			]
+			],
+			true
 		);
 
 		console.log(JSON.stringify(arTransferResult, null, 4));

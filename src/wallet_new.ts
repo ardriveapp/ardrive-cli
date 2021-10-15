@@ -103,13 +103,12 @@ export class WalletDAO {
 			{ value: appVersion = this.appVersion },
 			{ value: trxType = 'transfer' },
 			...otherTags
-		]: GQLTagInterface[]
+		]: GQLTagInterface[],
+		assertBalance = false
 	): Promise<ARTransferResult> {
 		// TODO: Figure out how this works for other wallet types
 		const jwkWallet = fromWallet as JWKWallet;
-		const fromAddress = await fromWallet.getAddress();
 		const winston: Winston = this.arweave.ar.arToWinston(arAmount.toString());
-		const balanceInWinston = await this.getAddressWinstonBalance(fromAddress);
 
 		// Create transaction
 		const trxAttributes: Partial<CreateTransactionInterface> = { target: toAddress, quantity: winston };
@@ -129,18 +128,22 @@ export class WalletDAO {
 			transaction.reward = Math.ceil(+transaction.reward * rewardSettings.feeMultiple).toString();
 		}
 
-		const total = +transaction.reward + +transaction.quantity;
-		if (total > balanceInWinston) {
-			throw new Error(
-				[
-					`Insufficient founds for this transaction`,
-					`quantity: ${transaction.quantity}`,
-					`minerReward: ${transaction.reward}`,
-					`balance: ${balanceInWinston}`,
-					`total: ${total}`,
-					`difference: ${total - balanceInWinston}`
-				].join('\n\t')
-			);
+		if (assertBalance) {
+			const fromAddress = await fromWallet.getAddress();
+			const balanceInWinston = await this.getAddressWinstonBalance(fromAddress);
+			const total = +transaction.reward + +transaction.quantity;
+			if (total > balanceInWinston) {
+				throw new Error(
+					[
+						`Insufficient founds for this transaction`,
+						`quantity: ${transaction.quantity}`,
+						`minerReward: ${transaction.reward}`,
+						`balance: ${balanceInWinston}`,
+						`total: ${total}`,
+						`difference: ${total - balanceInWinston}`
+					].join('\n\t')
+				);
+			}
 		}
 
 		// Tag file with data upload Tipping metadata
