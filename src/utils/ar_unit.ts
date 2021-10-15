@@ -1,6 +1,6 @@
 export const MAX_DIGITS_OF_PRECISION = 12;
 /**
- * Capturing group 1: the points after the comma with thrimmed zeros
+ * Capturing group 1: the points after the comma with trimmed zeros
  */
 export const FLOATING_POINT_REGEXP = /^\d*(?:\.(\d*[1-9])0*)?$/;
 
