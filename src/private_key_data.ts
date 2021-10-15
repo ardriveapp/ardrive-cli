@@ -26,7 +26,7 @@ export class PrivateKeyData {
 	// TODO: Migrate this to ArFS Cache so it can persist between commands
 	private readonly driveKeyCache: DriveIdKeyPair = {};
 
-	// Drive keys provided by the user are initially "unpaired"
+	// Drive keys provided by the user are initially unverified
 	// until we successfully decrypt a drive with them
 	private unverifiedDriveKeys: DriveKey[];
 
@@ -42,30 +42,28 @@ export class PrivateKeyData {
 		driveId: DriveID,
 		dataBuffer: Buffer
 	): Promise<T | false> {
-		// Check for cached key that is matching driveId first
+		// Check for a cached key that is matching provided driveId first
 		const cachedDriveKey = this.driveKeyForDriveId(driveId);
 		if (cachedDriveKey) {
 			return this.decryptToJson<T>(cipherIV, dataBuffer, cachedDriveKey);
 		}
 
-		// Try any unpaired drive keys
-		if (this.unverifiedDriveKeys.length > 0) {
-			for await (const driveKey of this.unverifiedDriveKeys) {
-				try {
-					const decryptedDriveJSON = await this.decryptToJson<T>(cipherIV, dataBuffer, driveKey);
+		// Next, try any unverified drive keys provided by the user
+		for await (const driveKey of this.unverifiedDriveKeys) {
+			try {
+				const decryptedDriveJSON = await this.decryptToJson<T>(cipherIV, dataBuffer, driveKey);
 
-					// Correct key, add this pair to the cache
-					this.driveKeyCache[driveId] = driveKey;
-					this.unverifiedDriveKeys = this.unverifiedDriveKeys.filter((k) => k !== driveKey);
+				// Correct key, add this pair to the cache
+				this.driveKeyCache[driveId] = driveKey;
+				this.unverifiedDriveKeys = this.unverifiedDriveKeys.filter((k) => k !== driveKey);
 
-					return decryptedDriveJSON;
-				} catch {
-					// Wrong key, continue
-				}
+				return decryptedDriveJSON;
+			} catch {
+				// Wrong key, continue
 			}
 		}
 
-		// If we have a password and a wallet, we can derive a drive key and try it
+		// Finally, if we have a password and a wallet, we can derive a drive key and try it
 		if (this.password && this.wallet) {
 			const derivedDriveKey: DriveKey = await deriveDriveKey(
 				this.password,
