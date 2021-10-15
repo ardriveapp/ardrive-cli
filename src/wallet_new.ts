@@ -167,7 +167,7 @@ export class WalletDAO {
 				return this.arweave.transactions.post(transaction);
 			}
 		})();
-		if (response.status === 200 || response.status === 202 || (response.data && response.data.error)) {
+		if ((response.status === 200 || response.status === 202) && !(response.data && response.data.error)) {
 			return Promise.resolve({
 				trxID: transaction.id,
 				winston,
