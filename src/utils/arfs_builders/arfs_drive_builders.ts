@@ -8,10 +8,15 @@ import {
 } from 'ardrive-core-js';
 import Arweave from 'arweave';
 import { ArFSPrivateDrive, ArFSPublicDrive } from '../../arfs_entities';
+import { EntityMetaDataTransactionData, PrivateKeyData } from '../../private_key_data';
 import { CipherIV, DriveKey, FolderID } from '../../types';
-import { ArFSMetadataEntityBuilder, ArFSPrivateMetadataEntityBuilderParams } from './arfs_builders';
+import {
+	ArFSMetadataEntityBuilder,
+	ArFSMetadataEntityBuilderParams,
+	ArFSPrivateMetadataEntityBuilderParams
+} from './arfs_builders';
 
-interface DriveMetaDataTransactionData {
+interface DriveMetaDataTransactionData extends EntityMetaDataTransactionData {
 	name: string;
 	rootFolderId: FolderID;
 }
@@ -121,17 +126,119 @@ export class ArFSPrivateDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPriva
 		];
 	}
 
-	static fromArweaveNode(node: GQLNodeInterface, arweave: Arweave, driveKey?: DriveKey): ArFSPrivateDriveBuilder {
+	protected async parseFromArweaveNode(node?: GQLNodeInterface): Promise<GQLTagInterface[]> {
+		const unparsedTags: GQLTagInterface[] = [];
+		const tags = await super.parseFromArweaveNode(node);
+		tags.forEach((tag: GQLTagInterface) => {
+			const key = tag.name;
+			const { value } = tag;
+			switch (key) {
+				case 'Cipher':
+					this.cipher = value;
+					break;
+				case 'Cipher-IV':
+					this.cipherIV = value;
+					break;
+				case 'Drive-Auth-Mode':
+					this.driveAuthMode = value as DriveAuthMode;
+					break;
+				case 'Drive-Privacy':
+					this.drivePrivacy = value as DrivePrivacy;
+					break;
+				default:
+					unparsedTags.push(tag);
+					break;
+			}
+		});
+		return unparsedTags;
+	}
+
+	protected async buildEntity(): Promise<ArFSPrivateDrive> {
+		if (
+			this.appName?.length &&
+			this.appVersion?.length &&
+			this.arFS?.length &&
+			this.contentType?.length &&
+			this.driveId?.length &&
+			this.entityType?.length &&
+			this.txId?.length &&
+			this.unixTime &&
+			this.drivePrivacy?.length &&
+			this.driveAuthMode?.length &&
+			this.cipher?.length &&
+			this.cipherIV?.length
+		) {
+			const txData = await this.arweave.transactions.getData(this.txId, { decode: true });
+			const dataBuffer = Buffer.from(txData);
+			const decryptedDriveBuffer: Buffer = await driveDecrypt(this.cipherIV, this.driveKey, dataBuffer);
+			const decryptedDriveString: string = await Utf8ArrayToStr(decryptedDriveBuffer);
+			const decryptedDriveJSON: DriveMetaDataTransactionData = await JSON.parse(decryptedDriveString);
+
+			this.name = decryptedDriveJSON.name;
+			this.rootFolderId = decryptedDriveJSON.rootFolderId;
+
+			return new ArFSPrivateDrive(
+				this.appName,
+				this.appVersion,
+				this.arFS,
+				this.contentType,
+				this.driveId,
+				this.entityType,
+				this.name,
+				this.txId,
+				this.unixTime,
+				this.drivePrivacy,
+				this.rootFolderId,
+				this.driveAuthMode,
+				this.cipher,
+				this.cipherIV
+			);
+		}
+
+		throw new Error('Invalid drive state');
+	}
+}
+
+export interface SafeArFSPrivateMetadataEntityBuilderParams extends ArFSMetadataEntityBuilderParams {
+	privateKeyData: PrivateKeyData;
+}
+
+export class SafeArFSPrivateDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPrivateDrive> {
+	drivePrivacy?: DrivePrivacy;
+	rootFolderId?: FolderID;
+	driveAuthMode?: DriveAuthMode;
+	cipher?: string;
+	cipherIV?: CipherIV;
+	private readonly privateKeyData: PrivateKeyData;
+
+	constructor({ entityId: driveId, arweave, privateKeyData }: SafeArFSPrivateMetadataEntityBuilderParams) {
+		super({ entityId: driveId, arweave });
+		this.privateKeyData = privateKeyData;
+	}
+
+	getGqlQueryParameters(): GQLTagInterface[] {
+		return [
+			{ name: 'Drive-Id', value: this.entityId },
+			{ name: 'Entity-Type', value: 'drive' },
+			{ name: 'Drive-Privacy', value: 'private' }
+		];
+	}
+
+	static fromArweaveNode(
+		node: GQLNodeInterface,
+		arweave: Arweave,
+		privateKeyData: PrivateKeyData
+	): SafeArFSPrivateDriveBuilder {
 		const { tags } = node;
 		const driveId = tags.find((tag) => tag.name === 'Drive-Id')?.value;
 		if (!driveId) {
 			throw new Error('Drive-ID tag missing!');
 		}
-		const driveBuilder = new ArFSPrivateDriveBuilder({
+		const driveBuilder = new SafeArFSPrivateDriveBuilder({
 			entityId: driveId,
 			arweave,
 			// TODO: Make all private builders optionally take driveKey and fail gracefully, populating fields with 'ENCRYPTED'
-			key: driveKey ?? Buffer.from('')
+			privateKeyData
 		});
 		return driveBuilder;
 	}
@@ -178,21 +285,16 @@ export class ArFSPrivateDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPriva
 			this.cipher?.length &&
 			this.cipherIV?.length
 		) {
-			let decryptedDriveJSON: DriveMetaDataTransactionData | undefined = undefined;
+			const txData = await this.arweave.transactions.getData(this.txId, { decode: true });
+			const dataBuffer = Buffer.from(txData);
+			const decryptedDriveJSON = await this.privateKeyData.safelyDecryptToJson<DriveMetaDataTransactionData>(
+				this.cipherIV,
+				this.driveId,
+				dataBuffer
+			);
 
-			try {
-				const txData = await this.arweave.transactions.getData(this.txId, { decode: true });
-				const dataBuffer = Buffer.from(txData);
-				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-				const decryptedDriveBuffer: Buffer = await driveDecrypt(this.cipherIV, this.driveKey!, dataBuffer);
-				const decryptedDriveString: string = await Utf8ArrayToStr(decryptedDriveBuffer);
-				decryptedDriveJSON = await JSON.parse(decryptedDriveString);
-			} catch (error) {
-				// Gracefully do nothing with a decryption error
-			}
-
-			this.name = decryptedDriveJSON?.name || fieldIsEncrypted;
-			this.rootFolderId = decryptedDriveJSON?.rootFolderId || fieldIsEncrypted;
+			this.name = decryptedDriveJSON ? decryptedDriveJSON.name : fieldIsEncrypted;
+			this.rootFolderId = decryptedDriveJSON ? decryptedDriveJSON.rootFolderId : fieldIsEncrypted;
 
 			return new ArFSPrivateDrive(
 				this.appName,

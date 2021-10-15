@@ -2,22 +2,14 @@
 import Arweave from 'arweave';
 import { ArFSDriveEntity, GQLEdgeInterface, GQLTagInterface } from 'ardrive-core-js';
 import { buildQuery } from './query';
-import {
-	DriveID,
-	FolderID,
-	FileID,
-	DEFAULT_APP_NAME,
-	DEFAULT_APP_VERSION,
-	EntityID,
-	ArweaveAddress,
-	DriveKey
-} from './types';
+import { DriveID, FolderID, FileID, DEFAULT_APP_NAME, DEFAULT_APP_VERSION, EntityID, ArweaveAddress } from './types';
 import { latestRevisionFilter, latestRevisionFilterForDrives } from './utils/filter_methods';
 import { FolderHierarchy } from './folderHierarchy';
-import { ArFSPrivateDriveBuilder, ArFSPublicDriveBuilder } from './utils/arfs_builders/arfs_drive_builders';
+import { ArFSPublicDriveBuilder, SafeArFSPrivateDriveBuilder } from './utils/arfs_builders/arfs_drive_builders';
 import { ArFSPublicFolderBuilder } from './utils/arfs_builders/arfs_folder_builders';
 import { ArFSPublicFileBuilder } from './utils/arfs_builders/arfs_file_builders';
 import { ArFSPublicDrive, ArFSPublicFile, ArFSPublicFileOrFolderWithPaths, ArFSPublicFolder } from './arfs_entities';
+import { PrivateKeyData } from './private_key_data';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 
@@ -98,7 +90,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 
 	async getAllDrivesForAddress(
 		address: ArweaveAddress,
-		driveKey?: DriveKey,
+		privateKeyData: PrivateKeyData,
 		latestRevisionsOnly = false
 	): Promise<ArFSDriveEntity[]> {
 		let cursor = '';
@@ -127,7 +119,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 				const driveBuilder =
 					privacy === 'public'
 						? ArFSPublicDriveBuilder.fromArweaveNode(node, this.arweave)
-						: ArFSPrivateDriveBuilder.fromArweaveNode(node, this.arweave, driveKey);
+						: SafeArFSPrivateDriveBuilder.fromArweaveNode(node, this.arweave, privateKeyData);
 
 				return driveBuilder.build(node);
 			});

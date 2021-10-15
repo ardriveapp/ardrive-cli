@@ -1,8 +1,8 @@
+import { ArFSDriveEntity } from 'ardrive-core-js';
 import { arDriveAnonymousFactory, cliWalletDao } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 import { AddressParameter, DrivePrivacyParameters } from '../parameter_declarations';
-import { DriveKey } from '../types';
 
 new CLICommand({
 	name: 'list-drives',
@@ -12,17 +12,14 @@ new CLICommand({
 		const ardrive = arDriveAnonymousFactory();
 
 		const address = await parameters.getWalletAddress();
+		const privateKeyData = await parameters.getPrivateData();
 
-		let driveKey: DriveKey | undefined = undefined;
+		const drives: Partial<ArFSDriveEntity>[] = await ardrive.getAllDrivesForAddress(address, privateKeyData);
 
-		try {
-			const latestDriveId = await ardrive.getLatestDriveIdForAddress(address);
-			driveKey = await parameters.getDriveKey({ driveId: latestDriveId });
-		} catch {
-			// Gracefully gather driveKey, do nothing with error
+		// TODO: Fix base types so deleting un-used values is not necessary; Tickets: PE-525 + PE-556
+		for (const drive of drives) {
+			delete drive.syncStatus;
 		}
-
-		const drives = await ardrive.getAllDrivesForAddress(address, driveKey);
 
 		// Display data
 		console.log(JSON.stringify(drives, null, 4));

@@ -44,6 +44,7 @@ import {
 } from './arfs_entities';
 import { stubEntityID, stubTransactionID } from './utils/stubs';
 import { errorMessage } from './error_message';
+import { PrivateKeyData } from './private_key_data';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 
@@ -147,8 +148,8 @@ export class ArDriveAnonymous extends ArDriveType {
 		return this.arFsDao.getPublicFile(fileId);
 	}
 
-	async getAllDrivesForAddress(address: ArweaveAddress, driveKey?: DriveKey): Promise<ArFSDriveEntity[]> {
-		return this.arFsDao.getAllDrivesForAddress(address, driveKey);
+	async getAllDrivesForAddress(address: ArweaveAddress, privateKeyData: PrivateKeyData): Promise<ArFSDriveEntity[]> {
+		return this.arFsDao.getAllDrivesForAddress(address, privateKeyData);
 	}
 
 	async getLatestDriveIdForAddress(address: ArweaveAddress): Promise<DriveID> {
