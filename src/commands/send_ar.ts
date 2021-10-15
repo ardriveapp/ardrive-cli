@@ -23,8 +23,8 @@ new CLICommand({
 		const wallet = await parameters.getRequiredWallet();
 		const walletAddress = await wallet.getAddress();
 		console.log(walletAddress);
-		console.log(`arAmount: ${arAmount.toFixed(12)}`);
-		console.log(`destAddress: ${destAddress}`);
+		console.log(`AR amount sent: ${arAmount.toFixed(12)}`);
+		console.log(`Destination address: ${destAddress}`);
 		const arTransferResult = await cliWalletDao.sendARToAddress(
 			arAmount,
 			wallet,
