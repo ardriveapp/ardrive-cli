@@ -91,7 +91,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 	async getAllDrivesForAddress(
 		address: ArweaveAddress,
 		privateKeyData: PrivateKeyData,
-		latestRevisionsOnly = false
+		latestRevisionsOnly = true
 	): Promise<ArFSDriveEntity[]> {
 		let cursor = '';
 		let hasNextPage = true;
