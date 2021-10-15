@@ -34,8 +34,8 @@ function basicInputOutputExample(input: number) {
 
 // Async input/output example function
 async function asyncInputOutputExample(input: number) {
-	// Waits 100ms to simulate async call
-	await sleep(100);
+	// Waits 1ms to simulate async call
+	await sleep(1);
 	return basicInputOutputExample(input);
 }
 
