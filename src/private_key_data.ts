@@ -36,11 +36,7 @@ export class PrivateKeyData {
 		this.wallet = wallet;
 	}
 
-	/**
-	 * Safely decrypts a private data buffer into a decrypted transaction data
-	 *
-	 * @throws when the provided driveKey or cipher fails to decrypt the transaction data
-	 */
+	/** Safely decrypts a private data buffer into a decrypted transaction data */
 	public async safelyDecryptToJson<T extends EntityMetaDataTransactionData>(
 		cipherIV: CipherIV,
 		driveId: DriveID,
