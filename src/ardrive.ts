@@ -108,7 +108,7 @@ interface RecursivePrivateBulkUploadParams extends RecursiveBulkUploadParams {
 interface CreatePublicFolderParams {
 	folderName: string;
 	driveId: DriveID;
-	parentFolderId?: FolderID;
+	parentFolderId: FolderID;
 }
 
 interface CreatePrivateFolderParams extends CreatePublicFolderParams {
@@ -335,6 +335,14 @@ export class ArDrive extends ArDriveAnonymous {
 			throw new Error(errorMessage.cannotMoveIntoSamePlace('Folder', newParentFolderId));
 		}
 
+		// Assert that there are no duplicate names in the destination folder
+		const folderNamesInParentFolder = await this.arFsDao.getPublicChildFolderNamesOfParentFolderId(
+			newParentFolderId
+		);
+		if (folderNamesInParentFolder.includes(originalFolderMetaData.name)) {
+			throw new Error(errorMessage.cannotUseDuplicateNameInParentFolder);
+		}
+
 		const childrenFolderIds = await this.arFsDao.getPublicChildrenFolderIds({
 			folderId,
 			driveId: parentFolderDriveId
@@ -388,6 +396,15 @@ export class ArDrive extends ArDriveAnonymous {
 
 		if (originalFolderMetaData.parentFolderId === newParentFolderId) {
 			throw new Error(errorMessage.cannotMoveIntoSamePlace('Folder', newParentFolderId));
+		}
+
+		// Assert that there are no duplicate names in the destination folder
+		const folderNamesInParentFolder = await this.arFsDao.getPrivateChildFolderNamesOfParentFolderId(
+			newParentFolderId,
+			driveKey
+		);
+		if (folderNamesInParentFolder.includes(originalFolderMetaData.name)) {
+			throw new Error(errorMessage.cannotUseDuplicateNameInParentFolder);
 		}
 
 		const childrenFolderIds = await this.arFsDao.getPrivateChildrenFolderIds({
@@ -839,6 +856,12 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	async createPublicFolder({ folderName, driveId, parentFolderId }: CreatePublicFolderParams): Promise<ArFSResult> {
+		// Assert that there are no duplicate names in the destination folder
+		const folderNamesInParentFolder = await this.arFsDao.getPublicChildFolderNamesOfParentFolderId(parentFolderId);
+		if (folderNamesInParentFolder.includes(folderName)) {
+			throw new Error(errorMessage.cannotUseDuplicateNameInParentFolder);
+		}
+
 		// Assert that there's enough AR available in the wallet
 		const folderData = new ArFSPublicFolderTransactionData(folderName);
 		const { metaDataBaseReward } = await this.estimateAndAssertCostOfFolderUpload(folderData);
@@ -873,9 +896,17 @@ export class ArDrive extends ArDriveAnonymous {
 		driveKey,
 		parentFolderId
 	}: CreatePrivateFolderParams): Promise<ArFSResult> {
+		// Assert that there are no duplicate names in the destination folder
+		const folderNamesInParentFolder = await this.arFsDao.getPrivateChildFolderNamesOfParentFolderId(
+			parentFolderId,
+			driveKey
+		);
+		if (folderNamesInParentFolder.includes(folderName)) {
+			throw new Error(errorMessage.cannotUseDuplicateNameInParentFolder);
+		}
+
 		// Assert that there's enough AR available in the wallet
 		const folderData = await ArFSPrivateFolderTransactionData.from(folderName, driveKey);
-
 		const { metaDataBaseReward } = await this.estimateAndAssertCostOfFolderUpload(folderData);
 
 		// Create the folder and retrieve its folder ID
