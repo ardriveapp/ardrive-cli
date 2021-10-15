@@ -3,6 +3,7 @@ import { FolderID } from '../types';
 import { GetAllRevisionsParameter, FolderIdParameter, DrivePrivacyParameters } from '../parameter_declarations';
 import { arDriveAnonymousFactory, arDriveFactory } from '..';
 import { ArFSPrivateFolder, ArFSPublicFolder } from '../arfs_entities';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 
 new CLICommand({
 	name: 'folder-info',
@@ -19,7 +20,7 @@ new CLICommand({
 				const arDrive = arDriveFactory({ wallet: wallet });
 
 				const driveId = await arDrive.getDriveIdForFolderId(folderId);
-				const driveKey = await parameters.getDriveKey(driveId);
+				const driveKey = await parameters.getDriveKey({ driveId });
 
 				return arDrive.getPrivateFolder(folderId, driveKey /*, shouldGetAllRevisions*/);
 			} else {
@@ -29,11 +30,11 @@ new CLICommand({
 			}
 		})();
 
-		// TODO: Fix base types so deleting un-used values is not necessary
+		// TODO: Fix base types so deleting un-used values is not necessary; Tickets: PE-525 + PE-556
 		delete result.lastModifiedDate;
 		delete result.syncStatus;
 
 		console.log(JSON.stringify(result, null, 4));
-		process.exit(0);
+		return SUCCESS_EXIT_CODE;
 	}
 });

@@ -1,5 +1,6 @@
 import { cliWalletDao } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 import { SeedPhraseParameter } from '../parameter_declarations';
 
 new CLICommand({
@@ -10,6 +11,6 @@ new CLICommand({
 		const seedPhrase = await parameters.getRequiredParameterValue(SeedPhraseParameter);
 		const wallet = await cliWalletDao.generateJWKWallet(seedPhrase);
 		console.log(JSON.stringify(wallet));
-		process.exit(0);
+		return SUCCESS_EXIT_CODE;
 	}
 });

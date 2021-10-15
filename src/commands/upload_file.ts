@@ -12,6 +12,7 @@ import {
 } from '../parameter_declarations';
 import { DriveKey, FeeMultiple, FolderID } from '../types';
 import { readJWKFile } from '../utils';
+import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 
 interface UploadFileParameter {
 	parentFolderId: FolderID;
@@ -33,17 +34,8 @@ new CLICommand({
 		...DrivePrivacyParameters
 	],
 	async action(options) {
-		const filesToUpload: UploadFileParameter[] = (function (): UploadFileParameter[] {
-			if (options.drivePassword && options.driveKey) {
-				console.log(`Can not use --drive-password in conjunction with --drive-key`);
-				process.exit(1);
-			}
+		const filesToUpload: UploadFileParameter[] = await (async function (): Promise<UploadFileParameter[]> {
 			if (options.localFiles) {
-				if (options.localFilePath) {
-					console.log(`Can not use --local-files in conjunction with --localFilePath`);
-					process.exit(1);
-				}
-
 				const COLUMN_SEPARATOR = ',';
 				const ROW_SEPARATOR = '.';
 				const csvRows = options.localFiles.split(ROW_SEPARATOR);
@@ -67,13 +59,10 @@ new CLICommand({
 			const singleParameter = {
 				parentFolderId: options.parentFolderId,
 				wrappedEntity: wrapFileOrFolder(options.localFilePath),
-				destinationFileName: options.destFileName,
-				drivePassword: options.drivePassword,
-				driveKey: options.driveKey
+				destinationFileName: options.destFileName
 			};
 			if (!options.parentFolderId || !options.localFilePath) {
-				console.log(`Bad file: ${JSON.stringify(singleParameter)}`);
-				process.exit(1);
+				throw new Error(`Bad file: ${JSON.stringify(singleParameter)}`);
 			}
 			return [singleParameter];
 		})();
@@ -90,12 +79,20 @@ new CLICommand({
 
 			await Promise.all(
 				filesToUpload.map(async (fileToUpload) => {
-					const { parentFolderId, wrappedEntity, destinationFileName } = fileToUpload;
+					const {
+						parentFolderId,
+						wrappedEntity,
+						destinationFileName,
+						drivePassword,
+						driveKey: fileDriveKey
+					} = fileToUpload;
 
 					const result = await (async () => {
 						if (await parameters.getIsPrivate()) {
 							const driveId = await arDrive.getDriveIdForFolderId(parentFolderId);
-							const driveKey = await parameters.getDriveKey(driveId);
+							const driveKey =
+								fileDriveKey ??
+								(await parameters.getDriveKey({ driveId, drivePassword, useCache: true }));
 
 							if (isFolder(wrappedEntity)) {
 								return arDrive.createPrivateFolderAndUploadChildren(
@@ -127,9 +124,9 @@ new CLICommand({
 					console.log(JSON.stringify(result, null, 4));
 				})
 			);
-			process.exit(0);
+			return SUCCESS_EXIT_CODE;
 		}
 		console.log(`No files to upload`);
-		process.exit(1);
+		return ERROR_EXIT_CODE;
 	}
 });

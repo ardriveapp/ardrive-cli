@@ -9,6 +9,7 @@ import {
 import { arDriveFactory } from '..';
 import { Wallet } from '../wallet_new';
 import { FeeMultiple } from '../types';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 
 new CLICommand({
 	name: 'create-folder',
@@ -35,7 +36,7 @@ new CLICommand({
 
 		const createFolderResult = await (async function () {
 			if (await parameters.getIsPrivate()) {
-				const driveKey = await parameters.getDriveKey(driveId);
+				const driveKey = await parameters.getDriveKey({ driveId });
 				return ardrive.createPrivateFolder({
 					folderName,
 					driveId,
@@ -48,6 +49,6 @@ new CLICommand({
 		})();
 		console.log(JSON.stringify(createFolderResult, null, 4));
 
-		process.exit(0);
+		return SUCCESS_EXIT_CODE;
 	}
 });

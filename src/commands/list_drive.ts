@@ -3,6 +3,7 @@ import { ArDriveAnonymous } from '../ardrive';
 import { ArFSDAOAnonymous } from '../arfsdao_anonymous';
 import { ArFSPrivateFileOrFolderWithPaths, ArFSPublicFileOrFolderWithPaths } from '../arfs_entities';
 import { CLICommand, ParametersHelper } from '../CLICommand';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 import { DriveIdParameter, DrivePrivacyParameters, TreeDepthParams } from '../parameter_declarations';
 import { alphabeticalOrder } from '../utils/sort_functions';
 
@@ -13,12 +14,12 @@ new CLICommand({
 		const parameters = new ParametersHelper(options, cliWalletDao);
 		const driveId = parameters.getRequiredParameterValue(DriveIdParameter);
 		let children: (ArFSPrivateFileOrFolderWithPaths | ArFSPublicFileOrFolderWithPaths)[];
-		const maxDepth = await parameters.getMaxDepth(Number.POSITIVE_INFINITY);
+		const maxDepth = await parameters.getMaxDepth(Number.MAX_SAFE_INTEGER);
 
 		if (await parameters.getIsPrivate()) {
 			const wallet = await parameters.getRequiredWallet();
 			const arDrive = arDriveFactory({ wallet });
-			const driveKey = await parameters.getDriveKey(driveId);
+			const driveKey = await parameters.getDriveKey({ driveId });
 			const drive = await arDrive.getPrivateDrive(driveId, driveKey);
 			const rootFolderId = drive.rootFolderId;
 			children = await arDrive.listPrivateFolder(rootFolderId, driveKey, maxDepth, true);
@@ -34,16 +35,17 @@ new CLICommand({
 			| Partial<ArFSPublicFileOrFolderWithPaths>
 		)[];
 
-		// TODO: Fix base types so deleting un-used values is not necessary
+		// TODO: Fix base types so deleting un-used values is not necessary; Tickets: PE-525 + PE-556
 		sortedChildren.map((fileOrFolderMetaData) => {
 			if (fileOrFolderMetaData.entityType === 'folder') {
 				delete fileOrFolderMetaData.lastModifiedDate;
+				delete fileOrFolderMetaData.size;
 			}
 			delete fileOrFolderMetaData.syncStatus;
 		});
 
 		// Display data
 		console.log(JSON.stringify(sortedChildren, null, 4));
-		process.exit(0);
+		return SUCCESS_EXIT_CODE;
 	}
 });

@@ -117,6 +117,15 @@ export interface CreatePrivateFolderSettings extends CreateFolderSettings {
 	folderData: ArFSPrivateFolderTransactionData;
 	driveKey: DriveKey;
 }
+
+interface getPublicChildrenFolderIdsParams {
+	folderId: FolderID;
+	driveId: DriveID;
+}
+interface getPrivateChildrenFolderIdsParams extends getPublicChildrenFolderIdsParams {
+	driveKey: DriveKey;
+}
+
 export class ArFSDAO extends ArFSDAOAnonymous {
 	// TODO: Can we abstract Arweave type(s)?
 	constructor(
@@ -709,6 +718,25 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return latestRevisionsOnly ? allFiles.filter(latestRevisionFilter) : allFiles;
 	}
 
+	async getChildrenFolderIds(
+		folderId: FolderID,
+		allFolderEntitiesOfDrive: ArFSFileOrFolderEntity[]
+	): Promise<FolderID[]> {
+		const hierarchy = FolderHierarchy.newFromEntities(allFolderEntitiesOfDrive);
+		return hierarchy.folderIdSubtreeFromFolderId(folderId, Number.MAX_SAFE_INTEGER);
+	}
+
+	async getPrivateChildrenFolderIds({
+		folderId,
+		driveId,
+		driveKey
+	}: getPrivateChildrenFolderIdsParams): Promise<FolderID[]> {
+		return this.getChildrenFolderIds(folderId, await this.getAllFoldersOfPrivateDrive(driveId, driveKey, true));
+	}
+	async getPublicChildrenFolderIds({ folderId, driveId }: getPublicChildrenFolderIdsParams): Promise<FolderID[]> {
+		return this.getChildrenFolderIds(folderId, await this.getAllFoldersOfPublicDrive(driveId, true));
+	}
+
 	/**
 	 * Lists the children of certain private folder
 	 * @param {FolderID} folderId the folder ID to list children of
@@ -723,7 +751,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		maxDepth: number,
 		includeRoot: boolean
 	): Promise<ArFSPrivateFileOrFolderWithPaths[]> {
-		if ((maxDepth !== Number.POSITIVE_INFINITY && !Number.isInteger(maxDepth)) || maxDepth < 0) {
+		if (!Number.isInteger(maxDepth) || maxDepth < 0) {
 			throw new Error('maxDepth should be a non-negative integer!');
 		}
 

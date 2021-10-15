@@ -9,6 +9,7 @@ import {
 import { Wallet } from '../wallet_new';
 import { arDriveFactory } from '..';
 import { FeeMultiple } from '../types';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 
 new CLICommand({
 	name: 'move-folder',
@@ -34,7 +35,7 @@ new CLICommand({
 		const moveFolderResult = await (async function () {
 			if (await parameters.getIsPrivate()) {
 				const driveId = await ardrive.getDriveIdForFolderId(folderId);
-				const driveKey = await parameters.getDriveKey(driveId);
+				const driveKey = await parameters.getDriveKey({ driveId });
 
 				return ardrive.movePrivateFolder({ folderId, newParentFolderId, driveKey });
 			} else {
@@ -44,6 +45,6 @@ new CLICommand({
 
 		console.log(JSON.stringify(moveFolderResult, null, 4));
 
-		process.exit(0);
+		return SUCCESS_EXIT_CODE;
 	}
 });
