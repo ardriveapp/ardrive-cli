@@ -56,7 +56,7 @@ export class PrivateKeyData {
 
 					// Correct key, add this pair to the cache
 					this.driveKeyCache[driveId] = driveKey;
-					this.unverifiedDriveKeys = this.unverifiedDriveKeys.filter((k) => k === driveKey);
+					this.unverifiedDriveKeys = this.unverifiedDriveKeys.filter((k) => k !== driveKey);
 
 					return decryptedDriveJSON;
 				} catch {
