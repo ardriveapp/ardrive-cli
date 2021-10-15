@@ -1,5 +1,6 @@
 import { arDriveAnonymousFactory, cliWalletDao } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 import { AddressParameter, DrivePrivacyParameters } from '../parameter_declarations';
 import { DriveKey } from '../types';
 
@@ -16,7 +17,7 @@ new CLICommand({
 
 		try {
 			const latestDriveId = await ardrive.getLatestDriveIdForAddress(address);
-			driveKey = await parameters.getDriveKey(latestDriveId);
+			driveKey = await parameters.getDriveKey({ driveId: latestDriveId });
 		} catch {
 			// Gracefully gather driveKey, do nothing with error
 		}
@@ -25,6 +26,7 @@ new CLICommand({
 
 		// Display data
 		console.log(JSON.stringify(drives, null, 4));
-		process.exit(0);
+
+		return SUCCESS_EXIT_CODE;
 	}
 });
