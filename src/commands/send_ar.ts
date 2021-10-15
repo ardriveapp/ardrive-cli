@@ -8,16 +8,14 @@ import {
 	DryRunParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
+import { assertARPrecision } from '../utils/ar_unit';
 
 new CLICommand({
 	name: 'send-ar',
 	parameters: [ArAmountParameter, DestinationAddressParameter, WalletFileParameter, BoostParameter, DryRunParameter],
 	async action(options) {
+		assertARPrecision(options.arAmount);
 		const parameters = new ParametersHelper(options);
-		const digitsOfPrecission = options.arAmount.split('.')[1].replace(/0*$/, '');
-		if (digitsOfPrecission.length > 12) {
-			throw new Error(`The AR amount must have a maximum of 12 digits of precision`);
-		}
 		const arAmount: number = +options.arAmount;
 		const destAddress: string = options.destAddress;
 		const wallet = await parameters.getRequiredWallet();
