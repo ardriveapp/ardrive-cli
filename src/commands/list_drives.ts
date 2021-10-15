@@ -12,7 +12,7 @@ new CLICommand({
 		const ardrive = arDriveAnonymousFactory();
 
 		const address = await parameters.getWalletAddress();
-		const privateKeyData = await parameters.getPrivateData();
+		const privateKeyData = await parameters.getPrivateKeyData();
 
 		const drives: Partial<ArFSDriveEntity>[] = await ardrive.getAllDrivesForAddress(address, privateKeyData);
 

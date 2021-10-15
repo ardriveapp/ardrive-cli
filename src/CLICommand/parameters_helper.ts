@@ -81,7 +81,7 @@ export class ParametersHelper {
 		);
 	}
 
-	public async getPrivateData(): Promise<PrivateKeyData> {
+	public async getPrivateKeyData(): Promise<PrivateKeyData> {
 		// Gather optional private parameters
 		const driveKey = this.getParameterValue(DriveKeyParameter);
 		const wallet = await this.getOptionalWallet();
