@@ -32,8 +32,6 @@ const entityIdRegex = /^([a-f]|[0-9]){8}-([a-f]|[0-9]){4}-([a-f]|[0-9]){4}-([a-f
 const trxIdRegex = /^([a-zA-Z]|[0-9]|-|_){43}$/;
 const fileKeyRegex = /^([a-zA-Z]|[0-9]|-|_|\/|\+){43}$/;
 
-const stubbedEnoughBalance = 1_000_000_000_000;
-
 describe('ArDrive class - integrated', () => {
 	const wallet = readJWKFile('./test_wallet.json');
 	const getStubDriveKey = async (): Promise<DriveKey> => {
@@ -71,7 +69,6 @@ describe('ArDrive class - integrated', () => {
 
 		// Declare common stubs
 		stub(walletDao, 'walletHasBalance').resolves(true);
-		stub(walletDao, 'getAddressWinstonBalance').resolves(stubbedEnoughBalance);
 		stub(arfsDao, 'getDriveIdForFolderId').resolves(stubEntityID);
 	});
 
