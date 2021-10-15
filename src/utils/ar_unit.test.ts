@@ -3,7 +3,7 @@ import { assertARPrecision } from './ar_unit';
 
 describe('The assertARPrecision method', () => {
 	const VALID_INTEGER = '1';
-	const VALID_FLOATING_POINT = '0.1';
+	const VALID_FLOATING_POINT = '0.0';
 	const VALID_FLOATING_POINT_WITH_TRAILING_ZEROS = '.00000000000100000000000000000';
 	const A_HALF_A_WINSTON = '.0000000000005';
 	const NOT_A_NUMBER = 'not a number >:b .00000';
