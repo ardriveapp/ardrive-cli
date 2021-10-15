@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import Arweave from 'arweave';
-import { ArFSDriveEntity, GQLEdgeInterface, GQLTagInterface } from 'ardrive-core-js';
+import { ArFSDriveEntity, GQLEdgeInterface } from 'ardrive-core-js';
 import { buildQuery } from './query';
 import { DriveID, FolderID, FileID, DEFAULT_APP_NAME, DEFAULT_APP_VERSION, EntityID, ArweaveAddress } from './types';
 import { latestRevisionFilter, latestRevisionFilterForDrives } from './utils/filter_methods';
@@ -73,19 +73,6 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 
 	async getPublicFile(fileId: FileID): Promise<ArFSPublicFile> {
 		return new ArFSPublicFileBuilder({ entityId: fileId, arweave: this.arweave }).build();
-	}
-
-	async getLatestDriveIdForAddress(address: ArweaveAddress): Promise<DriveID> {
-		const gqlQuery = buildQuery([{ name: 'Entity-Type', value: 'drive' }], address);
-
-		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
-		const tags: GQLTagInterface[] = response.data.data.transactions.edges.node;
-
-		const driveId = tags.find((tag) => tag.name === 'Drive-ID')?.value;
-		if (!driveId) {
-			throw new Error('Drive-Id tag missing or corrupted!!');
-		}
-		return driveId;
 	}
 
 	async getAllDrivesForAddress(

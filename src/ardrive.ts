@@ -152,10 +152,6 @@ export class ArDriveAnonymous extends ArDriveType {
 		return this.arFsDao.getAllDrivesForAddress(address, privateKeyData);
 	}
 
-	async getLatestDriveIdForAddress(address: ArweaveAddress): Promise<DriveID> {
-		return this.arFsDao.getLatestDriveIdForAddress(address);
-	}
-
 	/**
 	 * Lists the children of certain public folder
 	 * @param {FolderID} folderId the folder ID to list children of
