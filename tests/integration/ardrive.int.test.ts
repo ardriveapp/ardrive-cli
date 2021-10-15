@@ -79,7 +79,6 @@ describe('ArDrive class - integrated', () => {
 		describe('sendCommunityTip', () => {
 			it('returns the correct TipResult', async () => {
 				stub(communityOracle, 'selectTokenHolder').resolves(stubArweaveAddress);
-				stub(walletDao, 'getAddressWinstonBalance').resolves(stubbedEnoughBalance);
 
 				const result = await arDrive.sendCommunityTip('12345');
 
