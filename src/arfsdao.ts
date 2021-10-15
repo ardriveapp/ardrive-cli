@@ -117,6 +117,15 @@ export interface CreatePrivateFolderSettings extends CreateFolderSettings {
 	folderData: ArFSPrivateFolderTransactionData;
 	driveKey: DriveKey;
 }
+
+interface getPublicChildrenFolderIdsParams {
+	folderId: FolderID;
+	driveId: DriveID;
+}
+interface getPrivateChildrenFolderIdsParams extends getPublicChildrenFolderIdsParams {
+	driveKey: DriveKey;
+}
+
 export class ArFSDAO extends ArFSDAOAnonymous {
 	// TODO: Can we abstract Arweave type(s)?
 	constructor(
@@ -707,6 +716,25 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			allFiles.push(...(await Promise.all(files)));
 		}
 		return latestRevisionsOnly ? allFiles.filter(latestRevisionFilter) : allFiles;
+	}
+
+	async getChildrenFolderIds(
+		folderId: FolderID,
+		allFolderEntitiesOfDrive: ArFSFileOrFolderEntity[]
+	): Promise<FolderID[]> {
+		const hierarchy = FolderHierarchy.newFromEntities(allFolderEntitiesOfDrive);
+		return hierarchy.folderIdSubtreeFromFolderId(folderId, Number.MAX_SAFE_INTEGER);
+	}
+
+	async getPrivateChildrenFolderIds({
+		folderId,
+		driveId,
+		driveKey
+	}: getPrivateChildrenFolderIdsParams): Promise<FolderID[]> {
+		return this.getChildrenFolderIds(folderId, await this.getAllFoldersOfPrivateDrive(driveId, driveKey, true));
+	}
+	async getPublicChildrenFolderIds({ folderId, driveId }: getPublicChildrenFolderIdsParams): Promise<FolderID[]> {
+		return this.getChildrenFolderIds(folderId, await this.getAllFoldersOfPublicDrive(driveId, true));
 	}
 
 	/**
