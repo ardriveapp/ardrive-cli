@@ -5,7 +5,7 @@ import { buildQuery } from './query';
 import { DriveID, FolderID, FileID, DEFAULT_APP_NAME, DEFAULT_APP_VERSION, EntityID, ArweaveAddress } from './types';
 import { latestRevisionFilter, latestRevisionFilterForDrives } from './utils/filter_methods';
 import { FolderHierarchy } from './folderHierarchy';
-import { ArFSPublicDriveBuilder, SafeArFSPrivateDriveBuilder } from './utils/arfs_builders/arfs_drive_builders';
+import { ArFSPublicDriveBuilder, SafeArFSDriveBuilder } from './utils/arfs_builders/arfs_drive_builders';
 import { ArFSPublicFolderBuilder } from './utils/arfs_builders/arfs_folder_builders';
 import { ArFSPublicFileBuilder } from './utils/arfs_builders/arfs_file_builders';
 import { ArFSPublicDrive, ArFSPublicFile, ArFSPublicFileOrFolderWithPaths, ArFSPublicFolder } from './arfs_entities';
@@ -96,17 +96,8 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 			const drives: Promise<ArFSDriveEntity>[] = edges.map(async (edge: GQLEdgeInterface) => {
 				const { node } = edge;
 				cursor = edge.cursor;
-				const { tags } = node;
-				const privacy = tags.find((tag) => tag.name === 'Drive-Privacy')?.value;
 
-				if (!privacy || (privacy !== 'public' && privacy !== 'private')) {
-					throw new Error('Drive-Privacy tag missing or corrupted!!');
-				}
-
-				const driveBuilder =
-					privacy === 'public'
-						? ArFSPublicDriveBuilder.fromArweaveNode(node, this.arweave)
-						: SafeArFSPrivateDriveBuilder.fromArweaveNode(node, this.arweave, privateKeyData);
+				const driveBuilder = SafeArFSDriveBuilder.fromArweaveNode(node, this.arweave, privateKeyData);
 
 				return driveBuilder.build(node);
 			});
