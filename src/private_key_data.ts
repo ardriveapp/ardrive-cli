@@ -28,10 +28,10 @@ export class PrivateKeyData {
 
 	// Drive keys provided by the user are initially "unpaired"
 	// until we successfully decrypt a drive with them
-	private unPairedDriveKeys: DriveKey[];
+	private unverifiedDriveKeys: DriveKey[];
 
 	constructor({ password, driveKeys, wallet }: PrivateKeyDataParams) {
-		this.unPairedDriveKeys = driveKeys ?? [];
+		this.unverifiedDriveKeys = driveKeys ?? [];
 		this.password = password;
 		this.wallet = wallet;
 	}
@@ -49,14 +49,14 @@ export class PrivateKeyData {
 		}
 
 		// Try any unpaired drive keys
-		if (this.unPairedDriveKeys.length > 0) {
-			for await (const driveKey of this.unPairedDriveKeys) {
+		if (this.unverifiedDriveKeys.length > 0) {
+			for await (const driveKey of this.unverifiedDriveKeys) {
 				try {
 					const decryptedDriveJSON = await this.decryptToJson<T>(cipherIV, dataBuffer, driveKey);
 
 					// Correct key, add this pair to the cache
 					this.driveKeyCache[driveId] = driveKey;
-					this.unPairedDriveKeys = this.unPairedDriveKeys.filter((k) => k === driveKey);
+					this.unverifiedDriveKeys = this.unverifiedDriveKeys.filter((k) => k === driveKey);
 
 					return decryptedDriveJSON;
 				} catch {
