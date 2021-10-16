@@ -135,7 +135,7 @@ export class WalletDAO {
 			if (total > balanceInWinston) {
 				throw new Error(
 					[
-						`Insufficient founds for this transaction`,
+						`Insufficient funds for this transaction`,
 						`quantity: ${transaction.quantity}`,
 						`minerReward: ${transaction.reward}`,
 						`balance: ${balanceInWinston}`,
