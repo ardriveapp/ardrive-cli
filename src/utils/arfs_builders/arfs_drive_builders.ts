@@ -289,25 +289,30 @@ export class SafeArFSDriveBuilder extends ArFSMetadataEntityBuilder<ArFSDriveEnt
 			const dataBuffer = Buffer.from(txData);
 
 			// Data JSON will be false when a private drive cannot be decrypted
-			const dataJSON: DriveMetaDataTransactionData | false = await (async () => {
+			const dataJSON: DriveMetaDataTransactionData = await (async () => {
 				if (isPrivate) {
 					// Type-check private properties
 					if (this.cipher?.length && this.driveAuthMode?.length && this.cipherIV?.length) {
+						const placeholderDriveData = {
+							name: ENCRYPTED_DATA_PLACEHOLDER,
+							rootFolderId: ENCRYPTED_DATA_PLACEHOLDER
+						};
 						return this.privateKeyData.safelyDecryptToJson<DriveMetaDataTransactionData>(
 							this.cipherIV,
 							this.entityId,
-							dataBuffer
+							dataBuffer,
+							placeholderDriveData
 						);
 					}
 					throw new Error('Invalid private drive state');
 				}
 				// Drive is public, no decryption needed
 				const dataString = await Utf8ArrayToStr(txData);
-				return JSON.parse(dataString);
+				return JSON.parse(dataString) as DriveMetaDataTransactionData;
 			})();
 
-			this.name = dataJSON ? dataJSON.name : ENCRYPTED_DATA_PLACEHOLDER;
-			this.rootFolderId = dataJSON ? dataJSON.rootFolderId : ENCRYPTED_DATA_PLACEHOLDER;
+			this.name = dataJSON.name;
+			this.rootFolderId = dataJSON.rootFolderId;
 
 			if (isPrivate) {
 				return new ArFSPrivateDrive(

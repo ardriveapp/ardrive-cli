@@ -40,8 +40,9 @@ export class PrivateKeyData {
 	public async safelyDecryptToJson<T extends EntityMetaDataTransactionData>(
 		cipherIV: CipherIV,
 		driveId: DriveID,
-		dataBuffer: Buffer
-	): Promise<T | false> {
+		dataBuffer: Buffer,
+		placeholder: T
+	): Promise<T> {
 		// Check for a cached key that is matching provided driveId first
 		const cachedDriveKey = this.driveKeyForDriveId(driveId);
 		if (cachedDriveKey) {
@@ -83,8 +84,8 @@ export class PrivateKeyData {
 			}
 		}
 
-		// Decryption is not possible, return as false
-		return false;
+		// Decryption is not possible, return placeholder data
+		return placeholder;
 	}
 
 	/**
