@@ -1,7 +1,7 @@
 /**
- * Capturing group 1: the points after the comma with trimmed zeros
+ * Capture group 1: decimal precision beyond 12 digits
  */
-export const FLOATING_POINT_REGEXP = /^\d*\.\d{12}([1-9]+)$/;
+export const FLOATING_POINT_REGEXP = /^\d*\.\d{12}(\d+)$/;
 
 export function assertARPrecision(arAmount: string): void {
 	if (Number.isNaN(+arAmount)) {
@@ -13,7 +13,7 @@ export function assertARPrecision(arAmount: string): void {
 	}
 
 	const excessiveDigits = arAmount.match(FLOATING_POINT_REGEXP)?.[1] || '';
-	if (excessiveDigits.length) {
+	if (+excessiveDigits !== 0.0) {
 		throw new Error(
 			`The AR amount must have a maximum of 12 digits of precision, but got ${12 + excessiveDigits.length}`
 		);
