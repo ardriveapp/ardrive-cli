@@ -3,6 +3,7 @@ import { GetAllRevisionsParameter, FileIdParameter, DrivePrivacyParameters } fro
 import { arDriveAnonymousFactory, arDriveFactory, cliWalletDao } from '..';
 import { FileID } from '../types';
 import { ArFSPrivateFile, ArFSPublicFile } from '../arfs_entities';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 
 new CLICommand({
 	name: 'file-info',
@@ -18,7 +19,7 @@ new CLICommand({
 				const arDrive = arDriveFactory({ wallet: wallet });
 				const driveId = await arDrive.getDriveIdForFileId(fileId);
 
-				const driveKey = await parameters.getDriveKey(driveId);
+				const driveKey = await parameters.getDriveKey({ driveId });
 
 				return arDrive.getPrivateFile(fileId, driveKey /*, shouldGetAllRevisions*/);
 			} else {
@@ -31,6 +32,6 @@ new CLICommand({
 		delete result.syncStatus;
 
 		console.log(JSON.stringify(result, null, 4));
-		process.exit(0);
+		return SUCCESS_EXIT_CODE;
 	}
 });

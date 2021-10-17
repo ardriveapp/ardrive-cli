@@ -1,6 +1,7 @@
 import { cliWalletDao } from '..';
 import { CLICommand } from '../CLICommand';
 import { ParametersHelper } from '../CLICommand';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 import {
 	ArAmountParameter,
 	BoostParameter,
@@ -23,20 +24,23 @@ new CLICommand({
 		console.log(walletAddress);
 		console.log(`AR amount sent: ${arAmount.toFixed(12)}`);
 		console.log(`Destination address: ${destAddress}`);
+		const rewardSetting = options.boost ? { feeMultiple: +options.boost } : undefined;
+
 		const arTransferResult = await cliWalletDao.sendARToAddress(
 			arAmount,
 			wallet,
 			options.destAddress,
-			options.boost,
+			rewardSetting,
 			options.dryRun,
 			[
-				{ name: 'appName', value: 'ArDrive-CLI' },
-				{ name: 'appVersion', value: '2.0' },
-				{ name: 'trxType', value: 'transfer' }
-			]
+				{ name: 'App-Name', value: 'ArDrive-CLI' },
+				{ name: 'App-Version', value: '2.0' },
+				{ name: 'Type', value: 'transfer' }
+			],
+			true
 		);
 
 		console.log(JSON.stringify(arTransferResult, null, 4));
-		process.exit(0);
+		return SUCCESS_EXIT_CODE;
 	}
 });

@@ -19,7 +19,7 @@ import { ParametersHelper } from './parameters_helper';
 import {
 	AddressParameter,
 	DriveKeyParameter,
-	DrivePasswordParameter,
+	UnsafeDrivePasswordParameter,
 	SeedPhraseParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
@@ -89,7 +89,7 @@ describe('ParametersHelper class', () => {
 	});
 
 	describe('getIsPrivate method', () => {
-		it('returns false when none of --drive-password, --drive-key, -p, or -k are provided', () => {
+		it('returns false when none of --unsafe-drive-password, --drive-key, -p, or -k are provided', () => {
 			declareCommandWithParams(program, [], async (options) => {
 				const parameters = new ParametersHelper(options);
 				expect(await parameters.getIsPrivate()).to.be.false;
@@ -97,16 +97,16 @@ describe('ParametersHelper class', () => {
 			CLICommand.parse(program, [...baseArgv, testCommandName]);
 		});
 
-		it('returns true when --drive-password is provided', () => {
-			declareCommandWithParams(program, [DrivePasswordParameter], async (options) => {
+		it('returns true when --unsafe-drive-password is provided', () => {
+			declareCommandWithParams(program, [UnsafeDrivePasswordParameter], async (options) => {
 				const parameters = new ParametersHelper(options);
 				expect(await parameters.getIsPrivate()).to.be.true;
 			});
-			CLICommand.parse(program, [...baseArgv, testCommandName, '--drive-password', 'pw']);
+			CLICommand.parse(program, [...baseArgv, testCommandName, '--unsafe-drive-password', 'pw']);
 		});
 
 		it('returns true when -p is provided', () => {
-			declareCommandWithParams(program, [DrivePasswordParameter], async (options) => {
+			declareCommandWithParams(program, [UnsafeDrivePasswordParameter], async (options) => {
 				const parameters = new ParametersHelper(options);
 				expect(await parameters.getIsPrivate()).to.be.true;
 			});
@@ -328,19 +328,19 @@ describe('ParametersHelper class', () => {
 	});
 
 	describe('getDriveKey method', () => {
-		it('returns the correct drive key given a valid --wallet-file and --drive-password', () => {
-			declareCommandWithParams(program, [WalletFileParameter, DrivePasswordParameter], async (options) => {
+		it('returns the correct drive key given a valid --wallet-file and --unsafe-drive-password', () => {
+			declareCommandWithParams(program, [WalletFileParameter, UnsafeDrivePasswordParameter], async (options) => {
 				const parameters = new ParametersHelper(options);
-				expect(urlEncodeHashKey(await parameters.getDriveKey('00000000-0000-0000-0000-000000000000'))).to.equal(
-					'Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg'
-				);
+				expect(
+					urlEncodeHashKey(await parameters.getDriveKey({ driveId: '00000000-0000-0000-0000-000000000000' }))
+				).to.equal('Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg');
 			});
 			CLICommand.parse(program, [
 				...baseArgv,
 				testCommandName,
 				'--wallet-file',
 				'./test_wallet.json',
-				'--drive-password',
+				'--unsafe-drive-password',
 				'password'
 			]);
 		});
@@ -348,9 +348,9 @@ describe('ParametersHelper class', () => {
 		it('returns the drive key provided by the --drive-key option', () => {
 			declareCommandWithParams(program, [DriveKeyParameter], async (options) => {
 				const parameters = new ParametersHelper(options);
-				expect(urlEncodeHashKey(await parameters.getDriveKey('00000000-0000-0000-0000-000000000000'))).to.equal(
-					'Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg'
-				);
+				expect(
+					urlEncodeHashKey(await parameters.getDriveKey({ driveId: '00000000-0000-0000-0000-000000000000' }))
+				).to.equal('Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg');
 			});
 			CLICommand.parse(program, [
 				...baseArgv,
@@ -363,7 +363,9 @@ describe('ParametersHelper class', () => {
 		it('throws when none of --wallet-file, -w, --seed-phrase, -s, --drive-key, or -k option are provided', () => {
 			declareCommandWithParams(program, [], async (options) => {
 				const parameters = new ParametersHelper(options);
-				const driveKey = await parameters.getDriveKey('00000000-0000-0000-0000-000000000000').catch(() => null);
+				const driveKey = await parameters
+					.getDriveKey({ driveId: '00000000-0000-0000-0000-000000000000' })
+					.catch(() => null);
 				expect(driveKey).to.be.null;
 			});
 			CLICommand.parse(program, [...baseArgv, testCommandName]);

@@ -1,6 +1,7 @@
 import { winstonToAr } from 'ardrive-core-js';
 import { cliWalletDao } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 import { AddressParameter, SeedPhraseParameter, WalletFileParameter } from '../parameter_declarations';
 
 new CLICommand({
@@ -13,6 +14,6 @@ new CLICommand({
 		const balanceInAR = winstonToAr(balanceInWinston);
 		console.log(`${balanceInWinston}\tWinston`);
 		console.log(`${balanceInAR}\tAR`);
-		process.exit(0);
+		return SUCCESS_EXIT_CODE;
 	}
 });
