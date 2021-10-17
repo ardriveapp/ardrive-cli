@@ -183,7 +183,7 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	// NOTE: Presumes that there's a sufficient wallet balance
-	async sendCommunityTip(communityWinstonTip: Winston): Promise<TipResult> {
+	async sendCommunityTip(communityWinstonTip: Winston, assertBalance = false): Promise<TipResult> {
 		const tokenHolder: ArweaveAddress = await this.communityOracle.selectTokenHolder();
 		const arTransferBaseFee = await this.priceEstimator.getBaseWinstonPriceForByteCount(0);
 
@@ -193,7 +193,8 @@ export class ArDrive extends ArDriveAnonymous {
 			tokenHolder,
 			{ reward: arTransferBaseFee.toString(), feeMultiple: this.feeMultiple },
 			this.dryRun,
-			this.getTipTags()
+			this.getTipTags(),
+			assertBalance
 		);
 
 		return {
