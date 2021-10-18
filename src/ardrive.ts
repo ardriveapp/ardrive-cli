@@ -1,6 +1,6 @@
 import { ArFSDAO, PrivateDriveKeyData } from './arfsdao';
 import { CommunityOracle } from './community/community_oracle';
-import { deriveDriveKey, DrivePrivacy, GQLTagInterface, winstonToAr } from 'ardrive-core-js';
+import { ArFSDriveEntity, deriveDriveKey, DrivePrivacy, GQLTagInterface, winstonToAr } from 'ardrive-core-js';
 import {
 	TransactionID,
 	ArweaveAddress,
@@ -44,6 +44,7 @@ import {
 } from './arfs_entities';
 import { stubEntityID, stubTransactionID } from './utils/stubs';
 import { errorMessage } from './error_message';
+import { PrivateKeyData } from './private_key_data';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 
@@ -147,6 +148,10 @@ export class ArDriveAnonymous extends ArDriveType {
 		return this.arFsDao.getPublicFile(fileId);
 	}
 
+	async getAllDrivesForAddress(address: ArweaveAddress, privateKeyData: PrivateKeyData): Promise<ArFSDriveEntity[]> {
+		return this.arFsDao.getAllDrivesForAddress(address, privateKeyData);
+	}
+
 	/**
 	 * Lists the children of certain public folder
 	 * @param {FolderID} folderId the folder ID to list children of
@@ -178,7 +183,7 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	// NOTE: Presumes that there's a sufficient wallet balance
-	async sendCommunityTip(communityWinstonTip: Winston): Promise<TipResult> {
+	async sendCommunityTip(communityWinstonTip: Winston, assertBalance = false): Promise<TipResult> {
 		const tokenHolder: ArweaveAddress = await this.communityOracle.selectTokenHolder();
 		const arTransferBaseFee = await this.priceEstimator.getBaseWinstonPriceForByteCount(0);
 
@@ -188,7 +193,8 @@ export class ArDrive extends ArDriveAnonymous {
 			tokenHolder,
 			{ reward: arTransferBaseFee.toString(), feeMultiple: this.feeMultiple },
 			this.dryRun,
-			this.getTipTags()
+			this.getTipTags(),
+			assertBalance
 		);
 
 		return {

@@ -58,19 +58,19 @@
 		"ts-sinon": "^2.0.1"
 	},
 	"scripts": {
-		"clean": "rimraf [lib .nyc_output node_modules]",
+		"clean": "rimraf [ lib .nyc_output node_modules coverage ]",
 		"format": "prettier --write \"src/**/*.ts\"",
 		"lint": "eslint . --ext .ts",
 		"lintfix": "eslint . --ext .ts --fix",
 		"test": "nyc mocha",
 		"coverage": "nyc --reporter text mocha",
 		"typecheck": "tsc --noemit",
-		"build": "yarn clean && tsc",
+		"build": "yarn clean && tsc --project ./tsconfig.prod.json",
 		"ci": "yarn build && yarn test",
 		"version": "yarn run format && git add -A src",
 		"postversion": "git push && git push --tags",
 		"start": "yarn run build && node ./lib/index.js",
-		"dev": "yarn clean && tsc -w"
+		"dev": "yarn clean && tsc --project ./tsconfig.prod.json -w"
 	},
 	"husky": {
 		"hooks": {

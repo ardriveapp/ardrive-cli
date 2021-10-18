@@ -103,7 +103,8 @@ export class WalletDAO {
 			{ value: appVersion = this.appVersion },
 			{ value: trxType = 'transfer' },
 			...otherTags
-		]: GQLTagInterface[]
+		]: GQLTagInterface[],
+		assertBalance = false
 	): Promise<ARTransferResult> {
 		// TODO: Figure out how this works for other wallet types
 		const jwkWallet = fromWallet as JWKWallet;
@@ -125,6 +126,24 @@ export class WalletDAO {
 		if (rewardSettings.feeMultiple && rewardSettings.feeMultiple > 1.0) {
 			// Round up with ceil because fractional Winston will cause an Arweave API failure
 			transaction.reward = Math.ceil(+transaction.reward * rewardSettings.feeMultiple).toString();
+		}
+
+		if (assertBalance) {
+			const fromAddress = await fromWallet.getAddress();
+			const balanceInWinston = await this.getAddressWinstonBalance(fromAddress);
+			const total = +transaction.reward + +transaction.quantity;
+			if (total > balanceInWinston) {
+				throw new Error(
+					[
+						`Insufficient funds for this transaction`,
+						`quantity: ${transaction.quantity}`,
+						`minerReward: ${transaction.reward}`,
+						`balance: ${balanceInWinston}`,
+						`total: ${total}`,
+						`difference: ${total - balanceInWinston}`
+					].join('\n\t')
+				);
+			}
 		}
 
 		// Tag file with data upload Tipping metadata

@@ -1,14 +1,15 @@
 /* eslint-disable no-console */
 import Arweave from 'arweave';
-import { GQLEdgeInterface } from 'ardrive-core-js';
+import { ArFSDriveEntity, GQLEdgeInterface } from 'ardrive-core-js';
 import { buildQuery } from './query';
-import { DriveID, FolderID, FileID, DEFAULT_APP_NAME, DEFAULT_APP_VERSION, EntityID } from './types';
-import { latestRevisionFilter } from './utils/filter_methods';
+import { DriveID, FolderID, FileID, DEFAULT_APP_NAME, DEFAULT_APP_VERSION, EntityID, ArweaveAddress } from './types';
+import { latestRevisionFilter, latestRevisionFilterForDrives } from './utils/filter_methods';
 import { FolderHierarchy } from './folderHierarchy';
-import { ArFSPublicDriveBuilder } from './utils/arfs_builders/arfs_drive_builders';
+import { ArFSPublicDriveBuilder, SafeArFSDriveBuilder } from './utils/arfs_builders/arfs_drive_builders';
 import { ArFSPublicFolderBuilder } from './utils/arfs_builders/arfs_folder_builders';
 import { ArFSPublicFileBuilder } from './utils/arfs_builders/arfs_file_builders';
 import { ArFSPublicDrive, ArFSPublicFile, ArFSPublicFileOrFolderWithPaths, ArFSPublicFolder } from './arfs_entities';
+import { PrivateKeyData } from './private_key_data';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 
@@ -72,6 +73,39 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 
 	async getPublicFile(fileId: FileID): Promise<ArFSPublicFile> {
 		return new ArFSPublicFileBuilder({ entityId: fileId, arweave: this.arweave }).build();
+	}
+
+	async getAllDrivesForAddress(
+		address: ArweaveAddress,
+		privateKeyData: PrivateKeyData,
+		latestRevisionsOnly = true
+	): Promise<ArFSDriveEntity[]> {
+		let cursor = '';
+		let hasNextPage = true;
+		const allDrives: ArFSDriveEntity[] = [];
+
+		while (hasNextPage) {
+			const gqlQuery = buildQuery([{ name: 'Entity-Type', value: 'drive' }], cursor, address);
+
+			const response = await this.arweave.api.post(graphQLURL, gqlQuery);
+			const { data } = response.data;
+			const { transactions } = data;
+			const { edges } = transactions;
+			hasNextPage = transactions.pageInfo.hasNextPage;
+
+			const drives: Promise<ArFSDriveEntity>[] = edges.map(async (edge: GQLEdgeInterface) => {
+				const { node } = edge;
+				cursor = edge.cursor;
+
+				const driveBuilder = SafeArFSDriveBuilder.fromArweaveNode(node, this.arweave, privateKeyData);
+
+				return driveBuilder.build(node);
+			});
+
+			allDrives.push(...(await Promise.all(drives)));
+		}
+
+		return latestRevisionsOnly ? allDrives.filter(latestRevisionFilterForDrives) : allDrives;
 	}
 
 	async getPublicFilesWithParentFolderIds(
