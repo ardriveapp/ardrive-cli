@@ -12,7 +12,7 @@ export const stubArweaveAddress = 'abcdefghijklmnopqrxtuvwxyz123456789ABCDEFGH';
 export const stubTransactionID = '0000000000000000000000000000000000000000000';
 
 export const stubEntityID = '00000000-0000-0000-0000-000000000000';
-export const stubEntityIDAlt = '00000000-0000-0000-0000-000000000001';
+export const stubEntityIDAlt = 'caa8b54a-eb5e-4134-8ae2-a3946a428ec7';
 
 export const stubEntityIDRoot = '00000000-0000-0000-0000-000000000002';
 export const stubEntityIDParent = '00000000-0000-0000-0000-000000000003';

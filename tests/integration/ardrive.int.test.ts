@@ -25,7 +25,7 @@ import { expectAsyncErrorThrow } from '../../src/utils/test_helpers';
 import { ArDriveCommunityOracle } from '../../src/community/ardrive_community_oracle';
 import { ArFSDAO, PrivateDriveKeyData } from '../../src/arfsdao';
 import { deriveDriveKey, DrivePrivacy } from 'ardrive-core-js';
-import { DriveKey, Winston } from '../../src/types';
+import { DriveKey, FileID, Winston } from '../../src/types';
 import { ArFSFileToUpload, wrapFileOrFolder } from '../../src/arfs_file_wrapper';
 
 const entityIdRegex = /^([a-f]|[0-9]){8}-([a-f]|[0-9]){4}-([a-f]|[0-9]){4}-([a-f]|[0-9]){4}-([a-f]|[0-9]){12}$/;
@@ -393,37 +393,82 @@ describe('ArDrive class - integrated', () => {
 
 		describe('file function', () => {
 			describe('uploadPublicFile', () => {
-				it('returns the correct ArFSResult', async () => {
-					stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityID);
-					stub(arfsDao, 'getPublicFolder').resolves(stubPublicFolder({}));
+				const existingFileId = stubEntityIDAlt;
+				const wrappedFile = wrapFileOrFolder('test_wallet.json') as ArFSFileToUpload;
 
+				beforeEach(() => {
+					stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityID);
 					stub(communityOracle, 'getCommunityWinstonTip').resolves('1');
 					stub(communityOracle, 'selectTokenHolder').resolves(stubArweaveAddress);
 
-					const wrappedFile = wrapFileOrFolder('test_wallet.json');
-					const result = await arDrive.uploadPublicFile(
-						stubEntityID,
-						new ArFSFileToUpload('test_wallet.json', wrappedFile.fileStats)
-					);
+					stub(arfsDao, 'getPublicFilesAndFolderNamesForParentFolderId').resolves({
+						files: [{ fileName: 'CONFLICTING_FILE_NAME', fileId: existingFileId }],
+						folders: [{ folderName: 'CONFLICTING_FOLDER_NAME', folderId: stubEntityID }]
+					});
+				});
+
+				it('throws an error if destination folder has a conflicting FOLDER name', async () => {
+					await expectAsyncErrorThrow({
+						promiseToError: arDrive.uploadPublicFile(stubEntityID, wrappedFile, 'CONFLICTING_FOLDER_NAME'),
+						errorMessage: 'Parent folder already has an entity with the name!'
+					});
+				});
+
+				it('returns the correct ArFSResult if destination folder has a conflicting FILE name ', async () => {
+					const result = await arDrive.uploadPublicFile(stubEntityID, wrappedFile, 'CONFLICTING_FILE_NAME');
+
+					// Pass expected existing file id, so that the file would be considered a revision
+					assertUploadFileExpectations(result, 3204, 171, 0, '1', 'public', existingFileId);
+				});
+
+				it('returns the correct ArFSResult', async () => {
+					const result = await arDrive.uploadPublicFile(stubEntityID, wrappedFile);
 					assertUploadFileExpectations(result, 3204, 166, 0, '1', 'public');
 				});
 			});
 
 			describe('uploadPrivateFile', () => {
-				it('returns the correct ArFSResult', async () => {
-					stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityID);
-					stub(arfsDao, 'getPrivateFolder').resolves(stubPrivateFolder({}));
+				const existingFileId = stubEntityIDAlt;
+				const wrappedFile = wrapFileOrFolder('test_wallet.json') as ArFSFileToUpload;
 
+				beforeEach(() => {
+					stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityID);
 					stub(communityOracle, 'getCommunityWinstonTip').resolves('1');
 					stub(communityOracle, 'selectTokenHolder').resolves(stubArweaveAddress);
 
-					const wrappedFile = wrapFileOrFolder('test_wallet.json');
-					const stubDriveKey = await getStubDriveKey();
+					stub(arfsDao, 'getPrivateFilesAndFolderNamesForParentFolderId').resolves({
+						files: [{ fileName: 'CONFLICTING_FILE_NAME', fileId: existingFileId }],
+						folders: [{ folderName: 'CONFLICTING_FOLDER_NAME', folderId: stubEntityID }]
+					});
+				});
+
+				it('throws an error if destination folder has a conflicting FOLDER name', async () => {
+					await expectAsyncErrorThrow({
+						promiseToError: arDrive.uploadPrivateFile(
+							stubEntityID,
+							wrappedFile,
+							await getStubDriveKey(),
+							'CONFLICTING_FOLDER_NAME'
+						),
+						errorMessage: 'Parent folder already has an entity with the name!'
+					});
+				});
+
+				it('returns the correct ArFSResult if destination folder has a conflicting FILE name ', async () => {
 					const result = await arDrive.uploadPrivateFile(
 						stubEntityID,
-						new ArFSFileToUpload('test_wallet.json', wrappedFile.fileStats),
-						stubDriveKey
+						wrappedFile,
+						await getStubDriveKey(),
+						'CONFLICTING_FILE_NAME'
 					);
+
+					// Pass expected existing file id, so that the file would be considered a revision
+					assertUploadFileExpectations(result, 3216, 187, 0, '1', 'private', existingFileId);
+				});
+
+				it('returns the correct ArFSResult', async () => {
+					const stubDriveKey = await getStubDriveKey();
+					const result = await arDrive.uploadPrivateFile(stubEntityID, wrappedFile, stubDriveKey);
 					assertUploadFileExpectations(result, 3216, 182, 0, '1', 'private');
 				});
 			});
@@ -432,6 +477,10 @@ describe('ArDrive class - integrated', () => {
 				beforeEach(() => {
 					stub(arfsDao, 'getPublicFile').resolves(stubPublicFile);
 				});
+
+				// Throws an error if moved into a folder that has a conflicting folder OR file name
+
+				// Uses existing file id (new revision) if moved into a folder with conflicting file name
 
 				it('throws an error if the new parent folder id matches its current parent folder id', async () => {
 					stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityID);
@@ -459,6 +508,8 @@ describe('ArDrive class - integrated', () => {
 				beforeEach(() => {
 					stub(arfsDao, 'getPrivateFile').resolves(stubPrivateFile);
 				});
+
+				// Throws an error if moved into a folder that has a conflicting folder OR file name
 
 				it('throws an error if the new parent folder id matches its current parent folder id', async () => {
 					stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityID);
@@ -560,7 +611,8 @@ function assertUploadFileExpectations(
 	metadataFee: number,
 	tipFee: number,
 	expectedTip: Winston,
-	drivePrivacy: DrivePrivacy
+	drivePrivacy: DrivePrivacy,
+	expectedFileId?: FileID
 ) {
 	// Ensure that 1 arfs entity was created
 	expect(result.created.length).to.equal(1);
@@ -569,6 +621,11 @@ function assertUploadFileExpectations(
 	const fileEntity = result.created[0];
 	expect(fileEntity.dataTxId).to.match(trxIdRegex);
 	expect(fileEntity.entityId).to.match(entityIdRegex);
+
+	if (expectedFileId) {
+		expect(fileEntity.entityId).to.equal(expectedFileId);
+	}
+
 	switch (drivePrivacy) {
 		case 'public':
 			expect(fileEntity.key).to.equal(undefined);
