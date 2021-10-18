@@ -475,20 +475,28 @@ describe('ArDrive class - integrated', () => {
 
 			describe('movePublicFile', () => {
 				beforeEach(() => {
-					stub(arfsDao, 'getPublicFile').resolves(stubPublicFile);
+					stub(arfsDao, 'getPublicChildNamesOfParentFolderId').resolves(['CONFLICTING_NAME']);
 				});
 
-				// Throws an error if moved into a folder that has a conflicting folder OR file name
+				it('throws an error if the destination folder has a conflicting entity name', async () => {
+					stub(arfsDao, 'getPublicFile').resolves(stubPublicFile('CONFLICTING_NAME'));
+					stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityID);
 
-				// Uses existing file id (new revision) if moved into a folder with conflicting file name
+					await expectAsyncErrorThrow({
+						promiseToError: arDrive.movePublicFile(stubEntityID, stubEntityIDAlt),
+						errorMessage: 'Parent folder already has an entity with the name!'
+					});
+				});
 
 				it('throws an error if the new parent folder id matches its current parent folder id', async () => {
+					stub(arfsDao, 'getPublicFile').resolves(stubPublicFile());
 					stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityID);
 
 					await expectAsyncErrorThrow({ promiseToError: arDrive.movePublicFile(stubEntityID, stubEntityID) });
 				});
 
 				it('throws an error if the file is being moved to a different drive', async () => {
+					stub(arfsDao, 'getPublicFile').resolves(stubPublicFile());
 					stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityIDAlt); // Returns different drive ID
 
 					await expectAsyncErrorThrow({
@@ -498,7 +506,9 @@ describe('ArDrive class - integrated', () => {
 				});
 
 				it('returns the correct ArFSResult', async () => {
+					stub(arfsDao, 'getPublicFile').resolves(stubPublicFile());
 					stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityID);
+
 					const result = await arDrive.movePublicFile(stubEntityID, stubEntityIDAlt);
 					assertMoveFileExpectations(result, 153, 'public');
 				});
@@ -506,20 +516,31 @@ describe('ArDrive class - integrated', () => {
 
 			describe('movePrivateFile', () => {
 				beforeEach(() => {
-					stub(arfsDao, 'getPrivateFile').resolves(stubPrivateFile);
+					stub(arfsDao, 'getPrivateChildNamesOfParentFolderId').resolves(['CONFLICTING_NAME']);
 				});
 
-				// Throws an error if moved into a folder that has a conflicting folder OR file name
-
-				it('throws an error if the new parent folder id matches its current parent folder id', async () => {
+				it('throws an error if the destination folder has a conflicting entity name', async () => {
+					stub(arfsDao, 'getPrivateFile').resolves(stubPrivateFile('CONFLICTING_NAME'));
 					stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityID);
 
 					await expectAsyncErrorThrow({
-						promiseToError: arDrive.movePrivateFile(stubEntityID, stubEntityID, await getStubDriveKey())
+						promiseToError: arDrive.movePrivateFile(stubEntityID, stubEntityIDAlt, await getStubDriveKey()),
+						errorMessage: 'Parent folder already has an entity with the name!'
+					});
+				});
+
+				it('throws an error if the new parent folder id matches its current parent folder id', async () => {
+					stub(arfsDao, 'getPrivateFile').resolves(stubPrivateFile());
+					stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityID);
+
+					await expectAsyncErrorThrow({
+						promiseToError: arDrive.movePrivateFile(stubEntityID, stubEntityID, await getStubDriveKey()),
+						errorMessage: `File already has parent folder with ID: ${stubEntityID}`
 					});
 				});
 
 				it('throws an error if the file is being moved to a different drive', async () => {
+					stub(arfsDao, 'getPrivateFile').resolves(stubPrivateFile());
 					stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityIDAlt); // Returns different drive ID
 
 					await expectAsyncErrorThrow({
@@ -529,6 +550,7 @@ describe('ArDrive class - integrated', () => {
 				});
 
 				it('returns the correct ArFSResult', async () => {
+					stub(arfsDao, 'getPrivateFile').resolves(stubPrivateFile());
 					stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityID);
 
 					const result = await arDrive.movePrivateFile(

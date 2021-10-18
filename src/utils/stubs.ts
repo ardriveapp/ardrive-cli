@@ -96,40 +96,42 @@ export const stubPrivateFolder = ({
 		'stubIV'
 	);
 
-export const stubPublicFile = new ArFSPublicFile(
-	'Integration Test',
-	'1.0',
-	ArFS_O_11,
-	'application/json',
-	stubEntityID,
-	'file',
-	'STUB NAME',
-	stubTransactionID,
-	0,
-	stubEntityID,
-	stubEntityID,
-	1234567890,
-	0,
-	stubTransactionID,
-	'application/json'
-);
+export const stubPublicFile = (fileName = 'STUB NAME'): ArFSPublicFile =>
+	new ArFSPublicFile(
+		'Integration Test',
+		'1.0',
+		ArFS_O_11,
+		'application/json',
+		stubEntityID,
+		'file',
+		fileName,
+		stubTransactionID,
+		0,
+		stubEntityID,
+		stubEntityID,
+		1234567890,
+		0,
+		stubTransactionID,
+		'application/json'
+	);
 
-export const stubPrivateFile = new ArFSPrivateFile(
-	'Integration Test',
-	'1.0',
-	ArFS_O_11,
-	'application/json',
-	stubEntityID,
-	'file',
-	'STUB NAME',
-	stubTransactionID,
-	0,
-	stubEntityID,
-	stubEntityID,
-	1234567890,
-	0,
-	stubTransactionID,
-	'application/json',
-	'stubCipher',
-	'stubIV'
-);
+export const stubPrivateFile = (fileName = 'STUB NAME'): ArFSPrivateFile =>
+	new ArFSPrivateFile(
+		'Integration Test',
+		'1.0',
+		ArFS_O_11,
+		'application/json',
+		stubEntityID,
+		'file',
+		fileName,
+		stubTransactionID,
+		0,
+		stubEntityID,
+		stubEntityID,
+		1234567890,
+		0,
+		stubTransactionID,
+		'application/json',
+		'stubCipher',
+		'stubIV'
+	);
