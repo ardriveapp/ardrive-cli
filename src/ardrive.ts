@@ -716,7 +716,10 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Derive destination name and names already within provided parent folder
 		const destFileName = destinationFileName ?? wrappedFile.getBaseFileName();
-		const filesAndFolderNames = await this.arFsDao.getPublicFilesAndFolderNamesForParentFolderId(parentFolderId);
+		const filesAndFolderNames = await this.arFsDao.getPrivateFilesAndFolderNamesForParentFolderId(
+			parentFolderId,
+			driveKey
+		);
 
 		// File cannot overwrite a folder names
 		if (filesAndFolderNames.folders.find((f) => f.folderName === destFileName)) {
