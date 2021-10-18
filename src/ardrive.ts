@@ -477,6 +477,18 @@ export class ArDrive extends ArDriveAnonymous {
 	): Promise<ArFSResult> {
 		const driveId = await this.getDriveIdAndAssertDrive(parentFolderId);
 
+		// Derive destination name and names already within provided parent folder
+		const destFileName = destinationFileName ?? wrappedFile.getBaseFileName();
+		const filesAndFolderNames = await this.arFsDao.getPublicFilesAndFolderNamesForParentFolderId(parentFolderId);
+
+		// File cannot overwrite a folder names
+		if (filesAndFolderNames.folderNames.includes(destFileName)) {
+			throw new Error(errorMessage.cannotUseDuplicateNameInParentFolder);
+		}
+
+		// File is a new revision if destination name matches an existing file in the parent folder
+		const existingFileId = filesAndFolderNames.files.find((f) => f.fileName === destFileName)?.fileId;
+
 		const uploadBaseCosts = await this.estimateAndAssertCostOfFileUpload(
 			wrappedFile.fileStats.size,
 			this.stubPublicFileMetadata(wrappedFile, destinationFileName),
@@ -491,7 +503,8 @@ export class ArDrive extends ArDriveAnonymous {
 			driveId,
 			fileDataRewardSettings,
 			metadataRewardSettings,
-			destinationFileName
+			destinationFileName,
+			existingFileId
 		);
 
 		const { tipData, reward: communityTipTrxReward } = await this.sendCommunityTip(
@@ -676,6 +689,18 @@ export class ArDrive extends ArDriveAnonymous {
 	): Promise<ArFSResult> {
 		const driveId = await this.getDriveIdAndAssertDrive(parentFolderId, driveKey);
 
+		// Derive destination name and names already within provided parent folder
+		const destFileName = destinationFileName ?? wrappedFile.getBaseFileName();
+		const filesAndFolderNames = await this.arFsDao.getPublicFilesAndFolderNamesForParentFolderId(parentFolderId);
+
+		// File cannot overwrite a folder names
+		if (filesAndFolderNames.folderNames.includes(destFileName)) {
+			throw new Error(errorMessage.cannotUseDuplicateNameInParentFolder);
+		}
+
+		// File is a new revision if destination name matches an existing file in the parent folder
+		const existingFileId = filesAndFolderNames.files.find((f) => f.fileName === destFileName)?.fileId;
+
 		const uploadBaseCosts = await this.estimateAndAssertCostOfFileUpload(
 			wrappedFile.fileStats.size,
 			await this.stubPrivateFileMetadata(wrappedFile, destinationFileName),
@@ -700,7 +725,8 @@ export class ArDrive extends ArDriveAnonymous {
 			driveKey,
 			fileDataRewardSettings,
 			metadataRewardSettings,
-			destinationFileName
+			destinationFileName,
+			existingFileId
 		);
 
 		const { tipData, reward: communityTipTrxReward } = await this.sendCommunityTip(
