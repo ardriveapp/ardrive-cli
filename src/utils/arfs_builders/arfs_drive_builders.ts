@@ -127,6 +127,16 @@ export class ArFSPrivateDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPriva
 		];
 	}
 
+	static fromArweaveNode(node: GQLNodeInterface, arweave: Arweave, driveKey: DriveKey): ArFSPrivateDriveBuilder {
+		const { tags } = node;
+		const driveId = tags.find((tag) => tag.name === 'Drive-Id')?.value;
+		if (!driveId) {
+			throw new Error('Drive-ID tag missing!');
+		}
+		const fileBuilder = new ArFSPrivateDriveBuilder({ entityId: driveId, arweave, key: driveKey });
+		return fileBuilder;
+	}
+
 	protected async parseFromArweaveNode(node?: GQLNodeInterface): Promise<GQLTagInterface[]> {
 		const unparsedTags: GQLTagInterface[] = [];
 		const tags = await super.parseFromArweaveNode(node);
