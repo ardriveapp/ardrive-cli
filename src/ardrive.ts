@@ -240,6 +240,12 @@ export class ArDrive extends ArDriveAnonymous {
 			throw new Error(errorMessage.cannotMoveIntoSamePlace('File', newParentFolderId));
 		}
 
+		// Assert that there are no duplicate names in the destination folder
+		const entityNamesInParentFolder = await this.arFsDao.getPublicChildNamesOfParentFolderId(newParentFolderId);
+		if (entityNamesInParentFolder.includes(originalFileMetaData.name)) {
+			throw new Error(errorMessage.cannotUseDuplicateNameInParentFolder);
+		}
+
 		const fileTransactionData = new ArFSPublicFileMetadataTransactionData(
 			originalFileMetaData.name,
 			originalFileMetaData.size,
@@ -285,6 +291,15 @@ export class ArDrive extends ArDriveAnonymous {
 
 		if (originalFileMetaData.parentFolderId === newParentFolderId) {
 			throw new Error(errorMessage.cannotMoveIntoSamePlace('File', newParentFolderId));
+		}
+
+		// Assert that there are no duplicate names in the destination folder
+		const entityNamesInParentFolder = await this.arFsDao.getPrivateChildNamesOfParentFolderId(
+			newParentFolderId,
+			driveKey
+		);
+		if (entityNamesInParentFolder.includes(originalFileMetaData.name)) {
+			throw new Error(errorMessage.cannotUseDuplicateNameInParentFolder);
 		}
 
 		const fileTransactionData = await ArFSPrivateFileMetadataTransactionData.from(
