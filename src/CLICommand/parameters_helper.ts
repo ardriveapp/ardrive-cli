@@ -15,6 +15,7 @@ import {
 import { cliWalletDao } from '..';
 import { DriveID, DriveKey } from '../types';
 import passwordPrompt from 'prompts';
+import { PrivateKeyData } from '../private_key_data';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ParameterOptions = any;
@@ -78,6 +79,28 @@ export class ParametersHelper {
 		return (
 			this.getParameterValue(AddressParameter) || this.getRequiredWallet().then((wallet) => wallet.getAddress())
 		);
+	}
+
+	public async getPrivateKeyData(): Promise<PrivateKeyData> {
+		// Gather optional private parameters
+		const driveKey = this.getParameterValue(DriveKeyParameter);
+		const wallet = await this.getOptionalWallet();
+		const password = await ((): Promise<string | undefined> => {
+			if (
+				// If private param specified or an unsafe password param is provided
+				this.getParameterValue(PrivateParameter) !== undefined ||
+				this.getParameterValue(UnsafeDrivePasswordParameter) !== undefined
+			) {
+				return this.getDrivePassword();
+			}
+			return Promise.resolve(undefined);
+		})();
+
+		return new PrivateKeyData({
+			password,
+			driveKeys: driveKey ? [Buffer.from(driveKey, 'base64')] : undefined,
+			wallet: (wallet as JWKWallet) ?? undefined
+		});
 	}
 
 	public async getDriveKey({ driveId, drivePassword, useCache = false }: GetDriveKeyParams): Promise<DriveKey> {
