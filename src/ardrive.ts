@@ -336,9 +336,7 @@ export class ArDrive extends ArDriveAnonymous {
 		}
 
 		// Assert that there are no duplicate names in the destination folder
-		const folderNamesInParentFolder = await this.arFsDao.getPublicChildFolderNamesOfParentFolderId(
-			newParentFolderId
-		);
+		const folderNamesInParentFolder = await this.arFsDao.getPublicChildNamesOfParentFolderId(newParentFolderId);
 		if (folderNamesInParentFolder.includes(originalFolderMetaData.name)) {
 			throw new Error(errorMessage.cannotUseDuplicateNameInParentFolder);
 		}
@@ -399,7 +397,7 @@ export class ArDrive extends ArDriveAnonymous {
 		}
 
 		// Assert that there are no duplicate names in the destination folder
-		const folderNamesInParentFolder = await this.arFsDao.getPrivateChildFolderNamesOfParentFolderId(
+		const folderNamesInParentFolder = await this.arFsDao.getPrivateChildNamesOfParentFolderId(
 			newParentFolderId,
 			driveKey
 		);
@@ -857,7 +855,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 	async createPublicFolder({ folderName, driveId, parentFolderId }: CreatePublicFolderParams): Promise<ArFSResult> {
 		// Assert that there are no duplicate names in the destination folder
-		const folderNamesInParentFolder = await this.arFsDao.getPublicChildFolderNamesOfParentFolderId(parentFolderId);
+		const folderNamesInParentFolder = await this.arFsDao.getPublicChildNamesOfParentFolderId(parentFolderId);
 		if (folderNamesInParentFolder.includes(folderName)) {
 			throw new Error(errorMessage.cannotUseDuplicateNameInParentFolder);
 		}
@@ -897,7 +895,7 @@ export class ArDrive extends ArDriveAnonymous {
 		parentFolderId
 	}: CreatePrivateFolderParams): Promise<ArFSResult> {
 		// Assert that there are no duplicate names in the destination folder
-		const folderNamesInParentFolder = await this.arFsDao.getPrivateChildFolderNamesOfParentFolderId(
+		const folderNamesInParentFolder = await this.arFsDao.getPrivateChildNamesOfParentFolderId(
 			parentFolderId,
 			driveKey
 		);

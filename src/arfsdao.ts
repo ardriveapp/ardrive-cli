@@ -48,12 +48,8 @@ import {
 } from './types';
 import { CreateTransactionInterface } from 'arweave/node/common';
 import { ArFSPrivateDriveBuilder } from './utils/arfs_builders/arfs_drive_builders';
-import { ArFSPrivateFileBuilder } from './utils/arfs_builders/arfs_file_builders';
-import {
-	ArFSPrivateFolderBuilder,
-	ArFSPublicFolderBuilder,
-	ArFSFolderBuilder
-} from './utils/arfs_builders/arfs_folder_builders';
+import { ArFSPrivateFileBuilder, ArFSPublicFileBuilder } from './utils/arfs_builders/arfs_file_builders';
+import { ArFSPrivateFolderBuilder, ArFSPublicFolderBuilder } from './utils/arfs_builders/arfs_folder_builders';
 import { latestRevisionFilter } from './utils/filter_methods';
 import { FolderHierarchy } from './folderHierarchy';
 import {
@@ -90,6 +86,7 @@ import {
 	ArFSPublicFolder
 } from './arfs_entities';
 import { ArFSDAOAnonymous } from './arfsdao_anonymous';
+import { ArFSFileOrFolderBuilder } from './utils/arfs_builders/arfs_builders';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 
@@ -729,14 +726,17 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return latestRevisionsOnly ? allFiles.filter(latestRevisionFilter) : allFiles;
 	}
 
-	async getFoldersWithParentFolderId<T extends ArFSPublicFolder | ArFSPrivateFolder>(
+	async getEntitiesWithParentFolderId(
 		folderID: FolderID,
-		builder: (node: GQLNodeInterface) => ArFSFolderBuilder<T>,
+		builder: (
+			node: GQLNodeInterface,
+			entityType: 'file' | 'folder'
+		) => ArFSFileOrFolderBuilder<ArFSFileOrFolderEntity>,
 		latestRevisionsOnly = true
-	): Promise<T[]> {
+	): Promise<ArFSFileOrFolderEntity[]> {
 		let cursor = '';
 		let hasNextPage = true;
-		const allFolders: T[] = [];
+		const allEntities: ArFSFileOrFolderEntity[] = [];
 
 		// TODO: Always derive owner of a wallet from the earliest drive a wallet by default
 		const owner = await this.wallet.getAddress();
@@ -745,7 +745,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			const gqlQuery = buildQuery(
 				[
 					{ name: 'Parent-Folder-Id', value: folderID },
-					{ name: 'Entity-Type', value: 'folder' }
+					{ name: 'Entity-Type', value: ['file', 'folder'] }
 				],
 				cursor,
 				owner
@@ -757,37 +757,50 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			const { edges } = transactions;
 			hasNextPage = transactions.pageInfo.hasNextPage;
 
-			const folders: Promise<T>[] = edges.map(async (edge: GQLEdgeInterface) => {
+			const folders: Promise<ArFSFileOrFolderEntity>[] = edges.map(async (edge: GQLEdgeInterface) => {
 				const { node } = edge;
 				cursor = edge.cursor;
+				const { tags } = node;
 
-				return builder(node).build(node);
+				// Check entityType to determine which builder to use
+				const entityType = tags.find((t) => t.name === 'Entity-Type')?.value;
+				if (!entityType || (entityType !== 'file' && entityType !== 'folder')) {
+					throw new Error('Entity-Type tag is missing or invalid!');
+				}
+
+				return builder(node, entityType).build(node);
 			});
 
-			allFolders.push(...(await Promise.all(folders)));
+			allEntities.push(...(await Promise.all(folders)));
 		}
-		return latestRevisionsOnly ? allFolders.filter(latestRevisionFilter) : allFolders;
+		return latestRevisionsOnly ? allEntities.filter(latestRevisionFilter) : allEntities;
 	}
 
-	async getPrivateFoldersWithParentFolderId(
+	async getPrivateEntitiesWithParentFolderId(
 		folderID: FolderID,
 		driveKey: DriveKey,
 		latestRevisionsOnly = true
-	): Promise<ArFSPrivateFolder[]> {
-		return this.getFoldersWithParentFolderId<ArFSPrivateFolder>(
+	): Promise<ArFSFileOrFolderEntity[]> {
+		return this.getEntitiesWithParentFolderId(
 			folderID,
-			(node) => ArFSPrivateFolderBuilder.fromArweaveNode(node, this.arweave, driveKey),
+			(node, entityType) =>
+				entityType === 'folder'
+					? ArFSPrivateFolderBuilder.fromArweaveNode(node, this.arweave, driveKey)
+					: ArFSPrivateFileBuilder.fromArweaveNode(node, this.arweave, driveKey),
 			latestRevisionsOnly
 		);
 	}
 
-	async getPublicFoldersWithParentFolderId(
+	async getPublicEntitiesWithParentFolderId(
 		folderID: FolderID,
 		latestRevisionsOnly = true
-	): Promise<ArFSPublicFolder[]> {
-		return this.getFoldersWithParentFolderId<ArFSPublicFolder>(
+	): Promise<ArFSFileOrFolderEntity[]> {
+		return this.getEntitiesWithParentFolderId(
 			folderID,
-			(node) => ArFSPublicFolderBuilder.fromArweaveNode(node, this.arweave),
+			(node, entityType) =>
+				entityType === 'folder'
+					? ArFSPublicFolderBuilder.fromArweaveNode(node, this.arweave)
+					: ArFSPublicFileBuilder.fromArweaveNode(node, this.arweave),
 			latestRevisionsOnly
 		);
 	}
@@ -800,12 +813,12 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return hierarchy.folderIdSubtreeFromFolderId(folderId, Number.MAX_SAFE_INTEGER);
 	}
 
-	async getPrivateChildFolderNamesOfParentFolderId(folderId: FolderID, driveKey: DriveKey): Promise<string[]> {
-		return (await this.getPrivateFoldersWithParentFolderId(folderId, driveKey, true)).map((f) => f.name);
+	async getPrivateChildNamesOfParentFolderId(folderId: FolderID, driveKey: DriveKey): Promise<string[]> {
+		return (await this.getPrivateEntitiesWithParentFolderId(folderId, driveKey, true)).map((f) => f.name);
 	}
 
-	async getPublicChildFolderNamesOfParentFolderId(folderId: FolderID): Promise<string[]> {
-		return (await this.getPublicFoldersWithParentFolderId(folderId, true)).map((f) => f.name);
+	async getPublicChildNamesOfParentFolderId(folderId: FolderID): Promise<string[]> {
+		return (await this.getPublicEntitiesWithParentFolderId(folderId, true)).map((f) => f.name);
 	}
 
 	async getPrivateChildrenFolderIds({

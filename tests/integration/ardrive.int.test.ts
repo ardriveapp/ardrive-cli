@@ -114,7 +114,7 @@ describe('ArDrive class - integrated', () => {
 	describe('folder function', () => {
 		describe('createPublicFolder', () => {
 			beforeEach(() => {
-				stub(arfsDao, 'getPublicChildFolderNamesOfParentFolderId').resolves(['CONFLICTING_NAME']);
+				stub(arfsDao, 'getPublicChildNamesOfParentFolderId').resolves(['CONFLICTING_NAME']);
 			});
 
 			it('throws an error if the folder name conflicts with another folder in the parent', async () => {
@@ -142,7 +142,7 @@ describe('ArDrive class - integrated', () => {
 
 		describe('createPrivateFolder', () => {
 			beforeEach(() => {
-				stub(arfsDao, 'getPrivateChildFolderNamesOfParentFolderId').resolves(['CONFLICTING_NAME']);
+				stub(arfsDao, 'getPrivateChildNamesOfParentFolderId').resolves(['CONFLICTING_NAME']);
 			});
 
 			it('throws an error if the folder name conflicts with another folder in the parent', async () => {
@@ -182,7 +182,7 @@ describe('ArDrive class - integrated', () => {
 			};
 
 			beforeEach(() => {
-				stub(arfsDao, 'getPublicChildFolderNamesOfParentFolderId').resolves(['CONFLICTING_NAME']);
+				stub(arfsDao, 'getPublicChildNamesOfParentFolderId').resolves(['CONFLICTING_NAME']);
 			});
 
 			it('throws an error if the folder name conflicts with another folder in the parent', async () => {
@@ -290,7 +290,7 @@ describe('ArDrive class - integrated', () => {
 			};
 
 			beforeEach(() => {
-				stub(arfsDao, 'getPrivateChildFolderNamesOfParentFolderId').resolves(['CONFLICTING_NAME']);
+				stub(arfsDao, 'getPrivateChildNamesOfParentFolderId').resolves(['CONFLICTING_NAME']);
 			});
 
 			it('throws an error if the folder name conflicts with another folder in the parent', async () => {
