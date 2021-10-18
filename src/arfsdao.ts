@@ -3,7 +3,14 @@ import type { JWKWallet, Wallet } from './wallet_new';
 import Arweave from 'arweave';
 import { v4 as uuidv4 } from 'uuid';
 import Transaction from 'arweave/node/lib/transaction';
-import { deriveDriveKey, GQLEdgeInterface, GQLTagInterface, JWKInterface, uploadDataChunk } from 'ardrive-core-js';
+import {
+	deriveDriveKey,
+	GQLEdgeInterface,
+	GQLNodeInterface,
+	GQLTagInterface,
+	JWKInterface,
+	uploadDataChunk
+} from 'ardrive-core-js';
 import {
 	ArFSPublicFileDataPrototype,
 	ArFSObjectMetadataPrototype,
@@ -27,7 +34,7 @@ import {
 	ArFSPublicFileMetadataTransactionData,
 	ArFSPublicFolderTransactionData
 } from './arfs_trx_data_types';
-import { buildQuery } from './query';
+import { buildQuery, DESCENDENT_ORDER } from './query';
 import { ArFSFileToUpload } from './arfs_file_wrapper';
 import {
 	DriveID,
@@ -780,5 +787,19 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		const entitiesWithPath = children.map((entity) => new ArFSPrivateFileOrFolderWithPaths(entity, hierarchy));
 		return entitiesWithPath;
+	}
+
+	async assertValidPassword(wallet: Wallet, driveKey: DriveKey): Promise<void> {
+		const walletAddress = await wallet.getAddress();
+		const query = buildQuery([{ name: 'Entity-Type', value: 'drive' }], undefined, walletAddress, DESCENDENT_ORDER);
+		const arweave = this.arweave;
+		const response = await arweave.api.post(graphQLURL, query);
+		const { data } = response.data;
+		const { transactions } = data;
+		const { edges } = transactions;
+		const { node }: { node: GQLNodeInterface } = edges[0];
+		const driveBuilder = ArFSPrivateDriveBuilder.fromArweaveNode(node, arweave, driveKey);
+		// successfully builds only if the drive key is correct
+		await driveBuilder.build(node);
 	}
 }
