@@ -336,8 +336,8 @@ export class ArDrive extends ArDriveAnonymous {
 		}
 
 		// Assert that there are no duplicate names in the destination folder
-		const folderNamesInParentFolder = await this.arFsDao.getPublicChildNamesOfParentFolderId(newParentFolderId);
-		if (folderNamesInParentFolder.includes(originalFolderMetaData.name)) {
+		const entityNamesInParentFolder = await this.arFsDao.getPublicChildNamesOfParentFolderId(newParentFolderId);
+		if (entityNamesInParentFolder.includes(originalFolderMetaData.name)) {
 			throw new Error(errorMessage.cannotUseDuplicateNameInParentFolder);
 		}
 
@@ -397,11 +397,11 @@ export class ArDrive extends ArDriveAnonymous {
 		}
 
 		// Assert that there are no duplicate names in the destination folder
-		const folderNamesInParentFolder = await this.arFsDao.getPrivateChildNamesOfParentFolderId(
+		const entityNamesInParentFolder = await this.arFsDao.getPrivateChildNamesOfParentFolderId(
 			newParentFolderId,
 			driveKey
 		);
-		if (folderNamesInParentFolder.includes(originalFolderMetaData.name)) {
+		if (entityNamesInParentFolder.includes(originalFolderMetaData.name)) {
 			throw new Error(errorMessage.cannotUseDuplicateNameInParentFolder);
 		}
 
@@ -855,8 +855,8 @@ export class ArDrive extends ArDriveAnonymous {
 
 	async createPublicFolder({ folderName, driveId, parentFolderId }: CreatePublicFolderParams): Promise<ArFSResult> {
 		// Assert that there are no duplicate names in the destination folder
-		const folderNamesInParentFolder = await this.arFsDao.getPublicChildNamesOfParentFolderId(parentFolderId);
-		if (folderNamesInParentFolder.includes(folderName)) {
+		const entityNamesInParentFolder = await this.arFsDao.getPublicChildNamesOfParentFolderId(parentFolderId);
+		if (entityNamesInParentFolder.includes(folderName)) {
 			throw new Error(errorMessage.cannotUseDuplicateNameInParentFolder);
 		}
 
@@ -895,11 +895,11 @@ export class ArDrive extends ArDriveAnonymous {
 		parentFolderId
 	}: CreatePrivateFolderParams): Promise<ArFSResult> {
 		// Assert that there are no duplicate names in the destination folder
-		const folderNamesInParentFolder = await this.arFsDao.getPrivateChildNamesOfParentFolderId(
+		const entityNamesInParentFolder = await this.arFsDao.getPrivateChildNamesOfParentFolderId(
 			parentFolderId,
 			driveKey
 		);
-		if (folderNamesInParentFolder.includes(folderName)) {
+		if (entityNamesInParentFolder.includes(folderName)) {
 			throw new Error(errorMessage.cannotUseDuplicateNameInParentFolder);
 		}
 
