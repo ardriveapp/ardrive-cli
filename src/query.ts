@@ -25,8 +25,12 @@ const pageInfoFragment = `
 
 export type GQLQuery = { query: string };
 
+const ascendentOrder = 'HEIGHT_ASC';
+const descendentOrder = 'HEIGHT_DESC';
 const latestResult = 1;
 const pageLimit = 100;
+
+type Sort = typeof ascendentOrder | typeof descendentOrder;
 
 /**
  * Builds a GraphQL query which will only return the latest result
@@ -39,7 +43,8 @@ const pageLimit = 100;
 export function buildQuery(
 	tags: { name: string; value: string | string[] }[],
 	cursor?: string,
-	owner?: ArweaveAddress
+	owner?: ArweaveAddress,
+	sort: Sort = ascendentOrder
 ): GQLQuery {
 	let queryTags = ``;
 
@@ -54,6 +59,7 @@ export function buildQuery(
 		query: `query {
 			transactions(
 				first: ${singleResult ? latestResult : pageLimit}
+				sort: ${sort}
 				${singleResult ? '' : `after: "${cursor}"`}
 				${owner === undefined ? '' : `owners: ["${owner}"]`}
 				tags: [
