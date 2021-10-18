@@ -12,7 +12,7 @@ import './generate_seedphrase';
 import './generate_wallet';
 import './list_folder';
 import './list_drive';
-import './list_drives';
+import './list_all_drives';
 import './folder_info';
 import './create_folder';
 import './file_info';

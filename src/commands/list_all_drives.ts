@@ -5,7 +5,7 @@ import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 import { AddressParameter, DrivePrivacyParameters } from '../parameter_declarations';
 
 new CLICommand({
-	name: 'list-drives',
+	name: 'list-all-drives',
 	parameters: [AddressParameter, ...DrivePrivacyParameters],
 	async action(options) {
 		const parameters = new ParametersHelper(options, cliWalletDao);
