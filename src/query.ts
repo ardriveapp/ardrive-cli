@@ -25,12 +25,12 @@ const pageInfoFragment = `
 
 export type GQLQuery = { query: string };
 
-const ascendentOrder = 'HEIGHT_ASC';
-const descendentOrder = 'HEIGHT_DESC';
+export const ASCENDENT_ORDER = 'HEIGHT_ASC';
+export const DESCENDENT_ORDER = 'HEIGHT_DESC';
 const latestResult = 1;
 const pageLimit = 100;
 
-type Sort = typeof ascendentOrder | typeof descendentOrder;
+type Sort = typeof ASCENDENT_ORDER | typeof DESCENDENT_ORDER;
 
 /**
  * Builds a GraphQL query which will only return the latest result
@@ -44,7 +44,7 @@ export function buildQuery(
 	tags: { name: string; value: string | string[] }[],
 	cursor?: string,
 	owner?: ArweaveAddress,
-	sort: Sort = ascendentOrder
+	sort: Sort = ASCENDENT_ORDER
 ): GQLQuery {
 	let queryTags = ``;
 
