@@ -116,7 +116,7 @@ describe('ArDrive class - integrated', () => {
 				stub(arfsDao, 'getPublicEntityNamesInFolder').resolves(['CONFLICTING_NAME']);
 			});
 
-			it('throws an error if the folder name conflicts with another with another ENTITY name in the destination folder', async () => {
+			it('throws an error if the folder name conflicts with another ENTITY name in the destination folder', async () => {
 				await expectAsyncErrorThrow({
 					promiseToError: arDrive.createPublicFolder({
 						folderName: 'CONFLICTING_NAME',
@@ -144,7 +144,7 @@ describe('ArDrive class - integrated', () => {
 				stub(arfsDao, 'getPrivateEntityNamesInFolder').resolves(['CONFLICTING_NAME']);
 			});
 
-			it('throws an error if the folder name conflicts with another with another ENTITY name in the destination folder', async () => {
+			it('throws an error if the folder name conflicts with another ENTITY name in the destination folder', async () => {
 				await expectAsyncErrorThrow({
 					promiseToError: arDrive.createPrivateFolder({
 						folderName: 'CONFLICTING_NAME',
@@ -184,7 +184,7 @@ describe('ArDrive class - integrated', () => {
 				stub(arfsDao, 'getPublicEntityNamesInFolder').resolves(['CONFLICTING_NAME']);
 			});
 
-			it('throws an error if the folder name conflicts with another with another ENTITY name in the destination folder', async () => {
+			it('throws an error if the folder name conflicts with another ENTITY name in the destination folder', async () => {
 				stub(arfsDao, 'getPublicFolder').resolves(stubPublicFolder({ folderName: 'CONFLICTING_NAME' }));
 				stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityID);
 
@@ -292,7 +292,7 @@ describe('ArDrive class - integrated', () => {
 				stub(arfsDao, 'getPrivateEntityNamesInFolder').resolves(['CONFLICTING_NAME']);
 			});
 
-			it('throws an error if the folder name conflicts with another with another ENTITY name in the destination folder', async () => {
+			it('throws an error if the folder name conflicts with another ENTITY name in the destination folder', async () => {
 				stub(arfsDao, 'getPrivateFolder').resolves(stubPrivateFolder({ folderName: 'CONFLICTING_NAME' }));
 				stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityID);
 
