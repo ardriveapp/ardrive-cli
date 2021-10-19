@@ -1,5 +1,6 @@
 import { ArFSDriveEntity } from 'ardrive-core-js';
 import { ArFSFileOrFolderEntity } from '../arfs_entities';
+import { FileID, FolderID } from '../types';
 
 /**
  * @name lastRevisionFilter is a standard JS find/filter function intended to
@@ -37,4 +38,29 @@ export function latestRevisionFilterForDrives(
 	const allRevisions = allEntities.filter((e) => e.driveId === entity.driveId);
 	const latestRevision = allRevisions[0];
 	return entity.txId === latestRevision.txId;
+}
+
+export interface EntityNamesAndIds {
+	files: { fileName: string; fileId: FileID }[];
+	folders: { folderName: string; folderId: FolderID }[];
+}
+
+export function filterEntitiesToNamesAndIds(entities: ArFSFileOrFolderEntity[]): EntityNamesAndIds {
+	const files = entities
+		.filter((e) => e.entityType === 'file')
+		.map((f) => {
+			return { fileName: f.name, fileId: f.entityId };
+		});
+
+	const folders = entities
+		.filter((e) => e.entityType === 'folder')
+		.map((f) => {
+			return { folderName: f.name, folderId: f.entityId };
+		});
+
+	return { files, folders };
+}
+
+export function filterEntitiesToNames(entities: ArFSFileOrFolderEntity[]): string[] {
+	return entities.map((f) => f.name);
 }

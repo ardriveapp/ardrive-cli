@@ -50,7 +50,12 @@ import { CreateTransactionInterface } from 'arweave/node/common';
 import { ArFSPrivateDriveBuilder } from './utils/arfs_builders/arfs_drive_builders';
 import { ArFSPrivateFileBuilder, ArFSPublicFileBuilder } from './utils/arfs_builders/arfs_file_builders';
 import { ArFSPrivateFolderBuilder, ArFSPublicFolderBuilder } from './utils/arfs_builders/arfs_folder_builders';
-import { latestRevisionFilter } from './utils/filter_methods';
+import {
+	EntityNamesAndIds,
+	latestRevisionFilter,
+	filterEntitiesToNamesAndIds,
+	filterEntitiesToNames
+} from './utils/filter_methods';
 import { FolderHierarchy } from './folderHierarchy';
 import {
 	CreateDriveMetaDataFactory,
@@ -105,11 +110,6 @@ export interface ArFSMoveParams<O extends ArFSFileOrFolderEntity, T extends ArFS
 	newParentFolderId: FolderID;
 	metaDataBaseReward: RewardSettings;
 	transactionData: T;
-}
-
-export interface EntityNamesAndIds {
-	files: { fileName: string; fileId: FileID }[];
-	folders: { folderName: string; folderId: FolderID }[];
 }
 
 export type GetDriveFunction = () => Promise<ArFSPublicDrive | ArFSPrivateDrive>;
@@ -825,37 +825,19 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	}
 
 	async getPrivateEntityNamesInFolder(folderId: FolderID, driveKey: DriveKey): Promise<string[]> {
-		return (await this.getPrivateEntitiesInFolder(folderId, driveKey, true)).map((f) => f.name);
+		return filterEntitiesToNames(await this.getPrivateEntitiesInFolder(folderId, driveKey, true));
 	}
 
 	async getPublicEntityNamesInFolder(folderId: FolderID): Promise<string[]> {
-		return (await this.getPublicEntitiesInFolder(folderId, true)).map((f) => f.name);
-	}
-
-	async getFilesAndFolderNames(getEntities: Promise<ArFSFileOrFolderEntity[]>): Promise<EntityNamesAndIds> {
-		const allEntities = await getEntities;
-
-		const files = allEntities
-			.filter((e) => e.entityType === 'file')
-			.map((f) => {
-				return { fileName: f.name, fileId: f.entityId };
-			});
-
-		const folders = allEntities
-			.filter((e) => e.entityType === 'folder')
-			.map((f) => {
-				return { folderName: f.name, folderId: f.entityId };
-			});
-
-		return { files, folders };
+		return filterEntitiesToNames(await this.getPublicEntitiesInFolder(folderId, true));
 	}
 
 	async getPublicEntityNamesAndIdsInFolder(folderId: FolderID): Promise<EntityNamesAndIds> {
-		return this.getFilesAndFolderNames(this.getPublicEntitiesInFolder(folderId, true));
+		return filterEntitiesToNamesAndIds(await this.getPublicEntitiesInFolder(folderId, true));
 	}
 
 	async getPrivateEntityNamesAndIdsInFolder(folderId: FolderID, driveKey: DriveKey): Promise<EntityNamesAndIds> {
-		return this.getFilesAndFolderNames(this.getPrivateEntitiesInFolder(folderId, driveKey, true));
+		return filterEntitiesToNamesAndIds(await this.getPrivateEntitiesInFolder(folderId, driveKey, true));
 	}
 
 	async getPrivateChildrenFolderIds({
