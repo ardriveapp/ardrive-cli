@@ -45,7 +45,7 @@ import {
 import { stubEntityID, stubTransactionID } from './utils/stubs';
 import { errorMessage } from './error_message';
 import { PrivateKeyData } from './private_key_data';
-import { EntityNamesAndIds } from './utils/filter_methods';
+import { EntityNamesAndIds } from './utils/mapper_functions';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 

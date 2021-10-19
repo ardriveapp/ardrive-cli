@@ -49,12 +49,7 @@ import {
 import { CreateTransactionInterface } from 'arweave/node/common';
 import { ArFSPrivateFileBuilder, ArFSPublicFileBuilder } from './utils/arfs_builders/arfs_file_builders';
 import { ArFSPrivateFolderBuilder, ArFSPublicFolderBuilder } from './utils/arfs_builders/arfs_folder_builders';
-import {
-	EntityNamesAndIds,
-	latestRevisionFilter,
-	filterEntitiesToNamesAndIds,
-	filterEntitiesToNames
-} from './utils/filter_methods';
+import { latestRevisionFilter, fileFilter, folderFilter } from './utils/filter_methods';
 import {
 	ArFSPrivateDriveBuilder,
 	ENCRYPTED_DATA_PLACEHOLDER,
@@ -97,6 +92,7 @@ import {
 import { ArFSDAOAnonymous } from './arfsdao_anonymous';
 import { ArFSFileOrFolderBuilder } from './utils/arfs_builders/arfs_builders';
 import { PrivateKeyData } from './private_key_data';
+import { EntityNamesAndIds, entityToNameMap, fileToNameAndIdMap, folderToNameAndIdMap } from './utils/mapper_functions';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 
@@ -830,19 +826,29 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	}
 
 	async getPrivateEntityNamesInFolder(folderId: FolderID, driveKey: DriveKey): Promise<string[]> {
-		return filterEntitiesToNames(await this.getPrivateEntitiesInFolder(folderId, driveKey, true));
+		const childrenOfFolder = await this.getPrivateEntitiesInFolder(folderId, driveKey, true);
+		return childrenOfFolder.map(entityToNameMap);
 	}
 
 	async getPublicEntityNamesInFolder(folderId: FolderID): Promise<string[]> {
-		return filterEntitiesToNames(await this.getPublicEntitiesInFolder(folderId, true));
+		const childrenOfFolder = await this.getPublicEntitiesInFolder(folderId, true);
+		return childrenOfFolder.map(entityToNameMap);
 	}
 
 	async getPublicEntityNamesAndIdsInFolder(folderId: FolderID): Promise<EntityNamesAndIds> {
-		return filterEntitiesToNamesAndIds(await this.getPublicEntitiesInFolder(folderId, true));
+		const childrenOfFolder = await this.getPublicEntitiesInFolder(folderId, true);
+		return {
+			files: childrenOfFolder.filter(fileFilter).map(fileToNameAndIdMap),
+			folders: childrenOfFolder.filter(folderFilter).map(folderToNameAndIdMap)
+		};
 	}
 
 	async getPrivateEntityNamesAndIdsInFolder(folderId: FolderID, driveKey: DriveKey): Promise<EntityNamesAndIds> {
-		return filterEntitiesToNamesAndIds(await this.getPrivateEntitiesInFolder(folderId, driveKey, true));
+		const childrenOfFolder = await this.getPrivateEntitiesInFolder(folderId, driveKey, true);
+		return {
+			files: childrenOfFolder.filter(fileFilter).map(fileToNameAndIdMap),
+			folders: childrenOfFolder.filter(folderFilter).map(folderToNameAndIdMap)
+		};
 	}
 
 	async getPrivateChildrenFolderIds({
