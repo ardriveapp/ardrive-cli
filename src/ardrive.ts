@@ -1278,4 +1278,8 @@ export class ArDrive extends ArDriveAnonymous {
 			)
 		);
 	}
+
+	async assertValidPassword(password: string): Promise<void> {
+		await this.arFsDao.assertValidPassword(password);
+	}
 }

@@ -47,7 +47,7 @@ import {
 	RewardSettings
 } from './types';
 import { CreateTransactionInterface } from 'arweave/node/common';
-import { ArFSPrivateDriveBuilder } from './utils/arfs_builders/arfs_drive_builders';
+import { ArFSPrivateDriveBuilder, SafeArFSDriveBuilder } from './utils/arfs_builders/arfs_drive_builders';
 import { ArFSPrivateFileBuilder } from './utils/arfs_builders/arfs_file_builders';
 import { ArFSPrivateFolderBuilder } from './utils/arfs_builders/arfs_folder_builders';
 import { latestRevisionFilter } from './utils/filter_methods';
@@ -86,6 +86,7 @@ import {
 	ArFSPublicFolder
 } from './arfs_entities';
 import { ArFSDAOAnonymous } from './arfsdao_anonymous';
+import { PrivateKeyData } from './private_key_data';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 
@@ -789,17 +790,40 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return entitiesWithPath;
 	}
 
-	async assertValidPassword(wallet: Wallet, driveKey: DriveKey): Promise<void> {
+	async assertValidPassword(password: string): Promise<void> {
+		const wallet = this.wallet;
 		const walletAddress = await wallet.getAddress();
-		const query = buildQuery([{ name: 'Entity-Type', value: 'drive' }], undefined, walletAddress, DESCENDENT_ORDER);
+		const query = buildQuery(
+			[
+				{ name: 'Entity-Type', value: 'drive' },
+				{ name: 'Drive-Privacy', value: 'private' }
+			],
+			undefined,
+			walletAddress,
+			DESCENDENT_ORDER
+		);
 		const arweave = this.arweave;
 		const response = await arweave.api.post(graphQLURL, query);
 		const { data } = response.data;
 		const { transactions } = data;
 		const { edges } = transactions;
 		const { node }: { node: GQLNodeInterface } = edges[0];
+		const safeDriveBuilder = SafeArFSDriveBuilder.fromArweaveNode(
+			node,
+			arweave,
+			new PrivateKeyData({ password, wallet: this.wallet as JWKWallet })
+		);
+		const encryptedDrive = await safeDriveBuilder.build();
+		const driveId = encryptedDrive.driveId;
+		const driveKey = await deriveDriveKey(
+			password,
+			driveId,
+			JSON.stringify((this.wallet as JWKWallet).getPrivateKey())
+		);
 		const driveBuilder = ArFSPrivateDriveBuilder.fromArweaveNode(node, arweave, driveKey);
 		// successfully builds only if the drive key is correct
-		await driveBuilder.build(node);
+		await driveBuilder.build(node).catch((e) => {
+			throw new Error(`Invalid password! Please type the same than your other drives - ${e.message}`);
+		});
 	}
 }
