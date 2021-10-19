@@ -22,9 +22,9 @@ new CLICommand({
 		const destAddress = new ArweaveAddress(options.destAddress);
 		const wallet = await parameters.getRequiredWallet();
 		const walletAddress = await wallet.getAddress();
-		console.log(`Source address: ${walletAddress.toString()}`);
+		console.log(`Source address: ${walletAddress}`);
 		console.log(`AR amount sent: ${arAmount.toFixed(12)}`);
-		console.log(`Destination address: ${destAddress.toString()}`);
+		console.log(`Destination address: ${destAddress}`);
 		const rewardSetting = options.boost ? { feeMultiple: +options.boost } : undefined;
 
 		const arTransferResult = await cliWalletDao.sendARToAddress(

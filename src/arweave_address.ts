@@ -7,7 +7,11 @@ export class ArweaveAddress {
 		}
 	}
 
-	public toString(): string {
+	toString(): string {
+		return this.address;
+	}
+
+	valueOf(): string {
 		return this.address;
 	}
 }

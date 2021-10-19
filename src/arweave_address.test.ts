@@ -33,10 +33,10 @@ describe('The ArweaveAddress class', () => {
 		});
 	});
 
-	describe('toString function', () => {
+	describe('interpolated toString function', () => {
 		it('returns the underlying address string', () => {
 			const address = new ArweaveAddress('g1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
-			expect(address.toString()).to.equal('g1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
+			expect(`${address}`).to.equal('g1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
 		});
 	});
 });
