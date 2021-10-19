@@ -587,7 +587,7 @@ export class ArDrive extends ArDriveAnonymous {
 		parentFolderId,
 		wrappedFolder,
 		driveId,
-		parentFolderDataOrID: folderData
+		parentFolderDataOrID
 	}: RecursivePublicBulkUploadParams): Promise<{
 		entityResults: ArFSEntityData[];
 		feeResults: ArFSFees;
@@ -596,13 +596,13 @@ export class ArDrive extends ArDriveAnonymous {
 		let uploadEntityResults: ArFSEntityData[] = [];
 		let folderId: FolderID;
 
-		if (typeof folderData === 'string') {
+		if (typeof parentFolderDataOrID === 'string') {
 			// Use existing parent folder ID for bulk upload
-			folderId = folderData;
+			folderId = parentFolderDataOrID;
 		} else {
 			// Create the parent folder
 			const createFolderResult = await this.arFsDao.createPublicFolder({
-				folderData: folderData,
+				folderData: parentFolderDataOrID,
 				driveId,
 				rewardSettings: {
 					reward: wrappedFolder.getBaseCosts().metaDataBaseReward,
@@ -841,7 +841,7 @@ export class ArDrive extends ArDriveAnonymous {
 		driveId,
 		parentFolderId,
 		driveKey,
-		parentFolderDataOrID: folderData
+		parentFolderDataOrID
 	}: RecursivePrivateBulkUploadParams): Promise<{
 		entityResults: ArFSEntityData[];
 		feeResults: ArFSFees;
@@ -850,14 +850,14 @@ export class ArDrive extends ArDriveAnonymous {
 		let uploadEntityResults: ArFSEntityData[] = [];
 		let folderId: FolderID;
 
-		if (typeof folderData === 'string') {
+		if (typeof parentFolderDataOrID === 'string') {
 			// Use existing parent folder ID for bulk upload.
 			// This happens when the parent folder's name conflicts
-			folderId = folderData;
+			folderId = parentFolderDataOrID;
 		} else {
 			// Create parent folder
 			const createFolderResult = await this.arFsDao.createPrivateFolder({
-				folderData: folderData,
+				folderData: parentFolderDataOrID,
 				driveId,
 				rewardSettings: {
 					reward: wrappedFolder.getBaseCosts().metaDataBaseReward,
