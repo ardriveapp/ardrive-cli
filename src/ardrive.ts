@@ -109,7 +109,7 @@ interface RecursivePrivateBulkUploadParams extends RecursiveBulkUploadParams {
 interface CreatePublicFolderParams {
 	folderName: string;
 	driveId: DriveID;
-	parentFolderId?: FolderID;
+	parentFolderId: FolderID;
 }
 
 interface CreatePrivateFolderParams extends CreatePublicFolderParams {
@@ -341,6 +341,12 @@ export class ArDrive extends ArDriveAnonymous {
 			throw new Error(errorMessage.cannotMoveIntoSamePlace('Folder', newParentFolderId));
 		}
 
+		// Assert that there are no duplicate names in the destination folder
+		const entityNamesInParentFolder = await this.arFsDao.getPublicEntityNamesInFolder(newParentFolderId);
+		if (entityNamesInParentFolder.includes(originalFolderMetaData.name)) {
+			throw new Error(errorMessage.entityNameExists);
+		}
+
 		const childrenFolderIds = await this.arFsDao.getPublicChildrenFolderIds({
 			folderId,
 			driveId: parentFolderDriveId
@@ -394,6 +400,12 @@ export class ArDrive extends ArDriveAnonymous {
 
 		if (originalFolderMetaData.parentFolderId === newParentFolderId) {
 			throw new Error(errorMessage.cannotMoveIntoSamePlace('Folder', newParentFolderId));
+		}
+
+		// Assert that there are no duplicate names in the destination folder
+		const entityNamesInParentFolder = await this.arFsDao.getPrivateEntityNamesInFolder(newParentFolderId, driveKey);
+		if (entityNamesInParentFolder.includes(originalFolderMetaData.name)) {
+			throw new Error(errorMessage.entityNameExists);
 		}
 
 		const childrenFolderIds = await this.arFsDao.getPrivateChildrenFolderIds({
@@ -845,6 +857,12 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	async createPublicFolder({ folderName, driveId, parentFolderId }: CreatePublicFolderParams): Promise<ArFSResult> {
+		// Assert that there are no duplicate names in the destination folder
+		const entityNamesInParentFolder = await this.arFsDao.getPublicEntityNamesInFolder(parentFolderId);
+		if (entityNamesInParentFolder.includes(folderName)) {
+			throw new Error(errorMessage.entityNameExists);
+		}
+
 		// Assert that there's enough AR available in the wallet
 		const folderData = new ArFSPublicFolderTransactionData(folderName);
 		const { metaDataBaseReward } = await this.estimateAndAssertCostOfFolderUpload(folderData);
@@ -879,9 +897,14 @@ export class ArDrive extends ArDriveAnonymous {
 		driveKey,
 		parentFolderId
 	}: CreatePrivateFolderParams): Promise<ArFSResult> {
+		// Assert that there are no duplicate names in the destination folder
+		const entityNamesInParentFolder = await this.arFsDao.getPrivateEntityNamesInFolder(parentFolderId, driveKey);
+		if (entityNamesInParentFolder.includes(folderName)) {
+			throw new Error(errorMessage.entityNameExists);
+		}
+
 		// Assert that there's enough AR available in the wallet
 		const folderData = await ArFSPrivateFolderTransactionData.from(folderName, driveKey);
-
 		const { metaDataBaseReward } = await this.estimateAndAssertCostOfFolderUpload(folderData);
 
 		// Create the folder and retrieve its folder ID

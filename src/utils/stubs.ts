@@ -50,10 +50,17 @@ export const stubPrivateDrive = new ArFSPrivateDrive(
 	'stubIV'
 );
 
-export const stubPublicFolder = (
-	folderId: FolderID = stubEntityID,
-	parentFolderId: FolderID = stubEntityID
-): ArFSPublicFolder =>
+interface StubFolderParams {
+	folderId?: FolderID;
+	parentFolderId?: FolderID;
+	folderName?: string;
+}
+
+export const stubPublicFolder = ({
+	folderId = stubEntityID,
+	parentFolderId = stubEntityID,
+	folderName = 'STUB NAME'
+}: StubFolderParams): ArFSPublicFolder =>
 	new ArFSPublicFolder(
 		'Integration Test',
 		'1.0',
@@ -61,17 +68,18 @@ export const stubPublicFolder = (
 		'application/json',
 		stubEntityID,
 		'folder',
-		'STUB NAME',
+		folderName,
 		stubTransactionID,
 		0,
 		parentFolderId,
 		folderId
 	);
 
-export const stubPrivateFolder = (
-	folderId: FolderID = stubEntityID,
-	parentFolderId: FolderID = stubEntityID
-): ArFSPrivateFolder =>
+export const stubPrivateFolder = ({
+	folderId = stubEntityID,
+	parentFolderId = stubEntityID,
+	folderName = 'STUB NAME'
+}: StubFolderParams): ArFSPrivateFolder =>
 	new ArFSPrivateFolder(
 		'Integration Test',
 		'1.0',
@@ -79,7 +87,7 @@ export const stubPrivateFolder = (
 		'application/json',
 		stubEntityID,
 		'folder',
-		'STUB NAME',
+		folderName,
 		stubTransactionID,
 		0,
 		parentFolderId,
