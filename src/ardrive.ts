@@ -241,9 +241,9 @@ export class ArDrive extends ArDriveAnonymous {
 		}
 
 		// Assert that there are no duplicate names in the destination folder
-		const entityNamesInParentFolder = await this.arFsDao.getPublicChildNamesOfParentFolderId(newParentFolderId);
+		const entityNamesInParentFolder = await this.arFsDao.getPublicEntityNamesInFolder(newParentFolderId);
 		if (entityNamesInParentFolder.includes(originalFileMetaData.name)) {
-			throw new Error(errorMessage.cannotUseDuplicateNameInParentFolder);
+			throw new Error(errorMessage.entityNameExists);
 		}
 
 		const fileTransactionData = new ArFSPublicFileMetadataTransactionData(
@@ -294,12 +294,9 @@ export class ArDrive extends ArDriveAnonymous {
 		}
 
 		// Assert that there are no duplicate names in the destination folder
-		const entityNamesInParentFolder = await this.arFsDao.getPrivateChildNamesOfParentFolderId(
-			newParentFolderId,
-			driveKey
-		);
+		const entityNamesInParentFolder = await this.arFsDao.getPrivateEntityNamesInFolder(newParentFolderId, driveKey);
 		if (entityNamesInParentFolder.includes(originalFileMetaData.name)) {
-			throw new Error(errorMessage.cannotUseDuplicateNameInParentFolder);
+			throw new Error(errorMessage.entityNameExists);
 		}
 
 		const fileTransactionData = await ArFSPrivateFileMetadataTransactionData.from(
@@ -480,7 +477,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// File cannot overwrite a folder names
 		if (filesAndFolderNames.folders.find((f) => f.folderName === destFileName)) {
-			throw new Error(errorMessage.cannotUseDuplicateNameInParentFolder);
+			throw new Error(errorMessage.entityNameExists);
 		}
 
 		// File is a new revision if destination name matches an existing file in the parent folder
@@ -539,7 +536,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Folder cannot overwrite a file names
 		if (filesAndFolderNames.files.find((f) => f.fileName === destFolderName)) {
-			throw new Error(errorMessage.cannotUseDuplicateNameInParentFolder);
+			throw new Error(errorMessage.entityNameExists);
 		}
 
 		// Use existing folder if destination name matches an existing folder within the parent folder
@@ -720,7 +717,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// File cannot overwrite a folder names
 		if (filesAndFolderNames.folders.find((f) => f.folderName === destFileName)) {
-			throw new Error(errorMessage.cannotUseDuplicateNameInParentFolder);
+			throw new Error(errorMessage.entityNameExists);
 		}
 
 		// File is a new revision if destination name matches an existing file in the parent folder
@@ -794,7 +791,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Folder cannot overwrite a file names
 		if (filesAndFolderNames.files.find((f) => f.fileName === destFolderName)) {
-			throw new Error(errorMessage.cannotUseDuplicateNameInParentFolder);
+			throw new Error(errorMessage.entityNameExists);
 		}
 
 		// Use existing folder if destination name matches an existing folder within the parent folder

@@ -851,14 +851,14 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	}
 
 	async getPublicFilesAndFolderNamesForParentFolderId(folderId: FolderID): Promise<FilesAndFolderNamesIds> {
-		return this.getFilesAndFolderNames(this.getPublicEntitiesWithParentFolderId(folderId, true));
+		return this.getFilesAndFolderNames(this.getPublicEntitiesInFolder(folderId, true));
 	}
 
 	async getPrivateFilesAndFolderNamesForParentFolderId(
 		folderId: FolderID,
 		driveKey: DriveKey
 	): Promise<FilesAndFolderNamesIds> {
-		return this.getFilesAndFolderNames(this.getPrivateEntitiesWithParentFolderId(folderId, driveKey, true));
+		return this.getFilesAndFolderNames(this.getPrivateEntitiesInFolder(folderId, driveKey, true));
 	}
 
 	async getPrivateChildrenFolderIds({

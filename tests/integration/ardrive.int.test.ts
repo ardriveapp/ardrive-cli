@@ -410,7 +410,7 @@ describe('ArDrive class - integrated', () => {
 				it('throws an error if destination folder has a conflicting FOLDER name', async () => {
 					await expectAsyncErrorThrow({
 						promiseToError: arDrive.uploadPublicFile(stubEntityID, wrappedFile, 'CONFLICTING_FOLDER_NAME'),
-						errorMessage: 'Parent folder already has an entity with the name!'
+						errorMessage: 'Entity name already exists in destination folder!'
 					});
 				});
 
@@ -450,7 +450,7 @@ describe('ArDrive class - integrated', () => {
 							await getStubDriveKey(),
 							'CONFLICTING_FOLDER_NAME'
 						),
-						errorMessage: 'Parent folder already has an entity with the name!'
+						errorMessage: 'Entity name already exists in destination folder!'
 					});
 				});
 
@@ -475,7 +475,7 @@ describe('ArDrive class - integrated', () => {
 
 			describe('movePublicFile', () => {
 				beforeEach(() => {
-					stub(arfsDao, 'getPublicChildNamesOfParentFolderId').resolves(['CONFLICTING_NAME']);
+					stub(arfsDao, 'getPublicEntityNamesInFolder').resolves(['CONFLICTING_NAME']);
 				});
 
 				it('throws an error if the destination folder has a conflicting entity name', async () => {
@@ -484,7 +484,7 @@ describe('ArDrive class - integrated', () => {
 
 					await expectAsyncErrorThrow({
 						promiseToError: arDrive.movePublicFile(stubEntityID, stubEntityIDAlt),
-						errorMessage: 'Parent folder already has an entity with the name!'
+						errorMessage: 'Entity name already exists in destination folder!'
 					});
 				});
 
@@ -516,7 +516,7 @@ describe('ArDrive class - integrated', () => {
 
 			describe('movePrivateFile', () => {
 				beforeEach(() => {
-					stub(arfsDao, 'getPrivateChildNamesOfParentFolderId').resolves(['CONFLICTING_NAME']);
+					stub(arfsDao, 'getPrivateEntityNamesInFolder').resolves(['CONFLICTING_NAME']);
 				});
 
 				it('throws an error if the destination folder has a conflicting entity name', async () => {
@@ -525,7 +525,7 @@ describe('ArDrive class - integrated', () => {
 
 					await expectAsyncErrorThrow({
 						promiseToError: arDrive.movePrivateFile(stubEntityID, stubEntityIDAlt, await getStubDriveKey()),
-						errorMessage: 'Parent folder already has an entity with the name!'
+						errorMessage: 'Entity name already exists in destination folder!'
 					});
 				});
 
