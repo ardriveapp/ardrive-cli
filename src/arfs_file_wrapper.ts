@@ -101,6 +101,7 @@ export class ArFSFolderToUpload {
 
 	baseCosts?: MetaDataBaseCosts;
 	existingId?: FolderID;
+	destinationName?: string;
 
 	constructor(public readonly filePath: FilePath, public readonly fileStats: fs.Stats) {
 		const entitiesInFolder = fs.readdirSync(this.filePath);

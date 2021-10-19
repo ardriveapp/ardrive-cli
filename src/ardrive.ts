@@ -92,19 +92,14 @@ export interface DriveUploadBaseCosts {
 	rootFolderMetaDataBaseReward: Winston;
 }
 
-interface RecursiveBulkUploadParams {
+interface RecursivePublicBulkUploadParams {
 	parentFolderId: FolderID;
 	wrappedFolder: ArFSFolderToUpload;
 	driveId: DriveID;
 }
 
-interface RecursivePublicBulkUploadParams extends RecursiveBulkUploadParams {
-	folderData: ArFSPublicFolderTransactionData;
-}
-
-interface RecursivePrivateBulkUploadParams extends RecursiveBulkUploadParams {
+interface RecursivePrivateBulkUploadParams extends RecursivePublicBulkUploadParams {
 	driveKey: DriveKey;
-	folderData: ArFSPrivateFolderTransactionData;
 }
 
 interface CreatePublicFolderParams {
@@ -550,25 +545,20 @@ export class ArDrive extends ArDriveAnonymous {
 		// Use existing folder id if the intended destination name
 		// conflicts with an existing folder in the destination folder
 		wrappedFolder.existingId = filesAndFolderNames.folders.find((f) => f.folderName === destFolderName)?.folderId;
+		wrappedFolder.destinationName = parentFolderName;
 
 		// Check for conflicting names and assign existing IDs for later use
 		await this.checkAndAssignExistingPublicNames(wrappedFolder);
 
-		const parentFolderData = new ArFSPublicFolderTransactionData(
-			parentFolderName ?? wrappedFolder.getBaseFileName()
-		);
-
 		// Estimate and assert the cost of the entire bulk upload
 		// This will assign the calculated base costs to each wrapped file and folder
-		// TODO: Update the cost estimation to not include existing folders
-		const bulkEstimation = await this.estimateAndAssertCostOfBulkUpload(wrappedFolder, undefined, parentFolderData);
+		const bulkEstimation = await this.estimateAndAssertCostOfBulkUpload(wrappedFolder, undefined, true);
 
 		// TODO: Add interactive confirmation of price estimation before uploading
 
 		const results = await this.recursivelyCreatePublicFolderAndUploadChildren({
 			parentFolderId,
 			wrappedFolder,
-			folderData: parentFolderData,
 			driveId
 		});
 
@@ -597,8 +587,7 @@ export class ArDrive extends ArDriveAnonymous {
 	protected async recursivelyCreatePublicFolderAndUploadChildren({
 		parentFolderId,
 		wrappedFolder,
-		driveId,
-		folderData
+		driveId
 	}: RecursivePublicBulkUploadParams): Promise<{
 		entityResults: ArFSEntityData[];
 		feeResults: ArFSFees;
@@ -612,6 +601,10 @@ export class ArDrive extends ArDriveAnonymous {
 			folderId = wrappedFolder.existingId;
 		} else {
 			// Create the parent folder
+			const folderData = new ArFSPublicFolderTransactionData(
+				wrappedFolder.destinationName ?? wrappedFolder.getBaseFileName()
+			);
+
 			const createFolderResult = await this.arFsDao.createPublicFolder({
 				folderData: folderData,
 				driveId,
@@ -678,14 +671,11 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Upload folders, and children of those folders
 		for await (const childFolder of wrappedFolder.folders) {
-			const folderData = new ArFSPublicFolderTransactionData(childFolder.getBaseFileName());
-
 			// Recursion alert, will keep creating folders of all nested folders
 			const results = await this.recursivelyCreatePublicFolderAndUploadChildren({
 				parentFolderId: folderId,
 				wrappedFolder: childFolder,
-				driveId,
-				folderData: folderData
+				driveId
 			});
 
 			// Capture all folder results
@@ -808,26 +798,20 @@ export class ArDrive extends ArDriveAnonymous {
 		// Use existing folder id if the intended destination name
 		// conflicts with an existing folder in the destination folder
 		wrappedFolder.existingId = filesAndFolderNames.folders.find((f) => f.folderName === destFolderName)?.folderId;
+		wrappedFolder.destinationName = parentFolderName;
 
 		// Check for conflicting names and assign existing IDs for later use
 		await this.checkAndAssignExistingPrivateNames(wrappedFolder, driveKey);
 
-		const parentFolderData = await ArFSPrivateFolderTransactionData.from(
-			parentFolderName ?? wrappedFolder.getBaseFileName(),
-			driveKey
-		);
-
 		// Estimate and assert the cost of the entire bulk upload
 		// This will assign the calculated base costs to each wrapped file and folder
-		// TODO: Update the cost estimation to not include existing folders
-		const bulkEstimation = await this.estimateAndAssertCostOfBulkUpload(wrappedFolder, driveKey, parentFolderData);
+		const bulkEstimation = await this.estimateAndAssertCostOfBulkUpload(wrappedFolder, driveKey, true);
 
 		// TODO: Add interactive confirmation of price estimation before uploading
 
 		const results = await this.recursivelyCreatePrivateFolderAndUploadChildren({
 			parentFolderId,
 			wrappedFolder,
-			folderData: parentFolderData,
 			driveKey,
 			driveId
 		});
@@ -929,8 +913,7 @@ export class ArDrive extends ArDriveAnonymous {
 		wrappedFolder,
 		driveId,
 		parentFolderId,
-		driveKey,
-		folderData
+		driveKey
 	}: RecursivePrivateBulkUploadParams): Promise<{
 		entityResults: ArFSEntityData[];
 		feeResults: ArFSFees;
@@ -945,6 +928,10 @@ export class ArDrive extends ArDriveAnonymous {
 			folderId = wrappedFolder.existingId;
 		} else {
 			// Create parent folder
+			const folderData = await ArFSPrivateFolderTransactionData.from(
+				wrappedFolder.destinationName ?? wrappedFolder.getBaseFileName(),
+				driveKey
+			);
 			const createFolderResult = await this.arFsDao.createPrivateFolder({
 				folderData: folderData,
 				driveId,
@@ -1014,15 +1001,12 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Upload folders, and children of those folders
 		for await (const childFolder of wrappedFolder.folders) {
-			const folderData = await ArFSPrivateFolderTransactionData.from(childFolder.getBaseFileName(), driveKey);
-
 			// Recursion alert, will keep creating folders of all nested folders
 			const results = await this.recursivelyCreatePrivateFolderAndUploadChildren({
 				parentFolderId: folderId,
 				wrappedFolder: childFolder,
 				driveId,
-				driveKey,
-				folderData: folderData
+				driveKey
 			});
 
 			// Capture all folder results
@@ -1214,31 +1198,31 @@ export class ArDrive extends ArDriveAnonymous {
 	async estimateAndAssertCostOfBulkUpload(
 		folderToUpload: ArFSFolderToUpload,
 		driveKey?: DriveKey,
-		parentFolderMetaData?: ArFSObjectTransactionData
+		isParentFolder = false
 	): Promise<{ totalPrice: Winston; totalFilePrice: Winston; communityWinstonTip: Winston }> {
-		// parentFolderMetaData will only exist if this folder is the parent folder
-		// Recursing children folders will not have meta data assigned
-		const isParentFolder: boolean = parentFolderMetaData !== undefined;
-
-		const folderMetadataTrxData = await (async () => {
-			if (parentFolderMetaData) {
-				return parentFolderMetaData;
-			}
-			if (driveKey) {
-				return ArFSPrivateFolderTransactionData.from(folderToUpload.getBaseFileName(), driveKey);
-			}
-			return new ArFSPublicFolderTransactionData(folderToUpload.getBaseFileName());
-		})();
-		const metaDataBaseReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(
-			folderMetadataTrxData.sizeOf()
-		);
-		const parentFolderWinstonPrice = metaDataBaseReward.toString();
-
-		// Assign base costs to folder
-		folderToUpload.baseCosts = { metaDataBaseReward: parentFolderWinstonPrice };
-
-		let totalPrice = +parentFolderWinstonPrice;
+		let totalPrice = 0;
 		let totalFilePrice = 0;
+
+		if (!folderToUpload.existingId) {
+			// Don't estimate cost of folder metadata if using existing folder
+			const folderMetadataTrxData = await (async () => {
+				const folderName = folderToUpload.destinationName ?? folderToUpload.getBaseFileName();
+
+				if (driveKey) {
+					return ArFSPrivateFolderTransactionData.from(folderName, driveKey);
+				}
+				return new ArFSPublicFolderTransactionData(folderName);
+			})();
+			const metaDataBaseReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(
+				folderMetadataTrxData.sizeOf()
+			);
+			const parentFolderWinstonPrice = metaDataBaseReward.toString();
+
+			// Assign base costs to folder
+			folderToUpload.baseCosts = { metaDataBaseReward: parentFolderWinstonPrice };
+
+			totalPrice += +parentFolderWinstonPrice;
+		}
 
 		for await (const file of folderToUpload.files) {
 			const fileSize = driveKey ? file.encryptedDataSize() : file.fileStats.size;
