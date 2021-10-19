@@ -1,4 +1,5 @@
 import { cliWalletDao } from '..';
+import { ArweaveAddress } from '../arweave_address';
 import { CLICommand } from '../CLICommand';
 import { ParametersHelper } from '../CLICommand';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
@@ -18,18 +19,18 @@ new CLICommand({
 		assertARPrecision(options.arAmount);
 		const parameters = new ParametersHelper(options);
 		const arAmount: number = +options.arAmount;
-		const destAddress: string = options.destAddress;
+		const destAddress = new ArweaveAddress(options.destAddress);
 		const wallet = await parameters.getRequiredWallet();
 		const walletAddress = await wallet.getAddress();
-		console.log(walletAddress);
+		console.log(`Source address: ${walletAddress.toString()}`);
 		console.log(`AR amount sent: ${arAmount.toFixed(12)}`);
-		console.log(`Destination address: ${destAddress}`);
+		console.log(`Destination address: ${destAddress.toString()}`);
 		const rewardSetting = options.boost ? { feeMultiple: +options.boost } : undefined;
 
 		const arTransferResult = await cliWalletDao.sendARToAddress(
 			arAmount,
 			wallet,
-			options.destAddress,
+			destAddress,
 			rewardSetting,
 			options.dryRun,
 			[

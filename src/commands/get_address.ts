@@ -8,7 +8,7 @@ new CLICommand({
 	async action(options) {
 		const parameters = new ParametersHelper(options);
 		const address = await parameters.getWalletAddress();
-		console.log(address);
+		console.log(address.toString());
 		return SUCCESS_EXIT_CODE;
 	}
 });

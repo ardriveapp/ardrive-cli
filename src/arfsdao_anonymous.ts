@@ -2,7 +2,7 @@
 import Arweave from 'arweave';
 import { ArFSDriveEntity, GQLEdgeInterface } from 'ardrive-core-js';
 import { buildQuery } from './query';
-import { DriveID, FolderID, FileID, DEFAULT_APP_NAME, DEFAULT_APP_VERSION, EntityID, ArweaveAddress } from './types';
+import { DriveID, FolderID, FileID, DEFAULT_APP_NAME, DEFAULT_APP_VERSION, EntityID } from './types';
 import { latestRevisionFilter, latestRevisionFilterForDrives } from './utils/filter_methods';
 import { FolderHierarchy } from './folderHierarchy';
 import { ArFSPublicDriveBuilder, SafeArFSDriveBuilder } from './utils/arfs_builders/arfs_drive_builders';
@@ -10,6 +10,7 @@ import { ArFSPublicFolderBuilder } from './utils/arfs_builders/arfs_folder_build
 import { ArFSPublicFileBuilder } from './utils/arfs_builders/arfs_file_builders';
 import { ArFSPublicDrive, ArFSPublicFile, ArFSPublicFileOrFolderWithPaths, ArFSPublicFolder } from './arfs_entities';
 import { PrivateKeyData } from './private_key_data';
+import { ArweaveAddress } from './arweave_address';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 
