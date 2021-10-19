@@ -45,6 +45,7 @@ import {
 import { stubEntityID, stubTransactionID } from './utils/stubs';
 import { errorMessage } from './error_message';
 import { PrivateKeyData } from './private_key_data';
+import { EntityNamesAndIds } from './utils/filter_methods';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 
@@ -98,12 +99,12 @@ interface RecursiveBulkUploadParams {
 }
 
 interface RecursivePublicBulkUploadParams extends RecursiveBulkUploadParams {
-	parentFolderDataOrID: ArFSPublicFolderTransactionData | FolderID;
+	folderData: ArFSPublicFolderTransactionData;
 }
 
 interface RecursivePrivateBulkUploadParams extends RecursiveBulkUploadParams {
 	driveKey: DriveKey;
-	parentFolderDataOrID: ArFSPrivateFolderTransactionData | FolderID;
+	folderData: ArFSPrivateFolderTransactionData;
 }
 
 interface CreatePublicFolderParams {
@@ -548,7 +549,10 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Use existing folder id if the intended destination name
 		// conflicts with an existing folder in the destination folder
-		const existingFolderId = filesAndFolderNames.folders.find((f) => f.folderName === destFolderName)?.folderId;
+		wrappedFolder.existingId = filesAndFolderNames.folders.find((f) => f.folderName === destFolderName)?.folderId;
+
+		// Check for conflicting names and assign existing IDs for later use
+		await this.checkAndAssignExistingPublicNames(wrappedFolder);
 
 		const parentFolderData = new ArFSPublicFolderTransactionData(
 			parentFolderName ?? wrappedFolder.getBaseFileName()
@@ -556,6 +560,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Estimate and assert the cost of the entire bulk upload
 		// This will assign the calculated base costs to each wrapped file and folder
+		// TODO: Update the cost estimation to not include existing folders
 		const bulkEstimation = await this.estimateAndAssertCostOfBulkUpload(wrappedFolder, undefined, parentFolderData);
 
 		// TODO: Add interactive confirmation of price estimation before uploading
@@ -563,7 +568,7 @@ export class ArDrive extends ArDriveAnonymous {
 		const results = await this.recursivelyCreatePublicFolderAndUploadChildren({
 			parentFolderId,
 			wrappedFolder,
-			parentFolderDataOrID: existingFolderId ?? parentFolderData,
+			folderData: parentFolderData,
 			driveId
 		});
 
@@ -593,7 +598,7 @@ export class ArDrive extends ArDriveAnonymous {
 		parentFolderId,
 		wrappedFolder,
 		driveId,
-		parentFolderDataOrID
+		folderData
 	}: RecursivePublicBulkUploadParams): Promise<{
 		entityResults: ArFSEntityData[];
 		feeResults: ArFSFees;
@@ -602,13 +607,13 @@ export class ArDrive extends ArDriveAnonymous {
 		let uploadEntityResults: ArFSEntityData[] = [];
 		let folderId: FolderID;
 
-		if (typeof parentFolderDataOrID === 'string') {
+		if (wrappedFolder.existingId) {
 			// Use existing parent folder ID for bulk upload
-			folderId = parentFolderDataOrID;
+			folderId = wrappedFolder.existingId;
 		} else {
 			// Create the parent folder
 			const createFolderResult = await this.arFsDao.createPublicFolder({
-				folderData: parentFolderDataOrID,
+				folderData: folderData,
 				driveId,
 				rewardSettings: {
 					reward: wrappedFolder.getBaseCosts().metaDataBaseReward,
@@ -650,7 +655,8 @@ export class ArDrive extends ArDriveAnonymous {
 				wrappedFile,
 				driveId,
 				fileDataRewardSettings,
-				metadataRewardSettings
+				metadataRewardSettings,
+				wrappedFile.existingId
 			);
 
 			// Capture all file results
@@ -679,7 +685,7 @@ export class ArDrive extends ArDriveAnonymous {
 				parentFolderId: folderId,
 				wrappedFolder: childFolder,
 				driveId,
-				parentFolderDataOrID: folderData
+				folderData: folderData
 			});
 
 			// Capture all folder results
@@ -801,7 +807,10 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Use existing folder id if the intended destination name
 		// conflicts with an existing folder in the destination folder
-		const existingFolderId = filesAndFolderNames.folders.find((f) => f.folderName === destFolderName)?.folderId;
+		wrappedFolder.existingId = filesAndFolderNames.folders.find((f) => f.folderName === destFolderName)?.folderId;
+
+		// Check for conflicting names and assign existing IDs for later use
+		await this.checkAndAssignExistingPrivateNames(wrappedFolder, driveKey);
 
 		const parentFolderData = await ArFSPrivateFolderTransactionData.from(
 			parentFolderName ?? wrappedFolder.getBaseFileName(),
@@ -810,6 +819,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Estimate and assert the cost of the entire bulk upload
 		// This will assign the calculated base costs to each wrapped file and folder
+		// TODO: Update the cost estimation to not include existing folders
 		const bulkEstimation = await this.estimateAndAssertCostOfBulkUpload(wrappedFolder, driveKey, parentFolderData);
 
 		// TODO: Add interactive confirmation of price estimation before uploading
@@ -817,7 +827,7 @@ export class ArDrive extends ArDriveAnonymous {
 		const results = await this.recursivelyCreatePrivateFolderAndUploadChildren({
 			parentFolderId,
 			wrappedFolder,
-			parentFolderDataOrID: existingFolderId ?? parentFolderData,
+			folderData: parentFolderData,
 			driveKey,
 			driveId
 		});
@@ -844,12 +854,83 @@ export class ArDrive extends ArDriveAnonymous {
 		});
 	}
 
+	protected async checkAndAssignExistingNames(
+		wrappedFolder: ArFSFolderToUpload,
+		getExistingNamesFn: (parentFolderId: FolderID) => Promise<EntityNamesAndIds>
+	): Promise<void> {
+		if (!wrappedFolder.existingId) {
+			// Folder has no existing ID to check
+			return;
+		}
+
+		const existingEntityNamesAndIds = await getExistingNamesFn(wrappedFolder.existingId);
+
+		for await (const file of wrappedFolder.files) {
+			const baseFileName = file.getBaseFileName();
+
+			const folderNameConflict = existingEntityNamesAndIds.folders.find(
+				({ folderName }) => folderName === baseFileName
+			);
+
+			// File name cannot conflict with a folder name
+			if (folderNameConflict) {
+				throw new Error(errorMessage.entityNameExists);
+			}
+
+			const fileNameConflict = existingEntityNamesAndIds.files.find(({ fileName }) => fileName === baseFileName);
+
+			// Conflicting file name creates a REVISION by default
+			if (fileNameConflict) {
+				// Assigns existing id for later use
+				file.existingId = fileNameConflict.fileId;
+			}
+		}
+
+		for await (const folder of wrappedFolder.folders) {
+			const baseFolderName = folder.getBaseFileName();
+
+			const fileNameConflict = existingEntityNamesAndIds.files.find(
+				({ fileName }) => fileName === baseFolderName
+			);
+
+			// Folder name cannot conflict with a file name
+			if (fileNameConflict) {
+				throw new Error(errorMessage.entityNameExists);
+			}
+
+			const folderNameConflict = existingEntityNamesAndIds.folders.find(
+				({ folderName }) => folderName === baseFolderName
+			);
+
+			// Conflicting folder name uses EXISTING folder by default
+			if (folderNameConflict) {
+				// Assigns existing id for later use
+				folder.existingId = folderNameConflict.folderId;
+			}
+		}
+	}
+
+	protected async checkAndAssignExistingPublicNames(wrappedFolder: ArFSFolderToUpload): Promise<void> {
+		this.checkAndAssignExistingNames(wrappedFolder, (parentFolderId) =>
+			this.arFsDao.getPublicEntityNamesAndIdsInFolder(parentFolderId)
+		);
+	}
+
+	protected async checkAndAssignExistingPrivateNames(
+		wrappedFolder: ArFSFolderToUpload,
+		driveKey: DriveKey
+	): Promise<void> {
+		this.checkAndAssignExistingNames(wrappedFolder, (parentFolderId) =>
+			this.arFsDao.getPrivateEntityNamesAndIdsInFolder(parentFolderId, driveKey)
+		);
+	}
+
 	protected async recursivelyCreatePrivateFolderAndUploadChildren({
 		wrappedFolder,
 		driveId,
 		parentFolderId,
 		driveKey,
-		parentFolderDataOrID
+		folderData
 	}: RecursivePrivateBulkUploadParams): Promise<{
 		entityResults: ArFSEntityData[];
 		feeResults: ArFSFees;
@@ -858,14 +939,14 @@ export class ArDrive extends ArDriveAnonymous {
 		let uploadEntityResults: ArFSEntityData[] = [];
 		let folderId: FolderID;
 
-		if (typeof parentFolderDataOrID === 'string') {
+		if (wrappedFolder.existingId) {
 			// Use existing parent folder ID for bulk upload.
 			// This happens when the parent folder's name conflicts
-			folderId = parentFolderDataOrID;
+			folderId = wrappedFolder.existingId;
 		} else {
 			// Create parent folder
 			const createFolderResult = await this.arFsDao.createPrivateFolder({
-				folderData: parentFolderDataOrID,
+				folderData: folderData,
 				driveId,
 				rewardSettings: {
 					reward: wrappedFolder.getBaseCosts().metaDataBaseReward,
@@ -909,7 +990,8 @@ export class ArDrive extends ArDriveAnonymous {
 				driveId,
 				driveKey,
 				fileDataRewardSettings,
-				metadataRewardSettings
+				metadataRewardSettings,
+				wrappedFile.existingId
 			);
 
 			// Capture all file results
@@ -940,7 +1022,7 @@ export class ArDrive extends ArDriveAnonymous {
 				wrappedFolder: childFolder,
 				driveId,
 				driveKey,
-				parentFolderDataOrID: folderData
+				folderData: folderData
 			});
 
 			// Capture all folder results
