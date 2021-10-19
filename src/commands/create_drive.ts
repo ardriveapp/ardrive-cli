@@ -25,10 +25,10 @@ new CLICommand({
 		});
 		const createDriveResult = await (async function () {
 			if (await parameters.getIsPrivate()) {
-				const newDriveData = await PrivateDriveKeyData.from(
-					await parameters.getDrivePassword(true),
-					(wallet as JWKWallet).getPrivateKey()
-				);
+				const drivePassword = await parameters.getDrivePassword(true);
+				const walletPrivateKey = (wallet as JWKWallet).getPrivateKey();
+				const newDriveData = await PrivateDriveKeyData.from(drivePassword, walletPrivateKey);
+				await ardrive.assertValidPassword(drivePassword);
 				return ardrive.createPrivateDrive(options.driveName, newDriveData);
 			} else {
 				return ardrive.createPublicDrive(options.driveName);

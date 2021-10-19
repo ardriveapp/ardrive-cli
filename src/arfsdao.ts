@@ -34,7 +34,7 @@ import {
 	ArFSPublicFileMetadataTransactionData,
 	ArFSPublicFolderTransactionData
 } from './arfs_trx_data_types';
-import { buildQuery } from './query';
+import { ASCENDING_ORDER, buildQuery } from './query';
 import { ArFSFileToUpload } from './arfs_file_wrapper';
 import {
 	DriveID,
@@ -47,9 +47,13 @@ import {
 	RewardSettings
 } from './types';
 import { CreateTransactionInterface } from 'arweave/node/common';
-import { ArFSPrivateDriveBuilder } from './utils/arfs_builders/arfs_drive_builders';
 import { ArFSPrivateFileBuilder, ArFSPublicFileBuilder } from './utils/arfs_builders/arfs_file_builders';
 import { ArFSPrivateFolderBuilder, ArFSPublicFolderBuilder } from './utils/arfs_builders/arfs_folder_builders';
+import {
+	ArFSPrivateDriveBuilder,
+	ENCRYPTED_DATA_PLACEHOLDER,
+	SafeArFSDriveBuilder
+} from './utils/arfs_builders/arfs_drive_builders';
 import { latestRevisionFilter } from './utils/filter_methods';
 import { FolderHierarchy } from './folderHierarchy';
 import {
@@ -87,6 +91,7 @@ import {
 } from './arfs_entities';
 import { ArFSDAOAnonymous } from './arfsdao_anonymous';
 import { ArFSFileOrFolderBuilder } from './utils/arfs_builders/arfs_builders';
+import { PrivateKeyData } from './private_key_data';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 
@@ -667,13 +672,13 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const allFolders: ArFSPrivateFolder[] = [];
 
 		while (hasNextPage) {
-			const gqlQuery = buildQuery(
-				[
+			const gqlQuery = buildQuery({
+				tags: [
 					{ name: 'Drive-Id', value: driveId },
 					{ name: 'Entity-Type', value: 'folder' }
 				],
 				cursor
-			);
+			});
 
 			const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 			const { data } = response.data;
@@ -702,13 +707,13 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const allFiles: ArFSPrivateFile[] = [];
 
 		while (hasNextPage) {
-			const gqlQuery = buildQuery(
-				[
+			const gqlQuery = buildQuery({
+				tags: [
 					{ name: 'Parent-Folder-Id', value: folderIDs },
 					{ name: 'Entity-Type', value: 'file' }
 				],
 				cursor
-			);
+			});
 
 			const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 			const { data } = response.data;
@@ -743,14 +748,14 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const owner = await this.wallet.getAddress();
 
 		while (hasNextPage) {
-			const gqlQuery = buildQuery(
-				[
+			const gqlQuery = buildQuery({
+				tags: [
 					{ name: 'Parent-Folder-Id', value: parentFolderId },
 					{ name: 'Entity-Type', value: ['file', 'folder'] }
 				],
 				cursor,
-				filterOnOwner ? owner : undefined
-			);
+				owner: filterOnOwner ? owner : undefined
+			});
 
 			const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 			const { data } = response.data;
@@ -876,5 +881,39 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		const entitiesWithPath = children.map((entity) => new ArFSPrivateFileOrFolderWithPaths(entity, hierarchy));
 		return entitiesWithPath;
+	}
+
+	async assertValidPassword(password: string): Promise<void> {
+		const wallet = this.wallet;
+		const walletAddress = await wallet.getAddress();
+		const query = buildQuery({
+			tags: [
+				{ name: 'Entity-Type', value: 'drive' },
+				{ name: 'Drive-Privacy', value: 'private' }
+			],
+			owner: walletAddress,
+			sort: ASCENDING_ORDER
+		});
+		const response = await this.arweave.api.post(graphQLURL, query);
+		const { data } = response.data;
+		const { transactions } = data;
+		const { edges } = transactions;
+		if (!edges.length) {
+			// No drive has been created for this wallet
+			return;
+		}
+		const { node }: { node: GQLNodeInterface } = edges[0];
+		const safeDriveBuilder = SafeArFSDriveBuilder.fromArweaveNode(
+			node,
+			this.arweave,
+			new PrivateKeyData({ password, wallet: this.wallet as JWKWallet })
+		);
+		const safelyBuiltDrive = await safeDriveBuilder.build();
+		if (
+			safelyBuiltDrive.name === ENCRYPTED_DATA_PLACEHOLDER ||
+			safelyBuiltDrive.rootFolderId === ENCRYPTED_DATA_PLACEHOLDER
+		) {
+			throw new Error(`Invalid password! Please type the same as your other private drives!`);
+		}
 	}
 }
