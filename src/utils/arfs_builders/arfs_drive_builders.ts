@@ -22,7 +22,7 @@ interface DriveMetaDataTransactionData extends EntityMetaDataTransactionData {
 	rootFolderId: FolderID;
 }
 
-const ENCRYPTED_DATA_PLACEHOLDER = 'ENCRYPTED';
+export const ENCRYPTED_DATA_PLACEHOLDER = 'ENCRYPTED';
 
 export class ArFSPublicDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPublicDrive> {
 	drivePrivacy?: DrivePrivacy;

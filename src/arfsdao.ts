@@ -47,7 +47,11 @@ import {
 	RewardSettings
 } from './types';
 import { CreateTransactionInterface } from 'arweave/node/common';
-import { ArFSPrivateDriveBuilder, SafeArFSDriveBuilder } from './utils/arfs_builders/arfs_drive_builders';
+import {
+	ArFSPrivateDriveBuilder,
+	ENCRYPTED_DATA_PLACEHOLDER,
+	SafeArFSDriveBuilder
+} from './utils/arfs_builders/arfs_drive_builders';
 import { ArFSPrivateFileBuilder } from './utils/arfs_builders/arfs_file_builders';
 import { ArFSPrivateFolderBuilder } from './utils/arfs_builders/arfs_folder_builders';
 import { latestRevisionFilter } from './utils/filter_methods';
@@ -801,28 +805,22 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			owner: walletAddress,
 			sort: ASCENDING_ORDER
 		});
-		const arweave = this.arweave;
-		const response = await arweave.api.post(graphQLURL, query);
+		const response = await this.arweave.api.post(graphQLURL, query);
 		const { data } = response.data;
 		const { transactions } = data;
 		const { edges } = transactions;
 		const { node }: { node: GQLNodeInterface } = edges[0];
 		const safeDriveBuilder = SafeArFSDriveBuilder.fromArweaveNode(
 			node,
-			arweave,
+			this.arweave,
 			new PrivateKeyData({ password, wallet: this.wallet as JWKWallet })
 		);
-		const encryptedDrive = await safeDriveBuilder.build();
-		const driveId = encryptedDrive.driveId;
-		const driveKey = await deriveDriveKey(
-			password,
-			driveId,
-			JSON.stringify((this.wallet as JWKWallet).getPrivateKey())
-		);
-		const driveBuilder = ArFSPrivateDriveBuilder.fromArweaveNode(node, arweave, driveKey);
-		// successfully builds only if the drive key is correct
-		await driveBuilder.build(node).catch((e) => {
-			throw new Error(`Invalid password! Please type the same than your other drives - ${e.message}`);
-		});
+		const safelyBuiltDrive = await safeDriveBuilder.build();
+		if (
+			safelyBuiltDrive.name === ENCRYPTED_DATA_PLACEHOLDER ||
+			safelyBuiltDrive.rootFolderId === ENCRYPTED_DATA_PLACEHOLDER
+		) {
+			throw new Error(`Invalid password! Please type the same as your other private drives!`);
+		}
 	}
 }
