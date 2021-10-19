@@ -357,9 +357,9 @@ export class ArDrive extends ArDriveAnonymous {
 		}
 
 		// Assert that there are no duplicate names in the destination folder
-		const entityNamesInParentFolder = await this.arFsDao.getPublicChildNamesOfParentFolderId(newParentFolderId);
+		const entityNamesInParentFolder = await this.arFsDao.getPublicEntityNamesInFolder(newParentFolderId);
 		if (entityNamesInParentFolder.includes(originalFolderMetaData.name)) {
-			throw new Error(errorMessage.cannotUseDuplicateNameInParentFolder);
+			throw new Error(errorMessage.entityNameExists);
 		}
 
 		const childrenFolderIds = await this.arFsDao.getPublicChildrenFolderIds({
@@ -418,12 +418,9 @@ export class ArDrive extends ArDriveAnonymous {
 		}
 
 		// Assert that there are no duplicate names in the destination folder
-		const entityNamesInParentFolder = await this.arFsDao.getPrivateChildNamesOfParentFolderId(
-			newParentFolderId,
-			driveKey
-		);
+		const entityNamesInParentFolder = await this.arFsDao.getPrivateEntityNamesInFolder(newParentFolderId, driveKey);
 		if (entityNamesInParentFolder.includes(originalFolderMetaData.name)) {
-			throw new Error(errorMessage.cannotUseDuplicateNameInParentFolder);
+			throw new Error(errorMessage.entityNameExists);
 		}
 
 		const childrenFolderIds = await this.arFsDao.getPrivateChildrenFolderIds({
@@ -958,9 +955,9 @@ export class ArDrive extends ArDriveAnonymous {
 
 	async createPublicFolder({ folderName, driveId, parentFolderId }: CreatePublicFolderParams): Promise<ArFSResult> {
 		// Assert that there are no duplicate names in the destination folder
-		const entityNamesInParentFolder = await this.arFsDao.getPublicChildNamesOfParentFolderId(parentFolderId);
+		const entityNamesInParentFolder = await this.arFsDao.getPublicEntityNamesInFolder(parentFolderId);
 		if (entityNamesInParentFolder.includes(folderName)) {
-			throw new Error(errorMessage.cannotUseDuplicateNameInParentFolder);
+			throw new Error(errorMessage.entityNameExists);
 		}
 
 		// Assert that there's enough AR available in the wallet
@@ -998,12 +995,9 @@ export class ArDrive extends ArDriveAnonymous {
 		parentFolderId
 	}: CreatePrivateFolderParams): Promise<ArFSResult> {
 		// Assert that there are no duplicate names in the destination folder
-		const entityNamesInParentFolder = await this.arFsDao.getPrivateChildNamesOfParentFolderId(
-			parentFolderId,
-			driveKey
-		);
+		const entityNamesInParentFolder = await this.arFsDao.getPrivateEntityNamesInFolder(parentFolderId, driveKey);
 		if (entityNamesInParentFolder.includes(folderName)) {
-			throw new Error(errorMessage.cannotUseDuplicateNameInParentFolder);
+			throw new Error(errorMessage.entityNameExists);
 		}
 
 		// Assert that there's enough AR available in the wallet
