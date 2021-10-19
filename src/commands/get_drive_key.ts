@@ -1,18 +1,14 @@
 import { CLICommand, ParametersHelper } from '../CLICommand';
-import {
-	DriveIdParameter,
-	PrivateParameter,
-	UnsafeDrivePasswordParameter,
-	WalletFileParameter
-} from '../parameter_declarations';
+import { DriveCreationPrivacyParameters, DriveIdParameter } from '../parameter_declarations';
+import { urlEncodeHashKey } from '../utils';
 
 new CLICommand({
 	name: 'get-drive-key',
-	parameters: [WalletFileParameter, DriveIdParameter, UnsafeDrivePasswordParameter, PrivateParameter],
+	parameters: [...DriveCreationPrivacyParameters, DriveIdParameter],
 	async action(options) {
 		const parameters = new ParametersHelper(options);
-		const driveId = await parameters.getRequiredParameterValue(DriveIdParameter);
+		const driveId = parameters.getRequiredParameterValue(DriveIdParameter);
 		const driveKey = await parameters.getDriveKey({ driveId });
-		console.log(driveKey.toString('base64').replace('=', ''));
+		console.log(urlEncodeHashKey(driveKey));
 	}
 });
