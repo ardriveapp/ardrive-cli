@@ -809,6 +809,10 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const { data } = response.data;
 		const { transactions } = data;
 		const { edges } = transactions;
+		if (!edges.length) {
+				// No drive has been created for this wallet
+				return;
+		}
 		const { node }: { node: GQLNodeInterface } = edges[0];
 		const safeDriveBuilder = SafeArFSDriveBuilder.fromArweaveNode(
 			node,
