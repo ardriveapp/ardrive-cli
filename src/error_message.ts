@@ -1,7 +1,7 @@
 import { FolderID } from './types';
 
 export const errorMessage = {
-	cannotUseDuplicateNameInParentFolder: 'Parent folder already has an entity with the name!',
+	entityNameExists: 'Entity name already exists in destination folder!',
 	cannotMoveToDifferentDrive: 'Entity must stay in the same drive!',
 	cannotMoveParentIntoChildFolder: 'Parent folder cannot be moved inside any of its children folders!',
 	folderCannotMoveIntoItself: 'Folders cannot be moved into themselves!',

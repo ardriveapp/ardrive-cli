@@ -113,17 +113,17 @@ describe('ArDrive class - integrated', () => {
 	describe('folder function', () => {
 		describe('createPublicFolder', () => {
 			beforeEach(() => {
-				stub(arfsDao, 'getPublicChildNamesOfParentFolderId').resolves(['CONFLICTING_NAME']);
+				stub(arfsDao, 'getPublicEntityNamesInFolder').resolves(['CONFLICTING_NAME']);
 			});
 
-			it('throws an error if the folder name conflicts with another folder in the parent', async () => {
+			it('throws an error if the folder name conflicts with another with another ENTITY name in the destination folder', async () => {
 				await expectAsyncErrorThrow({
 					promiseToError: arDrive.createPublicFolder({
 						folderName: 'CONFLICTING_NAME',
 						driveId: stubEntityID,
 						parentFolderId: stubEntityID
 					}),
-					errorMessage: 'Parent folder already has an entity with the name!'
+					errorMessage: 'Entity name already exists in destination folder!'
 				});
 			});
 
@@ -141,10 +141,10 @@ describe('ArDrive class - integrated', () => {
 
 		describe('createPrivateFolder', () => {
 			beforeEach(() => {
-				stub(arfsDao, 'getPrivateChildNamesOfParentFolderId').resolves(['CONFLICTING_NAME']);
+				stub(arfsDao, 'getPrivateEntityNamesInFolder').resolves(['CONFLICTING_NAME']);
 			});
 
-			it('throws an error if the folder name conflicts with another folder in the parent', async () => {
+			it('throws an error if the folder name conflicts with another with another ENTITY name in the destination folder', async () => {
 				await expectAsyncErrorThrow({
 					promiseToError: arDrive.createPrivateFolder({
 						folderName: 'CONFLICTING_NAME',
@@ -152,7 +152,7 @@ describe('ArDrive class - integrated', () => {
 						parentFolderId: stubEntityID,
 						driveKey: await getStubDriveKey()
 					}),
-					errorMessage: 'Parent folder already has an entity with the name!'
+					errorMessage: 'Entity name already exists in destination folder!'
 				});
 			});
 
@@ -181,10 +181,10 @@ describe('ArDrive class - integrated', () => {
 			};
 
 			beforeEach(() => {
-				stub(arfsDao, 'getPublicChildNamesOfParentFolderId').resolves(['CONFLICTING_NAME']);
+				stub(arfsDao, 'getPublicEntityNamesInFolder').resolves(['CONFLICTING_NAME']);
 			});
 
-			it('throws an error if the folder name conflicts with another folder in the parent', async () => {
+			it('throws an error if the folder name conflicts with another with another ENTITY name in the destination folder', async () => {
 				stub(arfsDao, 'getPublicFolder').resolves(stubPublicFolder({ folderName: 'CONFLICTING_NAME' }));
 				stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityID);
 
@@ -193,7 +193,7 @@ describe('ArDrive class - integrated', () => {
 						folderId: stubEntityID,
 						newParentFolderId: stubEntityIDAlt
 					}),
-					errorMessage: 'Parent folder already has an entity with the name!'
+					errorMessage: 'Entity name already exists in destination folder!'
 				});
 			});
 
@@ -289,10 +289,10 @@ describe('ArDrive class - integrated', () => {
 			};
 
 			beforeEach(() => {
-				stub(arfsDao, 'getPrivateChildNamesOfParentFolderId').resolves(['CONFLICTING_NAME']);
+				stub(arfsDao, 'getPrivateEntityNamesInFolder').resolves(['CONFLICTING_NAME']);
 			});
 
-			it('throws an error if the folder name conflicts with another folder in the parent', async () => {
+			it('throws an error if the folder name conflicts with another with another ENTITY name in the destination folder', async () => {
 				stub(arfsDao, 'getPrivateFolder').resolves(stubPrivateFolder({ folderName: 'CONFLICTING_NAME' }));
 				stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityID);
 
@@ -302,7 +302,7 @@ describe('ArDrive class - integrated', () => {
 						newParentFolderId: stubEntityIDAlt,
 						driveKey: await getStubDriveKey()
 					}),
-					errorMessage: 'Parent folder already has an entity with the name!'
+					errorMessage: 'Entity name already exists in destination folder!'
 				});
 			});
 
