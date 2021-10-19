@@ -243,6 +243,7 @@ export class ArDrive extends ArDriveAnonymous {
 		// Assert that there are no duplicate names in the destination folder
 		const entityNamesInParentFolder = await this.arFsDao.getPublicEntityNamesInFolder(newParentFolderId);
 		if (entityNamesInParentFolder.includes(originalFileMetaData.name)) {
+			// TODO: Add optional interactive prompt to resolve name conflicts in ticket PE-599
 			throw new Error(errorMessage.entityNameExists);
 		}
 
@@ -296,6 +297,7 @@ export class ArDrive extends ArDriveAnonymous {
 		// Assert that there are no duplicate names in the destination folder
 		const entityNamesInParentFolder = await this.arFsDao.getPrivateEntityNamesInFolder(newParentFolderId, driveKey);
 		if (entityNamesInParentFolder.includes(originalFileMetaData.name)) {
+			// TODO: Add optional interactive prompt to resolve name conflicts in ticket PE-599
 			throw new Error(errorMessage.entityNameExists);
 		}
 
@@ -356,6 +358,7 @@ export class ArDrive extends ArDriveAnonymous {
 		// Assert that there are no duplicate names in the destination folder
 		const entityNamesInParentFolder = await this.arFsDao.getPublicEntityNamesInFolder(newParentFolderId);
 		if (entityNamesInParentFolder.includes(originalFolderMetaData.name)) {
+			// TODO: Add optional interactive prompt to resolve name conflicts in ticket PE-599
 			throw new Error(errorMessage.entityNameExists);
 		}
 
@@ -417,6 +420,7 @@ export class ArDrive extends ArDriveAnonymous {
 		// Assert that there are no duplicate names in the destination folder
 		const entityNamesInParentFolder = await this.arFsDao.getPrivateEntityNamesInFolder(newParentFolderId, driveKey);
 		if (entityNamesInParentFolder.includes(originalFolderMetaData.name)) {
+			// TODO: Add optional interactive prompt to resolve name conflicts in ticket PE-599
 			throw new Error(errorMessage.entityNameExists);
 		}
 
@@ -477,6 +481,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Files cannot overwrite folder names
 		if (filesAndFolderNames.folders.find((f) => f.folderName === destFileName)) {
+			// TODO: Add optional interactive prompt to resolve name conflicts in ticket PE-599
 			throw new Error(errorMessage.entityNameExists);
 		}
 
@@ -537,6 +542,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Folders cannot overwrite file names
 		if (filesAndFolderNames.files.find((f) => f.fileName === destFolderName)) {
+			// TODO: Add optional interactive prompt to resolve name conflicts in ticket PE-599
 			throw new Error(errorMessage.entityNameExists);
 		}
 
@@ -716,6 +722,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Files cannot overwrite folder names
 		if (filesAndFolderNames.folders.find((f) => f.folderName === destFileName)) {
+			// TODO: Add optional interactive prompt to resolve name conflicts in ticket PE-599
 			throw new Error(errorMessage.entityNameExists);
 		}
 
@@ -788,6 +795,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Folders cannot overwrite file names
 		if (filesAndFolderNames.files.find((f) => f.fileName === destFolderName)) {
+			// TODO: Add optional interactive prompt to resolve name conflicts in ticket PE-599
 			throw new Error(errorMessage.entityNameExists);
 		}
 
@@ -953,6 +961,7 @@ export class ArDrive extends ArDriveAnonymous {
 		// Assert that there are no duplicate names in the destination folder
 		const entityNamesInParentFolder = await this.arFsDao.getPublicEntityNamesInFolder(parentFolderId);
 		if (entityNamesInParentFolder.includes(folderName)) {
+			// TODO: Add optional interactive prompt to resolve name conflicts in ticket PE-599
 			throw new Error(errorMessage.entityNameExists);
 		}
 
@@ -993,6 +1002,7 @@ export class ArDrive extends ArDriveAnonymous {
 		// Assert that there are no duplicate names in the destination folder
 		const entityNamesInParentFolder = await this.arFsDao.getPrivateEntityNamesInFolder(parentFolderId, driveKey);
 		if (entityNamesInParentFolder.includes(folderName)) {
+			// TODO: Add optional interactive prompt to resolve name conflicts in ticket PE-599
 			throw new Error(errorMessage.entityNameExists);
 		}
 
