@@ -47,7 +47,7 @@ export interface BuildGQLQueryParams {
  * @example
  * const query = buildQuery([{ name: 'Folder-Id', value: folderId }]);
  */
-export function buildQuery({ tags = [], cursor, owner, sort = ASCENDING_ORDER }: BuildGQLQueryParams): GQLQuery {
+export function buildQuery({ tags = [], cursor, owner, sort = DESCENDING_ORDER }: BuildGQLQueryParams): GQLQuery {
 	let queryTags = ``;
 
 	tags.forEach((t) => {
