@@ -44,5 +44,5 @@ export function fileFilter(entity: ArFSFileOrFolderEntity): boolean {
 }
 
 export function folderFilter(entity: ArFSFileOrFolderEntity): boolean {
-	return entity.entityType === 'file';
+	return entity.entityType === 'folder';
 }
