@@ -25,12 +25,19 @@ const pageInfoFragment = `
 
 export type GQLQuery = { query: string };
 
-export const ASCENDENT_ORDER = 'HEIGHT_ASC';
-export const DESCENDENT_ORDER = 'HEIGHT_DESC';
+export const ASCENDING_ORDER = 'HEIGHT_ASC';
+export const DESCENDING_ORDER = 'HEIGHT_DESC';
 const latestResult = 1;
 const pageLimit = 100;
 
-type Sort = typeof ASCENDENT_ORDER | typeof DESCENDENT_ORDER;
+type Sort = typeof ASCENDING_ORDER | typeof DESCENDING_ORDER;
+
+export interface BuildGQLQueryParams {
+	tags: { name: string; value: string | string[] }[];
+	cursor?: string;
+	owner?: ArweaveAddress;
+	sort?: Sort;
+}
 
 /**
  * Builds a GraphQL query which will only return the latest result
@@ -40,12 +47,7 @@ type Sort = typeof ASCENDENT_ORDER | typeof DESCENDENT_ORDER;
  * @example
  * const query = buildQuery([{ name: 'Folder-Id', value: folderId }]);
  */
-export function buildQuery(
-	tags: { name: string; value: string | string[] }[],
-	cursor?: string,
-	owner?: ArweaveAddress,
-	sort: Sort = ASCENDENT_ORDER
-): GQLQuery {
+export function buildQuery({ tags = [], cursor, owner, sort = ASCENDING_ORDER }: BuildGQLQueryParams): GQLQuery {
 	let queryTags = ``;
 
 	tags.forEach((t) => {

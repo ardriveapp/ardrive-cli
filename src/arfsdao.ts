@@ -34,7 +34,7 @@ import {
 	ArFSPublicFileMetadataTransactionData,
 	ArFSPublicFolderTransactionData
 } from './arfs_trx_data_types';
-import { buildQuery, DESCENDENT_ORDER } from './query';
+import { ASCENDING_ORDER, buildQuery } from './query';
 import { ArFSFileToUpload } from './arfs_file_wrapper';
 import {
 	DriveID,
@@ -667,13 +667,13 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const allFolders: ArFSPrivateFolder[] = [];
 
 		while (hasNextPage) {
-			const gqlQuery = buildQuery(
-				[
+			const gqlQuery = buildQuery({
+				tags: [
 					{ name: 'Drive-Id', value: driveId },
 					{ name: 'Entity-Type', value: 'folder' }
 				],
 				cursor
-			);
+			});
 
 			const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 			const { data } = response.data;
@@ -702,13 +702,13 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const allFiles: ArFSPrivateFile[] = [];
 
 		while (hasNextPage) {
-			const gqlQuery = buildQuery(
-				[
+			const gqlQuery = buildQuery({
+				tags: [
 					{ name: 'Parent-Folder-Id', value: folderIDs },
 					{ name: 'Entity-Type', value: 'file' }
 				],
 				cursor
-			);
+			});
 
 			const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 			const { data } = response.data;
@@ -793,15 +793,14 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	async assertValidPassword(password: string): Promise<void> {
 		const wallet = this.wallet;
 		const walletAddress = await wallet.getAddress();
-		const query = buildQuery(
-			[
+		const query = buildQuery({
+			tags: [
 				{ name: 'Entity-Type', value: 'drive' },
 				{ name: 'Drive-Privacy', value: 'private' }
 			],
-			undefined,
-			walletAddress,
-			DESCENDENT_ORDER
-		);
+			owner: walletAddress,
+			sort: ASCENDING_ORDER
+		});
 		const arweave = this.arweave;
 		const response = await arweave.api.post(graphQLURL, query);
 		const { data } = response.data;
