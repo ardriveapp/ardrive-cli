@@ -401,7 +401,7 @@ describe('ArDrive class - integrated', () => {
 					stub(communityOracle, 'getCommunityWinstonTip').resolves('1');
 					stub(communityOracle, 'selectTokenHolder').resolves(stubArweaveAddress);
 
-					stub(arfsDao, 'getPublicFilesAndFolderNamesForParentFolderId').resolves({
+					stub(arfsDao, 'getPublicEntityNamesAndIdsInFolder').resolves({
 						files: [{ fileName: 'CONFLICTING_FILE_NAME', fileId: existingFileId }],
 						folders: [{ folderName: 'CONFLICTING_FOLDER_NAME', folderId: stubEntityID }]
 					});
@@ -414,7 +414,7 @@ describe('ArDrive class - integrated', () => {
 					});
 				});
 
-				it('returns the correct ArFSResult if destination folder has a conflicting FILE name ', async () => {
+				it('returns the correct ArFSResult revision if destination folder has a conflicting FILE name', async () => {
 					const result = await arDrive.uploadPublicFile(stubEntityID, wrappedFile, 'CONFLICTING_FILE_NAME');
 
 					// Pass expected existing file id, so that the file would be considered a revision
@@ -436,7 +436,7 @@ describe('ArDrive class - integrated', () => {
 					stub(communityOracle, 'getCommunityWinstonTip').resolves('1');
 					stub(communityOracle, 'selectTokenHolder').resolves(stubArweaveAddress);
 
-					stub(arfsDao, 'getPrivateFilesAndFolderNamesForParentFolderId').resolves({
+					stub(arfsDao, 'getPrivateEntityNamesAndIdsInFolder').resolves({
 						files: [{ fileName: 'CONFLICTING_FILE_NAME', fileId: existingFileId }],
 						folders: [{ folderName: 'CONFLICTING_FOLDER_NAME', folderId: stubEntityID }]
 					});
@@ -454,7 +454,7 @@ describe('ArDrive class - integrated', () => {
 					});
 				});
 
-				it('returns the correct ArFSResult if destination folder has a conflicting FILE name ', async () => {
+				it('returns the correct ArFSResult revision if destination folder has a conflicting FILE name', async () => {
 					const result = await arDrive.uploadPrivateFile(
 						stubEntityID,
 						wrappedFile,

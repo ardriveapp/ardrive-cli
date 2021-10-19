@@ -107,7 +107,7 @@ export interface ArFSMoveParams<O extends ArFSFileOrFolderEntity, T extends ArFS
 	transactionData: T;
 }
 
-export interface FilesAndFolderNamesIds {
+export interface EntityNamesAndIds {
 	files: { fileName: string; fileId: FileID }[];
 	folders: { folderName: string; folderId: FolderID }[];
 }
@@ -452,7 +452,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		// Establish destination file name
 		const destinationFileName = destFileName ?? wrappedFile.getBaseFileName();
 
-		// Generate file ID
+		// Use existing file ID (create a revision) or generate new file ID
 		const fileId = existingFileId ?? uuidv4();
 
 		// Gather file information
@@ -832,7 +832,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return (await this.getPublicEntitiesInFolder(folderId, true)).map((f) => f.name);
 	}
 
-	async getFilesAndFolderNames(getEntities: Promise<ArFSFileOrFolderEntity[]>): Promise<FilesAndFolderNamesIds> {
+	async getFilesAndFolderNames(getEntities: Promise<ArFSFileOrFolderEntity[]>): Promise<EntityNamesAndIds> {
 		const allEntities = await getEntities;
 
 		const files = allEntities
@@ -850,14 +850,11 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return { files, folders };
 	}
 
-	async getPublicFilesAndFolderNamesForParentFolderId(folderId: FolderID): Promise<FilesAndFolderNamesIds> {
+	async getPublicEntityNamesAndIdsInFolder(folderId: FolderID): Promise<EntityNamesAndIds> {
 		return this.getFilesAndFolderNames(this.getPublicEntitiesInFolder(folderId, true));
 	}
 
-	async getPrivateFilesAndFolderNamesForParentFolderId(
-		folderId: FolderID,
-		driveKey: DriveKey
-	): Promise<FilesAndFolderNamesIds> {
+	async getPrivateEntityNamesAndIdsInFolder(folderId: FolderID, driveKey: DriveKey): Promise<EntityNamesAndIds> {
 		return this.getFilesAndFolderNames(this.getPrivateEntitiesInFolder(folderId, driveKey, true));
 	}
 

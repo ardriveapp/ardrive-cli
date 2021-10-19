@@ -98,12 +98,12 @@ interface RecursiveBulkUploadParams {
 }
 
 interface RecursivePublicBulkUploadParams extends RecursiveBulkUploadParams {
-	folderData: ArFSPublicFolderTransactionData | FolderID;
+	parentFolderDataOrID: ArFSPublicFolderTransactionData | FolderID;
 }
 
 interface RecursivePrivateBulkUploadParams extends RecursiveBulkUploadParams {
 	driveKey: DriveKey;
-	folderData: ArFSPrivateFolderTransactionData | FolderID;
+	parentFolderDataOrID: ArFSPrivateFolderTransactionData | FolderID;
 }
 
 interface CreatePublicFolderParams {
@@ -471,16 +471,17 @@ export class ArDrive extends ArDriveAnonymous {
 	): Promise<ArFSResult> {
 		const driveId = await this.getDriveIdAndAssertDrive(parentFolderId);
 
-		// Derive destination name and names already within provided parent folder
+		// Derive destination name and names already within provided destination folder
 		const destFileName = destinationFileName ?? wrappedFile.getBaseFileName();
-		const filesAndFolderNames = await this.arFsDao.getPublicFilesAndFolderNamesForParentFolderId(parentFolderId);
+		const filesAndFolderNames = await this.arFsDao.getPublicEntityNamesAndIdsInFolder(parentFolderId);
 
-		// File cannot overwrite a folder names
+		// Files cannot overwrite folder names
 		if (filesAndFolderNames.folders.find((f) => f.folderName === destFileName)) {
 			throw new Error(errorMessage.entityNameExists);
 		}
 
-		// File is a new revision if destination name matches an existing file in the parent folder
+		// File is a new revision if destination name conflicts
+		// with an existing file in the destination folder
 		const existingFileId = filesAndFolderNames.files.find((f) => f.fileName === destFileName)?.fileId;
 
 		const uploadBaseCosts = await this.estimateAndAssertCostOfFileUpload(
@@ -530,16 +531,17 @@ export class ArDrive extends ArDriveAnonymous {
 	): Promise<ArFSResult> {
 		const driveId = await this.getDriveIdAndAssertDrive(parentFolderId);
 
-		// Derive destination name and names already within provided parent folder
+		// Derive destination name and names already within provided destination folder
 		const destFolderName = parentFolderName ?? wrappedFolder.getBaseFileName();
-		const filesAndFolderNames = await this.arFsDao.getPublicFilesAndFolderNamesForParentFolderId(parentFolderId);
+		const filesAndFolderNames = await this.arFsDao.getPublicEntityNamesAndIdsInFolder(parentFolderId);
 
-		// Folder cannot overwrite a file names
+		// Folders cannot overwrite file names
 		if (filesAndFolderNames.files.find((f) => f.fileName === destFolderName)) {
 			throw new Error(errorMessage.entityNameExists);
 		}
 
-		// Use existing folder if destination name matches an existing folder within the parent folder
+		// Use existing folder id if the intended destination name
+		// conflicts with an existing folder in the destination folder
 		const existingFolderId = filesAndFolderNames.folders.find((f) => f.folderName === destFolderName)?.folderId;
 
 		const parentFolderData = new ArFSPublicFolderTransactionData(
@@ -555,7 +557,7 @@ export class ArDrive extends ArDriveAnonymous {
 		const results = await this.recursivelyCreatePublicFolderAndUploadChildren({
 			parentFolderId,
 			wrappedFolder,
-			folderData: existingFolderId ?? parentFolderData,
+			parentFolderDataOrID: existingFolderId ?? parentFolderData,
 			driveId
 		});
 
@@ -585,7 +587,7 @@ export class ArDrive extends ArDriveAnonymous {
 		parentFolderId,
 		wrappedFolder,
 		driveId,
-		folderData
+		parentFolderDataOrID: folderData
 	}: RecursivePublicBulkUploadParams): Promise<{
 		entityResults: ArFSEntityData[];
 		feeResults: ArFSFees;
@@ -671,7 +673,7 @@ export class ArDrive extends ArDriveAnonymous {
 				parentFolderId: folderId,
 				wrappedFolder: childFolder,
 				driveId,
-				folderData
+				parentFolderDataOrID: folderData
 			});
 
 			// Capture all folder results
@@ -708,19 +710,17 @@ export class ArDrive extends ArDriveAnonymous {
 	): Promise<ArFSResult> {
 		const driveId = await this.getDriveIdAndAssertDrive(parentFolderId, driveKey);
 
-		// Derive destination name and names already within provided parent folder
+		// Derive destination name and names already within provided destination folder
 		const destFileName = destinationFileName ?? wrappedFile.getBaseFileName();
-		const filesAndFolderNames = await this.arFsDao.getPrivateFilesAndFolderNamesForParentFolderId(
-			parentFolderId,
-			driveKey
-		);
+		const filesAndFolderNames = await this.arFsDao.getPrivateEntityNamesAndIdsInFolder(parentFolderId, driveKey);
 
-		// File cannot overwrite a folder names
+		// Files cannot overwrite folder names
 		if (filesAndFolderNames.folders.find((f) => f.folderName === destFileName)) {
 			throw new Error(errorMessage.entityNameExists);
 		}
 
-		// File is a new revision if destination name matches an existing file in the parent folder
+		// File is a new revision if destination name conflicts
+		// with an existing file in the destination folder
 		const existingFileId = filesAndFolderNames.files.find((f) => f.fileName === destFileName)?.fileId;
 
 		const uploadBaseCosts = await this.estimateAndAssertCostOfFileUpload(
@@ -782,19 +782,17 @@ export class ArDrive extends ArDriveAnonymous {
 	): Promise<ArFSResult> {
 		const driveId = await this.getDriveIdAndAssertDrive(parentFolderId, driveKey);
 
-		// Derive destination name and names already within provided parent folder
+		// Derive destination name and names already within provided destination folder
 		const destFolderName = parentFolderName ?? wrappedFolder.getBaseFileName();
-		const filesAndFolderNames = await this.arFsDao.getPrivateFilesAndFolderNamesForParentFolderId(
-			parentFolderId,
-			driveKey
-		);
+		const filesAndFolderNames = await this.arFsDao.getPrivateEntityNamesAndIdsInFolder(parentFolderId, driveKey);
 
-		// Folder cannot overwrite a file names
+		// Folders cannot overwrite file names
 		if (filesAndFolderNames.files.find((f) => f.fileName === destFolderName)) {
 			throw new Error(errorMessage.entityNameExists);
 		}
 
-		// Use existing folder if destination name matches an existing folder within the parent folder
+		// Use existing folder id if the intended destination name
+		// conflicts with an existing folder in the destination folder
 		const existingFolderId = filesAndFolderNames.folders.find((f) => f.folderName === destFolderName)?.folderId;
 
 		const parentFolderData = await ArFSPrivateFolderTransactionData.from(
@@ -811,7 +809,7 @@ export class ArDrive extends ArDriveAnonymous {
 		const results = await this.recursivelyCreatePrivateFolderAndUploadChildren({
 			parentFolderId,
 			wrappedFolder,
-			folderData: existingFolderId ?? parentFolderData,
+			parentFolderDataOrID: existingFolderId ?? parentFolderData,
 			driveKey,
 			driveId
 		});
@@ -843,7 +841,7 @@ export class ArDrive extends ArDriveAnonymous {
 		driveId,
 		parentFolderId,
 		driveKey,
-		folderData
+		parentFolderDataOrID: folderData
 	}: RecursivePrivateBulkUploadParams): Promise<{
 		entityResults: ArFSEntityData[];
 		feeResults: ArFSFees;
@@ -853,7 +851,8 @@ export class ArDrive extends ArDriveAnonymous {
 		let folderId: FolderID;
 
 		if (typeof folderData === 'string') {
-			// Use existing parent folder ID for bulk upload
+			// Use existing parent folder ID for bulk upload.
+			// This happens when the parent folder's name conflicts
 			folderId = folderData;
 		} else {
 			// Create parent folder
@@ -933,7 +932,7 @@ export class ArDrive extends ArDriveAnonymous {
 				wrappedFolder: childFolder,
 				driveId,
 				driveKey,
-				folderData
+				parentFolderDataOrID: folderData
 			});
 
 			// Capture all folder results
