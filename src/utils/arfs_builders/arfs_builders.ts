@@ -60,7 +60,7 @@ export abstract class ArFSMetadataEntityBuilder<T extends ArFSEntity> {
 	protected async parseFromArweaveNode(node?: GQLNodeInterface, owner?: ArweaveAddress): Promise<GQLTagInterface[]> {
 		const unparsedTags: GQLTagInterface[] = [];
 		if (!node) {
-			const gqlQuery = buildQuery(this.getGqlQueryParameters(), undefined, owner);
+			const gqlQuery = buildQuery({ tags: this.getGqlQueryParameters(), owner });
 
 			const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 

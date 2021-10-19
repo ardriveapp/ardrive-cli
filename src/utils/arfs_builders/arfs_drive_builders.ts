@@ -22,7 +22,7 @@ interface DriveMetaDataTransactionData extends EntityMetaDataTransactionData {
 	rootFolderId: FolderID;
 }
 
-const ENCRYPTED_DATA_PLACEHOLDER = 'ENCRYPTED';
+export const ENCRYPTED_DATA_PLACEHOLDER = 'ENCRYPTED';
 
 export class ArFSPublicDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPublicDrive> {
 	drivePrivacy?: DrivePrivacy;
@@ -125,6 +125,16 @@ export class ArFSPrivateDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPriva
 			{ name: 'Entity-Type', value: 'drive' },
 			{ name: 'Drive-Privacy', value: 'private' }
 		];
+	}
+
+	static fromArweaveNode(node: GQLNodeInterface, arweave: Arweave, driveKey: DriveKey): ArFSPrivateDriveBuilder {
+		const { tags } = node;
+		const driveId = tags.find((tag) => tag.name === 'Drive-Id')?.value;
+		if (!driveId) {
+			throw new Error('Drive-ID tag missing!');
+		}
+		const fileBuilder = new ArFSPrivateDriveBuilder({ entityId: driveId, arweave, key: driveKey });
+		return fileBuilder;
 	}
 
 	protected async parseFromArweaveNode(node?: GQLNodeInterface): Promise<GQLTagInterface[]> {

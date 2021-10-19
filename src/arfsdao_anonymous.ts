@@ -32,7 +32,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 	}
 
 	private async getDriveID(entityId: EntityID, gqlTypeTag: 'File-Id' | 'Folder-Id') {
-		const gqlQuery = buildQuery([{ name: gqlTypeTag, value: entityId }]);
+		const gqlQuery = buildQuery({ tags: [{ name: gqlTypeTag, value: entityId }] });
 
 		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 		const { data } = response.data;
@@ -85,7 +85,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		const allDrives: ArFSDriveEntity[] = [];
 
 		while (hasNextPage) {
-			const gqlQuery = buildQuery([{ name: 'Entity-Type', value: 'drive' }], cursor, address);
+			const gqlQuery = buildQuery({ tags: [{ name: 'Entity-Type', value: 'drive' }], cursor, owner: address });
 
 			const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 			const { data } = response.data;
@@ -117,13 +117,13 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		const allFiles: ArFSPublicFile[] = [];
 
 		while (hasNextPage) {
-			const gqlQuery = buildQuery(
-				[
+			const gqlQuery = buildQuery({
+				tags: [
 					{ name: 'Parent-Folder-Id', value: folderIDs },
 					{ name: 'Entity-Type', value: 'file' }
 				],
 				cursor
-			);
+			});
 
 			const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 			const { data } = response.data;
@@ -147,13 +147,13 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		const allFolders: ArFSPublicFolder[] = [];
 
 		while (hasNextPage) {
-			const gqlQuery = buildQuery(
-				[
+			const gqlQuery = buildQuery({
+				tags: [
 					{ name: 'Drive-Id', value: driveId },
 					{ name: 'Entity-Type', value: 'folder' }
 				],
 				cursor
-			);
+			});
 
 			const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 			const { data } = response.data;
