@@ -18,5 +18,6 @@ import './create_folder';
 import './file_info';
 import './move_file';
 import './move_folder';
+import './get_drive_key';
 
 CLICommand.parse();

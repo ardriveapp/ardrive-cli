@@ -9,8 +9,9 @@ import {
 import Arweave from 'arweave';
 import { graphQLURL } from '../../arfsdao';
 import { ArFSFileOrFolderEntity } from '../../arfs_entities';
+import { ArweaveAddress } from '../../arweave_address';
 import { buildQuery } from '../../query';
-import { ArweaveAddress, DriveID, EntityID, EntityKey, FolderID, TransactionID, UnixTime } from '../../types';
+import { DriveID, EntityID, EntityKey, FolderID, TransactionID, UnixTime } from '../../types';
 
 export interface ArFSMetadataEntityBuilderParams {
 	entityId: EntityID;

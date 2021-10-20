@@ -31,6 +31,14 @@ export class PrivateKeyData {
 	private unverifiedDriveKeys: DriveKey[];
 
 	constructor({ password, driveKeys, wallet }: PrivateKeyDataParams) {
+		if (password && !wallet) {
+			throw new Error('Password supplied without a wallet. Did you forget to include your wallet?');
+		}
+
+		if (password && driveKeys) {
+			throw new Error("Password and drive keys can't be used together. Please provide one or the other.");
+		}
+
 		this.unverifiedDriveKeys = driveKeys ?? [];
 		this.password = password;
 		this.wallet = wallet;

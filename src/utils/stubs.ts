@@ -6,9 +6,10 @@ import {
 	ArFSPublicFile,
 	ArFSPrivateFile
 } from '../arfs_entities';
+import { ArweaveAddress } from '../arweave_address';
 import { ArFS_O_11, FolderID } from '../types';
 
-export const stubArweaveAddress = 'abcdefghijklmnopqrxtuvwxyz123456789ABCDEFGH';
+export const stubArweaveAddress = new ArweaveAddress('abcdefghijklmnopqrxtuvwxyz123456789ABCDEFGH');
 export const stubTransactionID = '0000000000000000000000000000000000000000000';
 
 export const stubEntityID = '00000000-0000-0000-0000-000000000000';

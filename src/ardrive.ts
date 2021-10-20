@@ -3,7 +3,6 @@ import { CommunityOracle } from './community/community_oracle';
 import { ArFSDriveEntity, deriveDriveKey, DrivePrivacy, GQLTagInterface, winstonToAr } from 'ardrive-core-js';
 import {
 	TransactionID,
-	ArweaveAddress,
 	Winston,
 	DriveID,
 	FolderID,
@@ -46,6 +45,7 @@ import { stubEntityID, stubTransactionID } from './utils/stubs';
 import { errorMessage } from './error_message';
 import { PrivateKeyData } from './private_key_data';
 import { EntityNamesAndIds } from './utils/mapper_functions';
+import { ArweaveAddress } from './arweave_address';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 

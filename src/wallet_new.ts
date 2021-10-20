@@ -9,13 +9,13 @@ import {
 	Winston,
 	NetworkReward,
 	PublicKey,
-	ArweaveAddress,
 	SeedPhrase,
 	DEFAULT_APP_NAME,
 	DEFAULT_APP_VERSION,
 	RewardSettings
 } from './types';
 import { CreateTransactionInterface } from 'arweave/node/common';
+import { ArweaveAddress } from './arweave_address';
 
 export type ARTransferResult = {
 	trxID: TransactionID;
@@ -45,7 +45,7 @@ export class JWKWallet implements Wallet {
 			.createHash('sha256')
 			.update(b64UrlToBuffer(await this.getPublicKey()))
 			.digest();
-		return Promise.resolve(bufferTob64Url(result));
+		return Promise.resolve(new ArweaveAddress(bufferTob64Url(result)));
 	}
 
 	// Use cases: generating drive keys, file keys, etc.
@@ -84,7 +84,7 @@ export class WalletDAO {
 	}
 
 	async getAddressWinstonBalance(address: ArweaveAddress): Promise<number> {
-		return Promise.resolve(+(await this.arweave.wallets.getBalance(address)));
+		return Promise.resolve(+(await this.arweave.wallets.getBalance(address.toString())));
 	}
 
 	async walletHasBalance(wallet: Wallet, winstonPrice: Winston): Promise<boolean> {
@@ -111,7 +111,7 @@ export class WalletDAO {
 		const winston: Winston = this.arweave.ar.arToWinston(arAmount.toString());
 
 		// Create transaction
-		const trxAttributes: Partial<CreateTransactionInterface> = { target: toAddress, quantity: winston };
+		const trxAttributes: Partial<CreateTransactionInterface> = { target: toAddress.toString(), quantity: winston };
 
 		// If we provided our own reward settings, use them now
 		if (rewardSettings.reward) {
