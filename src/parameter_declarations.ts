@@ -43,8 +43,8 @@ export const TreeDepthParams = [AllParameter, MaxDepthParameter];
 Parameter.declare({
 	name: WalletFileParameter,
 	aliases: ['-w', '--wallet-file'],
-	description: `the path to a JWK file on the file system
-		• Can't be used with --seed-phrase`,
+	description: `the path to a JWK file on the file system representing your Arweave wallet
+\t\t\t\t\t\t\t• Can't be used with --seed-phrase`,
 	forbiddenConjunctionParameters: [SeedPhraseParameter]
 });
 
@@ -52,30 +52,30 @@ Parameter.declare({
 	name: SeedPhraseParameter,
 	aliases: ['-s', '--seed-phrase'],
 	description: `a 12-word seed phrase representing a JWK
-		• Can't be used with --wallet-file`,
+\t\t\t\t\t\t\t• Can't be used with --wallet-file`,
 	forbiddenConjunctionParameters: [WalletFileParameter]
 });
 
 Parameter.declare({
 	name: UnsafeDrivePasswordParameter,
 	aliases: ['-p', '--unsafe-drive-password'],
-	description: `the encryption password for the private drive (OPTIONAL - NOT RECOMMENDED)
-		• When provided, creates/accesses a private drive. Public drive otherwise.
-		• Can NOT be used in conjunction with --private
-		• Can NOT be used in conjunction with --drive-key`,
+	description: `(OPTIONAL - NOT RECOMMENDED) the encryption password for the private drive
+\t\t\t\t\t\t\t• When provided, creates/accesses a private drive. Public drive otherwise.
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --private
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --drive-key`,
 	forbiddenConjunctionParameters: [DriveKeyParameter, PrivateParameter]
 });
 
 Parameter.declare({
 	name: PrivateParameter,
 	aliases: ['-P', '--private'],
-	description: `specify to create/interact with private entities, i.e. drives, folders, and files (OPTIONAL - RECOMMENDED OVER --unsafe-drive-password)
-		• obtains the drive password from the following locations, in precedence order:
-			- STDIN
-			- Environment variable ARDRIVE_DRIVE_PW
-			- Interactive, secure prompt
-		• Can NOT be used in conjunction with --unsafe-drive-password
-		• Can NOT be used in conjunction with --drive-key`,
+	description: `(OPTIONAL - RECOMMENDED OVER --unsafe-drive-password) specify to create/interact with private entities, i.e. drives, folders, and files
+\t\t\t\t\t\t\t• obtains the drive password from the following locations, in precedence order:
+\t\t\t\t\t\t\t\t- STDIN
+\t\t\t\t\t\t\t\t- Environment variable ARDRIVE_DRIVE_PW
+\t\t\t\t\t\t\t\t- Interactive, secure prompt
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --unsafe-drive-password
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --drive-key`,
 	forbiddenConjunctionParameters: [DriveKeyParameter, UnsafeDrivePasswordParameter],
 	type: 'boolean'
 });
@@ -83,10 +83,10 @@ Parameter.declare({
 Parameter.declare({
 	name: DriveKeyParameter,
 	aliases: ['-k', '--drive-key'],
-	description: `the drive key for the parent drive of the folder identified by --folder-id
-		• Required only for folders residing in private drives
-		• Can NOT be used in conjunction with --unsafe-drive-password
-		• Can NOT be used in conjunction with --private`,
+	description: `the base64 encoded symmetric encryption key (with '=' characters excised) for the drive (or parent drive in the case of folder operations)
+\t\t\t\t\t\t\t• Required only for operations involving private drives or entities within them
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --unsafe-drive-password
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --private`,
 	forbiddenConjunctionParameters: [UnsafeDrivePasswordParameter, PrivateParameter]
 });
 
@@ -107,27 +107,28 @@ Parameter.declare({
 Parameter.declare({
 	name: AddressParameter,
 	aliases: ['-a', '--address'],
-	description: 'the address'
+	description: 'the  43-character Arweave wallet address to use for lookups'
 });
 
 Parameter.declare({
 	name: DriveIdParameter,
 	aliases: ['-d', '--drive-id'],
-	description: 'the drive ID to get metadata from',
+	description: 'the ArFS entity ID associated with the target drive',
 	required: true
 });
 
 Parameter.declare({
 	name: ArAmountParameter,
 	aliases: ['-a', '--ar-amount'],
-	description: 'required: amount of AR to send',
+	description: `amount of AR to send to the --dest-address
+\t\t\t\t\t\t\t• does NOT include transaction mining base rewards`,
 	required: true
 });
 
 Parameter.declare({
 	name: DestinationAddressParameter,
 	aliases: ['-d', '--dest-address'],
-	description: 'required: destination wallet address',
+	description: 'the 43-character Arweave wallet address to which AR should be sent',
 	required: true
 });
 
@@ -148,7 +149,7 @@ Parameter.declare({
 	name: ParentFolderIdParameter,
 	aliases: ['-F', '--parent-folder-id'],
 	description: `the ArFS folder ID for the folder in which this file will reside (i.e. its parent folder)
-		• To upload the file to the root of a drive, use the root folder ID of the drive`,
+\t\t\t\t\t\t\t• To upload the file to the root of a drive, use the root folder ID of the drive`,
 	required: true
 });
 
@@ -182,20 +183,20 @@ Parameter.declare({
 	name: LocalFilesParameter,
 	aliases: ['--local-files'],
 	description: `a path to a csv (tab delimited) file containing rows of data for the following columns:
-		• CSV Columns
-		• local file path
-		• destination file name (optional)
-		• parent folder ID (optional)
-			• --parent-folder-id used, otherwise
-			• all parent folder IDs should reside in the same drive
-		• Can NOT be used in conjunction with --local-file-path`,
+\t\t\t\t\t\t\t• CSV Columns
+\t\t\t\t\t\t\t• local file path
+\t\t\t\t\t\t\t• destination file name (optional)
+\t\t\t\t\t\t\t• parent folder ID (optional)
+\t\t\t\t\t\t\t\t• --parent-folder-id used, otherwise
+\t\t\t\t\t\t\t\t• all parent folder IDs should reside in the same drive
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-file-path`,
 	forbiddenConjunctionParameters: [LocalFilePathParameter]
 });
 
 Parameter.declare({
 	name: GetAllRevisionsParameter,
 	aliases: ['--get-all-revisions'],
-	description: '(OPTIONAL) gets every revision',
+	description: '(OPTIONAL) gets every revision of the entity',
 	type: 'boolean'
 });
 
@@ -203,14 +204,14 @@ Parameter.declare({
 	name: BoostParameter,
 	aliases: ['--boost'],
 	description:
-		'(OPTIONAL) a multiple of the base transaction data fee that can be used to accelerate transaction mining. A multiple of 2.5 would boost a 100 Winston transaction fee to 250 Winston.'
+		'(OPTIONAL) a multiple of the base transaction mining reward that can be used to accelerate transaction mining. A multiple of 2.5 would boost a 100 Winston transaction reward to 250 Winston.'
 });
 
 Parameter.declare({
 	name: DryRunParameter,
 	aliases: ['--dry-run'],
 	description:
-		'(OPTIONAL) Print the results of the transactions that would occur, and their potential fees, without sending the transactions.',
+		'(OPTIONAL) Print the results of the transactions that would occur, and their potential tips and mining rewards, without sending the transactions.',
 	type: 'boolean'
 });
 

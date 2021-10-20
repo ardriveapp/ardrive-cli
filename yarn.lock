@@ -1393,7 +1393,7 @@ __metadata:
     arweave-mnemonic-keys: ^0.0.9
     base64-js: ^1.5.1
     chai: ^4.3.4
-    commander: ^8.1.0
+    commander: ^8.2.0
     eslint: ^7.23.0
     eslint-config-prettier: ^8.1.0
     eslint-plugin-prettier: latest
@@ -2188,10 +2188,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"commander@npm:^8.1.0":
-  version: 8.1.0
-  resolution: "commander@npm:8.1.0"
-  checksum: 315b17337b32c1e918ffd029edbbe4bec07800f022f2b4a504e2a40791f7405cea68e3b025c99a954e3b8f9518f2f2052e3fdc9b1b7c2d817fd843765f45156c
+"commander@npm:^8.2.0":
+  version: 8.2.0
+  resolution: "commander@npm:8.2.0"
+  checksum: e41e680f2afa0a409aa21d3cad6f06a3d9d2d1086e76223ebd600181b588085e6ad0c7387cf491cb96c60de0a0a50815130368b40bfde017744210d4a8fb75a7
   languageName: node
   linkType: hard
 
