@@ -552,7 +552,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Estimate and assert the cost of the entire bulk upload
 		// This will assign the calculated base costs to each wrapped file and folder
-		const bulkEstimation = await this.estimateAndAssertCostOfBulkUpload(wrappedFolder, undefined, true);
+		const bulkEstimation = await this.estimateAndAssertCostOfBulkUpload(wrappedFolder);
 
 		// TODO: Add interactive confirmation of price estimation before uploading
 
@@ -805,7 +805,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Estimate and assert the cost of the entire bulk upload
 		// This will assign the calculated base costs to each wrapped file and folder
-		const bulkEstimation = await this.estimateAndAssertCostOfBulkUpload(wrappedFolder, driveKey, true);
+		const bulkEstimation = await this.estimateAndAssertCostOfBulkUpload(wrappedFolder, driveKey);
 
 		// TODO: Add interactive confirmation of price estimation before uploading
 
@@ -1198,10 +1198,23 @@ export class ArDrive extends ArDriveAnonymous {
 		return Promise.resolve(driveEntity);
 	}
 
+	/**
+	 * Utility function to estimate and assert the cost of a bulk upload
+	 *
+	 * @remarks This function will recurse into the folder contents of the provided folderToUpload
+	 *
+	 * @throws when the wallet does not contain enough AR for the bulk upload
+	 *
+	 * @param folderToUpload The wrapped folder to estimate the cost of
+	 * @param driveKey Optional parameter to determine whether to estimate the cost of a private or public upload
+	 * @param isParentFolder Boolean to determine whether to Assert the total cost. This parameter
+	 *   is only to be handled as false internally within the recursive function. Always use default
+	 *   of TRUE when calling this method
+	 *  */
 	async estimateAndAssertCostOfBulkUpload(
 		folderToUpload: ArFSFolderToUpload,
 		driveKey?: DriveKey,
-		isParentFolder = false
+		isParentFolder = true
 	): Promise<{ totalPrice: Winston; totalFilePrice: Winston; communityWinstonTip: Winston }> {
 		let totalPrice = 0;
 		let totalFilePrice = 0;
@@ -1252,7 +1265,7 @@ export class ArDrive extends ArDriveAnonymous {
 		}
 
 		for await (const folder of folderToUpload.folders) {
-			const childFolderResults = await this.estimateAndAssertCostOfBulkUpload(folder, driveKey);
+			const childFolderResults = await this.estimateAndAssertCostOfBulkUpload(folder, driveKey, false);
 
 			totalPrice += +childFolderResults.totalPrice;
 			totalFilePrice += +childFolderResults.totalFilePrice;
