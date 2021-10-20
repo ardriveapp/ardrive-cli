@@ -17,4 +17,7 @@ export abstract class CliApiObject {
 	abstract parse(...args: [program: CliApiObject] | [argv: string[]]): void;
 	abstract addHelpCommand(addHelp: boolean): void;
 	abstract opts(): ParsedArguments;
+	abstract name(name: string): CliApiObject;
+	abstract usage(usage: string): CliApiObject;
+	abstract outputHelp(): void;
 }

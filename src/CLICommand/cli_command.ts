@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { Command } from 'commander';
-import { showHelp } from '../utils';
 import { CliApiObject, ParsedArguments } from './cli';
-import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from './constants';
+import { ERROR_EXIT_CODE } from './constants';
 import { Parameter, ParameterName, ParameterOverridenConfig } from './parameter';
 
 export type CommandName = string;
@@ -13,9 +12,9 @@ export interface CommandDescriptor {
 }
 
 const program: CliApiObject = new Command() as CliApiObject;
-
-// Disable default commander help docs
-program.addHelpCommand(false);
+program.name('ardrive');
+program.addHelpCommand(true);
+program.usage('[command] [command-specific options]');
 
 /**
  * @name setCommanderCommand
@@ -124,11 +123,6 @@ export class CLICommand {
 	}
 
 	public static parse(program: CliApiObject = this.program, argv: string[] = process.argv): void {
-		if (argv.length < 3 || argv.includes('-h') || argv.includes('--help') || argv.includes('help')) {
-			showHelp();
-			exitProgram(SUCCESS_EXIT_CODE);
-		}
-
 		program.parse(argv);
 	}
 
