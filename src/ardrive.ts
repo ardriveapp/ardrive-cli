@@ -890,6 +890,9 @@ export class ArDrive extends ArDriveAnonymous {
 			if (folderNameConflict) {
 				// Assigns existing id for later use
 				folder.existingId = folderNameConflict.folderId;
+
+				// Recurse into existing folder on folder name conflict
+				await this.checkAndAssignExistingNames(folder, getExistingNamesFn);
 			}
 		}
 	}
