@@ -61,6 +61,10 @@ class TestCliApiObject {
 	parse = stub(this.program, 'parse');
 	addHelpCommand = stub(this.program, 'addHelpCommand').returnsThis();
 	opts = stub(this.program, 'opts').returnsThis();
+
+	name = stub(this.program, 'name').returnsThis();
+	usage = stub(this.program, 'usage').returnsThis();
+	outputHelp = stub(this.program, 'outputHelp');
 }
 
 describe('CLICommand class', () => {
