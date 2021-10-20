@@ -89,7 +89,7 @@ describe('ArDrive class - integrated', () => {
 
 				// Can't know the txID ahead of time without mocking arweave deeply
 				expect(result.tipData.txId).to.match(trxIdRegex);
-				expect(result.tipData.recipient.valueOf()).to.equal(stubArweaveAddress().valueOf());
+				expect(`${result.tipData.recipient}`).to.equal(`${stubArweaveAddress()}`);
 				expect(result.tipData.winston).to.equal('12345');
 				expect(result.reward).to.equal('0');
 			});
