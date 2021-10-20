@@ -95,6 +95,7 @@ interface RecursiveBulkUploadParams {
 	parentFolderId: FolderID;
 	wrappedFolder: ArFSFolderToUpload;
 	driveId: DriveID;
+	owner: ArweaveAddress;
 }
 
 interface RecursivePublicBulkUploadParams extends RecursiveBulkUploadParams {
@@ -134,18 +135,34 @@ export class ArDriveAnonymous extends ArDriveType {
 		super();
 	}
 
-	async getPublicDrive(driveId: DriveID): Promise<ArFSPublicDrive> {
-		const driveEntity = await this.arFsDao.getPublicDrive(driveId);
-		return Promise.resolve(driveEntity);
+	async getOwnerForDriveId(driveId: DriveID): Promise<ArweaveAddress> {
+		return this.arFsDao.getOwnerForDriveId(driveId);
 	}
 
-	async getPublicFolder(folderId: FolderID): Promise<ArFSPublicFolder> {
-		const folder = await this.arFsDao.getPublicFolder(folderId);
-		return folder;
+	async getPublicDrive(driveId: DriveID, owner?: ArweaveAddress): Promise<ArFSPublicDrive> {
+		if (!owner) {
+			owner = await this.getOwnerForDriveId(driveId);
+		}
+
+		return this.arFsDao.getPublicDrive(driveId, owner);
 	}
 
-	async getPublicFile(fileId: FileID): Promise<ArFSPublicFile> {
-		return this.arFsDao.getPublicFile(fileId);
+	async getPublicFolder(folderId: FolderID, owner?: ArweaveAddress): Promise<ArFSPublicFolder> {
+		if (!owner) {
+			const driveId = await this.arFsDao.getDriveIdForFolderId(folderId);
+			owner = await this.getOwnerForDriveId(driveId);
+		}
+
+		return this.arFsDao.getPublicFolder(folderId, owner);
+	}
+
+	async getPublicFile(fileId: FileID, owner?: ArweaveAddress): Promise<ArFSPublicFile> {
+		if (!owner) {
+			const driveId = await this.arFsDao.getDriveIdForFileId(fileId);
+			owner = await this.getOwnerForDriveId(driveId);
+		}
+
+		return this.arFsDao.getPublicFile(fileId, owner);
 	}
 
 	async getAllDrivesForAddress(address: ArweaveAddress, privateKeyData: PrivateKeyData): Promise<ArFSDriveEntity[]> {
@@ -160,9 +177,15 @@ export class ArDriveAnonymous extends ArDriveType {
 	async listPublicFolder(
 		folderId: FolderID,
 		maxDepth = 0,
-		includeRoot = false
+		includeRoot = false,
+		owner?: ArweaveAddress
 	): Promise<ArFSPublicFileOrFolderWithPaths[]> {
-		const children = await this.arFsDao.listPublicFolder(folderId, maxDepth, includeRoot);
+		if (!owner) {
+			const driveId = await this.arFsDao.getDriveIdForFolderId(folderId);
+			owner = await this.getOwnerForDriveId(driveId);
+		}
+
+		const children = await this.arFsDao.listPublicFolder(folderId, maxDepth, includeRoot, owner);
 		return children;
 	}
 }
@@ -211,24 +234,11 @@ export class ArDrive extends ArDriveAnonymous {
 		];
 	}
 
-	async getDriveIdAndAssertDrive(folderId: FolderID, driveKey?: DriveKey): Promise<DriveID> {
-		// Retrieve drive ID from folder ID
-		const driveId = await this.arFsDao.getDriveIdForFolderId(folderId);
-
-		const drive = driveKey
-			? await this.arFsDao.getPrivateDrive(driveId, driveKey)
-			: await this.arFsDao.getPublicDrive(driveId);
-
-		// Ensure that it is indeed public or private as intended
-		if (!drive) {
-			throw new Error(`${driveKey ? 'Private' : 'Public'} drive with Drive ID ${driveId} not found!`);
-		}
-
-		return driveId;
-	}
-
 	async movePublicFile(fileId: FileID, newParentFolderId: FolderID): Promise<ArFSResult> {
-		const driveId = await this.getDriveIdAndAssertDrive(newParentFolderId);
+		const driveId = await this.arFsDao.getDriveIdForFileId(fileId);
+
+		const owner = await this.getOwnerForDriveId(driveId);
+		await this.assertOwnerAddress(owner);
 
 		const originalFileMetaData = await this.getPublicFile(fileId);
 
@@ -276,7 +286,11 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	async movePrivateFile(fileId: FileID, newParentFolderId: FolderID, driveKey: DriveKey): Promise<ArFSResult> {
-		const driveId = await this.getDriveIdAndAssertDrive(newParentFolderId, driveKey);
+		const driveId = await this.arFsDao.getDriveIdForFileId(fileId);
+
+		const owner = await this.getOwnerForDriveId(driveId);
+		await this.assertOwnerAddress(owner);
+
 		const originalFileMetaData = await this.getPrivateFile(fileId, driveKey);
 
 		if (driveId !== originalFileMetaData.driveId) {
@@ -330,10 +344,14 @@ export class ArDrive extends ArDriveAnonymous {
 			throw new Error(errorMessage.folderCannotMoveIntoItself);
 		}
 
-		const parentFolderDriveId = await this.getDriveIdAndAssertDrive(newParentFolderId);
+		const driveId = await this.arFsDao.getDriveIdForFolderId(folderId);
+
+		const owner = await this.getOwnerForDriveId(driveId);
+		await this.assertOwnerAddress(owner);
+
 		const originalFolderMetaData = await this.getPublicFolder(folderId);
 
-		if (parentFolderDriveId !== originalFolderMetaData.driveId) {
+		if (driveId !== originalFolderMetaData.driveId) {
 			throw new Error(errorMessage.cannotMoveToDifferentDrive);
 		}
 
@@ -349,7 +367,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		const childrenFolderIds = await this.arFsDao.getPublicChildrenFolderIds({
 			folderId,
-			driveId: parentFolderDriveId
+			driveId
 		});
 
 		if (childrenFolderIds.includes(newParentFolderId)) {
@@ -391,10 +409,14 @@ export class ArDrive extends ArDriveAnonymous {
 			throw new Error(errorMessage.folderCannotMoveIntoItself);
 		}
 
-		const parentFolderDriveId = await this.getDriveIdAndAssertDrive(newParentFolderId, driveKey);
+		const driveId = await this.arFsDao.getDriveIdForFolderId(folderId);
+
+		const owner = await this.getOwnerForDriveId(driveId);
+		await this.assertOwnerAddress(owner);
+
 		const originalFolderMetaData = await this.getPrivateFolder(folderId, driveKey);
 
-		if (parentFolderDriveId !== originalFolderMetaData.driveId) {
+		if (driveId !== originalFolderMetaData.driveId) {
 			throw new Error(errorMessage.cannotMoveToDifferentDrive);
 		}
 
@@ -410,7 +432,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		const childrenFolderIds = await this.arFsDao.getPrivateChildrenFolderIds({
 			folderId,
-			driveId: parentFolderDriveId,
+			driveId,
 			driveKey
 		});
 
@@ -457,7 +479,10 @@ export class ArDrive extends ArDriveAnonymous {
 		wrappedFile: ArFSFileToUpload,
 		destinationFileName?: string
 	): Promise<ArFSResult> {
-		const driveId = await this.getDriveIdAndAssertDrive(parentFolderId);
+		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
+
+		const owner = await this.getOwnerForDriveId(driveId);
+		await this.assertOwnerAddress(owner);
 
 		const uploadBaseCosts = await this.estimateAndAssertCostOfFileUpload(
 			wrappedFile.fileStats.size,
@@ -503,7 +528,10 @@ export class ArDrive extends ArDriveAnonymous {
 		wrappedFolder: ArFSFolderToUpload,
 		parentFolderName?: string
 	): Promise<ArFSResult> {
-		const driveId = await this.getDriveIdAndAssertDrive(parentFolderId);
+		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
+
+		const owner = await this.getOwnerForDriveId(driveId);
+		await this.assertOwnerAddress(owner);
 
 		const parentFolderData = new ArFSPublicFolderTransactionData(
 			parentFolderName ?? wrappedFolder.getBaseFileName()
@@ -519,7 +547,8 @@ export class ArDrive extends ArDriveAnonymous {
 			parentFolderId,
 			wrappedFolder,
 			folderData: parentFolderData,
-			driveId
+			driveId,
+			owner: await this.wallet.getAddress()
 		});
 
 		if (+bulkEstimation.communityWinstonTip > 0) {
@@ -548,7 +577,8 @@ export class ArDrive extends ArDriveAnonymous {
 		parentFolderId,
 		wrappedFolder,
 		driveId,
-		folderData
+		folderData,
+		owner
 	}: RecursivePublicBulkUploadParams): Promise<{
 		entityResults: ArFSEntityData[];
 		feeResults: ArFSFees;
@@ -562,7 +592,8 @@ export class ArDrive extends ArDriveAnonymous {
 				feeMultiple: this.feeMultiple
 			},
 			parentFolderId,
-			syncParentFolderId: false
+			syncParentFolderId: false,
+			owner
 		});
 
 		// Capture parent folder results
@@ -621,7 +652,8 @@ export class ArDrive extends ArDriveAnonymous {
 				parentFolderId: folderId,
 				wrappedFolder: childFolder,
 				driveId,
-				folderData
+				folderData,
+				owner
 			});
 
 			// Capture all folder results
@@ -656,7 +688,10 @@ export class ArDrive extends ArDriveAnonymous {
 		driveKey: DriveKey,
 		destinationFileName?: string
 	): Promise<ArFSResult> {
-		const driveId = await this.getDriveIdAndAssertDrive(parentFolderId, driveKey);
+		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
+
+		const owner = await this.getOwnerForDriveId(driveId);
+		await this.assertOwnerAddress(owner);
 
 		const uploadBaseCosts = await this.estimateAndAssertCostOfFileUpload(
 			wrappedFile.fileStats.size,
@@ -714,7 +749,14 @@ export class ArDrive extends ArDriveAnonymous {
 		driveKey: DriveKey,
 		parentFolderName?: string
 	): Promise<ArFSResult> {
-		const driveId = await this.getDriveIdAndAssertDrive(parentFolderId, driveKey);
+		// Retrieve drive ID from folder ID
+		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
+
+		// Get owner of drive, will error if no drives are found
+		const owner = await this.getOwnerForDriveId(driveId);
+
+		// Assert that the provided wallet is the owner of the drive
+		await this.assertOwnerAddress(owner);
 
 		const parentFolderData = await ArFSPrivateFolderTransactionData.from(
 			parentFolderName ?? wrappedFolder.getBaseFileName(),
@@ -732,7 +774,8 @@ export class ArDrive extends ArDriveAnonymous {
 			wrappedFolder,
 			folderData: parentFolderData,
 			driveKey,
-			driveId
+			driveId,
+			owner
 		});
 
 		if (+bulkEstimation.communityWinstonTip > 0) {
@@ -762,7 +805,8 @@ export class ArDrive extends ArDriveAnonymous {
 		driveId,
 		parentFolderId,
 		driveKey,
-		folderData
+		folderData,
+		owner
 	}: RecursivePrivateBulkUploadParams): Promise<{
 		entityResults: ArFSEntityData[];
 		feeResults: ArFSFees;
@@ -777,7 +821,8 @@ export class ArDrive extends ArDriveAnonymous {
 			},
 			parentFolderId,
 			driveKey,
-			syncParentFolderId: false
+			syncParentFolderId: false,
+			owner
 		});
 
 		// Capture parent folder results
@@ -839,7 +884,8 @@ export class ArDrive extends ArDriveAnonymous {
 				wrappedFolder: childFolder,
 				driveId,
 				driveKey,
-				folderData
+				folderData,
+				owner
 			});
 
 			// Capture all folder results
@@ -857,6 +903,9 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	async createPublicFolder({ folderName, driveId, parentFolderId }: CreatePublicFolderParams): Promise<ArFSResult> {
+		const owner = await this.getOwnerForDriveId(driveId);
+		await this.assertOwnerAddress(owner);
+
 		// Assert that there are no duplicate names in the destination folder
 		const entityNamesInParentFolder = await this.arFsDao.getPublicEntityNamesInFolder(parentFolderId);
 		if (entityNamesInParentFolder.includes(folderName)) {
@@ -872,7 +921,8 @@ export class ArDrive extends ArDriveAnonymous {
 			folderData,
 			driveId,
 			rewardSettings: { reward: metaDataBaseReward, feeMultiple: this.feeMultiple },
-			parentFolderId
+			parentFolderId,
+			owner
 		});
 
 		// IN THE FUTURE WE MIGHT SEND A COMMUNITY TIP HERE
@@ -897,6 +947,9 @@ export class ArDrive extends ArDriveAnonymous {
 		driveKey,
 		parentFolderId
 	}: CreatePrivateFolderParams): Promise<ArFSResult> {
+		const owner = await this.getOwnerForDriveId(driveId);
+		await this.assertOwnerAddress(owner);
+
 		// Assert that there are no duplicate names in the destination folder
 		const entityNamesInParentFolder = await this.arFsDao.getPrivateEntityNamesInFolder(parentFolderId, driveKey);
 		if (entityNamesInParentFolder.includes(folderName)) {
@@ -913,7 +966,8 @@ export class ArDrive extends ArDriveAnonymous {
 			driveId,
 			rewardSettings: { reward: metaDataBaseReward, feeMultiple: this.feeMultiple },
 			driveKey,
-			parentFolderId
+			parentFolderId,
+			owner
 		});
 
 		// IN THE FUTURE WE MIGHT SEND A COMMUNITY TIP HERE
@@ -950,7 +1004,9 @@ export class ArDrive extends ArDriveAnonymous {
 		const createDriveResult = await this.arFsDao.createPublicDrive(
 			driveName,
 			driveRewardSettings,
-			rootFolderRewardSettings
+			rootFolderRewardSettings,
+			// No wallet owner assertion needed on public drive creations
+			await this.wallet.getAddress()
 		);
 		return Promise.resolve({
 			created: [
@@ -994,7 +1050,9 @@ export class ArDrive extends ArDriveAnonymous {
 			driveName,
 			newPrivateDriveData,
 			driveRewardSettings,
-			rootFolderRewardSettings
+			rootFolderRewardSettings,
+			// Owner has been verified by assertPassword
+			await this.wallet.getAddress()
 		);
 
 		// IN THE FUTURE WE MIGHT SEND A COMMUNITY TIP HERE
@@ -1019,11 +1077,6 @@ export class ArDrive extends ArDriveAnonymous {
 				[createDriveResult.rootFolderTrxId]: +createDriveResult.rootFolderTrxReward
 			}
 		});
-	}
-
-	async getPrivateDrive(driveId: DriveID, driveKey: DriveKey): Promise<ArFSPrivateDrive> {
-		const driveEntity = await this.arFsDao.getPrivateDrive(driveId, driveKey);
-		return Promise.resolve(driveEntity);
 	}
 
 	async estimateAndAssertCostOfBulkUpload(
@@ -1114,13 +1167,39 @@ export class ArDrive extends ArDriveAnonymous {
 		return { totalPrice: String(totalPrice), totalFilePrice: String(totalFilePrice), communityWinstonTip };
 	}
 
-	async getPrivateFolder(folderId: FolderID, driveKey: DriveKey): Promise<ArFSPrivateFolder> {
-		const folderEntity = await this.arFsDao.getPrivateFolder(folderId, driveKey);
-		return folderEntity;
+	async assertOwnerAddress(owner: ArweaveAddress): Promise<void> {
+		if (owner !== (await this.wallet.getAddress())) {
+			throw new Error('Supplied wallet is not the owner of this drive!');
+		}
 	}
 
-	async getPrivateFile(fileId: FileID, driveKey: DriveKey): Promise<ArFSPrivateFile> {
-		return this.arFsDao.getPrivateFile(fileId, driveKey);
+	async getPrivateDrive(driveId: DriveID, driveKey: DriveKey, owner?: ArweaveAddress): Promise<ArFSPrivateDrive> {
+		if (!owner) {
+			owner = await this.getOwnerForDriveId(driveId);
+		}
+		await this.assertOwnerAddress(owner);
+
+		return this.arFsDao.getPrivateDrive(driveId, driveKey, owner);
+	}
+
+	async getPrivateFolder(folderId: FolderID, driveKey: DriveKey, owner?: ArweaveAddress): Promise<ArFSPrivateFolder> {
+		if (!owner) {
+			const driveId = await this.getDriveIdForFolderId(folderId);
+			owner = await this.getOwnerForDriveId(driveId);
+		}
+		await this.assertOwnerAddress(owner);
+
+		return this.arFsDao.getPrivateFolder(folderId, driveKey, owner);
+	}
+
+	async getPrivateFile(fileId: FileID, driveKey: DriveKey, owner?: ArweaveAddress): Promise<ArFSPrivateFile> {
+		if (!owner) {
+			const driveId = await this.getDriveIdForFileId(fileId);
+			owner = await this.getOwnerForDriveId(driveId);
+		}
+		await this.assertOwnerAddress(owner);
+
+		return this.arFsDao.getPrivateFile(fileId, driveKey, owner);
 	}
 
 	/**
@@ -1132,9 +1211,15 @@ export class ArDrive extends ArDriveAnonymous {
 		folderId: FolderID,
 		driveKey: DriveKey,
 		maxDepth = 0,
-		includeRoot = false
+		includeRoot = false,
+		owner?: ArweaveAddress
 	): Promise<ArFSPrivateFileOrFolderWithPaths[]> {
-		const children = this.arFsDao.listPrivateFolder(folderId, driveKey, maxDepth, includeRoot);
+		if (!owner) {
+			const driveId = await this.getDriveIdForFolderId(folderId);
+			owner = await this.getOwnerForDriveId(driveId);
+		}
+
+		const children = this.arFsDao.listPrivateFolder(folderId, driveKey, maxDepth, includeRoot, owner);
 		return children;
 	}
 

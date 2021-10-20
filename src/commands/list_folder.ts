@@ -21,7 +21,10 @@ new CLICommand({
 			const driveId = await arDrive.getDriveIdForFolderId(folderId);
 			const driveKey = await parameters.getDriveKey({ driveId });
 
-			children = await arDrive.listPrivateFolder(folderId, driveKey, maxDepth);
+			// We have the drive id from deriving a key, we can derive the owner
+			const driveOwner = await arDrive.getOwnerForDriveId(driveId);
+
+			children = await arDrive.listPrivateFolder(folderId, driveKey, maxDepth, undefined, driveOwner);
 		} else {
 			const arDrive = arDriveAnonymousFactory();
 			children = await arDrive.listPublicFolder(folderId, maxDepth);
