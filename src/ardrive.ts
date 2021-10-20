@@ -1218,6 +1218,7 @@ export class ArDrive extends ArDriveAnonymous {
 			const driveId = await this.getDriveIdForFolderId(folderId);
 			owner = await this.getOwnerForDriveId(driveId);
 		}
+		await this.assertOwnerAddress(owner);
 
 		const children = this.arFsDao.listPrivateFolder(folderId, driveKey, maxDepth, includeRoot, owner);
 		return children;
