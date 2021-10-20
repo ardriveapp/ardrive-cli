@@ -250,7 +250,9 @@ describe('ParametersHelper class', () => {
 		it('returns the address of the wallet when a valid --wallet-file is provided', () => {
 			declareCommandWithParams(program, [WalletFileParameter], async (options) => {
 				const parameters = new ParametersHelper(options);
-				expect(await parameters.getWalletAddress()).to.equal('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
+				expect((await parameters.getWalletAddress()).valueOf()).to.equal(
+					'P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4'
+				);
 			});
 			CLICommand.parse(program, [...baseArgv, testCommandName, '--wallet-file', './test_wallet.json']);
 		});
@@ -258,7 +260,9 @@ describe('ParametersHelper class', () => {
 		it('returns the address of the wallet when a valid --w file is provided', () => {
 			declareCommandWithParams(program, [WalletFileParameter], async (options) => {
 				const parameters = new ParametersHelper(options);
-				expect(await parameters.getWalletAddress()).to.equal('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
+				expect((await parameters.getWalletAddress()).valueOf()).to.equal(
+					'P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4'
+				);
 			});
 			CLICommand.parse(program, [...baseArgv, testCommandName, '-w', './test_wallet.json']);
 		});
@@ -268,7 +272,7 @@ describe('ParametersHelper class', () => {
 		// it('returns the address of the wallet when a valid --seed-phrase option is provided', () => {
 		// 	declareCommandWithParams(program, [SeedPhraseParameter], async (options) => {
 		// 		const parameters = new ParametersHelper(options);
-		// 		expect(await parameters.getWalletAddress()).to.equal('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
+		// expect(await (await parameters.getWalletAddress()).valueOf()).to.equal('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
 		// 	});
 		// 	CLICommand.parse(program, [
 		// 		...baseArgv,
@@ -281,7 +285,7 @@ describe('ParametersHelper class', () => {
 		// it('returns the address of the wallet when a valid -s option is provided', () => {
 		// 	declareCommandWithParams(program, [SeedPhraseParameter], async (options) => {
 		// 		const parameters = new ParametersHelper(options);
-		// 		expect(await parameters.getWalletAddress()).to.equal('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
+		// expect(await (await parameters.getWalletAddress()).valueOf()).to.equal('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
 		// 	});
 		// 	CLICommand.parse(program, [
 		// 		...baseArgv,
@@ -294,7 +298,9 @@ describe('ParametersHelper class', () => {
 		it('returns the address provided by the --address option value', () => {
 			declareCommandWithParams(program, [AddressParameter], async (options) => {
 				const parameters = new ParametersHelper(options);
-				expect(await parameters.getWalletAddress()).to.equal('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
+				expect((await parameters.getWalletAddress()).valueOf()).to.equal(
+					'P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4'
+				);
 			});
 			CLICommand.parse(program, [
 				...baseArgv,
@@ -307,7 +313,9 @@ describe('ParametersHelper class', () => {
 		it('returns the address provided by the -a option value', () => {
 			declareCommandWithParams(program, [AddressParameter], async (options) => {
 				const parameters = new ParametersHelper(options);
-				expect(await parameters.getWalletAddress()).to.equal('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
+				expect((await parameters.getWalletAddress()).valueOf()).to.equal(
+					'P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4'
+				);
 			});
 			CLICommand.parse(program, [
 				...baseArgv,

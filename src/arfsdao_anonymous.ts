@@ -47,7 +47,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		return new ArweaveAddress(driveOwnerAddress);
 	}
 
-	private async getDriveID(entityId: EntityID, gqlTypeTag: 'File-Id' | 'Folder-Id') {
+	async getDriveIDForEntityId(entityId: EntityID, gqlTypeTag: 'File-Id' | 'Folder-Id'): Promise<DriveID> {
 		const gqlQuery = buildQuery({ tags: [{ name: gqlTypeTag, value: entityId }] });
 
 		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
@@ -69,11 +69,11 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 	}
 
 	async getDriveIdForFileId(fileId: FileID): Promise<DriveID> {
-		return this.getDriveID(fileId, 'File-Id');
+		return this.getDriveIDForEntityId(fileId, 'File-Id');
 	}
 
 	async getDriveIdForFolderId(folderId: FolderID): Promise<DriveID> {
-		return this.getDriveID(folderId, 'Folder-Id');
+		return this.getDriveIDForEntityId(folderId, 'Folder-Id');
 	}
 
 	// Convenience function for known-public use cases

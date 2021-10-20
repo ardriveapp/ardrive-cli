@@ -1051,7 +1051,7 @@ export class ArDrive extends ArDriveAnonymous {
 			newPrivateDriveData,
 			driveRewardSettings,
 			rootFolderRewardSettings,
-			// Owner has been verified by assertPassword
+			// Owner has been verified by assertPassword in the CLI layer
 			await this.wallet.getAddress()
 		);
 
