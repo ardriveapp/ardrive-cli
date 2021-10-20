@@ -493,15 +493,15 @@ export class ArDrive extends ArDriveAnonymous {
 		const fileDataRewardSettings = { reward: uploadBaseCosts.fileDataBaseReward, feeMultiple: this.feeMultiple };
 		const metadataRewardSettings = { reward: uploadBaseCosts.metaDataBaseReward, feeMultiple: this.feeMultiple };
 
-		const uploadFileResult = await this.arFsDao.uploadPublicFile(
+		const uploadFileResult = await this.arFsDao.uploadPublicFile({
 			parentFolderId,
 			wrappedFile,
 			driveId,
 			fileDataRewardSettings,
 			metadataRewardSettings,
-			destinationFileName,
+			destFileName: destinationFileName,
 			existingFileId
-		);
+		});
 
 		const { tipData, reward: communityTipTrxReward } = await this.sendCommunityTip(
 			uploadBaseCosts.communityWinstonTip
@@ -643,14 +643,14 @@ export class ArDrive extends ArDriveAnonymous {
 				feeMultiple: this.feeMultiple
 			};
 
-			const uploadFileResult = await this.arFsDao.uploadPublicFile(
-				folderId,
+			const uploadFileResult = await this.arFsDao.uploadPublicFile({
+				parentFolderId: folderId,
 				wrappedFile,
 				driveId,
 				fileDataRewardSettings,
 				metadataRewardSettings,
-				wrappedFile.existingId
-			);
+				existingFileId: wrappedFile.existingId
+			});
 
 			// Capture all file results
 			uploadEntityFees = {
@@ -743,16 +743,16 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// TODO: Add interactive confirmation of AR price estimation
 
-		const uploadFileResult = await this.arFsDao.uploadPrivateFile(
+		const uploadFileResult = await this.arFsDao.uploadPrivateFile({
 			parentFolderId,
 			wrappedFile,
 			driveId,
 			driveKey,
 			fileDataRewardSettings,
 			metadataRewardSettings,
-			destinationFileName,
+			destFileName: destinationFileName,
 			existingFileId
-		);
+		});
 
 		const { tipData, reward: communityTipTrxReward } = await this.sendCommunityTip(
 			uploadBaseCosts.communityWinstonTip
@@ -971,15 +971,15 @@ export class ArDrive extends ArDriveAnonymous {
 				feeMultiple: this.feeMultiple
 			};
 
-			const uploadFileResult = await this.arFsDao.uploadPrivateFile(
-				folderId,
+			const uploadFileResult = await this.arFsDao.uploadPrivateFile({
+				parentFolderId: folderId,
 				wrappedFile,
 				driveId,
 				driveKey,
 				fileDataRewardSettings,
 				metadataRewardSettings,
-				wrappedFile.existingId
-			);
+				existingFileId: wrappedFile.existingId
+			});
 
 			// Capture all file results
 			uploadEntityFees = {

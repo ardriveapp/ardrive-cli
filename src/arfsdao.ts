@@ -116,6 +116,20 @@ export interface ArFSMoveParams<O extends ArFSFileOrFolderEntity, T extends ArFS
 export type GetDriveFunction = () => Promise<ArFSPublicDrive | ArFSPrivateDrive>;
 export type CreateFolderFunction = (driveId: DriveID) => Promise<ArFSCreateFolderResult>;
 export type GenerateDriveIdFn = () => DriveID;
+
+export interface UploadPublicFileParams {
+	parentFolderId: FolderID;
+	wrappedFile: ArFSFileToUpload;
+	driveId: DriveID;
+	fileDataRewardSettings: RewardSettings;
+	metadataRewardSettings: RewardSettings;
+	destFileName?: string;
+	existingFileId?: FileID;
+}
+
+export interface UploadPrivateFileParams extends UploadPublicFileParams {
+	driveKey: DriveKey;
+}
 export interface CreateFolderSettings {
 	driveId: DriveID;
 	rewardSettings: RewardSettings;
@@ -504,15 +518,15 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		);
 	}
 
-	async uploadPublicFile(
-		parentFolderId: FolderID,
-		wrappedFile: ArFSFileToUpload,
-		driveId: DriveID,
-		fileDataRewardSettings: RewardSettings,
-		metadataRewardSettings: RewardSettings,
-		destFileName?: string,
-		existingFileId?: FileID
-	): Promise<ArFSUploadFileResult> {
+	async uploadPublicFile({
+		parentFolderId,
+		wrappedFile,
+		driveId,
+		fileDataRewardSettings,
+		metadataRewardSettings,
+		destFileName,
+		existingFileId
+	}: UploadPublicFileParams): Promise<ArFSUploadFileResult> {
 		return this.uploadFile(
 			wrappedFile,
 			fileDataRewardSettings,
@@ -541,16 +555,16 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		);
 	}
 
-	async uploadPrivateFile(
-		parentFolderId: FolderID,
-		wrappedFile: ArFSFileToUpload,
-		driveId: DriveID,
-		driveKey: DriveKey,
-		fileDataRewardSettings: RewardSettings,
-		metadataRewardSettings: RewardSettings,
-		destFileName?: string,
-		existingFileId?: FileID
-	): Promise<ArFSUploadPrivateFileResult> {
+	async uploadPrivateFile({
+		parentFolderId,
+		wrappedFile,
+		driveId,
+		driveKey,
+		fileDataRewardSettings,
+		metadataRewardSettings,
+		destFileName,
+		existingFileId
+	}: UploadPrivateFileParams): Promise<ArFSUploadPrivateFileResult> {
 		return this.uploadFile(
 			wrappedFile,
 			fileDataRewardSettings,
