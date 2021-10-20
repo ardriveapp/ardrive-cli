@@ -34,6 +34,7 @@ const fileKeyRegex = /^([a-zA-Z]|[0-9]|-|_|\/|\+){43}$/;
 
 describe('ArDrive class - integrated', () => {
 	const wallet = readJWKFile('./test_wallet.json');
+
 	const getStubDriveKey = async (): Promise<DriveKey> => {
 		return deriveDriveKey('stubPassword', stubEntityID, JSON.stringify((wallet as JWKWallet).getPrivateKey()));
 	};
@@ -64,7 +65,7 @@ describe('ArDrive class - integrated', () => {
 	);
 
 	const walletOwner = stubArweaveAddress();
-	// const unexpectedOwner = stubArweaveAddress('0987654321klmnopqrxtuvwxyz123456789ABCDEFGH');
+	const unexpectedOwner = stubArweaveAddress('0987654321klmnopqrxtuvwxyz123456789ABCDEFGH');
 
 	const expectedDriveId = stubEntityID;
 	const unexpectedDriveId = stubEntityIDAlt;
@@ -75,7 +76,6 @@ describe('ArDrive class - integrated', () => {
 
 		// Declare common stubs
 		stub(walletDao, 'walletHasBalance').resolves(true);
-		stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 		stub(wallet, 'getAddress').resolves(walletOwner);
 		stub(arfsDao, 'getDriveIDForEntityId').resolves(expectedDriveId);
 	});
@@ -124,7 +124,22 @@ describe('ArDrive class - integrated', () => {
 				stub(arfsDao, 'getPublicEntityNamesInFolder').resolves(['CONFLICTING_NAME']);
 			});
 
+			it('throws an error if the owner of the drive conflicts with supplied wallet', async () => {
+				stub(arfsDao, 'getOwnerForDriveId').resolves(unexpectedOwner);
+
+				await expectAsyncErrorThrow({
+					promiseToError: arDrive.createPublicFolder({
+						folderName: 'CONFLICTING_NAME',
+						driveId: stubEntityID,
+						parentFolderId: stubEntityID
+					}),
+					errorMessage: 'Supplied wallet is not the owner of this drive!'
+				});
+			});
+
 			it('throws an error if the folder name conflicts with another ENTITY name in the destination folder', async () => {
+				stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
+
 				await expectAsyncErrorThrow({
 					promiseToError: arDrive.createPublicFolder({
 						folderName: 'CONFLICTING_NAME',
@@ -136,6 +151,7 @@ describe('ArDrive class - integrated', () => {
 			});
 
 			it('returns the correct ArFSResult', async () => {
+				stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 				stub(arfsDao, 'getPublicDrive').resolves(stubPublicDrive);
 
 				const result = await arDrive.createPublicFolder({
@@ -152,7 +168,23 @@ describe('ArDrive class - integrated', () => {
 				stub(arfsDao, 'getPrivateEntityNamesInFolder').resolves(['CONFLICTING_NAME']);
 			});
 
+			it('throws an error if the owner of the drive conflicts with supplied wallet', async () => {
+				stub(arfsDao, 'getOwnerForDriveId').resolves(unexpectedOwner);
+
+				await expectAsyncErrorThrow({
+					promiseToError: arDrive.createPrivateFolder({
+						folderName: 'CONFLICTING_NAME',
+						driveId: stubEntityID,
+						parentFolderId: stubEntityID,
+						driveKey: await getStubDriveKey()
+					}),
+					errorMessage: 'Supplied wallet is not the owner of this drive!'
+				});
+			});
+
 			it('throws an error if the folder name conflicts with another ENTITY name in the destination folder', async () => {
+				stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
+
 				await expectAsyncErrorThrow({
 					promiseToError: arDrive.createPrivateFolder({
 						folderName: 'CONFLICTING_NAME',
@@ -166,6 +198,8 @@ describe('ArDrive class - integrated', () => {
 
 			it('returns the correct ArFSResult', async () => {
 				stub(arfsDao, 'getPrivateDrive').resolves(stubPrivateDrive);
+				stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
+
 				const stubDriveKey = await getStubDriveKey();
 				const result = await arDrive.createPrivateFolder({
 					folderName: 'TEST_FOLDER',
@@ -192,8 +226,21 @@ describe('ArDrive class - integrated', () => {
 				stub(arfsDao, 'getPublicEntityNamesInFolder').resolves(['CONFLICTING_NAME']);
 			});
 
+			it('throws an error if the owner of the drive conflicts with supplied wallet', async () => {
+				stub(arfsDao, 'getOwnerForDriveId').resolves(unexpectedOwner);
+
+				await expectAsyncErrorThrow({
+					promiseToError: arDrive.movePublicFolder({
+						folderId: stubEntityID,
+						newParentFolderId: stubEntityIDAlt
+					}),
+					errorMessage: 'Supplied wallet is not the owner of this drive!'
+				});
+			});
+
 			it('throws an error if the folder name conflicts with another ENTITY name in the destination folder', async () => {
 				stub(arfsDao, 'getPublicFolder').resolves(stubPublicFolder({ folderName: 'CONFLICTING_NAME' }));
+				stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 				stub(arfsDao, 'getDriveIdForFolderId').resolves(stubEntityID);
 
 				await expectAsyncErrorThrow({
@@ -207,6 +254,7 @@ describe('ArDrive class - integrated', () => {
 
 			it('throws an error if it is being moved inside any of its children folders', async () => {
 				stub(arfsDao, 'getPublicFolder').resolves(folderHierarchy.rootFolder);
+				stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 				stub(arfsDao, 'getPublicChildrenFolderIds').resolves([
 					folderHierarchy.parentFolder.entityId,
 					folderHierarchy.childFolder.entityId,
@@ -224,6 +272,7 @@ describe('ArDrive class - integrated', () => {
 
 			it('throws an error if the new parent folder id matches its current parent folder id', async () => {
 				stub(arfsDao, 'getPublicFolder').resolves(folderHierarchy.childFolder);
+				stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 				stub(arfsDao, 'getPublicChildrenFolderIds').resolves([folderHierarchy.grandChildFolder.entityId]);
 
 				await expectAsyncErrorThrow({
@@ -237,6 +286,7 @@ describe('ArDrive class - integrated', () => {
 
 			it('throws an error if the new parent folder id matches its own folder id', async () => {
 				stub(arfsDao, 'getPublicFolder').resolves(folderHierarchy.parentFolder);
+				stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 				stub(arfsDao, 'getPublicChildrenFolderIds').resolves([
 					folderHierarchy.childFolder.entityId,
 					folderHierarchy.grandChildFolder.entityId
@@ -252,6 +302,7 @@ describe('ArDrive class - integrated', () => {
 			});
 
 			it('throws an error if the folder is being moved to a different drive', async () => {
+				stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 				stub(arfsDao, 'getPublicFolder').resolves(stubPublicFolder({ driveId: unexpectedDriveId }));
 
 				await expectAsyncErrorThrow({
@@ -265,6 +316,7 @@ describe('ArDrive class - integrated', () => {
 
 			it('returns the correct ArFSResult', async () => {
 				stub(arfsDao, 'getPublicFolder').resolves(folderHierarchy.grandChildFolder);
+				stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 				stub(arfsDao, 'getPublicChildrenFolderIds').resolves([]);
 
 				const result = await arDrive.movePublicFolder({
@@ -290,7 +342,21 @@ describe('ArDrive class - integrated', () => {
 				stub(arfsDao, 'getPrivateEntityNamesInFolder').resolves(['CONFLICTING_NAME']);
 			});
 
+			it('throws an error if the owner of the drive conflicts with supplied wallet', async () => {
+				stub(arfsDao, 'getOwnerForDriveId').resolves(unexpectedOwner);
+
+				await expectAsyncErrorThrow({
+					promiseToError: arDrive.movePrivateFolder({
+						folderId: stubEntityID,
+						newParentFolderId: stubEntityIDAlt,
+						driveKey: await getStubDriveKey()
+					}),
+					errorMessage: 'Supplied wallet is not the owner of this drive!'
+				});
+			});
+
 			it('throws an error if the folder name conflicts with another ENTITY name in the destination folder', async () => {
+				stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 				stub(arfsDao, 'getPrivateFolder').resolves(stubPrivateFolder({ folderName: 'CONFLICTING_NAME' }));
 
 				await expectAsyncErrorThrow({
@@ -305,6 +371,7 @@ describe('ArDrive class - integrated', () => {
 
 			it('throws an error if it is being moved inside any of its children folders', async () => {
 				stub(arfsDao, 'getPrivateFolder').resolves(folderHierarchy.rootFolder);
+				stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 				stub(arfsDao, 'getPrivateChildrenFolderIds').resolves([
 					folderHierarchy.parentFolder.entityId,
 					folderHierarchy.childFolder.entityId,
@@ -323,6 +390,7 @@ describe('ArDrive class - integrated', () => {
 
 			it('throws an error if the new parent folder id matches its current parent folder id', async () => {
 				stub(arfsDao, 'getPrivateFolder').resolves(folderHierarchy.childFolder);
+				stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 				stub(arfsDao, 'getPrivateChildrenFolderIds').resolves([folderHierarchy.grandChildFolder.entityId]);
 
 				await expectAsyncErrorThrow({
@@ -337,6 +405,7 @@ describe('ArDrive class - integrated', () => {
 
 			it('throws an error if the new parent folder id matches its own folder id', async () => {
 				stub(arfsDao, 'getPrivateFolder').resolves(folderHierarchy.parentFolder);
+				stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 				stub(arfsDao, 'getPrivateChildrenFolderIds').resolves([
 					folderHierarchy.childFolder.entityId,
 					folderHierarchy.grandChildFolder.entityId
@@ -353,6 +422,7 @@ describe('ArDrive class - integrated', () => {
 			});
 
 			it('throws an error if the folder is being moved to a different drive', async () => {
+				stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 				stub(arfsDao, 'getPrivateFolder').resolves(stubPrivateFolder({ driveId: unexpectedDriveId }));
 
 				await expectAsyncErrorThrow({
@@ -366,6 +436,7 @@ describe('ArDrive class - integrated', () => {
 			});
 
 			it('returns the correct ArFSResult', async () => {
+				stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 				stub(arfsDao, 'getPrivateFolder').resolves(folderHierarchy.grandChildFolder);
 				stub(arfsDao, 'getPrivateChildrenFolderIds').resolves([]);
 
