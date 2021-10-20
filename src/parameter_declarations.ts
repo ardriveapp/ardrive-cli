@@ -24,6 +24,7 @@ export const AllParameter = 'all';
 export const MaxDepthParameter = 'maxDepth';
 export const BoostParameter = 'boost';
 export const DryRunParameter = 'dryRun';
+export const NoVerifyParameter = 'verify'; // commander maps --no-x style params to options.x and always includes in options
 
 // Aggregates for convenience
 export const DriveCreationPrivacyParameters = [
@@ -226,4 +227,12 @@ Parameter.declare({
 	name: MaxDepthParameter,
 	aliases: ['--max-depth'],
 	description: `(OPTIONAL) enter a number of the amount of sub folder levels to list`
+});
+
+Parameter.declare({
+	name: NoVerifyParameter,
+	aliases: ['--no-verify'],
+	description:
+		'(OPTIONAL) Derives a drive key for the given drive ID without verifying its correctness against the drive on chain.',
+	type: 'boolean'
 });

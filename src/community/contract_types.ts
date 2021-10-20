@@ -1,4 +1,4 @@
-import { ArweaveAddress } from '../types';
+import { ArweaveAddress } from '../arweave_address';
 
 export type CommunityTipPercentage = number;
 

@@ -1,4 +1,4 @@
-import { ArweaveAddress } from './types';
+import { ArweaveAddress } from './arweave_address';
 
 const nodeFragment = `
 	node {

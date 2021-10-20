@@ -16,6 +16,7 @@ import { cliWalletDao } from '..';
 import { DriveID, DriveKey } from '../types';
 import passwordPrompt from 'prompts';
 import { PrivateKeyData } from '../private_key_data';
+import { ArweaveAddress } from '../arweave_address';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ParameterOptions = any;
@@ -75,10 +76,13 @@ export class ParametersHelper {
 		return this.getRequiredWallet().catch(() => null);
 	}
 
-	public async getWalletAddress(): Promise<string> {
-		return (
-			this.getParameterValue(AddressParameter) || this.getRequiredWallet().then((wallet) => wallet.getAddress())
-		);
+	public async getWalletAddress(): Promise<ArweaveAddress> {
+		const address = this.getParameterValue(AddressParameter);
+		if (address) {
+			return new ArweaveAddress(address);
+		}
+
+		return this.getRequiredWallet().then((wallet) => wallet.getAddress());
 	}
 
 	public async getPrivateKeyData(): Promise<PrivateKeyData> {

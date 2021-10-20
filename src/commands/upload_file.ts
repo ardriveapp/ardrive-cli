@@ -56,14 +56,17 @@ new CLICommand({
 				});
 				return fileParameters;
 			}
+
+			if (!options.localFilePath) {
+				throw new Error('Must provide a local file path!');
+			}
+
 			const singleParameter = {
 				parentFolderId: options.parentFolderId,
 				wrappedEntity: wrapFileOrFolder(options.localFilePath),
 				destinationFileName: options.destFileName
 			};
-			if (!options.parentFolderId || !options.localFilePath) {
-				throw new Error(`Bad file: ${JSON.stringify(singleParameter)}`);
-			}
+
 			return [singleParameter];
 		})();
 		if (filesToUpload.length) {
