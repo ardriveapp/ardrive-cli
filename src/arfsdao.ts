@@ -94,6 +94,7 @@ import { ArFSFileOrFolderBuilder } from './utils/arfs_builders/arfs_builders';
 import { PrivateKeyData } from './private_key_data';
 import { ArweaveAddress } from './arweave_address';
 import { EntityNamesAndIds, entityToNameMap, fileToNameAndIdMap, folderToNameAndIdMap } from './utils/mapper_functions';
+import { ListPrivateFolderParams } from './ardrive';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 
@@ -117,6 +118,8 @@ export interface ArFSMoveParams<O extends ArFSFileOrFolderEntity, T extends ArFS
 export type GetDriveFunction = () => Promise<ArFSPublicDrive | ArFSPrivateDrive>;
 export type CreateFolderFunction = (driveId: DriveID) => Promise<ArFSCreateFolderResult>;
 export type GenerateDriveIdFn = () => DriveID;
+
+export type ArFSListPrivateFolderParams = Required<ListPrivateFolderParams>;
 
 export interface UploadPublicFileParams {
 	parentFolderId: FolderID;
@@ -892,13 +895,13 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	 * @param {boolean} includeRoot whether or not folderId's folder data should be included in the listing
 	 * @returns {ArFSPrivateFileOrFolderWithPaths[]} an array representation of the children and parent folder
 	 */
-	async listPrivateFolder(
-		folderId: FolderID,
-		driveKey: DriveKey,
-		maxDepth: number,
-		includeRoot: boolean,
-		owner: ArweaveAddress
-	): Promise<ArFSPrivateFileOrFolderWithPaths[]> {
+	async listPrivateFolder({
+		folderId,
+		driveKey,
+		maxDepth,
+		includeRoot,
+		owner
+	}: ArFSListPrivateFolderParams): Promise<ArFSPrivateFileOrFolderWithPaths[]> {
 		if (!Number.isInteger(maxDepth) || maxDepth < 0) {
 			throw new Error('maxDepth should be a non-negative integer!');
 		}

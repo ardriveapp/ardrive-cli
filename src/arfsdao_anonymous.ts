@@ -11,8 +11,11 @@ import { ArFSPublicFileBuilder } from './utils/arfs_builders/arfs_file_builders'
 import { ArFSPublicDrive, ArFSPublicFile, ArFSPublicFileOrFolderWithPaths, ArFSPublicFolder } from './arfs_entities';
 import { PrivateKeyData } from './private_key_data';
 import { ArweaveAddress } from './arweave_address';
+import { ListPublicFolderParams } from './ardrive';
 
 export const graphQLURL = 'https://arweave.net/graphql';
+
+type ArFSListPublicFolderParams = Required<ListPublicFolderParams>;
 
 export abstract class ArFSDAOType {
 	protected abstract readonly arweave: Arweave;
@@ -201,12 +204,12 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 	 * @param {boolean} includeRoot whether or not folderId's folder data should be included in the listing
 	 * @returns {ArFSPublicFileOrFolderWithPaths[]} an array representation of the children and parent folder
 	 */
-	async listPublicFolder(
-		folderId: FolderID,
-		maxDepth: number,
-		includeRoot: boolean,
-		owner: ArweaveAddress
-	): Promise<ArFSPublicFileOrFolderWithPaths[]> {
+	async listPublicFolder({
+		folderId,
+		maxDepth,
+		includeRoot,
+		owner
+	}: ArFSListPublicFolderParams): Promise<ArFSPublicFileOrFolderWithPaths[]> {
 		if (!Number.isInteger(maxDepth) || maxDepth < 0) {
 			throw new Error('maxDepth should be a non-negative integer!');
 		}

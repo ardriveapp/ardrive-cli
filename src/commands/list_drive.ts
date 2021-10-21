@@ -26,12 +26,18 @@ new CLICommand({
 			// We have the drive id from deriving a key, we can derive the owner
 			const driveOwner = await arDrive.getOwnerForDriveId(driveId);
 
-			children = await arDrive.listPrivateFolder(rootFolderId, driveKey, maxDepth, true, driveOwner);
+			children = await arDrive.listPrivateFolder({
+				folderId: rootFolderId,
+				driveKey,
+				maxDepth,
+				includeRoot: true,
+				owner: driveOwner
+			});
 		} else {
 			const arDrive = new ArDriveAnonymous(new ArFSDAOAnonymous(cliArweave));
 			const drive = await arDrive.getPublicDrive(driveId);
 			const rootFolderId = drive.rootFolderId;
-			children = await arDrive.listPublicFolder(rootFolderId, maxDepth, true);
+			children = await arDrive.listPublicFolder({ folderId: rootFolderId, maxDepth, includeRoot: true });
 		}
 
 		const sortedChildren = children.sort((a, b) => alphabeticalOrder(a.path, b.path)) as (

@@ -46,6 +46,7 @@ import { errorMessage } from './error_message';
 import { PrivateKeyData } from './private_key_data';
 import { EntityNamesAndIds } from './utils/mapper_functions';
 import { ArweaveAddress } from './arweave_address';
+import { WithDriveKey } from './arfs_entity_result_factory';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 
@@ -56,6 +57,14 @@ export interface ArFSEntityData {
 	entityId: EntityID;
 	key?: string;
 }
+
+export interface ListPublicFolderParams {
+	folderId: FolderID;
+	maxDepth?: number;
+	includeRoot?: boolean;
+	owner?: ArweaveAddress;
+}
+export type ListPrivateFolderParams = ListPublicFolderParams & WithDriveKey;
 
 export interface TipData {
 	txId: TransactionID;
@@ -98,29 +107,20 @@ interface RecursivePublicBulkUploadParams {
 	driveId: DriveID;
 	owner: ArweaveAddress;
 }
-
-interface RecursivePrivateBulkUploadParams extends RecursivePublicBulkUploadParams {
-	driveKey: DriveKey;
-}
+type RecursivePrivateBulkUploadParams = RecursivePublicBulkUploadParams & WithDriveKey;
 
 interface CreatePublicFolderParams {
 	folderName: string;
 	driveId: DriveID;
 	parentFolderId: FolderID;
 }
-
-interface CreatePrivateFolderParams extends CreatePublicFolderParams {
-	driveKey: DriveKey;
-}
+type CreatePrivateFolderParams = CreatePublicFolderParams & WithDriveKey;
 
 interface MovePublicFolderParams {
 	folderId: FolderID;
 	newParentFolderId: FolderID;
 }
-
-interface MovePrivateFolderParams extends MovePublicFolderParams {
-	driveKey: DriveKey;
-}
+type MovePrivateFolderParams = MovePublicFolderParams & WithDriveKey;
 
 export abstract class ArDriveType {
 	protected abstract readonly arFsDao: ArFSDAOType;
@@ -168,17 +168,17 @@ export class ArDriveAnonymous extends ArDriveType {
 	 * @param {FolderID} folderId the folder ID to list children of
 	 * @returns {ArFSPublicFileOrFolderWithPaths[]} an array representation of the children and parent folder
 	 */
-	async listPublicFolder(
-		folderId: FolderID,
+	async listPublicFolder({
+		folderId,
 		maxDepth = 0,
 		includeRoot = false,
-		owner?: ArweaveAddress
-	): Promise<ArFSPublicFileOrFolderWithPaths[]> {
+		owner
+	}: ListPublicFolderParams): Promise<ArFSPublicFileOrFolderWithPaths[]> {
 		if (!owner) {
 			owner = await this.arFsDao.getDriveOwnerForFolderId(folderId);
 		}
 
-		const children = await this.arFsDao.listPublicFolder(folderId, maxDepth, includeRoot, owner);
+		const children = await this.arFsDao.listPublicFolder({ folderId, maxDepth, includeRoot, owner });
 		return children;
 	}
 }
@@ -1387,19 +1387,19 @@ export class ArDrive extends ArDriveAnonymous {
 	 * @param {FolderID} folderId the folder ID to list children of
 	 * @returns {ArFSPrivateFileOrFolderWithPaths[]} an array representation of the children and parent folder
 	 */
-	async listPrivateFolder(
-		folderId: FolderID,
-		driveKey: DriveKey,
+	async listPrivateFolder({
+		folderId,
+		driveKey,
 		maxDepth = 0,
 		includeRoot = false,
-		owner?: ArweaveAddress
-	): Promise<ArFSPrivateFileOrFolderWithPaths[]> {
+		owner
+	}: ListPrivateFolderParams): Promise<ArFSPrivateFileOrFolderWithPaths[]> {
 		if (!owner) {
 			owner = await this.arFsDao.getDriveOwnerForFolderId(folderId);
 		}
 		await this.assertOwnerAddress(owner);
 
-		const children = this.arFsDao.listPrivateFolder(folderId, driveKey, maxDepth, includeRoot, owner);
+		const children = this.arFsDao.listPrivateFolder({ folderId, driveKey, maxDepth, includeRoot, owner });
 		return children;
 	}
 
