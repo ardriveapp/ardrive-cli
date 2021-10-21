@@ -1174,7 +1174,7 @@ export class ArDrive extends ArDriveAnonymous {
 			driveName,
 			driveRewardSettings,
 			rootFolderRewardSettings,
-			// No wallet owner assertion needed on public drive creations
+			// There is no need to assert ownership during drive creation
 			await this.wallet.getAddress()
 		);
 		return Promise.resolve({
@@ -1220,7 +1220,7 @@ export class ArDrive extends ArDriveAnonymous {
 			newPrivateDriveData,
 			driveRewardSettings,
 			rootFolderRewardSettings,
-			// Owner has been verified by assertPassword in the CLI layer
+			// Ownership of drive has been verified by assertValidPassword successfully decrypting
 			await this.wallet.getAddress()
 		);
 
