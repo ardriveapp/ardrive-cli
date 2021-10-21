@@ -7,6 +7,10 @@ export class ArweaveAddress {
 		}
 	}
 
+	equalsAddress(other: ArweaveAddress): boolean {
+		return this.address === other.address;
+	}
+
 	toString(): string {
 		return this.address;
 	}
