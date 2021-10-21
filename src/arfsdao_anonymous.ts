@@ -78,16 +78,16 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 
 	// Convenience function for known-public use cases
 	async getPublicDrive(driveId: DriveID, owner: ArweaveAddress): Promise<ArFSPublicDrive> {
-		return new ArFSPublicDriveBuilder({ entityId: driveId, arweave: this.arweave }).build(undefined, owner);
+		return new ArFSPublicDriveBuilder({ entityId: driveId, arweave: this.arweave, owner }).build();
 	}
 
 	// Convenience function for known-private use cases
 	async getPublicFolder(folderId: FolderID, owner: ArweaveAddress): Promise<ArFSPublicFolder> {
-		return new ArFSPublicFolderBuilder({ entityId: folderId, arweave: this.arweave }).build(undefined, owner);
+		return new ArFSPublicFolderBuilder({ entityId: folderId, arweave: this.arweave, owner }).build();
 	}
 
 	async getPublicFile(fileId: FileID, owner: ArweaveAddress): Promise<ArFSPublicFile> {
-		return new ArFSPublicFileBuilder({ entityId: fileId, arweave: this.arweave }).build(undefined, owner);
+		return new ArFSPublicFileBuilder({ entityId: fileId, arweave: this.arweave, owner }).build();
 	}
 
 	async getAllDrivesForAddress(

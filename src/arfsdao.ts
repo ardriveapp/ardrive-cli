@@ -678,19 +678,16 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 	// Convenience function for known-private use cases
 	async getPrivateDrive(driveId: DriveID, driveKey: DriveKey, owner: ArweaveAddress): Promise<ArFSPrivateDrive> {
-		return new ArFSPrivateDriveBuilder({ entityId: driveId, arweave: this.arweave, key: driveKey }).build(
-			undefined,
-			owner
-		);
+		return new ArFSPrivateDriveBuilder({ entityId: driveId, arweave: this.arweave, key: driveKey, owner }).build();
 	}
 
 	// Convenience function for known-private use cases
 	async getPrivateFolder(folderId: FolderID, driveKey: DriveKey, owner: ArweaveAddress): Promise<ArFSPrivateFolder> {
-		return await new ArFSPrivateFolderBuilder(folderId, this.arweave, driveKey).build(undefined, owner);
+		return new ArFSPrivateFolderBuilder(folderId, this.arweave, driveKey, owner).build();
 	}
 
 	async getPrivateFile(fileId: FileID, driveKey: DriveKey, owner: ArweaveAddress): Promise<ArFSPrivateFile> {
-		return new ArFSPrivateFileBuilder(fileId, this.arweave, driveKey).build(undefined, owner);
+		return new ArFSPrivateFileBuilder(fileId, this.arweave, driveKey, owner).build();
 	}
 
 	async getAllFoldersOfPrivateDrive(
