@@ -645,7 +645,6 @@ describe('ArDrive class - integrated', () => {
 				it('throws an error if the file is being moved to a different drive', async () => {
 					stub(arfsDao, 'getPrivateFile').resolves(stubPrivateFile({ driveId: unexpectedDriveId }));
 					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
-					// stub(arDrive, 'getDriveIdAndAssertDrive').resolves(stubEntityIDAlt); // Returns different drive ID
 
 					await expectAsyncErrorThrow({
 						promiseToError: arDrive.movePrivateFile(stubEntityID, stubEntityID, await getStubDriveKey()),
