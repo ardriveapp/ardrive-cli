@@ -354,14 +354,14 @@ export class ArDrive extends ArDriveAnonymous {
 			throw new Error(errorMessage.folderCannotMoveIntoItself);
 		}
 
-		const driveId = await this.arFsDao.getDriveIdForFolderId(folderId);
+		const destFolderDriveId = await this.arFsDao.getDriveIdForFolderId(newParentFolderId);
 
-		const owner = await this.getOwnerForDriveId(driveId);
+		const owner = await this.getOwnerForDriveId(destFolderDriveId);
 		await this.assertOwnerAddress(owner);
 
 		const originalFolderMetaData = await this.getPublicFolder(folderId);
 
-		if (driveId !== originalFolderMetaData.driveId) {
+		if (destFolderDriveId !== originalFolderMetaData.driveId) {
 			throw new Error(errorMessage.cannotMoveToDifferentDrive);
 		}
 
@@ -378,7 +378,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		const childrenFolderIds = await this.arFsDao.getPublicChildrenFolderIds({
 			folderId,
-			driveId
+			driveId: destFolderDriveId
 		});
 
 		if (childrenFolderIds.includes(newParentFolderId)) {
@@ -420,14 +420,14 @@ export class ArDrive extends ArDriveAnonymous {
 			throw new Error(errorMessage.folderCannotMoveIntoItself);
 		}
 
-		const driveId = await this.arFsDao.getDriveIdForFolderId(folderId);
+		const destFolderDriveId = await this.arFsDao.getDriveIdForFolderId(newParentFolderId);
 
-		const owner = await this.getOwnerForDriveId(driveId);
+		const owner = await this.getOwnerForDriveId(destFolderDriveId);
 		await this.assertOwnerAddress(owner);
 
 		const originalFolderMetaData = await this.getPrivateFolder(folderId, driveKey);
 
-		if (driveId !== originalFolderMetaData.driveId) {
+		if (destFolderDriveId !== originalFolderMetaData.driveId) {
 			throw new Error(errorMessage.cannotMoveToDifferentDrive);
 		}
 
@@ -444,7 +444,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		const childrenFolderIds = await this.arFsDao.getPrivateChildrenFolderIds({
 			folderId,
-			driveId,
+			driveId: destFolderDriveId,
 			driveKey
 		});
 
