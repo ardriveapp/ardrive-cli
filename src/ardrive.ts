@@ -44,6 +44,7 @@ import {
 import { stubEntityID, stubTransactionID } from './utils/stubs';
 import { errorMessage } from './error_message';
 import { PrivateKeyData } from './private_key_data';
+import { EntityNamesAndIds } from './utils/mapper_functions';
 import { ArweaveAddress } from './arweave_address';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
@@ -91,19 +92,14 @@ export interface DriveUploadBaseCosts {
 	rootFolderMetaDataBaseReward: Winston;
 }
 
-interface RecursiveBulkUploadParams {
+interface RecursivePublicBulkUploadParams {
 	parentFolderId: FolderID;
 	wrappedFolder: ArFSFolderToUpload;
 	driveId: DriveID;
 }
 
-interface RecursivePublicBulkUploadParams extends RecursiveBulkUploadParams {
-	folderData: ArFSPublicFolderTransactionData;
-}
-
-interface RecursivePrivateBulkUploadParams extends RecursiveBulkUploadParams {
+interface RecursivePrivateBulkUploadParams extends RecursivePublicBulkUploadParams {
 	driveKey: DriveKey;
-	folderData: ArFSPrivateFolderTransactionData;
 }
 
 interface CreatePublicFolderParams {
@@ -240,6 +236,13 @@ export class ArDrive extends ArDriveAnonymous {
 			throw new Error(errorMessage.cannotMoveIntoSamePlace('File', newParentFolderId));
 		}
 
+		// Assert that there are no duplicate names in the destination folder
+		const entityNamesInParentFolder = await this.arFsDao.getPublicEntityNamesInFolder(newParentFolderId);
+		if (entityNamesInParentFolder.includes(originalFileMetaData.name)) {
+			// TODO: Add optional interactive prompt to resolve name conflicts in ticket PE-599
+			throw new Error(errorMessage.entityNameExists);
+		}
+
 		const fileTransactionData = new ArFSPublicFileMetadataTransactionData(
 			originalFileMetaData.name,
 			originalFileMetaData.size,
@@ -285,6 +288,13 @@ export class ArDrive extends ArDriveAnonymous {
 
 		if (originalFileMetaData.parentFolderId === newParentFolderId) {
 			throw new Error(errorMessage.cannotMoveIntoSamePlace('File', newParentFolderId));
+		}
+
+		// Assert that there are no duplicate names in the destination folder
+		const entityNamesInParentFolder = await this.arFsDao.getPrivateEntityNamesInFolder(newParentFolderId, driveKey);
+		if (entityNamesInParentFolder.includes(originalFileMetaData.name)) {
+			// TODO: Add optional interactive prompt to resolve name conflicts in ticket PE-599
+			throw new Error(errorMessage.entityNameExists);
 		}
 
 		const fileTransactionData = await ArFSPrivateFileMetadataTransactionData.from(
@@ -344,6 +354,7 @@ export class ArDrive extends ArDriveAnonymous {
 		// Assert that there are no duplicate names in the destination folder
 		const entityNamesInParentFolder = await this.arFsDao.getPublicEntityNamesInFolder(newParentFolderId);
 		if (entityNamesInParentFolder.includes(originalFolderMetaData.name)) {
+			// TODO: Add optional interactive prompt to resolve name conflicts in ticket PE-599
 			throw new Error(errorMessage.entityNameExists);
 		}
 
@@ -405,6 +416,7 @@ export class ArDrive extends ArDriveAnonymous {
 		// Assert that there are no duplicate names in the destination folder
 		const entityNamesInParentFolder = await this.arFsDao.getPrivateEntityNamesInFolder(newParentFolderId, driveKey);
 		if (entityNamesInParentFolder.includes(originalFolderMetaData.name)) {
+			// TODO: Add optional interactive prompt to resolve name conflicts in ticket PE-599
 			throw new Error(errorMessage.entityNameExists);
 		}
 
@@ -459,6 +471,20 @@ export class ArDrive extends ArDriveAnonymous {
 	): Promise<ArFSResult> {
 		const driveId = await this.getDriveIdAndAssertDrive(parentFolderId);
 
+		// Derive destination name and names already within provided destination folder
+		const destFileName = destinationFileName ?? wrappedFile.getBaseFileName();
+		const filesAndFolderNames = await this.arFsDao.getPublicEntityNamesAndIdsInFolder(parentFolderId);
+
+		// Files cannot overwrite folder names
+		if (filesAndFolderNames.folders.find((f) => f.folderName === destFileName)) {
+			// TODO: Add optional interactive prompt to resolve name conflicts in ticket PE-599
+			throw new Error(errorMessage.entityNameExists);
+		}
+
+		// File is a new revision if destination name conflicts
+		// with an existing file in the destination folder
+		const existingFileId = filesAndFolderNames.files.find((f) => f.fileName === destFileName)?.fileId;
+
 		const uploadBaseCosts = await this.estimateAndAssertCostOfFileUpload(
 			wrappedFile.fileStats.size,
 			this.stubPublicFileMetadata(wrappedFile, destinationFileName),
@@ -467,14 +493,15 @@ export class ArDrive extends ArDriveAnonymous {
 		const fileDataRewardSettings = { reward: uploadBaseCosts.fileDataBaseReward, feeMultiple: this.feeMultiple };
 		const metadataRewardSettings = { reward: uploadBaseCosts.metaDataBaseReward, feeMultiple: this.feeMultiple };
 
-		const uploadFileResult = await this.arFsDao.uploadPublicFile(
+		const uploadFileResult = await this.arFsDao.uploadPublicFile({
 			parentFolderId,
 			wrappedFile,
 			driveId,
 			fileDataRewardSettings,
 			metadataRewardSettings,
-			destinationFileName
-		);
+			destFileName: destinationFileName,
+			existingFileId
+		});
 
 		const { tipData, reward: communityTipTrxReward } = await this.sendCommunityTip(
 			uploadBaseCosts.communityWinstonTip
@@ -505,20 +532,33 @@ export class ArDrive extends ArDriveAnonymous {
 	): Promise<ArFSResult> {
 		const driveId = await this.getDriveIdAndAssertDrive(parentFolderId);
 
-		const parentFolderData = new ArFSPublicFolderTransactionData(
-			parentFolderName ?? wrappedFolder.getBaseFileName()
-		);
+		// Derive destination name and names already within provided destination folder
+		const destFolderName = parentFolderName ?? wrappedFolder.getBaseFileName();
+		const filesAndFolderNames = await this.arFsDao.getPublicEntityNamesAndIdsInFolder(parentFolderId);
+
+		// Folders cannot overwrite file names
+		if (filesAndFolderNames.files.find((f) => f.fileName === destFolderName)) {
+			// TODO: Add optional interactive prompt to resolve name conflicts in ticket PE-599
+			throw new Error(errorMessage.entityNameExists);
+		}
+
+		// Use existing folder id if the intended destination name
+		// conflicts with an existing folder in the destination folder
+		wrappedFolder.existingId = filesAndFolderNames.folders.find((f) => f.folderName === destFolderName)?.folderId;
+		wrappedFolder.destinationName = parentFolderName;
+
+		// Check for conflicting names and assign existing IDs for later use
+		await this.checkAndAssignExistingPublicNames(wrappedFolder);
 
 		// Estimate and assert the cost of the entire bulk upload
 		// This will assign the calculated base costs to each wrapped file and folder
-		const bulkEstimation = await this.estimateAndAssertCostOfBulkUpload(wrappedFolder, undefined, parentFolderData);
+		const bulkEstimation = await this.estimateAndAssertCostOfBulkUpload(wrappedFolder);
 
 		// TODO: Add interactive confirmation of price estimation before uploading
 
 		const results = await this.recursivelyCreatePublicFolderAndUploadChildren({
 			parentFolderId,
 			wrappedFolder,
-			folderData: parentFolderData,
 			driveId
 		});
 
@@ -547,33 +587,49 @@ export class ArDrive extends ArDriveAnonymous {
 	protected async recursivelyCreatePublicFolderAndUploadChildren({
 		parentFolderId,
 		wrappedFolder,
-		driveId,
-		folderData
+		driveId
 	}: RecursivePublicBulkUploadParams): Promise<{
 		entityResults: ArFSEntityData[];
 		feeResults: ArFSFees;
 	}> {
-		// Create the parent folder
-		const { metaDataTrxId, metaDataTrxReward, folderId } = await this.arFsDao.createPublicFolder({
-			folderData: folderData,
-			driveId,
-			rewardSettings: {
-				reward: wrappedFolder.getBaseCosts().metaDataBaseReward,
-				feeMultiple: this.feeMultiple
-			},
-			parentFolderId,
-			syncParentFolderId: false
-		});
+		let uploadEntityFees: ArFSFees = {};
+		let uploadEntityResults: ArFSEntityData[] = [];
+		let folderId: FolderID;
 
-		// Capture parent folder results
-		let uploadEntityFees: ArFSFees = { [metaDataTrxId]: +metaDataTrxReward };
-		let uploadEntityResults: ArFSEntityData[] = [
-			{
-				type: 'folder',
-				metadataTxId: metaDataTrxId,
-				entityId: folderId
-			}
-		];
+		if (wrappedFolder.existingId) {
+			// Use existing parent folder ID for bulk upload
+			folderId = wrappedFolder.existingId;
+		} else {
+			// Create the parent folder
+			const folderData = new ArFSPublicFolderTransactionData(
+				wrappedFolder.destinationName ?? wrappedFolder.getBaseFileName()
+			);
+
+			const createFolderResult = await this.arFsDao.createPublicFolder({
+				folderData: folderData,
+				driveId,
+				rewardSettings: {
+					reward: wrappedFolder.getBaseCosts().metaDataBaseReward,
+					feeMultiple: this.feeMultiple
+				},
+				parentFolderId,
+				syncParentFolderId: false
+			});
+
+			const { metaDataTrxId, folderId: newFolderId, metaDataTrxReward } = createFolderResult;
+
+			// Capture parent folder results
+			uploadEntityFees = { [metaDataTrxId]: +metaDataTrxReward };
+			uploadEntityResults = [
+				{
+					type: 'folder',
+					metadataTxId: metaDataTrxId,
+					entityId: newFolderId
+				}
+			];
+
+			folderId = newFolderId;
+		}
 
 		// Upload all files in the folder
 		for await (const wrappedFile of wrappedFolder.files) {
@@ -587,13 +643,14 @@ export class ArDrive extends ArDriveAnonymous {
 				feeMultiple: this.feeMultiple
 			};
 
-			const uploadFileResult = await this.arFsDao.uploadPublicFile(
-				folderId,
+			const uploadFileResult = await this.arFsDao.uploadPublicFile({
+				parentFolderId: folderId,
 				wrappedFile,
 				driveId,
 				fileDataRewardSettings,
-				metadataRewardSettings
-			);
+				metadataRewardSettings,
+				existingFileId: wrappedFile.existingId
+			});
 
 			// Capture all file results
 			uploadEntityFees = {
@@ -614,14 +671,11 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Upload folders, and children of those folders
 		for await (const childFolder of wrappedFolder.folders) {
-			const folderData = new ArFSPublicFolderTransactionData(childFolder.getBaseFileName());
-
 			// Recursion alert, will keep creating folders of all nested folders
 			const results = await this.recursivelyCreatePublicFolderAndUploadChildren({
 				parentFolderId: folderId,
 				wrappedFolder: childFolder,
-				driveId,
-				folderData
+				driveId
 			});
 
 			// Capture all folder results
@@ -658,6 +712,20 @@ export class ArDrive extends ArDriveAnonymous {
 	): Promise<ArFSResult> {
 		const driveId = await this.getDriveIdAndAssertDrive(parentFolderId, driveKey);
 
+		// Derive destination name and names already within provided destination folder
+		const destFileName = destinationFileName ?? wrappedFile.getBaseFileName();
+		const filesAndFolderNames = await this.arFsDao.getPrivateEntityNamesAndIdsInFolder(parentFolderId, driveKey);
+
+		// Files cannot overwrite folder names
+		if (filesAndFolderNames.folders.find((f) => f.folderName === destFileName)) {
+			// TODO: Add optional interactive prompt to resolve name conflicts in ticket PE-599
+			throw new Error(errorMessage.entityNameExists);
+		}
+
+		// File is a new revision if destination name conflicts
+		// with an existing file in the destination folder
+		const existingFileId = filesAndFolderNames.files.find((f) => f.fileName === destFileName)?.fileId;
+
 		const uploadBaseCosts = await this.estimateAndAssertCostOfFileUpload(
 			wrappedFile.fileStats.size,
 			await this.stubPrivateFileMetadata(wrappedFile, destinationFileName),
@@ -675,15 +743,16 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// TODO: Add interactive confirmation of AR price estimation
 
-		const uploadFileResult = await this.arFsDao.uploadPrivateFile(
+		const uploadFileResult = await this.arFsDao.uploadPrivateFile({
 			parentFolderId,
 			wrappedFile,
 			driveId,
 			driveKey,
 			fileDataRewardSettings,
 			metadataRewardSettings,
-			destinationFileName
-		);
+			destFileName: destinationFileName,
+			existingFileId
+		});
 
 		const { tipData, reward: communityTipTrxReward } = await this.sendCommunityTip(
 			uploadBaseCosts.communityWinstonTip
@@ -716,21 +785,33 @@ export class ArDrive extends ArDriveAnonymous {
 	): Promise<ArFSResult> {
 		const driveId = await this.getDriveIdAndAssertDrive(parentFolderId, driveKey);
 
-		const parentFolderData = await ArFSPrivateFolderTransactionData.from(
-			parentFolderName ?? wrappedFolder.getBaseFileName(),
-			driveKey
-		);
+		// Derive destination name and names already within provided destination folder
+		const destFolderName = parentFolderName ?? wrappedFolder.getBaseFileName();
+		const filesAndFolderNames = await this.arFsDao.getPrivateEntityNamesAndIdsInFolder(parentFolderId, driveKey);
+
+		// Folders cannot overwrite file names
+		if (filesAndFolderNames.files.find((f) => f.fileName === destFolderName)) {
+			// TODO: Add optional interactive prompt to resolve name conflicts in ticket PE-599
+			throw new Error(errorMessage.entityNameExists);
+		}
+
+		// Use existing folder id if the intended destination name
+		// conflicts with an existing folder in the destination folder
+		wrappedFolder.existingId = filesAndFolderNames.folders.find((f) => f.folderName === destFolderName)?.folderId;
+		wrappedFolder.destinationName = parentFolderName;
+
+		// Check for conflicting names and assign existing IDs for later use
+		await this.checkAndAssignExistingPrivateNames(wrappedFolder, driveKey);
 
 		// Estimate and assert the cost of the entire bulk upload
 		// This will assign the calculated base costs to each wrapped file and folder
-		const bulkEstimation = await this.estimateAndAssertCostOfBulkUpload(wrappedFolder, driveKey, parentFolderData);
+		const bulkEstimation = await this.estimateAndAssertCostOfBulkUpload(wrappedFolder, driveKey);
 
 		// TODO: Add interactive confirmation of price estimation before uploading
 
 		const results = await this.recursivelyCreatePrivateFolderAndUploadChildren({
 			parentFolderId,
 			wrappedFolder,
-			folderData: parentFolderData,
 			driveKey,
 			driveId
 		});
@@ -757,39 +838,130 @@ export class ArDrive extends ArDriveAnonymous {
 		});
 	}
 
+	protected async checkAndAssignExistingNames(
+		wrappedFolder: ArFSFolderToUpload,
+		getExistingNamesFn: (parentFolderId: FolderID) => Promise<EntityNamesAndIds>
+	): Promise<void> {
+		if (!wrappedFolder.existingId) {
+			// Folder has no existing ID to check
+			return;
+		}
+
+		const existingEntityNamesAndIds = await getExistingNamesFn(wrappedFolder.existingId);
+
+		for await (const file of wrappedFolder.files) {
+			const baseFileName = file.getBaseFileName();
+
+			const folderNameConflict = existingEntityNamesAndIds.folders.find(
+				({ folderName }) => folderName === baseFileName
+			);
+
+			// File name cannot conflict with a folder name
+			if (folderNameConflict) {
+				throw new Error(errorMessage.entityNameExists);
+			}
+
+			const fileNameConflict = existingEntityNamesAndIds.files.find(({ fileName }) => fileName === baseFileName);
+
+			// Conflicting file name creates a REVISION by default
+			if (fileNameConflict) {
+				// Assigns existing id for later use
+				file.existingId = fileNameConflict.fileId;
+			}
+		}
+
+		for await (const folder of wrappedFolder.folders) {
+			const baseFolderName = folder.getBaseFileName();
+
+			const fileNameConflict = existingEntityNamesAndIds.files.find(
+				({ fileName }) => fileName === baseFolderName
+			);
+
+			// Folder name cannot conflict with a file name
+			if (fileNameConflict) {
+				throw new Error(errorMessage.entityNameExists);
+			}
+
+			const folderNameConflict = existingEntityNamesAndIds.folders.find(
+				({ folderName }) => folderName === baseFolderName
+			);
+
+			// Conflicting folder name uses EXISTING folder by default
+			if (folderNameConflict) {
+				// Assigns existing id for later use
+				folder.existingId = folderNameConflict.folderId;
+
+				// Recurse into existing folder on folder name conflict
+				await this.checkAndAssignExistingNames(folder, getExistingNamesFn);
+			}
+		}
+	}
+
+	protected async checkAndAssignExistingPublicNames(wrappedFolder: ArFSFolderToUpload): Promise<void> {
+		this.checkAndAssignExistingNames(wrappedFolder, (parentFolderId) =>
+			this.arFsDao.getPublicEntityNamesAndIdsInFolder(parentFolderId)
+		);
+	}
+
+	protected async checkAndAssignExistingPrivateNames(
+		wrappedFolder: ArFSFolderToUpload,
+		driveKey: DriveKey
+	): Promise<void> {
+		this.checkAndAssignExistingNames(wrappedFolder, (parentFolderId) =>
+			this.arFsDao.getPrivateEntityNamesAndIdsInFolder(parentFolderId, driveKey)
+		);
+	}
+
 	protected async recursivelyCreatePrivateFolderAndUploadChildren({
 		wrappedFolder,
 		driveId,
 		parentFolderId,
-		driveKey,
-		folderData
+		driveKey
 	}: RecursivePrivateBulkUploadParams): Promise<{
 		entityResults: ArFSEntityData[];
 		feeResults: ArFSFees;
 	}> {
-		// Create parent folder
-		const { metaDataTrxId, metaDataTrxReward, folderId } = await this.arFsDao.createPrivateFolder({
-			folderData: folderData,
-			driveId,
-			rewardSettings: {
-				reward: wrappedFolder.getBaseCosts().metaDataBaseReward,
-				feeMultiple: this.feeMultiple
-			},
-			parentFolderId,
-			driveKey,
-			syncParentFolderId: false
-		});
+		let uploadEntityFees: ArFSFees = {};
+		let uploadEntityResults: ArFSEntityData[] = [];
+		let folderId: FolderID;
 
-		// Capture parent folder results
-		let uploadEntityFees: ArFSFees = { [metaDataTrxId]: +metaDataTrxReward };
-		let uploadEntityResults: ArFSEntityData[] = [
-			{
-				type: 'folder',
-				metadataTxId: metaDataTrxId,
-				entityId: folderId,
-				key: urlEncodeHashKey(driveKey)
-			}
-		];
+		if (wrappedFolder.existingId) {
+			// Use existing parent folder ID for bulk upload.
+			// This happens when the parent folder's name conflicts
+			folderId = wrappedFolder.existingId;
+		} else {
+			// Create parent folder
+			const folderData = await ArFSPrivateFolderTransactionData.from(
+				wrappedFolder.destinationName ?? wrappedFolder.getBaseFileName(),
+				driveKey
+			);
+			const createFolderResult = await this.arFsDao.createPrivateFolder({
+				folderData: folderData,
+				driveId,
+				rewardSettings: {
+					reward: wrappedFolder.getBaseCosts().metaDataBaseReward,
+					feeMultiple: this.feeMultiple
+				},
+				parentFolderId,
+				driveKey,
+				syncParentFolderId: false
+			});
+
+			const { metaDataTrxId, folderId: newFolderId, metaDataTrxReward } = createFolderResult;
+
+			// Capture parent folder results
+			uploadEntityFees = { [metaDataTrxId]: +metaDataTrxReward };
+			uploadEntityResults = [
+				{
+					type: 'folder',
+					metadataTxId: metaDataTrxId,
+					entityId: newFolderId,
+					key: urlEncodeHashKey(driveKey)
+				}
+			];
+
+			folderId = newFolderId;
+		}
 
 		// Upload all files in the folder
 		for await (const wrappedFile of wrappedFolder.files) {
@@ -802,14 +974,15 @@ export class ArDrive extends ArDriveAnonymous {
 				feeMultiple: this.feeMultiple
 			};
 
-			const uploadFileResult = await this.arFsDao.uploadPrivateFile(
-				folderId,
+			const uploadFileResult = await this.arFsDao.uploadPrivateFile({
+				parentFolderId: folderId,
 				wrappedFile,
 				driveId,
 				driveKey,
 				fileDataRewardSettings,
-				metadataRewardSettings
-			);
+				metadataRewardSettings,
+				existingFileId: wrappedFile.existingId
+			});
 
 			// Capture all file results
 			uploadEntityFees = {
@@ -831,15 +1004,12 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Upload folders, and children of those folders
 		for await (const childFolder of wrappedFolder.folders) {
-			const folderData = await ArFSPrivateFolderTransactionData.from(childFolder.getBaseFileName(), driveKey);
-
 			// Recursion alert, will keep creating folders of all nested folders
 			const results = await this.recursivelyCreatePrivateFolderAndUploadChildren({
 				parentFolderId: folderId,
 				wrappedFolder: childFolder,
 				driveId,
-				driveKey,
-				folderData
+				driveKey
 			});
 
 			// Capture all folder results
@@ -860,6 +1030,7 @@ export class ArDrive extends ArDriveAnonymous {
 		// Assert that there are no duplicate names in the destination folder
 		const entityNamesInParentFolder = await this.arFsDao.getPublicEntityNamesInFolder(parentFolderId);
 		if (entityNamesInParentFolder.includes(folderName)) {
+			// TODO: Add optional interactive prompt to resolve name conflicts in ticket PE-599
 			throw new Error(errorMessage.entityNameExists);
 		}
 
@@ -900,6 +1071,7 @@ export class ArDrive extends ArDriveAnonymous {
 		// Assert that there are no duplicate names in the destination folder
 		const entityNamesInParentFolder = await this.arFsDao.getPrivateEntityNamesInFolder(parentFolderId, driveKey);
 		if (entityNamesInParentFolder.includes(folderName)) {
+			// TODO: Add optional interactive prompt to resolve name conflicts in ticket PE-599
 			throw new Error(errorMessage.entityNameExists);
 		}
 
@@ -1026,34 +1198,47 @@ export class ArDrive extends ArDriveAnonymous {
 		return Promise.resolve(driveEntity);
 	}
 
+	/**
+	 * Utility function to estimate and assert the cost of a bulk upload
+	 *
+	 * @remarks This function will recurse into the folder contents of the provided folderToUpload
+	 *
+	 * @throws when the wallet does not contain enough AR for the bulk upload
+	 *
+	 * @param folderToUpload The wrapped folder to estimate the cost of
+	 * @param driveKey Optional parameter to determine whether to estimate the cost of a private or public upload
+	 * @param isParentFolder Boolean to determine whether to Assert the total cost. This parameter
+	 *   is only to be handled as false internally within the recursive function. Always use default
+	 *   of TRUE when calling this method
+	 *  */
 	async estimateAndAssertCostOfBulkUpload(
 		folderToUpload: ArFSFolderToUpload,
 		driveKey?: DriveKey,
-		parentFolderMetaData?: ArFSObjectTransactionData
+		isParentFolder = true
 	): Promise<{ totalPrice: Winston; totalFilePrice: Winston; communityWinstonTip: Winston }> {
-		// parentFolderMetaData will only exist if this folder is the parent folder
-		// Recursing children folders will not have meta data assigned
-		const isParentFolder: boolean = parentFolderMetaData !== undefined;
-
-		const folderMetadataTrxData = await (async () => {
-			if (parentFolderMetaData) {
-				return parentFolderMetaData;
-			}
-			if (driveKey) {
-				return ArFSPrivateFolderTransactionData.from(folderToUpload.getBaseFileName(), driveKey);
-			}
-			return new ArFSPublicFolderTransactionData(folderToUpload.getBaseFileName());
-		})();
-		const metaDataBaseReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(
-			folderMetadataTrxData.sizeOf()
-		);
-		const parentFolderWinstonPrice = metaDataBaseReward.toString();
-
-		// Assign base costs to folder
-		folderToUpload.baseCosts = { metaDataBaseReward: parentFolderWinstonPrice };
-
-		let totalPrice = +parentFolderWinstonPrice;
+		let totalPrice = 0;
 		let totalFilePrice = 0;
+
+		if (!folderToUpload.existingId) {
+			// Don't estimate cost of folder metadata if using existing folder
+			const folderMetadataTrxData = await (async () => {
+				const folderName = folderToUpload.destinationName ?? folderToUpload.getBaseFileName();
+
+				if (driveKey) {
+					return ArFSPrivateFolderTransactionData.from(folderName, driveKey);
+				}
+				return new ArFSPublicFolderTransactionData(folderName);
+			})();
+			const metaDataBaseReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(
+				folderMetadataTrxData.sizeOf()
+			);
+			const parentFolderWinstonPrice = metaDataBaseReward.toString();
+
+			// Assign base costs to folder
+			folderToUpload.baseCosts = { metaDataBaseReward: parentFolderWinstonPrice };
+
+			totalPrice += +parentFolderWinstonPrice;
+		}
 
 		for await (const file of folderToUpload.files) {
 			const fileSize = driveKey ? file.encryptedDataSize() : file.fileStats.size;
@@ -1080,7 +1265,7 @@ export class ArDrive extends ArDriveAnonymous {
 		}
 
 		for await (const folder of folderToUpload.folders) {
-			const childFolderResults = await this.estimateAndAssertCostOfBulkUpload(folder, driveKey);
+			const childFolderResults = await this.estimateAndAssertCostOfBulkUpload(folder, driveKey, false);
 
 			totalPrice += +childFolderResults.totalPrice;
 			totalFilePrice += +childFolderResults.totalFilePrice;

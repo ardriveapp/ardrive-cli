@@ -13,7 +13,7 @@ export const stubArweaveAddress = new ArweaveAddress('abcdefghijklmnopqrxtuvwxyz
 export const stubTransactionID = '0000000000000000000000000000000000000000000';
 
 export const stubEntityID = '00000000-0000-0000-0000-000000000000';
-export const stubEntityIDAlt = '00000000-0000-0000-0000-000000000001';
+export const stubEntityIDAlt = 'caa8b54a-eb5e-4134-8ae2-a3946a428ec7';
 
 export const stubEntityIDRoot = '00000000-0000-0000-0000-000000000002';
 export const stubEntityIDParent = '00000000-0000-0000-0000-000000000003';
@@ -97,40 +97,42 @@ export const stubPrivateFolder = ({
 		'stubIV'
 	);
 
-export const stubPublicFile = new ArFSPublicFile(
-	'Integration Test',
-	'1.0',
-	ArFS_O_11,
-	'application/json',
-	stubEntityID,
-	'file',
-	'STUB NAME',
-	stubTransactionID,
-	0,
-	stubEntityID,
-	stubEntityID,
-	1234567890,
-	0,
-	stubTransactionID,
-	'application/json'
-);
+export const stubPublicFile = (fileName = 'STUB NAME'): ArFSPublicFile =>
+	new ArFSPublicFile(
+		'Integration Test',
+		'1.0',
+		ArFS_O_11,
+		'application/json',
+		stubEntityID,
+		'file',
+		fileName,
+		stubTransactionID,
+		0,
+		stubEntityID,
+		stubEntityID,
+		1234567890,
+		0,
+		stubTransactionID,
+		'application/json'
+	);
 
-export const stubPrivateFile = new ArFSPrivateFile(
-	'Integration Test',
-	'1.0',
-	ArFS_O_11,
-	'application/json',
-	stubEntityID,
-	'file',
-	'STUB NAME',
-	stubTransactionID,
-	0,
-	stubEntityID,
-	stubEntityID,
-	1234567890,
-	0,
-	stubTransactionID,
-	'application/json',
-	'stubCipher',
-	'stubIV'
-);
+export const stubPrivateFile = (fileName = 'STUB NAME'): ArFSPrivateFile =>
+	new ArFSPrivateFile(
+		'Integration Test',
+		'1.0',
+		ArFS_O_11,
+		'application/json',
+		stubEntityID,
+		'file',
+		fileName,
+		stubTransactionID,
+		0,
+		stubEntityID,
+		stubEntityID,
+		1234567890,
+		0,
+		stubTransactionID,
+		'application/json',
+		'stubCipher',
+		'stubIV'
+	);
