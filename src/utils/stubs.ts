@@ -15,7 +15,7 @@ export const stubArweaveAddress = (address = 'abcdefghijklmnopqrxtuvwxyz12345678
 export const stubTransactionID = '0000000000000000000000000000000000000000000';
 
 export const stubEntityID = '00000000-0000-0000-0000-000000000000';
-export const stubEntityIDAlt = '00000000-0000-0000-0000-000000000001';
+export const stubEntityIDAlt = 'caa8b54a-eb5e-4134-8ae2-a3946a428ec7';
 
 export const stubEntityIDRoot = '00000000-0000-0000-0000-000000000002';
 export const stubEntityIDParent = '00000000-0000-0000-0000-000000000003';
@@ -104,9 +104,10 @@ export const stubPrivateFolder = ({
 
 interface StubFileParams {
 	driveId?: DriveID;
+	fileName?: string;
 }
 
-export const stubPublicFile = ({ driveId = stubEntityID }: StubFileParams): ArFSPublicFile =>
+export const stubPublicFile = ({ driveId = stubEntityID, fileName = 'STUB NAME' }: StubFileParams): ArFSPublicFile =>
 	new ArFSPublicFile(
 		'Integration Test',
 		'1.0',
@@ -114,7 +115,7 @@ export const stubPublicFile = ({ driveId = stubEntityID }: StubFileParams): ArFS
 		'application/json',
 		driveId,
 		'file',
-		'STUB NAME',
+		fileName,
 		stubTransactionID,
 		0,
 		stubEntityID,
@@ -125,7 +126,7 @@ export const stubPublicFile = ({ driveId = stubEntityID }: StubFileParams): ArFS
 		'application/json'
 	);
 
-export const stubPrivateFile = ({ driveId = stubEntityID }: StubFileParams): ArFSPrivateFile =>
+export const stubPrivateFile = ({ driveId = stubEntityID, fileName = 'STUB NAME' }: StubFileParams): ArFSPrivateFile =>
 	new ArFSPrivateFile(
 		'Integration Test',
 		'1.0',
@@ -133,7 +134,7 @@ export const stubPrivateFile = ({ driveId = stubEntityID }: StubFileParams): ArF
 		'application/json',
 		driveId,
 		'file',
-		'STUB NAME',
+		fileName,
 		stubTransactionID,
 		0,
 		stubEntityID,

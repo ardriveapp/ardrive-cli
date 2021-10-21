@@ -38,3 +38,11 @@ export function latestRevisionFilterForDrives(
 	const latestRevision = allRevisions[0];
 	return entity.txId === latestRevision.txId;
 }
+
+export function fileFilter(entity: ArFSFileOrFolderEntity): boolean {
+	return entity.entityType === 'file';
+}
+
+export function folderFilter(entity: ArFSFileOrFolderEntity): boolean {
+	return entity.entityType === 'folder';
+}
