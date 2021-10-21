@@ -130,7 +130,7 @@ describe('ArDrive class - integrated', () => {
 
 				await expectAsyncErrorThrow({
 					promiseToError: arDrive.createPublicFolder({
-						folderName: 'CONFLICTING_NAME',
+						folderName: 'TEST_FOLDER',
 						driveId: stubEntityID,
 						parentFolderId: stubEntityID
 					}),
@@ -174,7 +174,7 @@ describe('ArDrive class - integrated', () => {
 
 				await expectAsyncErrorThrow({
 					promiseToError: arDrive.createPrivateFolder({
-						folderName: 'CONFLICTING_NAME',
+						folderName: 'TEST_FOLDER',
 						driveId: stubEntityID,
 						parentFolderId: stubEntityID,
 						driveKey: await getStubDriveKey()
