@@ -145,8 +145,7 @@ export class ArDriveAnonymous extends ArDriveType {
 
 	async getPublicFolder(folderId: FolderID, owner?: ArweaveAddress): Promise<ArFSPublicFolder> {
 		if (!owner) {
-			const driveId = await this.arFsDao.getDriveIdForFolderId(folderId);
-			owner = await this.getOwnerForDriveId(driveId);
+			owner = await this.arFsDao.getDriveOwnerForFolderId(folderId);
 		}
 
 		return this.arFsDao.getPublicFolder(folderId, owner);
@@ -154,8 +153,7 @@ export class ArDriveAnonymous extends ArDriveType {
 
 	async getPublicFile(fileId: FileID, owner?: ArweaveAddress): Promise<ArFSPublicFile> {
 		if (!owner) {
-			const driveId = await this.arFsDao.getDriveIdForFileId(fileId);
-			owner = await this.getOwnerForDriveId(driveId);
+			owner = await this.arFsDao.getDriveOwnerForFileId(fileId);
 		}
 
 		return this.arFsDao.getPublicFile(fileId, owner);
@@ -177,8 +175,7 @@ export class ArDriveAnonymous extends ArDriveType {
 		owner?: ArweaveAddress
 	): Promise<ArFSPublicFileOrFolderWithPaths[]> {
 		if (!owner) {
-			const driveId = await this.arFsDao.getDriveIdForFolderId(folderId);
-			owner = await this.getOwnerForDriveId(driveId);
+			owner = await this.arFsDao.getDriveOwnerForFolderId(folderId);
 		}
 
 		const children = await this.arFsDao.listPublicFolder(folderId, maxDepth, includeRoot, owner);
@@ -231,14 +228,14 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	async movePublicFile(fileId: FileID, newParentFolderId: FolderID): Promise<ArFSResult> {
-		const driveId = await this.arFsDao.getDriveIdForFileId(fileId);
+		const destFolderDriveId = await this.arFsDao.getDriveIdForFolderId(newParentFolderId);
 
-		const owner = await this.getOwnerForDriveId(driveId);
+		const owner = await this.getOwnerForDriveId(destFolderDriveId);
 		await this.assertOwnerAddress(owner);
 
 		const originalFileMetaData = await this.getPublicFile(fileId);
 
-		if (driveId !== originalFileMetaData.driveId) {
+		if (destFolderDriveId !== originalFileMetaData.driveId) {
 			throw new Error(errorMessage.cannotMoveToDifferentDrive);
 		}
 
@@ -289,14 +286,14 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	async movePrivateFile(fileId: FileID, newParentFolderId: FolderID, driveKey: DriveKey): Promise<ArFSResult> {
-		const driveId = await this.arFsDao.getDriveIdForFileId(fileId);
+		const destFolderDriveId = await this.arFsDao.getDriveIdForFolderId(newParentFolderId);
 
-		const owner = await this.getOwnerForDriveId(driveId);
+		const owner = await this.getOwnerForDriveId(destFolderDriveId);
 		await this.assertOwnerAddress(owner);
 
 		const originalFileMetaData = await this.getPrivateFile(fileId, driveKey);
 
-		if (driveId !== originalFileMetaData.driveId) {
+		if (destFolderDriveId !== originalFileMetaData.driveId) {
 			throw new Error(errorMessage.cannotMoveToDifferentDrive);
 		}
 
@@ -1369,8 +1366,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 	async getPrivateFolder(folderId: FolderID, driveKey: DriveKey, owner?: ArweaveAddress): Promise<ArFSPrivateFolder> {
 		if (!owner) {
-			const driveId = await this.getDriveIdForFolderId(folderId);
-			owner = await this.getOwnerForDriveId(driveId);
+			owner = await this.arFsDao.getDriveOwnerForFolderId(folderId);
 		}
 		await this.assertOwnerAddress(owner);
 
@@ -1379,8 +1375,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 	async getPrivateFile(fileId: FileID, driveKey: DriveKey, owner?: ArweaveAddress): Promise<ArFSPrivateFile> {
 		if (!owner) {
-			const driveId = await this.getDriveIdForFileId(fileId);
-			owner = await this.getOwnerForDriveId(driveId);
+			owner = await this.arFsDao.getDriveOwnerForFileId(fileId);
 		}
 		await this.assertOwnerAddress(owner);
 
@@ -1400,8 +1395,7 @@ export class ArDrive extends ArDriveAnonymous {
 		owner?: ArweaveAddress
 	): Promise<ArFSPrivateFileOrFolderWithPaths[]> {
 		if (!owner) {
-			const driveId = await this.getDriveIdForFolderId(folderId);
-			owner = await this.getOwnerForDriveId(driveId);
+			owner = await this.arFsDao.getDriveOwnerForFolderId(folderId);
 		}
 		await this.assertOwnerAddress(owner);
 

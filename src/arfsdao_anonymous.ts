@@ -68,6 +68,14 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		throw new Error(`No Drive-Id tag found for meta data transaction of ${gqlTypeTag}: ${entityId}`);
 	}
 
+	async getDriveOwnerForFolderId(folderId: FolderID): Promise<ArweaveAddress> {
+		return this.getOwnerForDriveId(await this.getDriveIdForFolderId(folderId));
+	}
+
+	async getDriveOwnerForFileId(fileId: FileID): Promise<ArweaveAddress> {
+		return this.getOwnerForDriveId(await this.getDriveIdForFileId(fileId));
+	}
+
 	async getDriveIdForFileId(fileId: FileID): Promise<DriveID> {
 		return this.getDriveIDForEntityId(fileId, 'File-Id');
 	}
