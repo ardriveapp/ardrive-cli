@@ -269,7 +269,7 @@ describe('ParametersHelper class', () => {
 		// Note: Redundant prolonged seed-phrase tests are commented out to save testing time
 
 		// it('returns the address of the wallet when a valid --seed-phrase option is provided', () => {
-		// declareCommandWithParams(program, [AddressParameter], async (options) => {
+		// declareCommandWithParams(program, [SeedPhraseParameter], async (options) => {
 		// 	const parameters = new ParametersHelper(options);
 		// 	expect((await parameters.getWalletAddress()).equalsAddress(arweaveAddress)).to.be.true;
 		// });
@@ -282,7 +282,7 @@ describe('ParametersHelper class', () => {
 		// });
 
 		// it('returns the address of the wallet when a valid -s option is provided', () => {
-		// declareCommandWithParams(program, [AddressParameter], async (options) => {
+		// declareCommandWithParams(program, [SeedPhraseParameter], async (options) => {
 		// 	const parameters = new ParametersHelper(options);
 		// 	expect((await parameters.getWalletAddress()).equalsAddress(arweaveAddress)).to.be.true;
 		// });
