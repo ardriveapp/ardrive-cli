@@ -92,7 +92,9 @@ import {
 import { ArFSDAOAnonymous } from './arfsdao_anonymous';
 import { ArFSFileOrFolderBuilder } from './utils/arfs_builders/arfs_builders';
 import { PrivateKeyData } from './private_key_data';
+import { ArweaveAddress } from './arweave_address';
 import { EntityNamesAndIds, entityToNameMap, fileToNameAndIdMap, folderToNameAndIdMap } from './utils/mapper_functions';
+import { ListPrivateFolderParams } from './ardrive';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 
@@ -117,6 +119,8 @@ export type GetDriveFunction = () => Promise<ArFSPublicDrive | ArFSPrivateDrive>
 export type CreateFolderFunction = (driveId: DriveID) => Promise<ArFSCreateFolderResult>;
 export type GenerateDriveIdFn = () => DriveID;
 
+export type ArFSListPrivateFolderParams = Required<ListPrivateFolderParams>;
+
 export interface UploadPublicFileParams {
 	parentFolderId: FolderID;
 	wrappedFile: ArFSFileToUpload;
@@ -135,6 +139,7 @@ export interface CreateFolderSettings {
 	rewardSettings: RewardSettings;
 	parentFolderId?: FolderID;
 	syncParentFolderId?: boolean;
+	owner: ArweaveAddress;
 }
 
 export interface CreatePublicFolderSettings extends CreateFolderSettings {
@@ -218,11 +223,12 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		driveId,
 		rewardSettings,
 		parentFolderId,
-		syncParentFolderId = true
+		syncParentFolderId = true,
+		owner
 	}: CreatePublicFolderSettings): Promise<ArFSCreateFolderResult> {
 		return this.createFolder(
-			{ driveId, rewardSettings, parentFolderId, syncParentFolderId },
-			() => this.getPublicDrive(driveId),
+			{ driveId, rewardSettings, parentFolderId, syncParentFolderId, owner },
+			() => this.getPublicDrive(driveId, owner),
 			(folderId, parentFolderId) =>
 				new ArFSPublicFolderMetaDataPrototype(folderData, driveId, folderId, parentFolderId)
 		);
@@ -235,11 +241,12 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		driveKey,
 		parentFolderId,
 		rewardSettings,
-		syncParentFolderId = true
+		syncParentFolderId = true,
+		owner
 	}: CreatePrivateFolderSettings): Promise<ArFSCreateFolderResult> {
 		return this.createFolder(
-			{ driveId, rewardSettings, parentFolderId, syncParentFolderId },
-			() => this.getPrivateDrive(driveId, driveKey),
+			{ driveId, rewardSettings, parentFolderId, syncParentFolderId, owner },
+			() => this.getPrivateDrive(driveId, driveKey, owner),
 			(folderId, parentFolderId) =>
 				new ArFSPrivateFolderMetaDataPrototype(driveId, folderId, folderData, parentFolderId)
 		);
@@ -287,7 +294,8 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	async createPublicDrive(
 		driveName: string,
 		driveRewardSettings: RewardSettings,
-		rootFolderRewardSettings: RewardSettings
+		rootFolderRewardSettings: RewardSettings,
+		owner: ArweaveAddress
 	): Promise<ArFSCreateDriveResult> {
 		return this.createDrive<ArFSCreateDriveResult>(
 			driveRewardSettings,
@@ -298,7 +306,8 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 					folderData,
 					driveId,
 					rewardSettings: rootFolderRewardSettings,
-					syncParentFolderId: false
+					syncParentFolderId: false,
+					owner
 				});
 			},
 			(driveId, rootFolderId) => {
@@ -317,7 +326,8 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		driveName: string,
 		newDriveData: PrivateDriveKeyData,
 		driveRewardSettings: RewardSettings,
-		rootFolderRewardSettings: RewardSettings
+		rootFolderRewardSettings: RewardSettings,
+		owner: ArweaveAddress
 	): Promise<ArFSCreatePrivateDriveResult> {
 		return this.createDrive(
 			driveRewardSettings,
@@ -329,7 +339,8 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 					driveId,
 					rewardSettings: rootFolderRewardSettings,
 					syncParentFolderId: false,
-					driveKey: newDriveData.driveKey
+					driveKey: newDriveData.driveKey,
+					owner
 				});
 			},
 			async (driveId, rootFolderId) => {
@@ -669,17 +680,17 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	}
 
 	// Convenience function for known-private use cases
-	async getPrivateDrive(driveId: DriveID, driveKey: DriveKey): Promise<ArFSPrivateDrive> {
-		return new ArFSPrivateDriveBuilder({ entityId: driveId, arweave: this.arweave, key: driveKey }).build();
+	async getPrivateDrive(driveId: DriveID, driveKey: DriveKey, owner: ArweaveAddress): Promise<ArFSPrivateDrive> {
+		return new ArFSPrivateDriveBuilder({ entityId: driveId, arweave: this.arweave, key: driveKey, owner }).build();
 	}
 
 	// Convenience function for known-private use cases
-	async getPrivateFolder(folderId: FolderID, driveKey: DriveKey): Promise<ArFSPrivateFolder> {
-		return await new ArFSPrivateFolderBuilder(folderId, this.arweave, driveKey).build();
+	async getPrivateFolder(folderId: FolderID, driveKey: DriveKey, owner: ArweaveAddress): Promise<ArFSPrivateFolder> {
+		return new ArFSPrivateFolderBuilder(folderId, this.arweave, driveKey, owner).build();
 	}
 
-	async getPrivateFile(fileId: FileID, driveKey: DriveKey): Promise<ArFSPrivateFile> {
-		return new ArFSPrivateFileBuilder(fileId, this.arweave, driveKey).build();
+	async getPrivateFile(fileId: FileID, driveKey: DriveKey, owner: ArweaveAddress): Promise<ArFSPrivateFile> {
+		return new ArFSPrivateFileBuilder(fileId, this.arweave, driveKey, owner).build();
 	}
 
 	async getAllFoldersOfPrivateDrive(
@@ -884,17 +895,18 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	 * @param {boolean} includeRoot whether or not folderId's folder data should be included in the listing
 	 * @returns {ArFSPrivateFileOrFolderWithPaths[]} an array representation of the children and parent folder
 	 */
-	async listPrivateFolder(
-		folderId: FolderID,
-		driveKey: DriveKey,
-		maxDepth: number,
-		includeRoot: boolean
-	): Promise<ArFSPrivateFileOrFolderWithPaths[]> {
+	async listPrivateFolder({
+		folderId,
+		driveKey,
+		maxDepth,
+		includeRoot,
+		owner
+	}: ArFSListPrivateFolderParams): Promise<ArFSPrivateFileOrFolderWithPaths[]> {
 		if (!Number.isInteger(maxDepth) || maxDepth < 0) {
 			throw new Error('maxDepth should be a non-negative integer!');
 		}
 
-		const folder = await this.getPrivateFolder(folderId, driveKey);
+		const folder = await this.getPrivateFolder(folderId, driveKey, owner);
 
 		// Fetch all of the folder entities within the drive
 		const driveIdOfFolder = folder.driveId;

@@ -29,7 +29,7 @@ export interface ArFSMoveFileResult extends ArFSMoveEntityResult {
 	dataTrxId: TransactionID;
 }
 
-type WithDriveKey = { driveKey: DriveKey };
+export type WithDriveKey = { driveKey: DriveKey };
 type WithFileKey = { fileKey: FileKey };
 
 export type ArFSCreatePublicDriveResult = ArFSCreateDriveResult;

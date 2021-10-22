@@ -1,6 +1,7 @@
 import { fileDecrypt, GQLNodeInterface, GQLTagInterface, Utf8ArrayToStr } from 'ardrive-core-js';
 import Arweave from 'arweave';
 import { ArFSPrivateFolder, ArFSPublicFolder } from '../../arfs_entities';
+import { ArweaveAddress } from '../../arweave_address';
 import { CipherIV, DriveKey, FolderID } from '../../types';
 import { ArFSFileOrFolderBuilder } from './arfs_builders';
 
@@ -78,8 +79,13 @@ export class ArFSPrivateFolderBuilder extends ArFSFolderBuilder<ArFSPrivateFolde
 	cipher?: string;
 	cipherIV?: CipherIV;
 
-	constructor(readonly folderId: FolderID, readonly arweave: Arweave, protected readonly driveKey: DriveKey) {
-		super({ entityId: folderId, arweave });
+	constructor(
+		readonly folderId: FolderID,
+		readonly arweave: Arweave,
+		protected readonly driveKey: DriveKey,
+		readonly owner?: ArweaveAddress
+	) {
+		super({ entityId: folderId, arweave, owner });
 	}
 
 	static fromArweaveNode(node: GQLNodeInterface, arweave: Arweave, driveKey: DriveKey): ArFSPrivateFolderBuilder {

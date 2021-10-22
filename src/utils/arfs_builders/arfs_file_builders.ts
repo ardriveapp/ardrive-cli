@@ -9,6 +9,7 @@ import {
 } from 'ardrive-core-js';
 import Arweave from 'arweave';
 import { ArFSPrivateFile, ArFSPublicFile } from '../../arfs_entities';
+import { ArweaveAddress } from '../../arweave_address';
 import { ByteCount, CipherIV, DriveKey, FileID, TransactionID, UnixTime } from '../../types';
 import { ArFSFileOrFolderBuilder } from './arfs_builders';
 
@@ -100,8 +101,13 @@ export class ArFSPrivateFileBuilder extends ArFSFileBuilder<ArFSPrivateFile> {
 	cipher?: string;
 	cipherIV?: CipherIV;
 
-	constructor(readonly fileId: FileID, readonly arweave: Arweave, private readonly driveKey: DriveKey) {
-		super({ entityId: fileId, arweave });
+	constructor(
+		readonly fileId: FileID,
+		readonly arweave: Arweave,
+		private readonly driveKey: DriveKey,
+		readonly owner?: ArweaveAddress
+	) {
+		super({ entityId: fileId, arweave, owner });
 	}
 
 	static fromArweaveNode(node: GQLNodeInterface, arweave: Arweave, driveKey: DriveKey): ArFSPrivateFileBuilder {
