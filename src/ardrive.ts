@@ -11,7 +11,8 @@ import {
 	DriveKey,
 	EntityID,
 	FileID,
-	ByteCount
+	ByteCount,
+	MakeOptional
 } from './types';
 import { WalletDAO, Wallet, JWKWallet } from './wallet_new';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
@@ -30,7 +31,7 @@ import {
 	ArFSPublicFolderTransactionData
 } from './arfs_trx_data_types';
 import { urlEncodeHashKey } from './utils';
-import { ArFSDAOAnonymous, ArFSDAOType } from './arfsdao_anonymous';
+import { ArFSDAOAnonymous, ArFSDAOType, ArFSListPublicFolderParams } from './arfsdao_anonymous';
 import {
 	ArFSPrivateDrive,
 	ArFSPrivateFile,
@@ -58,12 +59,7 @@ export interface ArFSEntityData {
 	key?: string;
 }
 
-export interface ListPublicFolderParams {
-	folderId: FolderID;
-	maxDepth?: number;
-	includeRoot?: boolean;
-	owner?: ArweaveAddress;
-}
+export type ListPublicFolderParams = MakeOptional<ArFSListPublicFolderParams, 'maxDepth' | 'includeRoot' | 'owner'>;
 export type ListPrivateFolderParams = ListPublicFolderParams & WithDriveKey;
 
 export interface TipData {

@@ -11,11 +11,15 @@ import { ArFSPublicFileBuilder } from './utils/arfs_builders/arfs_file_builders'
 import { ArFSPublicDrive, ArFSPublicFile, ArFSPublicFileOrFolderWithPaths, ArFSPublicFolder } from './arfs_entities';
 import { PrivateKeyData } from './private_key_data';
 import { ArweaveAddress } from './arweave_address';
-import { ListPublicFolderParams } from './ardrive';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 
-type ArFSListPublicFolderParams = Required<ListPublicFolderParams>;
+export interface ArFSListPublicFolderParams {
+	folderId: FolderID;
+	maxDepth: number;
+	includeRoot: boolean;
+	owner: ArweaveAddress;
+}
 
 export abstract class ArFSDAOType {
 	protected abstract readonly arweave: Arweave;
