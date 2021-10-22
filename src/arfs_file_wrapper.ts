@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import { extToMime } from 'ardrive-core-js';
 import { basename, join } from 'path';
-import { ByteCount, DataContentType, UnixTime } from './types';
+import { ByteCount, DataContentType, FileID, FolderID, UnixTime } from './types';
 import { BulkFileBaseCosts, MetaDataBaseCosts } from './ardrive';
 
 type BaseFileName = string;
@@ -60,6 +60,7 @@ export class ArFSFileToUpload {
 	}
 
 	baseCosts?: BulkFileBaseCosts;
+	existingId?: FileID;
 
 	public gatherFileInfo(): FileInfo {
 		const dataContentType = this.getContentType();
@@ -99,6 +100,8 @@ export class ArFSFolderToUpload {
 	folders: ArFSFolderToUpload[] = [];
 
 	baseCosts?: MetaDataBaseCosts;
+	existingId?: FolderID;
+	destinationName?: string;
 
 	constructor(public readonly filePath: FilePath, public readonly fileStats: fs.Stats) {
 		const entitiesInFolder = fs.readdirSync(this.filePath);

@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import Arweave from 'arweave';
 import { ArFSDriveEntity, GQLEdgeInterface } from 'ardrive-core-js';
-import { buildQuery } from './query';
+import { ASCENDING_ORDER, buildQuery } from './query';
 import { DriveID, FolderID, FileID, DEFAULT_APP_NAME, DEFAULT_APP_VERSION, EntityID } from './types';
 import { latestRevisionFilter, latestRevisionFilterForDrives } from './utils/filter_methods';
 import { FolderHierarchy } from './folderHierarchy';
@@ -13,6 +13,13 @@ import { PrivateKeyData } from './private_key_data';
 import { ArweaveAddress } from './arweave_address';
 
 export const graphQLURL = 'https://arweave.net/graphql';
+
+export interface ArFSListPublicFolderParams {
+	folderId: FolderID;
+	maxDepth: number;
+	includeRoot: boolean;
+	owner: ArweaveAddress;
+}
 
 export abstract class ArFSDAOType {
 	protected abstract readonly arweave: Arweave;
@@ -32,7 +39,22 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		super();
 	}
 
-	private async getDriveID(entityId: EntityID, gqlTypeTag: 'File-Id' | 'Folder-Id') {
+	public async getOwnerForDriveId(driveId: DriveID): Promise<ArweaveAddress> {
+		const gqlQuery = buildQuery({ tags: [{ name: 'Drive-Id', value: driveId }], sort: ASCENDING_ORDER });
+		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
+		const edges: GQLEdgeInterface[] = response.data.data.transactions.edges;
+
+		if (!edges.length) {
+			throw new Error(`Could not find a transaction with "Drive-Id": ${driveId}`);
+		}
+
+		const edgeOfFirstDrive = edges[0];
+		const driveOwnerAddress = edgeOfFirstDrive.node.owner.address;
+
+		return new ArweaveAddress(driveOwnerAddress);
+	}
+
+	async getDriveIDForEntityId(entityId: EntityID, gqlTypeTag: 'File-Id' | 'Folder-Id'): Promise<DriveID> {
 		const gqlQuery = buildQuery({ tags: [{ name: gqlTypeTag, value: entityId }] });
 
 		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
@@ -45,7 +67,6 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 			throw new Error(`Entity with ${gqlTypeTag} ${entityId} not found!`);
 		}
 
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const driveIdTag = edges[0].node.tags.find((t) => t.name === 'Drive-Id');
 		if (driveIdTag) {
 			return driveIdTag.value;
@@ -54,26 +75,34 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		throw new Error(`No Drive-Id tag found for meta data transaction of ${gqlTypeTag}: ${entityId}`);
 	}
 
+	async getDriveOwnerForFolderId(folderId: FolderID): Promise<ArweaveAddress> {
+		return this.getOwnerForDriveId(await this.getDriveIdForFolderId(folderId));
+	}
+
+	async getDriveOwnerForFileId(fileId: FileID): Promise<ArweaveAddress> {
+		return this.getOwnerForDriveId(await this.getDriveIdForFileId(fileId));
+	}
+
 	async getDriveIdForFileId(fileId: FileID): Promise<DriveID> {
-		return this.getDriveID(fileId, 'File-Id');
+		return this.getDriveIDForEntityId(fileId, 'File-Id');
 	}
 
 	async getDriveIdForFolderId(folderId: FolderID): Promise<DriveID> {
-		return this.getDriveID(folderId, 'Folder-Id');
+		return this.getDriveIDForEntityId(folderId, 'Folder-Id');
 	}
 
 	// Convenience function for known-public use cases
-	async getPublicDrive(driveId: DriveID): Promise<ArFSPublicDrive> {
-		return new ArFSPublicDriveBuilder({ entityId: driveId, arweave: this.arweave }).build();
+	async getPublicDrive(driveId: DriveID, owner: ArweaveAddress): Promise<ArFSPublicDrive> {
+		return new ArFSPublicDriveBuilder({ entityId: driveId, arweave: this.arweave, owner }).build();
 	}
 
 	// Convenience function for known-private use cases
-	async getPublicFolder(folderId: FolderID): Promise<ArFSPublicFolder> {
-		return new ArFSPublicFolderBuilder({ entityId: folderId, arweave: this.arweave }).build();
+	async getPublicFolder(folderId: FolderID, owner: ArweaveAddress): Promise<ArFSPublicFolder> {
+		return new ArFSPublicFolderBuilder({ entityId: folderId, arweave: this.arweave, owner }).build();
 	}
 
-	async getPublicFile(fileId: FileID): Promise<ArFSPublicFile> {
-		return new ArFSPublicFileBuilder({ entityId: fileId, arweave: this.arweave }).build();
+	async getPublicFile(fileId: FileID, owner: ArweaveAddress): Promise<ArFSPublicFile> {
+		return new ArFSPublicFileBuilder({ entityId: fileId, arweave: this.arweave, owner }).build();
 	}
 
 	async getAllDrivesForAddress(
@@ -179,16 +208,17 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 	 * @param {boolean} includeRoot whether or not folderId's folder data should be included in the listing
 	 * @returns {ArFSPublicFileOrFolderWithPaths[]} an array representation of the children and parent folder
 	 */
-	async listPublicFolder(
-		folderId: FolderID,
-		maxDepth: number,
-		includeRoot: boolean
-	): Promise<ArFSPublicFileOrFolderWithPaths[]> {
+	async listPublicFolder({
+		folderId,
+		maxDepth,
+		includeRoot,
+		owner
+	}: ArFSListPublicFolderParams): Promise<ArFSPublicFileOrFolderWithPaths[]> {
 		if (!Number.isInteger(maxDepth) || maxDepth < 0) {
 			throw new Error('maxDepth should be a non-negative integer!');
 		}
 
-		const folder = await this.getPublicFolder(folderId);
+		const folder = await this.getPublicFolder(folderId, owner);
 
 		// Fetch all of the folder entities within the drive
 		const driveIdOfFolder = folder.driveId;
