@@ -25,7 +25,10 @@ program.usage('[command] [command-specific options]');
 function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliApiObject): void {
 	let command: CliApiObject = program.command(commandDescriptor.name);
 	const parameters = commandDescriptor.parameters.map((param) => new Parameter(param));
-	(command as Command).addOption(new Option('--banner').hideHelp());
+
+	if (process.env.NODE_ENV !== 'test') {
+		(command as Command).addOption(new Option('--banner').hideHelp());
+	}
 
 	parameters.forEach((parameter) => {
 		const aliasesAsString = parameter.aliases.join(' ');
