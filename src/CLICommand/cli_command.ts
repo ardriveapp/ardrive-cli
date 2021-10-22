@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-import { Command } from 'commander';
+import { Command, Option } from 'commander';
 import { CliApiObject, ParsedArguments } from './cli';
 import { ERROR_EXIT_CODE } from './constants';
 import { Parameter, ParameterName, ParameterOverridenConfig } from './parameter';
@@ -25,6 +25,8 @@ program.usage('[command] [command-specific options]');
 function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliApiObject): void {
 	let command: CliApiObject = program.command(commandDescriptor.name);
 	const parameters = commandDescriptor.parameters.map((param) => new Parameter(param));
+	(command as Command).addOption(new Option('--banner').hideHelp());
+
 	parameters.forEach((parameter) => {
 		const aliasesAsString = parameter.aliases.join(' ');
 		const paramTypeString = (function () {
@@ -46,8 +48,12 @@ function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliA
 			command.option(...optionArguments);
 		}
 	});
+
 	command = command.action(async (options) => {
 		await (async function () {
+			if (options.banner) {
+				displayBanner();
+			}
 			assertConjunctionParameters(commandDescriptor, options);
 			const exitCode = await commandDescriptor.action(options);
 			exitProgram(exitCode || 0);
@@ -56,6 +62,24 @@ function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliA
 			exitProgram(ERROR_EXIT_CODE);
 		});
 	});
+}
+
+function displayBanner() {
+	console.log('\n');
+	console.log('                          █████╗ ██████╗ ██████╗ ██████╗ ██╗██╗   ██╗███████╗');
+	console.log('                         ██╔══██╗██╔══██╗██╔══██╗██╔══██╗██║██║   ██║██╔════╝');
+	console.log('                         ███████║██████╔╝██║  ██║██████╔╝██║██║   ██║█████╗  ');
+	console.log('                         ██╔══██║██╔══██╗██║  ██║██╔══██╗██║╚██╗ ██╔╝██╔══╝  ');
+	console.log('                         ██║  ██║██║  ██║██████╔╝██║  ██║██║ ╚████╔╝ ███████╗');
+	console.log('                         ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝  ╚══════╝');
+	console.log('                                                                             ');
+	console.log('                                 ██████╗ ███████╗████████╗ █████╗            ');
+	console.log('                                 ██╔══██╗██╔════╝╚══██╔══╝██╔══██╗           ');
+	console.log('                                 ██████╔╝█████╗     ██║   ███████║           ');
+	console.log('                                 ██╔══██╗██╔══╝     ██║   ██╔══██║           ');
+	console.log('                                 ██████╔╝███████╗   ██║   ██║  ██║           ');
+	console.log('                                 ╚═════╝ ╚══════╝   ╚═╝   ╚═╝  ╚═╝           ');
+	console.log('\n');
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
