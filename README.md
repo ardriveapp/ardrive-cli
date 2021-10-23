@@ -192,7 +192,7 @@ $ ardrive --help
 
 ### Wallet Operations
 
-Browsing of ArDrive public data is possible without the need for an [Arweave wallet][kb-wallets]. However, for all write operations, or read operations of your own private data, you'll need a wallet.<br>
+Browsing of ArDrive public data is possible without the need for an [Arweave wallet][kb-wallets]. However, for all write operations, or read operations without encryption/descryption keys, you'll need a wallet.<br>
 
 As you utilize the CLI, you can use either your wallet file or your seed phrase interchangeably. Consider the security implications of each approach for your particular use case carefully. If at any time you'd like to generate a new wallet altogether, start by generating a new seed phase. And if you'd like to use that seed phrase in the form of a wallet file, or if you'd like to recover an existing wallet via its seed phrase, use either or both of the following commands:<br>
 
@@ -222,7 +222,7 @@ You'll need AR in your wallet for any write operations you perform in ArDrive. Y
 # Getting the balance for your own wallet
 $ ardrive get-balance -w /path/to/wallet/file.json
 
-# Getting the balance for ANY wallet and example output
+# Getting the balance for ANY wallet (with sample output)
 $ ardrive get-balance -a "HTTn8F92tR32N8wuo-NIDkjmqPknrbl10JWo5MZ9x2k"
 1500000000000	Winston
 1.5	AR
@@ -235,13 +235,54 @@ If, at any time, you need to send AR out of your wallet to another wallet addres
 $ ardrive send-ar -w /path/to/wallet/file.json --dest-address "HTTn8F92tR32N8wuo-NIDkjmqPknrbl10JWo5MZ9x2k" --ar-amount 2.12345
 ```
 
-### Working with Drives
+### Working with Entities
+
+[ArDrive]'s [ArFS] integration provides for hierarchical organization of your file and folder data on Arweave.<br>
+
+The fundamental entity types specified by ArFS are:
+
+<ul>
+<li>Drives</li>
+<li>Folders</li>
+<li>Files</li>
+</ul>
+
+Each instance of these entities have a Version 4 UUID entity ID that is colloquially referred to by its entity type, i.e. drive ID, folder ID, and file ID.<br>
+
+When you execute write functions with the CLI, the JSON output will contain information about the Arweave Transaction IDs that were registered when writing your entities to the blockweave, any miner rewards or ArDrive Community tips that were disbursed from your wallet, and any new entity IDs and, when applicable, encryption keys that were generated in the process of creating the entities. Typically, you'll want to keep track of those and get proficient with retrieving them in order to build your drive hierarchy to your liking.
 
 #### Understanding Drive Hierarchies
 
-[ArDrive]'s [ArFS] integration provides for hierarchical organization of your file and folder data.<br>
+At the root of every data tree is a "Drive" entity. When a drive is created, a Root Folder is also created for it. The entity IDs for both are presented when you create a new drive:
 
-At the root of every data tree is a "Drive" entity. When a drive is created, a Root Folder is also created for it. All file and folder entities in the drive will be anchored to it by a "Drive-ID" GQL Tag. And they'll each be anchored to a Parent Folder ID, forming a tree structure whose base terminates at the Root Folder.<br>
+```shell
+# Use `tee` to keep a receipt of the transaction and `jq` to focus on the data of interest
+$ ardrive create-drive --wallet-file /path/to/my/wallet.json --drive-name "Teenage Love Poetry" |
+tee created_drive.json |
+jq '.created[] | del(.metadataTxId)'
+{
+  "type": "drive",
+  "entityId": "6939b9e0-cc98-42cb-bae0-5888eca78885"
+}
+{
+  "type": "folder",
+  "entityId": "d1535126-fded-4990-809f-83a06f2a1118"
+}
+```
+
+The root folder relationship to the drive is clearly visible when retrieving the drive info:
+
+```shell
+$ ardrive drive-info -d "6939b9e0-cc98-42cb-bae0-5888eca78885"
+| jq '{"driveId": .driveId, "rootFolderId": .rootFolderId}'
+{
+    "driveId": "6939b9e0-cc98-42cb-bae0-5888eca78885",
+    "rootFolderId": "d1535126-fded-4990-809f-83a06f2a1118"
+}
+
+```
+
+All file and folder entities in the drive will be anchored to it by a "Drive-ID" GQL Tag. And they'll each be anchored to a Parent Folder ID, forming a tree structure whose base terminates at the Root Folder.<br>
 
 #### Understanding Drive and File Keys
 
