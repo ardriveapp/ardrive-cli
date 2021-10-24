@@ -60,13 +60,13 @@ $ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "
     2. [Data Portability](#data-portability)
     3. [Intended Audience](#intended-audience)
 2. [Getting Started](#getting-started)
-    1. [Install Yarn 2 (CLI Users and Developers)](#install-yarn-2-cli-users-and-developers)
-    2. [Husky (Developers Only)](#husky-developers-only)
-    3. [NVM (Optional - Recommended)](#nvm-optional---recommended)
-    4. [Using a custom ArDrive-Core-JS (Optional - Developers)](#using-a-custom-ardrive---core---js-optional---developers)
-    5. [Installing and Starting the CLI From NPM Package (CLI Users)](#installing-and-starting-the-cli-from-npm-package-cli-users)
-    6. [Installing and Starting the CLI From Source (CLI Users and Developers)](#installing-and-starting-the-cli-from-source-cli-users-and-developers)
-    7. [Recommended Visual Studio Code extensions (Developers Only)](#recommended-visual-studio-code-extensions-developers-only)
+    1. [Install Yarn 2 (CLI Users and Developers)](#yarn2)
+    2. [Husky (Developers Only)](#husky)
+    3. [NVM (Optional - Recommended)](#nvm)
+    4. [Using a custom ArDrive-Core-JS (Optional - Developers)](#custom-ardrive-core-js)
+    5. [Installing and Starting the CLI From NPM Package (CLI Users)](#install-from-npm)
+    6. [Installing and Starting the CLI From Source (CLI Users and Developers)](#install-from-src)
+    7. [Recommended Visual Studio Code extensions (Developers Only)](#vs-extensions)
     8. [Limitations](#limitations)
 3. [Using the CLI](#using-the-cli)
     1. [CLI Help](#cli-help)
@@ -75,9 +75,9 @@ $ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "
     4. [Understanding Drive Hierarchies](#understanding-drive-hierarchies)
     5. [Understanding Drive and File Keys](#understanding-drive-and-file-keys)
     6. [Managing Drive Passwords](#managing-drive-passwords)
-        1. [Supplying Your Password: Environment Variable](#supplying-your-password-environment-variable)
-        2. [Supplying Your Password: STDIN](#supplying-your-password-stdin)
-        3. [Supplying Your Password: Prompt](#supplying-your-password-prompt)
+        1. [Supplying Your Password: Environment Variable](#pw-environment-variable)
+        2. [Supplying Your Password: STDIN](#pw-stdin)
+        3. [Supplying Your Password: Prompt](#pw-prompt)
     7. [Creating Drives](#creating-drives)
     8. [Listing Drives for an Address](#listing-drives-for-an-address)
     9. [Other Utility Operations](#other-utility-operations)
@@ -115,7 +115,7 @@ For deeper integrations with the [ArDrive] platform, consider using the [ArDrive
 
 CLI users and developers must both follow these steps to get the application and/or developer environment up and running:
 
-## Install Yarn 2 (CLI Users and Developers)
+## Install Yarn 2 (CLI Users and Developers)<a id="yarn2"></a>
 
 Both the ArDrive CLI and ArDrive Core JS use Yarn 2 to manage dependencies and initiate workflows, so follow the [yarn installation instructions][yarn-install] in order to get the latest version. In most cases:
 
@@ -127,7 +127,7 @@ brew install yarn
 npm install -g yarn
 ```
 
-## Husky (Developers Only)
+## Husky (Developers Only)<a id="husky"></a>
 
 We use husky 6.x to manage the git commit hooks that help to improve the quality of our commits. Please run:
 
@@ -137,7 +137,7 @@ yarn husky install
 
 to enable git hooks for your local checkout. Without doing so, you risk committing non-compliant code to the repository.
 
-## NVM (Optional - Recommended)
+## NVM (Optional - Recommended)<a id="nvm"></a>
 
 This repository uses the Node Version Manager (NVM) and an `.nvmrc` file to lock the Node version to the current version used by `ardrive-core-js`.
 
@@ -150,7 +150,7 @@ Follow these steps to get NVM up and running on your system:
 3. Ensure that the correct version of Node is installed by performing: `nvm install`
 4. Use the correct version of Node, by performing: `nvm use`
 
-## Using a custom ArDrive-Core-JS (Optional - Developers)
+## Using a custom ArDrive-Core-JS (Optional - Developers)<a id="custom-ardrive-core-js"></a>
 
 To test a with a custom version of the `ardrive-core-js` library on your local system, change the `"ardrive-core-js"` line in `package.json` to the root of your local `ardrive-core-js` repo:
 
@@ -159,7 +159,7 @@ To test a with a custom version of the `ardrive-core-js` library on your local s
 + "ardrive-core-js": "../ardrive-core-js/"
 ```
 
-## Installing and Starting the CLI From NPM Package (CLI Users)
+## Installing and Starting the CLI From NPM Package (CLI Users)<a id="install-from-npm"></a>
 
 ```shell
 npm install -g ardrive-cli
@@ -168,7 +168,7 @@ npm install -g ardrive-cli
 $ ardrive
 ```
 
-## Installing and Starting the CLI From Source (CLI Users and Developers)
+## Installing and Starting the CLI From Source (CLI Users and Developers)<a id="install-from-src"></a>
 
 Now that your runtime and/or development environment is set up, to install the package simply run:
 
@@ -194,7 +194,7 @@ npm install i -g /path/to/package.tgz
 $ ardrive
 ```
 
-## Recommended Visual Studio Code extensions (Developers Only)
+## Recommended Visual Studio Code extensions (Developers Only)<a id="vs-extensions"></a>
 
 To ensure your environment is compatible, we also recommend the following VSCode extensions:
 
@@ -279,7 +279,7 @@ The fundamental entity types specified by ArFS are:
 
 Each instance of these entities have a Version 4 UUID entity ID that is commonly referred to by its entity type, i.e. drive ID, folder ID, and file ID.<br>
 
-When you execute write functions with the CLI, the JSON output will contain information about the Arweave Transaction IDs that were registered when writing your entities to the blockweave, any miner rewards or ArDrive Community tips that were disbursed from your wallet, and any new entity IDs and, when applicable, encryption keys that were generated in the process of creating the entities. Typically, you'll want to keep track of those and get proficient with retrieving them in order to build your drive hierarchy to your liking. See [Understanding Drive and File Keys](#understanding-drive-and-file-keys) for more info.
+When you execute write functions with the CLI, the JSON output will contain information about the Arweave Transaction IDs that were registered when writing your entities to the blockweave, any miner rewards or [ArDrive Community](https://ardrive.io/community/) tips that were disbursed from your wallet, and any new entity IDs and, when applicable, encryption keys that were generated in the process of creating the entities. Typically, you'll want to keep track of those and get proficient with retrieving them in order to build your drive hierarchy to your liking. See [Understanding Drive and File Keys](#understanding-drive-and-file-keys) for more info.
 
 ## Understanding Drive Hierarchies
 
@@ -344,7 +344,7 @@ Drive passwords are the most portable, and fundamental, encryption facet, so a f
 <li>Secure Prompt</li>
 </ul>
 
-### Supplying Your Password: Environment Variable
+### Supplying Your Password: Environment Variable<a id="pw-environment-variable"></a>
 
 ```shell
 # Securely type your password into a read prompt, store it to TMP_ARDRIVE_PW, and export it for the shell session
@@ -353,7 +353,7 @@ export ARDRIVE_DRIVE_PW=$(TMP_ARDRIVE_PW)
 $ ardrive <some private command> -w /path/to/wallet.json -P
 ```
 
-### Supplying Your Password: STDIN
+### Supplying Your Password: STDIN<a id="pw-stdin"></a>
 
 ```shell
 # Pipe your drive password to the ArDrive CLI
@@ -363,7 +363,7 @@ $ cat /path/to/my/drive/password.txt | ardrive <some private command> -w /path/t
 $ ardrive <some private command> -w /path/to/wallet.json -P < /path/to/my/drive/password.txt
 ```
 
-### Supplying Your Password: Prompt
+### Supplying Your Password: Prompt<a id="pw-prompt"></a>
 
 ```shell
 # When all other options fail, the CLI will prompt for your password (NOT COMPATIBLE WITH PIPES AND REDIRECTS!)
@@ -433,6 +433,7 @@ get keys for a drive -> warning on key security
 get-mempool and checking transaction status
 create a folder, upload a single file to it, move another file into that new folder
 get all info for a specific file
+generating share urls
 
 # Getting Help
 
