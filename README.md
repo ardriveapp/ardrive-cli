@@ -77,6 +77,7 @@ $ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "
             1. [Fetching Drive Info](#drive-info)
         2. [Understanding Drive and File Keys](#understanding-drive-and-file-keys)
             1. [Derive a Drive Key](#derive-drive-key)
+            2. [Derive a File Key](#derive-file-key)
         3. [Managing Drive Passwords](#managing-drive-passwords)
             1. [Supplying Your Password: Environment Variable](#pw-environment-variable)
             2. [Supplying Your Password: STDIN](#pw-stdin)
@@ -85,7 +86,10 @@ $ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "
         5. [Listing Drives for an Address](#listing-drives-for-an-address)
         6. [Listing Every Entity in a Drive](#list-drive)
     5. [Working With Folders](#working-with-folders)
-    6. [Other Utility Operations](#other-utility-operations)
+        1. [Creating Folders](#creating-folders)
+        2. [Moving Folders](#moving-folders)
+    6. [Working With Files](#working-with-files)
+    7. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
         3. [Check for network congestion before uploading](#check-congestion)
@@ -345,6 +349,13 @@ To derive the drive key again for a drive, perform the following:<a id="derive-d
 $ ardrive get-drive-key -w /path/to/my/wallet.json -d "6939b9e0-cc98-42cb-bae0-5888eca78885" -P
 ```
 
+To derive the file key again for a file, perform the following:<a id="derive-file-key"></a>
+
+```
+# Will throw an error if the drive key or drive-key-derivation data specified can't be used to decrypt the on-chain file
+$ ardrive get-file-key --file-id "bd2ce978-6ede-4b0d-8f79-2d7bc235a0e0" --drive-id "6939b9e0-cc98-42cb-bae0-5888eca78885" --drive-key "yHdCjpCK3EcuhQcKNx2d/NN5ReEjoKfZVqKunlCnPEo"
+```
+
 ### Managing Drive Passwords
 
 The ArDrive CLI's private drive and folder functions all require either a drive password OR a drive key. Private file functions require either the drive password or the file key. **Keys and passwords are sensitive data, so manage the entry, display, storage, and transmission of them very carefully.**<br>
@@ -426,6 +437,28 @@ $ ardrive list-drive -d "c7f87712-b54e-4491-bc96-1c5fa7b1da50" --max-depth 2
 
 ## Working With Folders
 
+As discussed previously, all folders in a drive are linked by way of parent folder references back to the root folder of a drive. Folders can be moved into any folder in the hierarchy that's not in their own subtree.
+
+### Creating Folders
+
+Creating folders manually is straightforward:
+
+```shell
+$ ardrive create-folder --parent-folder-id "63153bb3-2ca9-4d42-9106-0ce82e793321" --name "My Awesome Folder" -w /path/to/wallet.json
+```
+
+When supplying a folder for the --local-file-path during an upload-file command, however, the folder hierarchy on the local disk will be reconstructed on chain during the course of the recursive bulk upload.
+
+### Moving Folders
+
+Moving a folder is as simple as supplying a new parent folder ID. Note that naming collisions among entities within a folder are not allowed.
+
+```shell
+ardrive move-folder --folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" --parent-folder-id "29850ab7-56d4-4e1f-a5be-cb86d5513921" -w /path/to/wallet.json
+```
+
+## Working With Files
+
 Add a local folder to a new public drive:<br>
 NOTE: To upload to the root of a drive, specify its root folder ID as the parent folder ID for the upload destiantion.
 
@@ -489,15 +522,16 @@ $ ardrive get-mempool | jq 'length'
 $ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0c58c11-430c-4383-8e54-4d864cc7e927" --local-file-path ./helloworld.txt --boost 1.5
 ```
 
+TODO:
 list out the drive info to get the ar:// links
-create a private drive, upload files/folders, list out the drive incl. keys
+upload files/folders
 show how list drive could be piped into things like...
 
 -   get number of files
 -   get size
 -   get other cool things?
 
-create a folder, upload a single file to it, move another file into that new folder
+upload a single file to it, move another file into that new folder
 get all info for a specific file
 generating share urls
 
