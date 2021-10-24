@@ -71,16 +71,25 @@ $ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "
 3. [Using the CLI](#using-the-cli)
     1. [CLI Help](#cli-help)
     2. [Wallet Operations](#wallet-operations)
-    3. [Working with Entities](#working-with-entities)
-    4. [Understanding Drive Hierarchies](#understanding-drive-hierarchies)
-    5. [Understanding Drive and File Keys](#understanding-drive-and-file-keys)
-    6. [Managing Drive Passwords](#managing-drive-passwords)
-        1. [Supplying Your Password: Environment Variable](#pw-environment-variable)
-        2. [Supplying Your Password: STDIN](#pw-stdin)
-        3. [Supplying Your Password: Prompt](#pw-prompt)
-    7. [Creating Drives](#creating-drives)
-    8. [Listing Drives for an Address](#listing-drives-for-an-address)
-    9. [Other Utility Operations](#other-utility-operations)
+    3. [Working With Entities](#working-with-entities)
+    4. [Working With Drives](#working-with-drives)
+        1. [Understanding Drive Hierarchies](#understanding-drive-hierarchies)
+            1. [Fetching Drive Info](#drive-info)
+        2. [Understanding Drive and File Keys](#understanding-drive-and-file-keys)
+            1. [Derive a Drive Key](#derive-drive-key)
+        3. [Managing Drive Passwords](#managing-drive-passwords)
+            1. [Supplying Your Password: Environment Variable](#pw-environment-variable)
+            2. [Supplying Your Password: STDIN](#pw-stdin)
+            3. [Supplying Your Password: Prompt](#pw-prompt)
+        4. [Creating Drives](#creating-drives)
+        5. [Listing Drives for an Address](#listing-drives-for-an-address)
+        6. [Listing Every Entity in a Drive](#list-drive)
+    5. [Working With Folders](#working-with-folders)
+    6. [Other Utility Operations](#other-utility-operations)
+        1. [Monitoring Transactions](#monitoring-transactions)
+        2. [Dealing With Network Congestion](#dealing-with-network-congestion)
+        3. [Check for network congestion before uploading](#check-congestion)
+        4. [Front-run Congestion By Boosting Miner Rewards](#boost)
 4. [Getting Help](#getting-help)
 
 # ArDrive
@@ -265,7 +274,7 @@ If, at any time, you need to send AR out of your wallet to another wallet addres
 $ ardrive send-ar -w /path/to/wallet/file.json --dest-address "HTTn8F92tR32N8wuo-NIDkjmqPknrbl10JWo5MZ9x2k" --ar-amount 2.12345
 ```
 
-## Working with Entities
+## Working With Entities
 
 [ArDrive]'s [ArFS] integration provides for hierarchical organization of your file and folder data on Arweave.<br>
 
@@ -281,7 +290,9 @@ Each instance of these entities have a Version 4 UUID entity ID that is commonly
 
 When you execute write functions with the CLI, the JSON output will contain information about the Arweave Transaction IDs that were registered when writing your entities to the blockweave, any miner rewards or [ArDrive Community](https://ardrive.io/community/) tips that were disbursed from your wallet, and any new entity IDs and, when applicable, encryption keys that were generated in the process of creating the entities. Typically, you'll want to keep track of those and get proficient with retrieving them in order to build your drive hierarchy to your liking. See [Understanding Drive and File Keys](#understanding-drive-and-file-keys) for more info.
 
-## Understanding Drive Hierarchies
+## Working With Drives
+
+### Understanding Drive Hierarchies
 
 At the root of every data tree is a "Drive" entity. When a drive is created, a Root Folder is also created for it. The entity IDs for both are generated and returned when you create a new drive:
 
@@ -289,18 +300,20 @@ At the root of every data tree is a "Drive" entity. When a drive is created, a R
 # Use `tee` to keep a receipt of the full set of transactions info and `jq` to focus on the data of interest
 $ ardrive create-drive --wallet-file /path/to/my/wallet.json --drive-name "Teenage Love Poetry" |
 tee created_drive.json |
-jq '.created[] | del(.metadataTxId)'
-{
-  "type": "drive",
-  "entityId": "6939b9e0-cc98-42cb-bae0-5888eca78885"
-}
-{
-  "type": "folder",
-  "entityId": "d1535126-fded-4990-809f-83a06f2a1118"
-}
+jq '[.created[] | del(.metadataTxId)]'
+[
+    {
+        "type": "drive",
+        "entityId": "6939b9e0-cc98-42cb-bae0-5888eca78885"
+    }
+    {
+        "type": "folder",
+        "entityId": "d1535126-fded-4990-809f-83a06f2a1118"
+    }
+]
 ```
 
-The relationship between the drive and its root folder is clearly visible when retrieving the drive's info:
+The relationship between the drive and its root folder is clearly visible when retrieving the drive's info:<a id='drive-info'></a>
 
 ```shell
 $ ardrive drive-info -d "6939b9e0-cc98-42cb-bae0-5888eca78885"
@@ -314,7 +327,7 @@ $ ardrive drive-info -d "6939b9e0-cc98-42cb-bae0-5888eca78885"
 
 All file and folder entities in the drive will be anchored to it by a "Drive-ID" GQL Tag. And they'll each be anchored to a parent folder ID, tracked via the "Parent-Folder-ID" GQL tag, forming a tree structure whose base terminates at the Root Folder.<br>
 
-## Understanding Drive and File Keys
+### Understanding Drive and File Keys
 
 Private Drives achieve privacy via end-to-end encryption facilitated by hash-derived "Keys". Drive Keys encrypt/decrypt Drive and Folder data, and File Keys encrypt/decrypt File Data.<br> The relationships among your data and their keys is as follows:
 
@@ -325,14 +338,14 @@ Private Drives achieve privacy via end-to-end encryption facilitated by hash-der
 
 When you create private entities, the returned JSON data from the ArDrive CLI will contain the keys needed to decrypt the encypted representation of your entity that is now securely and permanently stored on the blockweave.<br>
 
-To derive the drive key again for a drive, perform the following:
+To derive the drive key again for a drive, perform the following:<a id="derive-drive-key"></a>
 
 ```
 # Will throw an error if the wallet or password specified can't be used to decrypt the on-chain drive
 $ ardrive get-drive-key -w /path/to/my/wallet.json -d "6939b9e0-cc98-42cb-bae0-5888eca78885" -P
 ```
 
-## Managing Drive Passwords
+### Managing Drive Passwords
 
 The ArDrive CLI's private drive and folder functions all require either a drive password OR a drive key. Private file functions require either the drive password or the file key. **Keys and passwords are sensitive data, so manage the entry, display, storage, and transmission of them very carefully.**<br>
 
@@ -344,7 +357,7 @@ Drive passwords are the most portable, and fundamental, encryption facet, so a f
 <li>Secure Prompt</li>
 </ul>
 
-### Supplying Your Password: Environment Variable<a id="pw-environment-variable"></a>
+#### Supplying Your Password: Environment Variable<a id="pw-environment-variable"></a>
 
 ```shell
 # Securely type your password into a read prompt, store it to TMP_ARDRIVE_PW, and export it for the shell session
@@ -353,7 +366,7 @@ export ARDRIVE_DRIVE_PW=$(TMP_ARDRIVE_PW)
 $ ardrive <some private command> -w /path/to/wallet.json -P
 ```
 
-### Supplying Your Password: STDIN<a id="pw-stdin"></a>
+#### Supplying Your Password: STDIN<a id="pw-stdin"></a>
 
 ```shell
 # Pipe your drive password to the ArDrive CLI
@@ -363,7 +376,7 @@ $ cat /path/to/my/drive/password.txt | ardrive <some private command> -w /path/t
 $ ardrive <some private command> -w /path/to/wallet.json -P < /path/to/my/drive/password.txt
 ```
 
-### Supplying Your Password: Prompt<a id="pw-prompt"></a>
+#### Supplying Your Password: Prompt<a id="pw-prompt"></a>
 
 ```shell
 # When all other options fail, the CLI will prompt for your password (NOT COMPATIBLE WITH PIPES AND REDIRECTS!)
@@ -371,7 +384,7 @@ $ ardrive <some private command> -w /path/to/wallet.json -P
 ? Enter drive password: › ********
 ```
 
-## Creating Drives
+### Creating Drives
 
 ```shell
 # Public drive
@@ -381,7 +394,7 @@ $ ardrive create-drive --wallet-file /path/to/my/wallet.json --drive-name "My Pu
 $ ardrive create-drive --wallet-file /path/to/my/wallet.json --drive-name "Teenage Love Poetry" -P
 ```
 
-## Listing Drives for an Address
+### Listing Drives for an Address
 
 You can list all the drives associated with any Arweave wallet address, though the details of private drives will be obfuscated from you unless you provide the necessary decryption data.
 
@@ -392,6 +405,26 @@ $ ardrive list-all-drives -w /path/to/my/wallet.json -P
 # List any address's drives
 $ ardrive list-all-drives --address "HTTn8F92tR32N8wuo-NIDkjmqPknrbl10JWo5MZ9x2k"
 ```
+
+### Listing Every Entity in a Drive<a id="list-drive"></a>
+
+Useful notes on listing the contents of drives:
+
+<ul>
+<li>Listing a drive is effectively the same as listing its root folder.</li>
+<li>You can control the tree depth of the data returned.</li>
+<li>path, txPath, and entityIdPath properties on entities can provide useful handholds for other forms of data navigation</li>
+</li>
+
+```shell
+# List everything in a private drive
+$ ardrive list-drive -d "c7f87712-b54e-4491-bc96-1c5fa7b1da50" -w /path/to/my/wallet.json -P
+
+# List the contents of a public drive up to and including those in the grandchild folders of the root folder
+$ ardrive list-drive -d "c7f87712-b54e-4491-bc96-1c5fa7b1da50" --max-depth 2
+```
+
+## Working With Folders
 
 Add a local folder to a new public drive:<br>
 NOTE: To upload to the root of a drive, specify its root folder ID as the parent folder ID for the upload destiantion.
@@ -410,27 +443,60 @@ tee upload_folder_output.json
 
 ## Other Utility Operations
 
-Check for network congestion before uploading:
+### Monitoring Transactions
+
+Block time on Arweave is typically between 2-3 minutes in duration, so transactions can be mined within that time frame when [network congestion](#dealing-with-network-congestion) is low. Transactions, in the general case, proceed through the following set of states:
+
+-   Pending: the transaction is waiting the "mempool" to be mined
+-   Confirming: the transaction was mined on an Arweave Node, but has not yet been confirmed by at least 15 total nodes on the network
+-   Confirmed: the transaction was mined on an Arweave Node and confirmed by at least 15 total nodes on the network
+-   Not Found: the transaction is not available for any of the following reasons:
+    -   Insufficient reward to join the mempool
+    -   Insufficient reward to be mined within 50 blocks during a period of network congestion
+    -   Transaction is transitioning between states
+    -   Transaction ID is invalid
+
+Monitor any Arweave transaction's status via its transaction ID by performing:
 
 ```shell
-# Arweave's transactions/block size is 1000.
-# Consider waiting for less network congestion when this number is greater than 1000!
-$ ardrive get-mempool | wc -l
+# Peek at the status:
+$ yarn ardrive tx-status -t "ekSMckikdRJ8RGIkFa-X3xq3427tvM7J9adv8HP3Bzs"
+
+# Reprint the status every 10 seconds:
+$ watch -n 10 yarn ardrive tx-status -t "ekSMckikdRJ8RGIkFa-X3xq3427tvM7J9adv8HP3Bzs"
+```
+
+### Dealing With Network Congestion
+
+Currently, Arweave blocks hold up to 1000 transactions per block. The "mempool", where pending transacions reside until they've been included into a block, will only hold a transaction for 50 blocks (~100-150 minutes) before it's discarded by the network resulting in no fees or data being transacted. During periods of network congestion (i.e. those where the mempool contains 1000 or more pending transactions), it may make sense to either:
+a) wait for congestion to dissipate before attempting your transactions.
+b) apply the fee boost multiplier to your transactions rewards with the --boost parameter during write operations in order to front-run some of the congestion.
+
+#### Check for network congestion before uploading<a id="check-congestion"></a>
+
+```shell
+# See all the transactions in the mempool
+$ ardrive get-mempool
+
+# Return the count of the transactions in the mempool
+$ ardrive get-mempool | jq 'length'
+```
+
+#### Front-run Congestion By Boosting Miner Rewards<a id="boost"></a>
+
+```shell
+# Increase the miner reward on your transactions by 50%
+$ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0c58c11-430c-4383-8e54-4d864cc7e927" --local-file-path ./helloworld.txt --boost 1.5
 ```
 
 list out the drive info to get the ar:// links
 create a private drive, upload files/folders, list out the drive incl. keys
-list all my drives, pick a drive and list all of its contents
 show how list drive could be piped into things like...
-get number of files
-get size
-get other cool things?
-list all drives
-generate a wallet or seedphrase
-send ar
-get balance
-get keys for a drive -> warning on key security
-get-mempool and checking transaction status
+
+-   get number of files
+-   get size
+-   get other cool things?
+
 create a folder, upload a single file to it, move another file into that new folder
 get all info for a specific file
 generating share urls

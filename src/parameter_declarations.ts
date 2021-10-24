@@ -226,7 +226,7 @@ Parameter.declare({
 Parameter.declare({
 	name: MaxDepthParameter,
 	aliases: ['--max-depth'],
-	description: `(OPTIONAL) enter a number of the amount of sub folder levels to list`
+	description: `(OPTIONAL) a non-negative integer value indicating the depth of the folder tree to list. 0 = specified folder's contents OR root folder for drives`
 });
 
 Parameter.declare({
