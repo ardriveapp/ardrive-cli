@@ -53,7 +53,37 @@ $ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "
 }
 ```
 
-## ArDrive
+# Table of Contents
+
+1. [ArDrive](#ardrive)
+    1. [ArFS](#arfs)
+    2. [Data Portability](#data-portability)
+    3. [Intended Audience](#intended-audience)
+2. [Getting Started](#getting-started)
+    1. [Install Yarn 2 (CLI Users and Developers)](#install-yarn-2-cli-users-and-developers)
+    2. [Husky (Developers Only)](#husky-developers-only)
+    3. [NVM (Optional - Recommended)](#nvm-optional---recommended)
+    4. [Using a custom ArDrive-Core-JS (Optional - Developers)](#using-a-custom-ardrive---core---js-optional---developers)
+    5. [Installing and Starting the CLI From NPM Package (CLI Users)](#installing-and-starting-the-cli-from-npm-package-cli-users)
+    6. [Installing and Starting the CLI From Source (CLI Users and Developers)](#installing-and-starting-the-cli-from-source-cli-users-and-developers)
+    7. [Recommended Visual Studio Code extensions (Developers Only)](#recommended-visual-studio-code-extensions-developers-only)
+    8. [Limitations](#limitations)
+3. [Using the CLI](#using-the-cli)
+    1. [CLI Help](#cli-help)
+    2. [Wallet Operations](#wallet-operations)
+    3. [Working with Entities](#working-with-entities)
+    4. [Understanding Drive Hierarchies](#understanding-drive-hierarchies)
+    5. [Understanding Drive and File Keys](#understanding-drive-and-file-keys)
+    6. [Managing Drive Passwords](#managing-drive-passwords)
+        1. [Supplying Your Password: Environment Variable](#supplying-your-password-environment-variable)
+        2. [Supplying Your Password: STDIN](#supplying-your-password-stdin)
+        3. [Supplying Your Password: Prompt](#supplying-your-password-prompt)
+    7. [Creating Drives](#creating-drives)
+    8. [Listing Drives for an Address](#listing-drives-for-an-address)
+    9. [Other Utility Operations](#other-utility-operations)
+4. [Getting Help](#getting-help)
+
+# ArDrive
 
 [ArDrive] is a permanent storage platform whose [applications and core libraries][ardrive-github] offer hierarchical organization, privacy via complete end-to-end encryption, flexibilty, extensibility, and access control over your most valuable data, all made possible by its innovative core technology, the [Arweave File System (ArFS) Protocol][arfs].
 
@@ -81,11 +111,11 @@ This tool is intended for use by:
 
 For deeper integrations with the [ArDrive] platform, consider using the [ArDrive Core][ardrive-core] (Node) library's configurable and intuitive class interfaces directly within your application.
 
-## Getting Started
+# Getting Started
 
 CLI users and developers must both follow these steps to get the application and/or developer environment up and running:
 
-### Install Yarn 2 (CLI Users and Developers)
+## Install Yarn 2 (CLI Users and Developers)
 
 Both the ArDrive CLI and ArDrive Core JS use Yarn 2 to manage dependencies and initiate workflows, so follow the [yarn installation instructions][yarn-install] in order to get the latest version. In most cases:
 
@@ -97,7 +127,7 @@ brew install yarn
 npm install -g yarn
 ```
 
-### Husky (Developers Only)
+## Husky (Developers Only)
 
 We use husky 6.x to manage the git commit hooks that help to improve the quality of our commits. Please run:
 
@@ -107,7 +137,7 @@ yarn husky install
 
 to enable git hooks for your local checkout. Without doing so, you risk committing non-compliant code to the repository.
 
-### NVM (Optional - Recommended)
+## NVM (Optional - Recommended)
 
 This repository uses the Node Version Manager (NVM) and an `.nvmrc` file to lock the Node version to the current version used by `ardrive-core-js`.
 
@@ -120,7 +150,7 @@ Follow these steps to get NVM up and running on your system:
 3. Ensure that the correct version of Node is installed by performing: `nvm install`
 4. Use the correct version of Node, by performing: `nvm use`
 
-### Using a custom ArDrive-Core-JS (Optional - Developers)
+## Using a custom ArDrive-Core-JS (Optional - Developers)
 
 To test a with a custom version of the `ardrive-core-js` library on your local system, change the `"ardrive-core-js"` line in `package.json` to the root of your local `ardrive-core-js` repo:
 
@@ -129,16 +159,16 @@ To test a with a custom version of the `ardrive-core-js` library on your local s
 + "ardrive-core-js": "../ardrive-core-js/"
 ```
 
-### Installing and Starting the CLI From NPM Package (CLI Users)
+## Installing and Starting the CLI From NPM Package (CLI Users)
 
 ```shell
 npm install -g ardrive-cli
 
 # then invoke the CLI from anywhere on your system:
-ardrive
+$ ardrive
 ```
 
-### Installing and Starting the CLI From Source (CLI Users and Developers)
+## Installing and Starting the CLI From Source (CLI Users and Developers)
 
 Now that your runtime and/or development environment is set up, to install the package simply run:
 
@@ -161,10 +191,10 @@ yarn pack
 npm install i -g /path/to/package.tgz
 
 # then invoke the CLI from anywhere on your system:
-ardrive
+$ ardrive
 ```
 
-### Recommended Visual Studio Code extensions (Developers Only)
+## Recommended Visual Studio Code extensions (Developers Only)
 
 To ensure your environment is compatible, we also recommend the following VSCode extensions:
 
@@ -180,9 +210,9 @@ To ensure your environment is compatible, we also recommend the following VSCode
 **Max ANS-104 bundled transaction size:** Not yet implemented. 2GB per bundle. App will handle creating multiple bundles.<br>
 **Max ANS-104 data item counts per bundled transaction:** Not yet implemented. Also not adequately specified, though a very large number of data items per bundle is associated with increased rates of GQL indexing failure.
 
-## Using the CLI
+# Using the CLI
 
-### CLI Help
+## CLI Help
 
 Learn to use any command:
 
@@ -190,7 +220,7 @@ Learn to use any command:
 $ ardrive --help
 ```
 
-### Wallet Operations
+## Wallet Operations
 
 Browsing of ArDrive public data is possible without the need for an [Arweave wallet][kb-wallets]. However, for all write operations, or read operations without encryption/descryption keys, you'll need a wallet.<br>
 
@@ -202,7 +232,7 @@ $ ardrive generate-seedphrase
 "this is an example twelve word seed phrase that you could use"
 
 # Generate/recover wallet file (with example output file path)
-ardrive generate-wallet -s "this is an example twelve word seed phrase that you could use" > /path/to/wallet/file.json
+$ ardrive generate-wallet -s "this is an example twelve word seed phrase that you could use" > /path/to/wallet/file.json
 ```
 
 Public attributes of Arweave wallets can be retrieved via their 43-character Arweave wallet address. You can retrieve the wallet address associated with [your wallet file or 12-word seed phrase][kb-wallets] (e.g. wallets generated by [ArConnect][arconnect]) like so:
@@ -235,7 +265,7 @@ If, at any time, you need to send AR out of your wallet to another wallet addres
 $ ardrive send-ar -w /path/to/wallet/file.json --dest-address "HTTn8F92tR32N8wuo-NIDkjmqPknrbl10JWo5MZ9x2k" --ar-amount 2.12345
 ```
 
-### Working with Entities
+## Working with Entities
 
 [ArDrive]'s [ArFS] integration provides for hierarchical organization of your file and folder data on Arweave.<br>
 
@@ -247,16 +277,16 @@ The fundamental entity types specified by ArFS are:
 <li>Files</li>
 </ul>
 
-Each instance of these entities have a Version 4 UUID entity ID that is colloquially referred to by its entity type, i.e. drive ID, folder ID, and file ID.<br>
+Each instance of these entities have a Version 4 UUID entity ID that is commonly referred to by its entity type, i.e. drive ID, folder ID, and file ID.<br>
 
-When you execute write functions with the CLI, the JSON output will contain information about the Arweave Transaction IDs that were registered when writing your entities to the blockweave, any miner rewards or ArDrive Community tips that were disbursed from your wallet, and any new entity IDs and, when applicable, encryption keys that were generated in the process of creating the entities. Typically, you'll want to keep track of those and get proficient with retrieving them in order to build your drive hierarchy to your liking.
+When you execute write functions with the CLI, the JSON output will contain information about the Arweave Transaction IDs that were registered when writing your entities to the blockweave, any miner rewards or ArDrive Community tips that were disbursed from your wallet, and any new entity IDs and, when applicable, encryption keys that were generated in the process of creating the entities. Typically, you'll want to keep track of those and get proficient with retrieving them in order to build your drive hierarchy to your liking. See [Understanding Drive and File Keys](#understanding-drive-and-file-keys) for more info.
 
-#### Understanding Drive Hierarchies
+## Understanding Drive Hierarchies
 
-At the root of every data tree is a "Drive" entity. When a drive is created, a Root Folder is also created for it. The entity IDs for both are presented when you create a new drive:
+At the root of every data tree is a "Drive" entity. When a drive is created, a Root Folder is also created for it. The entity IDs for both are generated and returned when you create a new drive:
 
 ```shell
-# Use `tee` to keep a receipt of the transaction and `jq` to focus on the data of interest
+# Use `tee` to keep a receipt of the full set of transactions info and `jq` to focus on the data of interest
 $ ardrive create-drive --wallet-file /path/to/my/wallet.json --drive-name "Teenage Love Poetry" |
 tee created_drive.json |
 jq '.created[] | del(.metadataTxId)'
@@ -270,11 +300,11 @@ jq '.created[] | del(.metadataTxId)'
 }
 ```
 
-The root folder relationship to the drive is clearly visible when retrieving the drive info:
+The relationship between the drive and its root folder is clearly visible when retrieving the drive's info:
 
 ```shell
 $ ardrive drive-info -d "6939b9e0-cc98-42cb-bae0-5888eca78885"
-| jq '{"driveId": .driveId, "rootFolderId": .rootFolderId}'
+| jq '{driveId, rootFolderId}'
 {
     "driveId": "6939b9e0-cc98-42cb-bae0-5888eca78885",
     "rootFolderId": "d1535126-fded-4990-809f-83a06f2a1118"
@@ -282,9 +312,9 @@ $ ardrive drive-info -d "6939b9e0-cc98-42cb-bae0-5888eca78885"
 
 ```
 
-All file and folder entities in the drive will be anchored to it by a "Drive-ID" GQL Tag. And they'll each be anchored to a Parent Folder ID, forming a tree structure whose base terminates at the Root Folder.<br>
+All file and folder entities in the drive will be anchored to it by a "Drive-ID" GQL Tag. And they'll each be anchored to a parent folder ID, tracked via the "Parent-Folder-ID" GQL tag, forming a tree structure whose base terminates at the Root Folder.<br>
 
-#### Understanding Drive and File Keys
+## Understanding Drive and File Keys
 
 Private Drives achieve privacy via end-to-end encryption facilitated by hash-derived "Keys". Drive Keys encrypt/decrypt Drive and Folder data, and File Keys encrypt/decrypt File Data.<br> The relationships among your data and their keys is as follows:
 
@@ -295,13 +325,26 @@ Private Drives achieve privacy via end-to-end encryption facilitated by hash-der
 
 When you create private entities, the returned JSON data from the ArDrive CLI will contain the keys needed to decrypt the encypted representation of your entity that is now securely and permanently stored on the blockweave.<br>
 
-#### Managing Drive Passwords
+To derive the drive key again for a drive, perform the following:
+
+```
+# Will throw an error if the wallet or password specified can't be used to decrypt the on-chain drive
+$ ardrive get-drive-key -w /path/to/my/wallet.json -d "6939b9e0-cc98-42cb-bae0-5888eca78885" -P
+```
+
+## Managing Drive Passwords
 
 The ArDrive CLI's private drive and folder functions all require either a drive password OR a drive key. Private file functions require either the drive password or the file key. **Keys and passwords are sensitive data, so manage the entry, display, storage, and transmission of them very carefully.**<br>
 
 Drive passwords are the most portable, and fundamental, encryption facet, so a few options are available during private drive operations for supplying them:
 
-#### Supplying Your Password: Environment Variable
+<ul>
+<li>Environment Variable</li>
+<li>STDIN</li>
+<li>Secure Prompt</li>
+</ul>
+
+### Supplying Your Password: Environment Variable
 
 ```shell
 # Securely type your password into a read prompt, store it to TMP_ARDRIVE_PW, and export it for the shell session
@@ -310,7 +353,7 @@ export ARDRIVE_DRIVE_PW=$(TMP_ARDRIVE_PW)
 $ ardrive <some private command> -w /path/to/wallet.json -P
 ```
 
-#### Supplying Your Password: STDIN
+### Supplying Your Password: STDIN
 
 ```shell
 # Pipe your drive password to the ArDrive CLI
@@ -320,7 +363,7 @@ $ cat /path/to/my/drive/password.txt | ardrive <some private command> -w /path/t
 $ ardrive <some private command> -w /path/to/wallet.json -P < /path/to/my/drive/password.txt
 ```
 
-#### Supplying Your Password: Prompt
+### Supplying Your Password: Prompt
 
 ```shell
 # When all other options fail, the CLI will prompt for your password (NOT COMPATIBLE WITH PIPES AND REDIRECTS!)
@@ -328,14 +371,26 @@ $ ardrive <some private command> -w /path/to/wallet.json -P
 ? Enter drive password: › ********
 ```
 
-### Creating Drives
+## Creating Drives
 
 ```shell
 # Public drive
-$ ardrive create-drive --wallet-file /path/to/my/wallet.json --drive-name "Teenage Love Poetry"
+$ ardrive create-drive --wallet-file /path/to/my/wallet.json --drive-name "My Public Archive"
 
 # Private drive
+$ ardrive create-drive --wallet-file /path/to/my/wallet.json --drive-name "Teenage Love Poetry" -P
+```
 
+## Listing Drives for an Address
+
+You can list all the drives associated with any Arweave wallet address, though the details of private drives will be obfuscated from you unless you provide the necessary decryption data.
+
+```shell
+# List all your own drives
+$ ardrive list-all-drives -w /path/to/my/wallet.json -P
+
+# List any address's drives
+$ ardrive list-all-drives --address "HTTn8F92tR32N8wuo-NIDkjmqPknrbl10JWo5MZ9x2k"
 ```
 
 Add a local folder to a new public drive:<br>
@@ -344,7 +399,7 @@ NOTE: To upload to the root of a drive, specify its root folder ID as the parent
 ```shell
 # Use `tee` to store command json outputs for later review/backup/automation/etc.
 # Use `jq` to parse json output and retrieve the root folder ID for use in downstream command
-ardrive create-drive -w /path/to/wallet.json -n "My Public Archive" |
+$ ardrive create-drive -w /path/to/wallet.json -n "My Public Archive" |
 tee create_drive_output.json |
 jq -r '.created[] | select(.type == "folder") | .entityId' |
 while read -r parentFolderId; do
@@ -353,12 +408,14 @@ done |
 tee upload_folder_output.json
 ```
 
+## Other Utility Operations
+
 Check for network congestion before uploading:
 
 ```shell
 # Arweave's transactions/block size is 1000.
 # Consider waiting for less network congestion when this number is greater than 1000!
-ardrive get-mempool | wc -l
+$ ardrive get-mempool | wc -l
 ```
 
 list out the drive info to get the ar:// links
@@ -377,7 +434,7 @@ get-mempool and checking transaction status
 create a folder, upload a single file to it, move another file into that new folder
 get all info for a specific file
 
-## Getting Help
+# Getting Help
 
 [ArDrive Community Discord][ardrive-discord]
 
