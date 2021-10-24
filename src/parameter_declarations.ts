@@ -107,7 +107,7 @@ Parameter.declare({
 Parameter.declare({
 	name: AddressParameter,
 	aliases: ['-a', '--address'],
-	description: 'the  43-character Arweave wallet address to use for lookups'
+	description: 'the 43-character Arweave wallet address to use for lookups'
 });
 
 Parameter.declare({
