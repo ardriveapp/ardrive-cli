@@ -89,8 +89,5 @@
 	},
 	"files": [
 		"lib/**/*"
-	],
-	"resolutions": {
-		"ardrive-cli": "portal:/Users/ariel/devel/checkout/ardrive-cli"
-	}
+	]
 }
