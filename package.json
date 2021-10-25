@@ -2,11 +2,11 @@
 	"name": "ardrive-cli",
 	"version": "1.0.0",
 	"description": "The ArDrive Command Line Interface (CLI) contains all of the needed security, file synchronization and Arweave wallet capabilities via a node.js application.",
-	"main": "./lib/index.js",
+	"main": "./src/index.ts",
 	"bin": {
-		"ardrive": "./lib/index.js"
+		"ardrive": "./lib/src/index.js"
 	},
-	"types": "./lib/index.d.ts",
+	"types": "./lib/src/index.d.ts",
 	"dependencies": {
 		"@types/node": "^14.14.32",
 		"@types/regression": "^2.0.2",
@@ -69,7 +69,7 @@
 		"ci": "yarn build && yarn test",
 		"version": "yarn run format && git add -A src",
 		"postversion": "git push && git push --tags",
-		"start": "yarn run build && node ./lib/index.js",
+		"start": "yarn run build && node ./lib/src/index.js",
 		"dev": "yarn clean && tsc --project ./tsconfig.prod.json -w"
 	},
 	"husky": {
