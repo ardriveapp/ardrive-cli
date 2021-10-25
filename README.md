@@ -567,6 +567,11 @@ ardrive list-drive -d a44482fd-592e-45fa-a08a-e526c31b87f1 | jq '.[] | select(.e
 ardrive list-drive -d 13c3c232-6687-4d11-8ac1-35284102c7db | jq ' map(select(.entityType == "file") | .size) | add'
 ```
 
+```shell
+# get number of files within drive with list drive
+ardrive list-drive -d 01ea6ba3-9e58-42e7-899d-622fd110211c | jq '[ .[] | select(.entityType == "file") ] | length'
+```
+
 TODO:
 list out the drive info to get the ar:// links
 upload files/folders
