@@ -125,6 +125,9 @@ export class CLICommand {
 	}
 
 	public static parse(program: CliApiObject = this.program, argv: string[] = process.argv): void {
+		// Remove banner from argv to avoid error
+		argv = argv.filter((a) => a !== '--banner');
+
 		program.parse(argv);
 	}
 
