@@ -102,7 +102,7 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
 
 ## ArFS
 
-[ArFS] is a data modeling, storage, and retrieval protocol designed to emulate common file system operations and to provide aspects of mutabilty to your data hierarchy on [Arweave]'s otherwise permanent, immutable data storage blockweave.
+[ArFS] is a data modeling, storage, and retrieval protocol designed to emulate common file system operations and to provide aspects of mutability to your data hierarchy on [Arweave]'s otherwise permanent, immutable data storage blockweave.
 
 ## Data Portability
 
@@ -118,7 +118,7 @@ This tool is intended for use by:
 <li>ArDrive power users with advanced workflows and resource efficiency in mind: bulk uploaders, those with larger storage demand, game developers, nft creators, storage/db admins, etc.</li>
 <li>Automation tools</li>
 <li>Services</li>
-<li>Terminal afficionados</li>
+<li>Terminal aficionados</li>
 <li>Extant and aspiring cypherpunks</li>
 </ul>
 
@@ -235,7 +235,7 @@ ardrive --help
 
 ## Wallet Operations
 
-Browsing of ArDrive public data is possible without the need for an [Arweave wallet][kb-wallets]. However, for all write operations, or read operations without encryption/descryption keys, you'll need a wallet.
+Browsing of ArDrive public data is possible without the need for an [Arweave wallet][kb-wallets]. However, for all write operations, or read operations without encryption/decryption keys, you'll need a wallet.
 
 As you utilize the CLI, you can use either your wallet file or your seed phrase interchangeably. Consider the security implications of each approach for your particular use case carefully. If at any time you'd like to generate a new wallet altogether, start by generating a new seed phase. And if you'd like to use that seed phrase in the form of a wallet file, or if you'd like to recover an existing wallet via its seed phrase, use either or both of the following commands:
 
@@ -267,8 +267,8 @@ ardrive get-balance -w /path/to/wallet/file.json
 
 # Getting the balance for ANY wallet (with sample output)
 ardrive get-balance -a "HTTn8F92tR32N8wuo-NIDkjmqPknrbl10JWo5MZ9x2k"
-1500000000000	Winston
-1.5	AR
+1500000000000 Winston
+1.5 AR
 ```
 
 If, at any time, you need to send AR out of your wallet to another wallet address, you may perform:
@@ -342,18 +342,18 @@ The relationships among your data and their keys is as follows:
 <li>File Key = functionOf(Randomly Generated File ID, Drive Key)</li>
 </ul>
 
-When you create private entities, the returned JSON data from the ArDrive CLI will contain the keys needed to decrypt the encypted representation of your entity that is now securely and permanently stored on the blockweave.
+When you create private entities, the returned JSON data from the ArDrive CLI will contain the keys needed to decrypt the encrypted representation of your entity that is now securely and permanently stored on the blockweave.
 
 To derive the drive key again for a drive, perform the following:<a id="derive-drive-key"></a>
 
-```
+```shell
 # Will throw an error if the wallet or password specified can't be used to decrypt the on-chain drive
 ardrive get-drive-key -w /path/to/my/wallet.json -d "6939b9e0-cc98-42cb-bae0-5888eca78885" -P
 ```
 
 To derive the file key again for a file, perform the following:<a id="derive-file-key"></a>
 
-```
+```shell
 # Will throw an error if the drive key or drive-key-derivation data specified can't be used to decrypt the on-chain file
 ardrive get-file-key --file-id "bd2ce978-6ede-4b0d-8f79-2d7bc235a0e0" --drive-id "6939b9e0-cc98-42cb-bae0-5888eca78885" --drive-key "yHdCjpCK3EcuhQcKNx2d/NN5ReEjoKfZVqKunlCnPEo"
 ```
@@ -534,8 +534,10 @@ watch -n 10 yarn ardrive tx-status -t "ekSMckikdRJ8RGIkFa-X3xq3427tvM7J9adv8HP3B
 
 ### Dealing With Network Congestion
 
-Currently, Arweave blocks hold up to 1000 transactions per block. The "mempool", where pending transacions reside until they've been included into a block, will only hold a transaction for 50 blocks (~100-150 minutes) before it's discarded by the network resulting in no fees or data being transacted. During periods of network congestion (i.e. those where the mempool contains 1000 or more pending transactions), it may make sense to either:
+Currently, Arweave blocks hold up to 1000 transactions per block. The "mempool", where pending transactions reside until they've been included into a block, will only hold a transaction for 50 blocks (~100-150 minutes) before it's discarded by the network resulting in no fees or data being transacted. During periods of network congestion (i.e. those where the mempool contains 1000 or more pending transactions), it may make sense to either:
+
 a) wait for congestion to dissipate before attempting your transactions.
+
 b) apply the fee boost multiplier to your transactions rewards with the --boost parameter during write operations in order to front-run some of the congestion.
 
 #### Check for network congestion before uploading<a id="check-congestion"></a>
