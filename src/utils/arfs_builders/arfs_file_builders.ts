@@ -69,7 +69,13 @@ export class ArFSPublicFileBuilder extends ArFSFileBuilder<ArFSPublicFile> {
 			this.dataTxId = dataJSON.dataTxId;
 			this.dataContentType = dataJSON.dataContentType ?? extToMime(this.name);
 
-			if (!this.name || !this.size || !this.lastModifiedDate || !this.dataTxId || !this.dataContentType) {
+			if (
+				!this.name ||
+				this.size === undefined ||
+				!this.lastModifiedDate ||
+				!this.dataTxId ||
+				!this.dataContentType
+			) {
 				throw new Error('Invalid file state');
 			}
 
@@ -171,7 +177,13 @@ export class ArFSPrivateFileBuilder extends ArFSFileBuilder<ArFSPrivateFile> {
 			this.dataTxId = decryptedFileJSON.dataTxId;
 			this.dataContentType = decryptedFileJSON.dataContentType ?? extToMime(this.name);
 
-			if (!this.name || !this.size || !this.lastModifiedDate || !this.dataTxId || !this.dataContentType) {
+			if (
+				!this.name ||
+				this.size === undefined ||
+				!this.lastModifiedDate ||
+				!this.dataTxId ||
+				!this.dataContentType
+			) {
 				throw new Error('Invalid file state');
 			}
 
