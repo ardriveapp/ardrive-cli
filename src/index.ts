@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import { version as CLI_APP_VERSION } from '../package.json';
+
 import { Wallet, WalletDAO } from './wallet_new';
 import Arweave from 'arweave';
 import { ArDriveCommunityOracle } from './community/ardrive_community_oracle';
@@ -20,7 +22,7 @@ if (require.main === module) {
 }
 
 export const CLI_APP_NAME = 'ArDrive-CLI';
-export const CLI_APP_VERSION = '2.0';
+export { CLI_APP_VERSION };
 
 // TODO: Make configurable from CLI
 export const cliArweave = Arweave.init({
