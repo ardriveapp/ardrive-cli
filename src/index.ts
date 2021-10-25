@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-import { version as CLI_APP_VERSION } from '../package.json';
-
 import { Wallet, WalletDAO } from './wallet_new';
 import Arweave from 'arweave';
 import { ArDriveCommunityOracle } from './community/ardrive_community_oracle';
@@ -12,6 +10,9 @@ import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression
 import { FeeMultiple } from './types';
 import { CommunityOracle } from './community/community_oracle';
 import { ArFSDAOAnonymous } from './arfsdao_anonymous';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { version: CLI_APP_VERSION } = require('../package.json');
 
 if (require.main === module) {
 	// declare all parameters
