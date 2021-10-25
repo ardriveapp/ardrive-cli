@@ -1,9 +1,7 @@
-import { version as DEFAULT_APP_VERSION } from '../package.json';
-
 export const ArFS_O_11 = '0.11';
 export const CURRENT_ARFS_VERSION = ArFS_O_11;
 export const DEFAULT_APP_NAME = 'ArDrive-Core';
-export { DEFAULT_APP_VERSION };
+export const DEFAULT_APP_VERSION = '1.0.0';
 
 export type PublicKey = string;
 export type SeedPhrase = string;
