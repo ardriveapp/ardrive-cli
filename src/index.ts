@@ -10,12 +10,20 @@ import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression
 import { FeeMultiple } from './types';
 import { CommunityOracle } from './community/community_oracle';
 import { ArFSDAOAnonymous } from './arfsdao_anonymous';
+import { CLICommand } from './CLICommand';
 
 if (require.main === module) {
 	// declare all parameters
 	import('./parameter_declarations').then(() => {
 		// declares the commands
-		import('./commands');
+		import('./commands').then(() => {
+			// early look for the '--banner' flag before parsing the argv
+			const banner = process.argv.includes('--banner');
+			if (banner) {
+				displayBanner();
+			}
+			CLICommand.parse();
+		});
 	});
 }
 
@@ -75,4 +83,22 @@ export function arDriveAnonymousFactory(
 	}
 ): ArDriveAnonymous {
 	return new ArDriveAnonymous(new ArFSDAOAnonymous(settings.arweave ?? cliArweave, CLI_APP_NAME, CLI_APP_VERSION));
+}
+
+function displayBanner() {
+	console.log('\n');
+	console.log('                          █████╗ ██████╗ ██████╗ ██████╗ ██╗██╗   ██╗███████╗');
+	console.log('                         ██╔══██╗██╔══██╗██╔══██╗██╔══██╗██║██║   ██║██╔════╝');
+	console.log('                         ███████║██████╔╝██║  ██║██████╔╝██║██║   ██║█████╗  ');
+	console.log('                         ██╔══██║██╔══██╗██║  ██║██╔══██╗██║╚██╗ ██╔╝██╔══╝  ');
+	console.log('                         ██║  ██║██║  ██║██████╔╝██║  ██║██║ ╚████╔╝ ███████╗');
+	console.log('                         ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝  ╚══════╝');
+	console.log('                                                                             ');
+	console.log('                                 ██████╗ ███████╗████████╗ █████╗            ');
+	console.log('                                 ██╔══██╗██╔════╝╚══██╔══╝██╔══██╗           ');
+	console.log('                                 ██████╔╝█████╗     ██║   ███████║           ');
+	console.log('                                 ██╔══██╗██╔══╝     ██║   ██╔══██║           ');
+	console.log('                                 ██████╔╝███████╗   ██║   ██║  ██║           ');
+	console.log('                                 ╚═════╝ ╚══════╝   ╚═╝   ╚═╝  ╚═╝           ');
+	console.log('\n');
 }
