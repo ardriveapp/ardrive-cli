@@ -1,7 +1,7 @@
 export const ArFS_O_11 = '0.11';
 export const CURRENT_ARFS_VERSION = ArFS_O_11;
 export const DEFAULT_APP_NAME = 'ArDrive-Core';
-export const DEFAULT_APP_VERSION = '1.0';
+export const DEFAULT_APP_VERSION = '1.0.0';
 
 export type PublicKey = string;
 export type SeedPhrase = string;

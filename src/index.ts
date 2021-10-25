@@ -11,6 +11,9 @@ import { FeeMultiple } from './types';
 import { CommunityOracle } from './community/community_oracle';
 import { ArFSDAOAnonymous } from './arfsdao_anonymous';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { version: CLI_APP_VERSION } = require('../package.json');
+
 if (require.main === module) {
 	// declare all parameters
 	import('./parameter_declarations').then(() => {
@@ -20,7 +23,7 @@ if (require.main === module) {
 }
 
 export const CLI_APP_NAME = 'ArDrive-CLI';
-export const CLI_APP_VERSION = '2.0';
+export { CLI_APP_VERSION };
 
 // TODO: Make configurable from CLI
 export const cliArweave = Arweave.init({
