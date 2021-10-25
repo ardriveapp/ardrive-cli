@@ -1419,7 +1419,7 @@ __metadata:
     typescript: ^4.2.3
     uuid: ^8.3.2
   bin:
-    ardrive: ./lib/src/index.js
+    ardrive: ./lib/index.js
   languageName: unknown
   linkType: soft
 
