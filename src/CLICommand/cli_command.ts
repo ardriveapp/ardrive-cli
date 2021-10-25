@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-import { Command, Option } from 'commander';
+import { Command } from 'commander';
 import { CliApiObject, ParsedArguments } from './cli';
 import { ERROR_EXIT_CODE } from './constants';
 import { Parameter, ParameterName, ParameterOverridenConfig } from './parameter';
@@ -26,10 +26,6 @@ function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliA
 	let command: CliApiObject = program.command(commandDescriptor.name);
 	const parameters = commandDescriptor.parameters.map((param) => new Parameter(param));
 
-	if (process.env.NODE_ENV !== 'test') {
-		(command as Command).addOption(new Option('--banner').hideHelp());
-	}
-
 	parameters.forEach((parameter) => {
 		const aliasesAsString = parameter.aliases.join(' ');
 		const paramTypeString = (function () {
@@ -54,9 +50,6 @@ function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliA
 
 	command = command.action(async (options) => {
 		await (async function () {
-			if (options.banner) {
-				displayBanner();
-			}
 			assertConjunctionParameters(commandDescriptor, options);
 			const exitCode = await commandDescriptor.action(options);
 			exitProgram(exitCode || 0);
@@ -65,24 +58,6 @@ function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliA
 			exitProgram(ERROR_EXIT_CODE);
 		});
 	});
-}
-
-function displayBanner() {
-	console.log('\n');
-	console.log('                          █████╗ ██████╗ ██████╗ ██████╗ ██╗██╗   ██╗███████╗');
-	console.log('                         ██╔══██╗██╔══██╗██╔══██╗██╔══██╗██║██║   ██║██╔════╝');
-	console.log('                         ███████║██████╔╝██║  ██║██████╔╝██║██║   ██║█████╗  ');
-	console.log('                         ██╔══██║██╔══██╗██║  ██║██╔══██╗██║╚██╗ ██╔╝██╔══╝  ');
-	console.log('                         ██║  ██║██║  ██║██████╔╝██║  ██║██║ ╚████╔╝ ███████╗');
-	console.log('                         ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝  ╚══════╝');
-	console.log('                                                                             ');
-	console.log('                                 ██████╗ ███████╗████████╗ █████╗            ');
-	console.log('                                 ██╔══██╗██╔════╝╚══██╔══╝██╔══██╗           ');
-	console.log('                                 ██████╔╝█████╗     ██║   ███████║           ');
-	console.log('                                 ██╔══██╗██╔══╝     ██║   ██╔══██║           ');
-	console.log('                                 ██████╔╝███████╗   ██║   ██║  ██║           ');
-	console.log('                                 ╚═════╝ ╚══════╝   ╚═╝   ╚═╝  ╚═╝           ');
-	console.log('\n');
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
