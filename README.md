@@ -534,6 +534,7 @@ show how list drive could be piped into things like...
 upload a single file to it, move another file into that new folder
 get all info for a specific file
 generating share urls
+list all commands
 
 # Getting Help
 
