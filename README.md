@@ -447,7 +447,7 @@ Creating folders manually is straightforward:
 $ ardrive create-folder --parent-folder-id "63153bb3-2ca9-4d42-9106-0ce82e793321" --name "My Awesome Folder" -w /path/to/wallet.json
 ```
 
-When supplying a folder for the --local-file-path during an upload-file command, however, the folder hierarchy on the local disk will be reconstructed on chain during the course of the recursive bulk upload.
+Note: Folders can also be created when supplying a folder for the --local-file-path during an upload-file command, however, the folder hierarchy on the local disk will be reconstructed on chain during the course of the recursive bulk upload.
 
 ### Moving Folders
 
@@ -459,8 +459,39 @@ ardrive move-folder --folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" --parent-
 
 ## Working With Files
 
-Add a local folder to a new public drive:<br>
-NOTE: To upload to the root of a drive, specify its root folder ID as the parent folder ID for the upload destiantion.
+Similar to folders, files are linked to their parent folder which references back to the root folder of a drive. Given that link, a parent folder id is required in order to upload files. Files can be freely moved to other folders within their original drive.
+
+The important difference for file entities is that they also hold a reference to their data transaction, which is the `dataTxId` as returned by the `file-info` command. This is where your uploaded data lives on the permaweb.
+
+### Uploading a Single File
+
+To upload a file, you'll need a parent folder id, the file to upload's file path, and the path to your wallet:
+
+```shell
+ardrive upload-file --local-file-path /path/to/file.txt  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
+```
+
+NOTE: To upload to the root of a drive, specify its root folder ID as the parent folder ID for the upload destination.
+
+### Uploading a Folder with many Files (Bulk Upload)
+
+Users can perform a bulk upload by using the upload-file command on a target folder. The command will reconstruct the folder hierarchy on local disk as ArFS folders on the permaweb and upload each file into their corresponding folders:
+
+```shell
+ardrive upload-file --local-file-path /path/to/folder  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
+```
+
+This method of upload can be used to upload any number of files and folders within the folder tree.
+
+### Fetching the Metadata of a File Entity
+
+Simply perform the file-info command to retrieve the metadata of a file:
+
+```shell
+ardrive file-info --file-id "e5ebc14c-5b2d-4462-8f59-7f4a62e7770f"
+```
+
+### Creating a Drive and Uploading Pipelining Example
 
 ```shell
 # Use `tee` to store command json outputs for later review/backup/automation/etc.
