@@ -89,6 +89,8 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         1. [Creating Folders](#creating-folders)
         2. [Moving Folders](#moving-folders)
     6. [Working With Files](#working-with-files)
+        1. [Uploading a Single File](#uploading-a-single-file)
+        1. [Uploading a Folder with Files](#bulk-upload)
     7. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -475,7 +477,7 @@ ardrive upload-file --local-file-path /path/to/file.txt  --parent-folder-id "9af
 
 NOTE: To upload to the root of a drive, specify its root folder ID as the parent folder ID for the upload destination.
 
-### Uploading a Folder with many Files (Bulk Upload)
+### Uploading a Folder with Files (Bulk Upload)<a id="bulk-upload"></a>
 
 Users can perform a bulk upload by using the upload-file command on a target folder. The command will reconstruct the folder hierarchy on local disk as ArFS folders on the permaweb and upload each file into their corresponding folders:
 
@@ -574,16 +576,13 @@ ardrive list-drive -d 01ea6ba3-9e58-42e7-899d-622fd110211c | jq '[ .[] | select(
 
 TODO:
 list out the drive info to get the ar:// links
-upload files/folders
+
 show how list drive could be piped into things like...
 
--   get number of files
--   get size
 -   get other cool things?
 
 upload a single file to it, move another file into that new folder
-get all info for a specific file
-generating share urls
+
 list all commands
 
 ```shell
@@ -600,7 +599,6 @@ drive-info
 
 list-folder
 list-drive
-
 list-all-drives
 
 get-drive-key
