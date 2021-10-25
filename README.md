@@ -557,6 +557,11 @@ ardrive get-mempool | jq 'length'
 ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0c58c11-430c-4383-8e54-4d864cc7e927" --local-file-path ./helloworld.txt --boost 1.5
 ```
 
+```shell
+# show public share links with list drive
+ardrive list-drive -d a44482fd-592e-45fa-a08a-e526c31b87f1 | jq '.[] | select(.entityType == "file") | "https://app.ardrive.io/#/file/" + .entityId + "/view"'
+```
+
 TODO:
 list out the drive info to get the ar:// links
 upload files/folders
@@ -570,6 +575,36 @@ upload a single file to it, move another file into that new folder
 get all info for a specific file
 generating share urls
 list all commands
+
+```shell
+create-drive
+create-folder
+upload-file
+
+move-file
+move-folder
+
+file-info
+folder-info
+drive-info
+
+list-folder
+list-drive
+
+list-all-drives
+
+get-drive-key
+get-file-key
+
+generate-seedphrase
+generate-wallet
+get-address
+get-balance
+send-ar
+
+tx-status
+get-mempool
+```
 
 # Getting Help
 
