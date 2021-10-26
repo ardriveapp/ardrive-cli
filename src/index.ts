@@ -12,6 +12,7 @@ import { CommunityOracle } from './community/community_oracle';
 import { ArFSDAOAnonymous } from './arfsdao_anonymous';
 import { CLICommand } from './CLICommand';
 import { Command, Option } from 'commander';
+import { displayBanner } from './utils/banner';
 
 if (require.main === module) {
 	// declare all parameters
@@ -89,24 +90,4 @@ export function arDriveAnonymousFactory(
 	}
 ): ArDriveAnonymous {
 	return new ArDriveAnonymous(new ArFSDAOAnonymous(settings.arweave ?? cliArweave, CLI_APP_NAME, CLI_APP_VERSION));
-}
-
-// Generated at: https://patorjk.com/software/taag
-// Font: ANSI Shadow
-function displayBanner() {
-	console.log('\n');
-	console.log('\t █████╗ ██████╗ ██████╗ ██████╗ ██╗██╗   ██╗███████╗');
-	console.log('\t██╔══██╗██╔══██╗██╔══██╗██╔══██╗██║██║   ██║██╔════╝');
-	console.log('\t███████║██████╔╝██║  ██║██████╔╝██║██║   ██║█████╗  ');
-	console.log('\t██╔══██║██╔══██╗██║  ██║██╔══██╗██║╚██╗ ██╔╝██╔══╝  ');
-	console.log('\t██║  ██║██║  ██║██████╔╝██║  ██║██║ ╚████╔╝ ███████╗');
-	console.log('\t╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝  ╚══════╝');
-	console.log('');
-	console.log('\t\t\t ██████╗██╗     ██╗');
-	console.log('\t\t\t██╔════╝██║     ██║');
-	console.log('\t\t\t██║     ██║     ██║');
-	console.log('\t\t\t██║     ██║     ██║');
-	console.log('\t\t\t╚██████╗███████╗██║');
-	console.log('\t\t\t ╚═════╝╚══════╝╚═╝');
-	console.log('\n');
 }
