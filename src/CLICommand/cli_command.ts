@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { Command } from 'commander';
-import { CliApiObject, ParsedArguments } from './cli';
+import { CLIAction } from './action';
+import { ActionReturnType, CliApiObject, ParsedArguments } from './cli';
 import { ERROR_EXIT_CODE } from './constants';
 import { Parameter, ParameterName, ParameterOverridenConfig } from './parameter';
 
@@ -22,7 +23,7 @@ program.usage('[command] [command-specific options]');
  * @param {CliApiObject} program the instance of the commander class
  * This function is the responsible to tell the third party library to declare a command
  */
-function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliApiObject): void {
+function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliApiObject): CLIAction {
 	let command: CliApiObject = program.command(commandDescriptor.name);
 	const parameters = commandDescriptor.parameters.map((param) => new Parameter(param));
 	parameters.forEach((parameter) => {
@@ -46,16 +47,18 @@ function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliA
 			command.option(...optionArguments);
 		}
 	});
+	const action = new CLIAction(commandDescriptor.action);
 	command = command.action(async (options) => {
 		await (async function () {
 			assertConjunctionParameters(commandDescriptor, options);
-			const exitCode = await commandDescriptor.action(options);
+			const exitCode = await action.trigger(options);
 			exitProgram(exitCode || 0);
 		})().catch((err) => {
 			console.log(err.message);
 			exitProgram(ERROR_EXIT_CODE);
 		});
 	});
+	return action;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -98,6 +101,7 @@ export function assertForbidden(parameter: Parameter, options: any): void {
 
 export class CLICommand {
 	private static allCommandDescriptors: CommandDescriptor[] = [];
+	private _runningAction: CLIAction;
 
 	/**
 	 * @param {CommandDescriptor} commandDescription an immutable representation of a command
@@ -105,7 +109,11 @@ export class CLICommand {
 	 */
 	constructor(private readonly commandDescription: CommandDescriptor, private readonly _program?: CliApiObject) {
 		CLICommand.allCommandDescriptors.push(commandDescription);
-		this.setCommand();
+		this._runningAction = setCommanderCommand(this.commandDescription, this.program);
+	}
+
+	public get runningAction(): Promise<ActionReturnType> {
+		return this._runningAction.actionAwaiter();
 	}
 
 	// A singleton instance of the commander's program object
@@ -116,10 +124,6 @@ export class CLICommand {
 
 	private get program(): CliApiObject {
 		return this._program || CLICommand.program;
-	}
-
-	private setCommand(): void {
-		setCommanderCommand(this.commandDescription, this.program);
 	}
 
 	public static parse(program: CliApiObject = this.program, argv: string[] = process.argv): void {
