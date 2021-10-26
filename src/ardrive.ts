@@ -835,8 +835,10 @@ export class ArDrive extends ArDriveAnonymous {
 		wrappedFolder.existingId = filesAndFolderNames.folders.find((f) => f.folderName === destFolderName)?.folderId;
 		wrappedFolder.destinationName = parentFolderName;
 
+		console.log('before');
 		// Check for conflicting names and assign existing IDs for later use
 		await this.checkAndAssignExistingPrivateNames(wrappedFolder, driveKey);
+		console.log('after');
 
 		// Estimate and assert the cost of the entire bulk upload
 		// This will assign the calculated base costs to each wrapped file and folder
@@ -885,6 +887,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		const existingEntityNamesAndIds = await getExistingNamesFn(wrappedFolder.existingId);
 
+		console.log(existingEntityNamesAndIds);
 		for await (const file of wrappedFolder.files) {
 			const baseFileName = file.getBaseFileName();
 
@@ -934,7 +937,7 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	protected async checkAndAssignExistingPublicNames(wrappedFolder: ArFSFolderToUpload): Promise<void> {
-		this.checkAndAssignExistingNames(wrappedFolder, (parentFolderId) =>
+		await this.checkAndAssignExistingNames(wrappedFolder, (parentFolderId) =>
 			this.arFsDao.getPublicEntityNamesAndIdsInFolder(parentFolderId)
 		);
 	}
@@ -943,7 +946,7 @@ export class ArDrive extends ArDriveAnonymous {
 		wrappedFolder: ArFSFolderToUpload,
 		driveKey: DriveKey
 	): Promise<void> {
-		this.checkAndAssignExistingNames(wrappedFolder, (parentFolderId) =>
+		await this.checkAndAssignExistingNames(wrappedFolder, (parentFolderId) =>
 			this.arFsDao.getPrivateEntityNamesAndIdsInFolder(parentFolderId, driveKey)
 		);
 	}
