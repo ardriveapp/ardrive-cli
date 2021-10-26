@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { Command } from 'commander';
-import { CliApiObject, ParsedArguments } from './cli';
+import { ActionReturnType, CliApiObject, ParsedArguments } from './cli';
 import { CLICommand, CommandDescriptor } from './cli_command';
 import { Parameter, ParameterName } from './parameter';
 import {
@@ -26,20 +26,29 @@ import {
 import '../parameter_declarations';
 import { urlEncodeHashKey } from '../utils';
 import { stubArweaveAddress } from '../utils/stubs';
+import 'mocha';
+import { CLIAction } from './action';
 
 const expectedArweaveAddress = stubArweaveAddress('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
 
+/**
+ *
+ * @param program
+ * @param parameters
+ * @param action  - default is set for testing propuses
+ * @returns
+ */
 function declareCommandWithParams(
 	program: CliApiObject,
 	parameters: ParameterName[],
-	action: (options: ParsedArguments) => Promise<void>
-): void {
+	action?: (options: ParsedArguments) => Promise<ActionReturnType>
+): CLICommand {
 	const command: CommandDescriptor = {
 		name: testCommandName,
 		parameters,
-		action
+		action: (options: ParsedArguments) => new CLIAction(action).trigger(options)
 	};
-	new CLICommand(command, program);
+	return new CLICommand(command, program);
 }
 
 describe('ParametersHelper class', () => {
@@ -51,116 +60,131 @@ describe('ParametersHelper class', () => {
 
 	it('Actually reads the value from argv', () => {
 		Parameter.declare(singleValueParameter);
-		declareCommandWithParams(program, [singleValueParameterName], async (options) => {
-			const parameters = new ParametersHelper(options);
-			expect(parameters.getParameterValue(singleValueParameterName)).to.not.be.undefined;
-		});
+		const cmd = declareCommandWithParams(program, [singleValueParameterName]);
 		CLICommand.parse(program, [...baseArgv, testCommandName, '--single-value-parameter', '1234567890']);
+		return cmd.runningAction.then((options) => {
+			const parameters = new ParametersHelper(options);
+			return expect(parameters.getParameterValue(singleValueParameterName)).to.not.be.undefined;
+		});
 	});
 
 	it('Boolean parameter false', () => {
 		Parameter.declare(booleanParameter);
-		declareCommandWithParams(program, [booleanParameterName], async (options) => {
-			const parameters = new ParametersHelper(options);
-			expect(!!parameters.getParameterValue(booleanParameterName)).to.be.false;
-		});
+		const cmd = declareCommandWithParams(program, [booleanParameterName]);
 		CLICommand.parse(program, [...baseArgv, testCommandName]);
+		return cmd.runningAction.then((options) => {
+			const parameters = new ParametersHelper(options);
+			return expect(!!parameters.getParameterValue(booleanParameterName)).to.be.false;
+		});
 	});
 
 	it('Boolean parameter true', () => {
 		Parameter.declare(booleanParameter);
-		declareCommandWithParams(program, [booleanParameterName], async (options) => {
-			const parameters = new ParametersHelper(options);
-			expect(parameters.getParameterValue(booleanParameterName)).to.be.true;
-		});
+		const cmd = declareCommandWithParams(program, [booleanParameterName]);
 		CLICommand.parse(program, [...baseArgv, testCommandName, '--boolean-parameter']);
+		return cmd.runningAction.then((options) => {
+			const parameters = new ParametersHelper(options);
+			return expect(parameters.getParameterValue(booleanParameterName)).to.be.true;
+		});
 	});
 
 	it('Array parameter', () => {
 		const colorsArray = ['red', 'green', 'blue'];
 		Parameter.declare(arrayParameter);
-		declareCommandWithParams(program, [arrayParameterName], async (options) => {
-			const parameters = new ParametersHelper(options);
-			expect(parameters.getParameterValue(arrayParameterName)).to.deep.equal(colorsArray);
-		});
+		const cmd = declareCommandWithParams(program, [arrayParameterName]);
 		CLICommand.parse(program, [...baseArgv, testCommandName, '--array-parameter', ...colorsArray]);
+		return cmd.runningAction.then((options) => {
+			const parameters = new ParametersHelper(options);
+			return expect(parameters.getParameterValue(arrayParameterName)).to.deep.equal(colorsArray);
+		});
 	});
 
 	it('Required parameter throws if missing', () => {
+		// FIXME!!!!
 		CLICommand.parse(program, [...baseArgv, requiredParameterName]);
 		Parameter.declare(requiredParameter);
 	});
 
 	describe('getIsPrivate method', () => {
 		it('returns false when none of --unsafe-drive-password, --drive-key, -p, or -k are provided', () => {
-			declareCommandWithParams(program, [], async (options) => {
-				const parameters = new ParametersHelper(options);
-				expect(await parameters.getIsPrivate()).to.be.false;
-			});
+			const cmd = declareCommandWithParams(program, []);
 			CLICommand.parse(program, [...baseArgv, testCommandName]);
+			return cmd.runningAction.then((options) => {
+				const parameters = new ParametersHelper(options);
+				return parameters.getIsPrivate().then((isPrivate) => expect(isPrivate).to.be.false);
+			});
 		});
 
 		it('returns true when --unsafe-drive-password is provided', () => {
-			declareCommandWithParams(program, [UnsafeDrivePasswordParameter], async (options) => {
-				const parameters = new ParametersHelper(options);
-				expect(await parameters.getIsPrivate()).to.be.true;
-			});
+			const cmd = declareCommandWithParams(program, [UnsafeDrivePasswordParameter]);
 			CLICommand.parse(program, [...baseArgv, testCommandName, '--unsafe-drive-password', 'pw']);
+			return cmd.runningAction.then((options) => {
+				const parameters = new ParametersHelper(options);
+				return parameters.getIsPrivate().then((isPrivate) => expect(isPrivate).to.be.true);
+			});
 		});
 
 		it('returns true when -p is provided', () => {
-			declareCommandWithParams(program, [UnsafeDrivePasswordParameter], async (options) => {
-				const parameters = new ParametersHelper(options);
-				expect(await parameters.getIsPrivate()).to.be.true;
-			});
+			const cmd = declareCommandWithParams(program, [UnsafeDrivePasswordParameter]);
 			CLICommand.parse(program, [...baseArgv, testCommandName, '-p', 'pw']);
+			return cmd.runningAction.then((options) => {
+				const parameters = new ParametersHelper(options);
+				return parameters.getIsPrivate().then((isPrivate) => expect(isPrivate).to.be.true);
+			});
 		});
 
 		it('returns true when --drive-key is provided', () => {
-			declareCommandWithParams(program, [DriveKeyParameter], async (options) => {
-				const parameters = new ParametersHelper(options);
-				expect(await parameters.getIsPrivate()).to.be.true;
-			});
+			const cmd = declareCommandWithParams(program, [DriveKeyParameter]);
 			CLICommand.parse(program, [...baseArgv, testCommandName, '--drive-key', 'key']);
+			return cmd.runningAction.then((options) => {
+				const parameters = new ParametersHelper(options);
+				return parameters.getIsPrivate().then((isPrivate) => expect(isPrivate).to.be.true);
+			});
 		});
 
 		it('returns true when -k is provided', () => {
-			declareCommandWithParams(program, [DriveKeyParameter], async (options) => {
-				const parameters = new ParametersHelper(options);
-				expect(await parameters.getIsPrivate()).to.be.true;
-			});
+			const cmd = declareCommandWithParams(program, [DriveKeyParameter]);
 			CLICommand.parse(program, [...baseArgv, testCommandName, '-k', 'key']);
+			return cmd.runningAction.then((options) => {
+				const parameters = new ParametersHelper(options);
+				return parameters.getIsPrivate().then((isPrivate) => expect(isPrivate).to.be.true);
+			});
 		});
 	});
 
 	describe('getRequiredWallet method', () => {
 		it('returns a wallet when a valid --wallet-file is provided', () => {
-			declareCommandWithParams(program, [WalletFileParameter], async (options) => {
-				const parameters = new ParametersHelper(options);
-				expect(await parameters.getRequiredWallet()).to.not.be.null;
-			});
+			const cmd = declareCommandWithParams(program, [WalletFileParameter]);
 			CLICommand.parse(program, [...baseArgv, testCommandName, '--wallet-file', './test_wallet.json']);
+			return cmd.runningAction.then((options) => {
+				const parameters = new ParametersHelper(options);
+				return parameters.getRequiredWallet();
+			});
 		});
 
 		it('returns a wallet when a valid --w file is provided', () => {
-			declareCommandWithParams(program, [WalletFileParameter], async (options) => {
-				const parameters = new ParametersHelper(options);
-				expect(await parameters.getRequiredWallet()).to.not.be.null;
-			});
+			const cmd = declareCommandWithParams(program, [WalletFileParameter]);
 			CLICommand.parse(program, [...baseArgv, testCommandName, '-w', './test_wallet.json']);
+			return cmd.runningAction.then((options) => {
+				const parameters = new ParametersHelper(options);
+				return parameters.getRequiredWallet();
+			});
 		});
 
-		it('returns a wallet when a valid --seed-phrase option is provided', () => {
-			declareCommandWithParams(program, [SeedPhraseParameter], async (options) => {
-				const parameters = new ParametersHelper(options);
-				expect(await parameters.getRequiredWallet()).to.not.be.null;
-			});
+		it('returns a wallet when a valid --seed-phrase option is provided', function () {
+			// FIXME: it takes too long
+			// this.timeout(37200);
+			const cmd = declareCommandWithParams(program, [SeedPhraseParameter]);
 			CLICommand.parse(program, [
 				...baseArgv,
 				testCommandName,
 				'--seed-phrase',
 				'alcohol wisdom allow used april recycle exhibit parent music field cabbage treat'
 			]);
+			return cmd.runningAction.then((options) => {
+				const parameters = new ParametersHelper(options);
+				return parameters.getRequiredWallet();
+			});
 		});
 
 		// Note: Redundant prolonged seed-phrase tests are commented out to save testing time
@@ -178,37 +202,36 @@ describe('ParametersHelper class', () => {
 		// 	]);
 		// });
 
-		it('throws when none of --wallet-file, -w, --seed-phrase, or -s option are provided', (done) => {
-			declareCommandWithParams(program, [], async (options) => {
-				const parameters = new ParametersHelper(options);
-				await parameters
-					.getRequiredWallet()
-					.then((wallet) => {
-						done(`It shouldn't have returned a wallet: ${wallet}`);
-					})
-					.catch(() => {
-						done();
-					});
-			});
+		it('throws when none of --wallet-file, -w, --seed-phrase, or -s option are provided', () => {
+			const cmd = declareCommandWithParams(program, []);
 			CLICommand.parse(program, [...baseArgv, testCommandName]);
+			return cmd.runningAction.then((options) => {
+				const parameters = new ParametersHelper(options);
+				return parameters
+					.getRequiredWallet()
+					.catch(() => null)
+					.then((wallet) => expect(wallet).to.be.null);
+			});
 		});
 	});
 
 	describe('getOptionalWallet method', () => {
 		it('returns a wallet when a valid --wallet-file is provided', () => {
-			declareCommandWithParams(program, [WalletFileParameter], async (options) => {
-				const parameters = new ParametersHelper(options);
-				expect(await parameters.getOptionalWallet()).to.not.be.null;
-			});
+			const cmd = declareCommandWithParams(program, [WalletFileParameter]);
 			CLICommand.parse(program, [...baseArgv, testCommandName, '--wallet-file', './test_wallet.json']);
+			return cmd.runningAction.then((options) => {
+				const parameters = new ParametersHelper(options);
+				return parameters.getOptionalWallet();
+			});
 		});
 
 		it('returns a wallet when a valid --w file is provided', () => {
-			declareCommandWithParams(program, [WalletFileParameter], async (options) => {
-				const parameters = new ParametersHelper(options);
-				expect(await parameters.getOptionalWallet()).to.not.be.null;
-			});
+			const cmd = declareCommandWithParams(program, [WalletFileParameter]);
 			CLICommand.parse(program, [...baseArgv, testCommandName, '-w', './test_wallet.json']);
+			return cmd.runningAction.then((options) => {
+				const parameters = new ParametersHelper(options);
+				return parameters.getOptionalWallet();
+			});
 		});
 
 		// Note: Redundant prolonged seed-phrase tests are commented out to save testing time
@@ -240,30 +263,33 @@ describe('ParametersHelper class', () => {
 		// });
 
 		it('returns null when none of --wallet-file, -w, --seed-phrase, or -s option are provided', () => {
-			declareCommandWithParams(program, [], async (options) => {
+			const cmd = declareCommandWithParams(program, []);
+			CLICommand.parse(program, [...baseArgv, testCommandName]);
+			return cmd.runningAction.then(async (options) => {
 				const parameters = new ParametersHelper(options);
 				const wallet = await parameters.getOptionalWallet().catch(() => null);
 				expect(wallet).to.be.null;
 			});
-			CLICommand.parse(program, [...baseArgv, testCommandName]);
 		});
 	});
 
 	describe('getWalletAddress method', () => {
 		it('returns the address of the wallet when a valid --wallet-file is provided', () => {
-			declareCommandWithParams(program, [WalletFileParameter], async (options) => {
+			const cmd = declareCommandWithParams(program, [WalletFileParameter]);
+			CLICommand.parse(program, [...baseArgv, testCommandName, '--wallet-file', './test_wallet.json']);
+			return cmd.runningAction.then(async (options) => {
 				const parameters = new ParametersHelper(options);
 				expect(`${await parameters.getWalletAddress()}`).to.equal(`${expectedArweaveAddress}`);
 			});
-			CLICommand.parse(program, [...baseArgv, testCommandName, '--wallet-file', './test_wallet.json']);
 		});
 
 		it('returns the address of the wallet when a valid --w file is provided', () => {
-			declareCommandWithParams(program, [WalletFileParameter], async (options) => {
+			const cmd = declareCommandWithParams(program, [WalletFileParameter]);
+			CLICommand.parse(program, [...baseArgv, testCommandName, '-w', './test_wallet.json']);
+			return cmd.runningAction.then(async (options) => {
 				const parameters = new ParametersHelper(options);
 				expect(`${await parameters.getWalletAddress()}`).to.equal(`${expectedArweaveAddress}`);
 			});
-			CLICommand.parse(program, [...baseArgv, testCommandName, '-w', './test_wallet.json']);
 		});
 
 		// Note: Redundant prolonged seed-phrase tests are commented out to save testing time
@@ -295,49 +321,47 @@ describe('ParametersHelper class', () => {
 		// });
 
 		it('returns the address provided by the --address option value', () => {
-			declareCommandWithParams(program, [AddressParameter], async (options) => {
-				const parameters = new ParametersHelper(options);
-				expect(`${await parameters.getWalletAddress()}`).to.equal(`${expectedArweaveAddress}`);
-			});
+			const cmd = declareCommandWithParams(program, [AddressParameter]);
 			CLICommand.parse(program, [
 				...baseArgv,
 				testCommandName,
 				'--address',
 				'P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4'
 			]);
-		});
-
-		it('returns the address provided by the -a option value', () => {
-			declareCommandWithParams(program, [AddressParameter], async (options) => {
+			return cmd.runningAction.then(async (options) => {
 				const parameters = new ParametersHelper(options);
 				expect(`${await parameters.getWalletAddress()}`).to.equal(`${expectedArweaveAddress}`);
 			});
+		});
+
+		it('returns the address provided by the -a option value', () => {
+			const cmd = declareCommandWithParams(program, [AddressParameter]);
 			CLICommand.parse(program, [
 				...baseArgv,
 				testCommandName,
 				'-a',
 				'P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4'
 			]);
+			return cmd.runningAction.then(async (options) => {
+				const parameters = new ParametersHelper(options);
+				expect(`${await parameters.getWalletAddress()}`).to.equal(`${expectedArweaveAddress}`);
+			});
 		});
 
 		it('throws when none of --wallet-file, -w, --seed-phrase, -s, --address, or -a option are provided', () => {
-			declareCommandWithParams(program, [], async (options) => {
+			const cmd = declareCommandWithParams(program, []);
+			CLICommand.parse(program, [...baseArgv, testCommandName]);
+			return cmd.runningAction.then(async (options) => {
 				const parameters = new ParametersHelper(options);
 				const wallet = await parameters.getWalletAddress().catch(() => null);
 				expect(wallet).to.be.null;
 			});
-			CLICommand.parse(program, [...baseArgv, testCommandName]);
 		});
 	});
 
 	describe('getDriveKey method', () => {
 		it('returns the correct drive key given a valid --wallet-file and --unsafe-drive-password', () => {
-			declareCommandWithParams(program, [WalletFileParameter, UnsafeDrivePasswordParameter], async (options) => {
-				const parameters = new ParametersHelper(options);
-				expect(
-					urlEncodeHashKey(await parameters.getDriveKey({ driveId: '00000000-0000-0000-0000-000000000000' }))
-				).to.equal('Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg');
-			});
+			const cmd = declareCommandWithParams(program, [WalletFileParameter, UnsafeDrivePasswordParameter]);
 			CLICommand.parse(program, [
 				...baseArgv,
 				testCommandName,
@@ -346,32 +370,40 @@ describe('ParametersHelper class', () => {
 				'--unsafe-drive-password',
 				'password'
 			]);
-		});
-
-		it('returns the drive key provided by the --drive-key option', () => {
-			declareCommandWithParams(program, [DriveKeyParameter], async (options) => {
+			return cmd.runningAction.then(async (options) => {
 				const parameters = new ParametersHelper(options);
 				expect(
 					urlEncodeHashKey(await parameters.getDriveKey({ driveId: '00000000-0000-0000-0000-000000000000' }))
 				).to.equal('Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg');
 			});
+		});
+
+		it('returns the drive key provided by the --drive-key option', () => {
+			const cmd = declareCommandWithParams(program, [DriveKeyParameter]);
 			CLICommand.parse(program, [
 				...baseArgv,
 				testCommandName,
 				'--drive-key',
 				'Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg'
 			]);
+			return cmd.runningAction.then(async (options) => {
+				const parameters = new ParametersHelper(options);
+				expect(
+					urlEncodeHashKey(await parameters.getDriveKey({ driveId: '00000000-0000-0000-0000-000000000000' }))
+				).to.equal('Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg');
+			});
 		});
 
 		it('throws when none of --wallet-file, -w, --seed-phrase, -s, --drive-key, or -k option are provided', () => {
-			declareCommandWithParams(program, [], async (options) => {
+			const cmd = declareCommandWithParams(program, []);
+			CLICommand.parse(program, [...baseArgv, testCommandName]);
+			return cmd.runningAction.then(async (options) => {
 				const parameters = new ParametersHelper(options);
 				const driveKey = await parameters
 					.getDriveKey({ driveId: '00000000-0000-0000-0000-000000000000' })
 					.catch(() => null);
 				expect(driveKey).to.be.null;
 			});
-			CLICommand.parse(program, [...baseArgv, testCommandName]);
 		});
 	});
 
