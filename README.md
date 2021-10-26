@@ -2,7 +2,7 @@
 
 The _ArDrive Command Line Interface (CLI)_ is a Node.js application for terminal-based [ArDrive] workflows. It also offers utility operations for securely interacting with Arweave wallets and inspecting various [Arweave] blockchain conditions.
 
-**This project remains in active development use at your own risk!**
+**This project remains in active development, use at your own risk!**
 
 Create your first drive and permanently store your first file on the permaweb with a series of simple CLI commands like so:
 
@@ -104,7 +104,8 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
         3. [Check for network congestion before uploading](#check-congestion)
         4. [Front-run Congestion By Boosting Miner Rewards](#boost)
-4. [Getting Help](#getting-help)
+4. [All ArDrive CLI Commands](#all-ardrive-cli-commands)
+5. [Getting Help](#getting-help)
 
 # ArDrive
 
@@ -618,13 +619,7 @@ ardrive get-mempool | jq 'length'
 ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0c58c11-430c-4383-8e54-4d864cc7e927" --local-file-path ./helloworld.txt --boost 1.5
 ```
 
-TODO:
-
-list out the drive info to get the ar:// links
-
-upload a single file to it, move another file into that new folder
-
-list all commands ?
+# All ArDrive CLI Commands
 
 ```shell
   █████╗ ██████╗ ██████╗ ██████╗ ██╗██╗   ██╗███████╗
