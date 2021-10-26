@@ -87,9 +87,8 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
             3. [Supplying Your Password: Prompt](#pw-prompt)
         4. [Creating Drives](#creating-drives)
         5. [Listing Drives for an Address](#listing-drives-for-an-address)
-        6. [Viewing Drive Metadata](#viewing-drive-metadata)
-        7. [Listing Every Entity in a Drive](#list-drive)
-        8. [List Drive Pipeline Examples](#list-drive-pipeline-examples)
+        6. [Listing Every Entity in a Drive](#list-drive)
+        7. [List Drive Pipeline Examples](#list-drive-pipeline-examples)
     5. [Working With Folders](#working-with-folders)
         1. [Creating Folders](#creating-folders)
         2. [Moving Folders](#moving-folders)
@@ -438,20 +437,6 @@ ardrive list-all-drives -w /path/to/my/wallet.json -P
 
 # List any address's drives
 ardrive list-all-drives --address "HTTn8F92tR32N8wuo-NIDkjmqPknrbl10JWo5MZ9x2k"
-```
-
-### Viewing Drive Metadata
-
-To view the metadata of a drive entity, use the `drive-info` command:
-
-```shell
-# Public
-ardrive drive-info --drive-id "c7f87712-b54e-4491-bc96-1c5fa7b1da50"
-```
-
-```shell
-# Private
-ardrive drive-info --drive-id "c7f87712-b54e-4491-bc96-1c5fa7b1da50" -w /path/to/wallet -P
 ```
 
 ### Listing Every Entity in a Drive<a id="list-drive"></a>
