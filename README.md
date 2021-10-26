@@ -89,6 +89,9 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         5. [Listing Drives for an Address](#listing-drives-for-an-address)
         6. [Listing Every Entity in a Drive](#list-drive)
         7. [List Drive Pipeline Examples](#list-drive-pipeline-examples)
+            1. [Get Share Links for Files in the Drive](#get-share-links)
+            2. [Get Total Size of Files in the Drive](#get-total-size)
+            3. [Get Total Count of Files in the Drive](#get-file-count)
     5. [Working With Folders](#working-with-folders)
         1. [Creating Folders](#creating-folders)
         2. [Moving Folders](#moving-folders)
@@ -460,17 +463,37 @@ ardrive list-drive -d "c7f87712-b54e-4491-bc96-1c5fa7b1da50" --max-depth 2
 
 ### List Drive Pipeline Examples
 
-You can utilize `jq` and the list commands to define the shape into useful stats for many use cases. Here are a few examples:
+You can utilize `jq` and the list commands to reshape the commands' output data into useful forms and stats for many use cases. Here are a few examples:
+
+<a id="get-share-links"></a>
 
 ```shell
 # Get share links for a PUBLIC drive
 ardrive list-drive -d a44482fd-592e-45fa-a08a-e526c31b87f1 | jq '.[] | select(.entityType == "file") | "https://app.ardrive.io/#/file/" + .entityId + "/view"'
 ```
 
+Example output:
+
+```shell
+"https://app.ardrive.io/#/file/1337babe-f000-dead-beef-ffffffffffff/view"
+"https://app.ardrive.io/#/file/cdbc9ddd-1cab-41d9-acbd-fd4328929de3/view"
+"https://app.ardrive.io/#/file/f19bc712-b57a-4e0d-8e5c-b7f1786b34a1/view"
+"https://app.ardrive.io/#/file/4f8e081b-42f2-442d-be41-57f6f906e1c8/view"
+"https://app.ardrive.io/#/file/0e02d254-c853-4ff0-9b6e-c4d23d2a95f5/view"
+"https://app.ardrive.io/#/file/c098b869-29d1-4a86-960f-a9e10433f0b0/view"
+"https://app.ardrive.io/#/file/4afc8cdf-4d27-408a-bfb9-0a2ec21eebf8/view"
+"https://app.ardrive.io/#/file/85fe488d-fcf7-48ca-9df8-2b39958bbf15/view"
+...
+```
+
+<a id="get-total-size"></a>
+
 ```shell
 # Get total size of all files within drive
 ardrive list-drive -d 13c3c232-6687-4d11-8ac1-35284102c7db | jq ' map(select(.entityType == "file") | .size) | add'
 ```
+
+<a id="get-file-count"></a>
 
 ```shell
 # Get total number of files within drive
@@ -531,13 +554,88 @@ ardrive folder-info --folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0"
 Similar to drives, the `list-folder` command can be used to fetch the metadata of each entity within a folder. But by default, the command will fetch only the immediate children of that folder (`--maxdepth 0`):
 
 ```shell
-# List immediate children of folder
-ardrive list-folder --folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0"
+# List immediate children of folder "My Public Folder"
+ardrive list-folder --parent-folder-id "29850ab7-56d4-4e1f-a5be-cb86d5513940"
+```
+
+Example output:
+
+```shell
+[
+    {
+        "appName": "ArDrive-CLI",
+        "appVersion": "2.0",
+        "arFS": "0.11",
+        "contentType": "application/json",
+        "driveId": "01ea6ba3-9e58-42e7-899d-622fd110211a",
+        "entityType": "folder",
+        "name": "mytestfolder",
+        "txId": "HYiKyfLwY7PT9NleTQoTiM_-qPVUwf4ClDhx1sjUAEU",
+        "unixTime": 1635102772,
+        "parentFolderId": "29850ab7-56d4-4e1f-a5be-cb86d5513940",
+        "entityId": "03df2929-1440-4ab4-bbf0-9dc776e1ed96",
+        "path": "/My Public Folder/mytestfolder",
+        "txIdPath": "/09_x0X2eZ3flXXLS72WdTDq6uaa5g2LjsT-QH1m0zhU/HYiKyfLwY7PT9NleTQoTiM_-qPVUwf4ClDhx1sjUAEU",
+        "entityIdPath": "/29850ab7-56d4-4e1f-a5be-cb86d5513940/03df2929-1440-4ab4-bbf0-9dc776e1ed96"
+    },
+    {
+        "appName": "ArDrive-CLI",
+        "appVersion": "2.0",
+        "arFS": "0.11",
+        "contentType": "application/json",
+        "driveId": "01ea6ba3-9e58-42e7-899d-622fd110211a",
+        "entityType": "folder",
+        "name": "Super sonic public folder",
+        "txId": "VUk1B_vo1va2-EHLtqjsotzy0Rdn6lU4hQo3RD2xoTI",
+        "unixTime": 1631283259,
+        "parentFolderId": "29850ab7-56d4-4e1f-a5be-cb86d5513940",
+        "entityId": "452c6aec-43dc-4015-9abd-20083068d432",
+        "path": "/My Public Folder/Super sonic sub folder",
+        "txIdPath": "/09_x0X2eZ3flXXLS72WdTDq6uaa5g2LjsT-QH1m0zhU/VUk1B_vo1va2-EHLtqjsotzy0Rdn6lU4hQo3RD2xoTI",
+        "entityIdPath": "/29850ab7-56d4-4e1f-a5be-cb86d5513940/452c6aec-43dc-4015-9abd-20083068d432"
+    },
+    {
+        "appName": "ArDrive-CLI",
+        "appVersion": "2.0",
+        "arFS": "0.11",
+        "contentType": "application/json",
+        "driveId": "01ea6ba3-9e58-42e7-899d-622fd110211a",
+        "entityType": "file",
+        "name": "test-number-twelve.txt",
+        "txId": "429zBqnd7ZBNzgukaix26RYz3g5SeXCCo_oIY6CPZLg",
+        "unixTime": 1631722234,
+        "size": 47,
+        "lastModifiedDate": 1631722217028,
+        "parentFolderId": "29850ab7-56d4-4e1f-a5be-cb86d5513940",
+        "entityId": "e5948327-d6de-4acf-a6fe-e091ecf78d71",
+        "path": "/My Public Folder/test-number-twelve.txt",
+        "txIdPath": "/09_x0X2eZ3flXXLS72WdTDq6uaa5g2LjsT-QH1m0zhU/429zBqnd7ZBNzgukaix26RYz3g5SeXCCo_oIY6CPZLg",
+        "entityIdPath": "/29850ab7-56d4-4e1f-a5be-cb86d5513940/e5948327-d6de-4acf-a6fe-e091ecf78d71"
+    },
+    {
+        "appName": "ArDrive-CLI",
+        "appVersion": "2.0",
+        "arFS": "0.11",
+        "contentType": "application/json",
+        "driveId": "01ea6ba3-9e58-42e7-899d-622fd110211a",
+        "entityType": "file",
+        "name": "wonderful-test-file.txt",
+        "txId": "6CokwlzB81Fx7dq-lB654VM0XQykdU6eYohDmEJ2gk4",
+        "unixTime": 1631671275,
+        "size": 23,
+        "lastModifiedDate": 1631283389232,
+        "parentFolderId": "29850ab7-56d4-4e1f-a5be-cb86d5513940",
+        "entityId": "3274dae9-3487-41eb-94d5-8d5d3d8bc343",
+        "path": "/My Public Folder/wonderful-test-file.txt",
+        "txIdPath": "/09_x0X2eZ3flXXLS72WdTDq6uaa5g2LjsT-QH1m0zhU/6CokwlzB81Fx7dq-lB654VM0XQykdU6eYohDmEJ2gk4",
+        "entityIdPath": "/29850ab7-56d4-4e1f-a5be-cb86d5513940/3274dae9-3487-41eb-94d5-8d5d3d8bc343"
+    }
+]
 ```
 
 ```shell
 # List all contents of a folder
-ardrive list-folder --folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" --all
+ardrive list-folder --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" --all
 ```
 
 ## Working With Files
@@ -670,7 +768,15 @@ Monitor any Arweave transaction's status via its transaction ID by performing:
 ```shell
 # Peek at the status:
 yarn ardrive tx-status -t "ekSMckikdRJ8RGIkFa-X3xq3427tvM7J9adv8HP3Bzs"
+```
 
+Example output:
+
+```shell
+ekSMckikdRJ8RGIkFa-X3xq3427tvM7J9adv8HP3Bzs: Mined at block height 775810 with 22439 confirmations
+```
+
+```shell
 # Reprint the status every 10 seconds:
 watch -n 10 yarn ardrive tx-status -t "ekSMckikdRJ8RGIkFa-X3xq3427tvM7J9adv8HP3Bzs"
 ```
