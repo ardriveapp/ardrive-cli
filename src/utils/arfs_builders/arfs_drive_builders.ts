@@ -114,8 +114,8 @@ export class ArFSPrivateDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPriva
 	cipherIV?: CipherIV;
 	private readonly driveKey: DriveKey;
 
-	constructor({ entityId: driveId, arweave, key: driveKey }: ArFSPrivateMetadataEntityBuilderParams) {
-		super({ entityId: driveId, arweave });
+	constructor({ entityId: driveId, arweave, key: driveKey, owner }: ArFSPrivateMetadataEntityBuilderParams) {
+		super({ entityId: driveId, arweave, owner });
 		this.driveKey = driveKey;
 	}
 

@@ -1,5 +1,11 @@
 import { ArweaveAddress } from './arweave_address';
 
+const ownerFragment = `
+	owner {
+		address
+	}
+`;
+
 const nodeFragment = `
 	node {
 		id
@@ -7,6 +13,7 @@ const nodeFragment = `
 			name
 			value
 		}
+		${ownerFragment}
 	}
 `;
 

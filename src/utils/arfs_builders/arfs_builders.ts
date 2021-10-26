@@ -16,6 +16,7 @@ import { DriveID, EntityID, EntityKey, FolderID, TransactionID, UnixTime } from 
 export interface ArFSMetadataEntityBuilderParams {
 	entityId: EntityID;
 	arweave: Arweave;
+	owner?: ArweaveAddress;
 }
 export type ArFSPublicMetadataEntityBuilderParams = ArFSMetadataEntityBuilderParams;
 export interface ArFSPrivateMetadataEntityBuilderParams extends ArFSMetadataEntityBuilderParams {
@@ -40,10 +41,12 @@ export abstract class ArFSMetadataEntityBuilder<T extends ArFSEntity> {
 	unixTime?: UnixTime;
 	protected readonly entityId: EntityID;
 	protected readonly arweave: Arweave;
+	protected readonly owner?: ArweaveAddress;
 
-	constructor({ entityId, arweave }: ArFSMetadataEntityBuilderParams) {
+	constructor({ entityId, arweave, owner }: ArFSMetadataEntityBuilderParams) {
 		this.entityId = entityId;
 		this.arweave = arweave;
+		this.owner = owner;
 	}
 
 	abstract getGqlQueryParameters(): GQLTagInterface[];
@@ -111,8 +114,8 @@ export abstract class ArFSMetadataEntityBuilder<T extends ArFSEntity> {
 		return unparsedTags;
 	}
 
-	async build(node?: GQLNodeInterface, owner?: ArweaveAddress): Promise<T> {
-		await this.parseFromArweaveNode(node, owner);
+	async build(node?: GQLNodeInterface): Promise<T> {
+		await this.parseFromArweaveNode(node, this.owner);
 		return this.buildEntity();
 	}
 }

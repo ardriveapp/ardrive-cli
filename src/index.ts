@@ -14,8 +14,11 @@ import { CLICommand } from './CLICommand';
 import { Command, Option } from 'commander';
 import { displayBanner } from './utils/banner';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { version: CLI_APP_VERSION } = require('../package.json');
+
 export const CLI_APP_NAME = 'ArDrive-CLI';
-export const CLI_APP_VERSION = '2.0';
+export { CLI_APP_VERSION };
 
 // TODO: Make configurable from CLI
 export const cliArweave = Arweave.init({

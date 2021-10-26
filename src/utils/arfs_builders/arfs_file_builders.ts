@@ -9,7 +9,8 @@ import {
 } from 'ardrive-core-js';
 import Arweave from 'arweave';
 import { ArFSPrivateFile, ArFSPublicFile } from '../../arfs_entities';
-import { ByteCount, CipherIV, DriveKey, FileID, TransactionID, UnixTime } from '../../types';
+import { ArweaveAddress } from '../../arweave_address';
+import { ByteCount, CipherIV, DriveKey, FileID, FileKey, TransactionID, UnixTime } from '../../types';
 import { ArFSFileOrFolderBuilder } from './arfs_builders';
 
 interface FileMetaDataTransactionData {
@@ -68,7 +69,13 @@ export class ArFSPublicFileBuilder extends ArFSFileBuilder<ArFSPublicFile> {
 			this.dataTxId = dataJSON.dataTxId;
 			this.dataContentType = dataJSON.dataContentType ?? extToMime(this.name);
 
-			if (!this.name || !this.size || !this.lastModifiedDate || !this.dataTxId || !this.dataContentType) {
+			if (
+				!this.name ||
+				this.size === undefined ||
+				!this.lastModifiedDate ||
+				!this.dataTxId ||
+				!this.dataContentType
+			) {
 				throw new Error('Invalid file state');
 			}
 
@@ -100,8 +107,14 @@ export class ArFSPrivateFileBuilder extends ArFSFileBuilder<ArFSPrivateFile> {
 	cipher?: string;
 	cipherIV?: CipherIV;
 
-	constructor(readonly fileId: FileID, readonly arweave: Arweave, private readonly driveKey: DriveKey) {
-		super({ entityId: fileId, arweave });
+	constructor(
+		readonly fileId: FileID,
+		readonly arweave: Arweave,
+		private readonly driveKey: DriveKey,
+		readonly owner?: ArweaveAddress,
+		readonly fileKey?: FileKey
+	) {
+		super({ entityId: fileId, arweave, owner });
 	}
 
 	static fromArweaveNode(node: GQLNodeInterface, arweave: Arweave, driveKey: DriveKey): ArFSPrivateFileBuilder {
@@ -152,7 +165,7 @@ export class ArFSPrivateFileBuilder extends ArFSFileBuilder<ArFSPrivateFile> {
 		) {
 			const txData = await this.arweave.transactions.getData(this.txId, { decode: true });
 			const dataBuffer = Buffer.from(txData);
-			const fileKey = await deriveFileKey(this.fileId, this.driveKey);
+			const fileKey = this.fileKey ?? (await deriveFileKey(this.fileId, this.driveKey));
 
 			const decryptedFileBuffer: Buffer = await fileDecrypt(this.cipherIV, fileKey, dataBuffer);
 			const decryptedFileString: string = await Utf8ArrayToStr(decryptedFileBuffer);
@@ -165,7 +178,13 @@ export class ArFSPrivateFileBuilder extends ArFSFileBuilder<ArFSPrivateFile> {
 			this.dataTxId = decryptedFileJSON.dataTxId;
 			this.dataContentType = decryptedFileJSON.dataContentType ?? extToMime(this.name);
 
-			if (!this.name || !this.size || !this.lastModifiedDate || !this.dataTxId || !this.dataContentType) {
+			if (
+				!this.name ||
+				this.size === undefined ||
+				!this.lastModifiedDate ||
+				!this.dataTxId ||
+				!this.dataContentType
+			) {
 				throw new Error('Invalid file state');
 			}
 
