@@ -2,6 +2,8 @@
 
 The _ArDrive Command Line Interface (CLI)_ is a Node.js application for terminal-based [ArDrive] workflows. It also offers utility operations for securely interacting with Arweave wallets and inspecting various [Arweave] blockchain conditions.
 
+**This project remains in active development use at your own risk!**
+
 Create your first drive and permanently store your first file on the permaweb with a series of simple CLI commands like so:
 
 ```shell
@@ -72,6 +74,7 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
     1. [CLI Help](#cli-help)
     2. [Wallet Operations](#wallet-operations)
     3. [Working With Entities](#working-with-entities)
+        1. [Dry Run](#dry-run)
     4. [Working With Drives](#working-with-drives)
         1. [Understanding Drive Hierarchies](#understanding-drive-hierarchies)
             1. [Fetching Drive Info](#drive-info)
@@ -84,13 +87,19 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
             3. [Supplying Your Password: Prompt](#pw-prompt)
         4. [Creating Drives](#creating-drives)
         5. [Listing Drives for an Address](#listing-drives-for-an-address)
-        6. [Listing Every Entity in a Drive](#list-drive)
+        6. [Viewing Drive Metadata](#viewing-drive-metadata)
+        7. [Listing Every Entity in a Drive](#list-drive)
+        8. [List Drive Pipeline Examples](#list-drive-pipeline-examples)
     5. [Working With Folders](#working-with-folders)
         1. [Creating Folders](#creating-folders)
         2. [Moving Folders](#moving-folders)
+        3. [Viewing Folder Metadata](#viewing-folder-metadata)
+        4. [Listing Contents of a Folder](#listing-contents-of-a-folder)
     6. [Working With Files](#working-with-files)
         1. [Uploading a Single File](#uploading-a-single-file)
-        1. [Uploading a Folder with Files](#bulk-upload)
+        2. [Uploading a Folder with Files](#bulk-upload)
+        3. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
+        4. [Create New Drive and Upload Folder Pipeline Example](#create-upload-pipeline)
     7. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -296,6 +305,16 @@ Each instance of these entities have a Version 4 UUID entity ID that is commonly
 
 When you execute write functions with the CLI, the JSON output will contain information about the Arweave Transaction IDs that were registered when writing your entities to the blockweave, any miner rewards or [ArDrive Community](https://ardrive.io/community/) tips that were disbursed from your wallet, and any new entity IDs and, when applicable, encryption keys that were generated in the process of creating the entities. Typically, you'll want to keep track of those and get proficient with retrieving them in order to build your drive hierarchy to your liking. See [Understanding Drive and File Keys](#understanding-drive-and-file-keys) for more info.
 
+### Dry Run
+
+An important feature of the ArDrive CLI is the `--dry-run` flag. On each command that would write an ArFS entity, there is the option to run it as a dry run. This will run all of the steps of a regular ArFS write, but will skip sending the actual transaction:
+
+```shell
+ardrive <my-command> <other-options> --dry-run
+```
+
+This can be very useful for gathering price estimations or to confirm that you've copy pasted your entity IDs correctly before trying a large upload.
+
 ## Working With Drives
 
 ### Understanding Drive Hierarchies
@@ -421,6 +440,20 @@ ardrive list-all-drives -w /path/to/my/wallet.json -P
 ardrive list-all-drives --address "HTTn8F92tR32N8wuo-NIDkjmqPknrbl10JWo5MZ9x2k"
 ```
 
+### Viewing Drive Metadata
+
+To view the metadata of a drive entity, use the `drive-info` command:
+
+```shell
+# Public
+ardrive drive-info --drive-id "c7f87712-b54e-4491-bc96-1c5fa7b1da50"
+```
+
+```shell
+# Private
+ardrive drive-info --drive-id "c7f87712-b54e-4491-bc96-1c5fa7b1da50" -w /path/to/wallet -P
+```
+
 ### Listing Every Entity in a Drive<a id="list-drive"></a>
 
 Useful notes on listing the contents of drives:
@@ -437,6 +470,25 @@ ardrive list-drive -d "c7f87712-b54e-4491-bc96-1c5fa7b1da50" -w /path/to/my/wall
 
 # List the contents of a public drive up to and including those in the grandchild folders of the root folder
 ardrive list-drive -d "c7f87712-b54e-4491-bc96-1c5fa7b1da50" --max-depth 2
+```
+
+### List Drive Pipeline Examples
+
+You can utilize `jq` and the list commands to define the shape into useful stats for many use cases. Here are a few examples:
+
+```shell
+# Get share links for a PUBLIC drive
+ardrive list-drive -d a44482fd-592e-45fa-a08a-e526c31b87f1 | jq '.[] | select(.entityType == "file") | "https://app.ardrive.io/#/file/" + .entityId + "/view"'
+```
+
+```shell
+# Get total size of all files within drive
+ardrive list-drive -d 13c3c232-6687-4d11-8ac1-35284102c7db | jq ' map(select(.entityType == "file") | .size) | add'
+```
+
+```shell
+# Get total number of files within drive
+ardrive list-drive -d 01ea6ba3-9e58-42e7-899d-622fd110211c | jq '[ .[] | select(.entityType == "file") ] | length'
 ```
 
 ## Working With Folders
@@ -459,6 +511,28 @@ Moving a folder is as simple as supplying a new parent folder ID. Note that nami
 
 ```shell
 ardrive move-folder --folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" --parent-folder-id "29850ab7-56d4-4e1f-a5be-cb86d5513921" -w /path/to/wallet.json
+```
+
+### Viewing Folder Metadata
+
+To view the metadata of a folder, users can use the `folder-info` command:
+
+```shell
+ardrive folder-info --folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0"
+```
+
+### Listing Contents of a Folder
+
+Similar to drives, the `list-folder` command can be used to fetch the metadata of each entity within a folder. But by default, the command will fetch only the immediate children of that folder (`--maxdepth 0`):
+
+```shell
+# List immediate children of folder
+ardrive list-folder --folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0"
+```
+
+```shell
+# List all contents of a folder
+ardrive list-folder --folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" --all
 ```
 
 ## Working With Files
@@ -495,7 +569,7 @@ Simply perform the file-info command to retrieve the metadata of a file:
 ardrive file-info --file-id "e5ebc14c-5b2d-4462-8f59-7f4a62e7770f"
 ```
 
-### Creating a Drive and Uploading Pipelining Example
+### Create New Drive and Upload Folder Pipeline Example<a id="create-upload-pipeline"></a>
 
 ```shell
 # Use `tee` to store command json outputs for later review/backup/automation/etc.
@@ -559,33 +633,31 @@ ardrive get-mempool | jq 'length'
 ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0c58c11-430c-4383-8e54-4d864cc7e927" --local-file-path ./helloworld.txt --boost 1.5
 ```
 
-```shell
-# show public share links with list drive
-ardrive list-drive -d a44482fd-592e-45fa-a08a-e526c31b87f1 | jq '.[] | select(.entityType == "file") | "https://app.ardrive.io/#/file/" + .entityId + "/view"'
-```
-
-```shell
-# get total size of files within drive with list drive
-ardrive list-drive -d 13c3c232-6687-4d11-8ac1-35284102c7db | jq ' map(select(.entityType == "file") | .size) | add'
-```
-
-```shell
-# get number of files within drive with list drive
-ardrive list-drive -d 01ea6ba3-9e58-42e7-899d-622fd110211c | jq '[ .[] | select(.entityType == "file") ] | length'
-```
-
 TODO:
+
 list out the drive info to get the ar:// links
-
-show how list drive could be piped into things like...
-
--   get other cool things?
 
 upload a single file to it, move another file into that new folder
 
-list all commands
+list all commands ?
 
 ```shell
+  █████╗ ██████╗ ██████╗ ██████╗ ██╗██╗   ██╗███████╗
+ ██╔══██╗██╔══██╗██╔══██╗██╔══██╗██║██║   ██║██╔════╝
+ ███████║██████╔╝██║  ██║██████╔╝██║██║   ██║█████╗
+ ██╔══██║██╔══██╗██║  ██║██╔══██╗██║╚██╗ ██╔╝██╔══╝
+ ██║  ██║██║  ██║██████╔╝██║  ██║██║ ╚████╔╝ ███████╗
+ ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝  ╚══════╝
+                  ██████╗██╗     ██╗
+                 ██╔════╝██║     ██║
+                 ██║     ██║     ██║
+                 ██║     ██║     ██║
+                 ╚██████╗███████╗██║
+                  ╚═════╝╚══════╝╚═╝
+
+
+Write ArFS
+===========
 create-drive
 create-folder
 upload-file
@@ -593,6 +665,9 @@ upload-file
 move-file
 move-folder
 
+
+Read ArFS
+===========
 file-info
 folder-info
 drive-info
@@ -601,17 +676,28 @@ list-folder
 list-drive
 list-all-drives
 
-get-drive-key
-get-file-key
 
+Wallet Ops
+===========
 generate-seedphrase
 generate-wallet
+
 get-address
 get-balance
 send-ar
 
+get-drive-key
+get-file-key
+
+
+Arweave Ops
+===========
 tx-status
 get-mempool
+
+
+# Learn more about a command:
+ardrive <command> --help
 ```
 
 # Getting Help
