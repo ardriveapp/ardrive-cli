@@ -85,20 +85,22 @@ export function arDriveAnonymousFactory(
 	return new ArDriveAnonymous(new ArFSDAOAnonymous(settings.arweave ?? cliArweave, CLI_APP_NAME, CLI_APP_VERSION));
 }
 
+// Generated at: https://patorjk.com/software/taag
+// Font: ANSI Shadow
 function displayBanner() {
 	console.log('\n');
-	console.log('                          █████╗ ██████╗ ██████╗ ██████╗ ██╗██╗   ██╗███████╗');
-	console.log('                         ██╔══██╗██╔══██╗██╔══██╗██╔══██╗██║██║   ██║██╔════╝');
-	console.log('                         ███████║██████╔╝██║  ██║██████╔╝██║██║   ██║█████╗  ');
-	console.log('                         ██╔══██║██╔══██╗██║  ██║██╔══██╗██║╚██╗ ██╔╝██╔══╝  ');
-	console.log('                         ██║  ██║██║  ██║██████╔╝██║  ██║██║ ╚████╔╝ ███████╗');
-	console.log('                         ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝  ╚══════╝');
-	console.log('                                                                             ');
-	console.log('                                 ██████╗ ███████╗████████╗ █████╗            ');
-	console.log('                                 ██╔══██╗██╔════╝╚══██╔══╝██╔══██╗           ');
-	console.log('                                 ██████╔╝█████╗     ██║   ███████║           ');
-	console.log('                                 ██╔══██╗██╔══╝     ██║   ██╔══██║           ');
-	console.log('                                 ██████╔╝███████╗   ██║   ██║  ██║           ');
-	console.log('                                 ╚═════╝ ╚══════╝   ╚═╝   ╚═╝  ╚═╝           ');
+	console.log('\t █████╗ ██████╗ ██████╗ ██████╗ ██╗██╗   ██╗███████╗');
+	console.log('\t██╔══██╗██╔══██╗██╔══██╗██╔══██╗██║██║   ██║██╔════╝');
+	console.log('\t███████║██████╔╝██║  ██║██████╔╝██║██║   ██║█████╗  ');
+	console.log('\t██╔══██║██╔══██╗██║  ██║██╔══██╗██║╚██╗ ██╔╝██╔══╝  ');
+	console.log('\t██║  ██║██║  ██║██████╔╝██║  ██║██║ ╚████╔╝ ███████╗');
+	console.log('\t╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝  ╚══════╝');
+	console.log('');
+	console.log('\t\t\t ██████╗██╗     ██╗');
+	console.log('\t\t\t██╔════╝██║     ██║');
+	console.log('\t\t\t██║     ██║     ██║');
+	console.log('\t\t\t██║     ██║     ██║');
+	console.log('\t\t\t╚██████╗███████╗██║');
+	console.log('\t\t\t ╚═════╝╚══════╝╚═╝');
 	console.log('\n');
 }
