@@ -2,8 +2,6 @@
 
 The _ArDrive Command Line Interface (CLI)_ is a Node.js application for terminal-based [ArDrive] workflows. It also offers utility operations for securely interacting with Arweave wallets and inspecting various [Arweave] blockchain conditions.
 
-**This project remains in active development, use at your own risk!**
-
 Create your first drive and permanently store your first file on the permaweb with a series of simple CLI commands like so:
 
 ```shell
@@ -54,6 +52,8 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
     }
 }
 ```
+
+**This project is in a state of active development. Use at your own risk!**
 
 # Table of Contents
 
@@ -307,13 +307,13 @@ When you execute write functions with the CLI, the JSON output will contain info
 
 ### Dry Run
 
-An important feature of the ArDrive CLI is the `--dry-run` flag. On each command that would write an ArFS entity, there is the option to run it as a dry run. This will run all of the steps of a regular ArFS write, but will skip sending the actual transaction:
+An important feature of the ArDrive CLI is the `--dry-run` flag. On each command that would write an ArFS entity, there is the option to run it as a "dry run". This will run all of the steps and print the outputs of a regular ArFS write, but will skip sending the actual transaction:
 
 ```shell
 ardrive <my-command> <other-options> --dry-run
 ```
 
-This can be very useful for gathering price estimations or to confirm that you've copy pasted your entity IDs correctly before trying a large upload.
+This can be very useful for gathering price estimations or to confirm that you've copy-pasted your entity IDs correctly before committing to an upload.
 
 ## Working With Drives
 
@@ -489,6 +489,25 @@ Creating folders manually is straightforward:
 ardrive create-folder --parent-folder-id "63153bb3-2ca9-4d42-9106-0ce82e793321" --name "My Awesome Folder" -w /path/to/wallet.json
 ```
 
+Example output:
+
+```shell
+{
+    "created": [
+        {
+            "type": "folder",
+            "metadataTxId": "AYFMBVmwqhbg9y5Fbj3Iasy5oxUqhauOW7PcS1sl4Dk",
+            "entityId": "d1b7c514-fb12-4603-aad8-002cf63015d3",
+            "key": "yHdCjpCKD2cuhQcKNx2d/XF5ReEjoKfZVqKunlCnPEk"
+        }
+    ],
+    "tips": [],
+    "fees": {
+        "AYFMBVmwqhbg9y5Fbj3Iasy5oxUqhauOW7PcS1sl4Dk": 1378052
+    }
+}
+```
+
 Note: Folders can also be created when supplying a folder for the --local-file-path during an upload-file command, however, the folder hierarchy on the local disk will be reconstructed on chain during the course of the recursive bulk upload.
 
 ### Moving Folders
@@ -523,19 +542,53 @@ ardrive list-folder --folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" --all
 
 ## Working With Files
 
-Similar to folders, files are linked to their parent folder which references back to the root folder of a drive. Given that link, a parent folder id is required in order to upload files. Files can be freely moved to other folders within their original drive.
+Similar to folders, files are linked to a parent folder which ultimately chains the file back to the root folder of its parent drive. As such, a parent folder ID is required in order to upload files. Files can be freely moved to other folders within their original drive.
 
-The important difference for file entities is that they also hold a reference to their data transaction, which is the `dataTxId` as returned by the `file-info` command. This is where your uploaded data lives on the permaweb.
+The important difference for file entities is that they also hold a reference to their data transaction ID, which is the `dataTxId` as returned by the `file-info` command. This is where your uploaded data lives on the permaweb.
 
 ### Uploading a Single File
 
 To upload a file, you'll need a parent folder id, the file to upload's file path, and the path to your wallet:
 
 ```shell
+# Supply the parent folder ID to upload-file
 ardrive upload-file --local-file-path /path/to/file.txt  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
 ```
 
-NOTE: To upload to the root of a drive, specify its root folder ID as the parent folder ID for the upload destination.
+Example output:
+
+```shell
+{
+    "created": [
+        {
+            "type": "file",
+            "metadataTxId": "YfdDXUyerPCpBbGTm_gv_x5hR3tu5fnz8bM-jPL__JE",
+            "dataTxId": "l4iNWyBapfAIj7OU-nB8z9XrBhawyqzs5O9qhk-3EnI",
+            "entityId": "6613395a-cf19-4420-846a-f88b7b765c05"
+        }
+    ],
+    "tips": [
+        {
+            "txId": "1zwdfZAIV8E26YjBs2ZQ4xjjP_1ewalvRgD_GyYw7f8",
+            "recipient": {
+                "address": "3mxGJ4xLcQQNv6_TiKx0F0d5XVE0mNvONQI5GZXJXkt"
+            },
+            "winston": "10000000"
+        }
+    ],
+    "fees": {
+        "l4iNWyBapfAIj7OU-nB8z9XrBhawyqzs5O9qhk-3EnI": 1369131,
+        "YfdDXUyerPCpBbGTm_gv_x5hR3tu5fnz8bM-jPL__JE": 1432001,
+        "1zwdfZAIV8E26YjBs2ZQ4xjjP_1ewalvRgD_GyYw7f8": 1363608
+    }
+}
+```
+
+NOTE: To upload to the root of a drive, specify its root folder ID as the parent folder ID for the upload destination. You can retrieve it like so:
+
+```shell
+ardrive drive-info -d "c7f87712-b54e-4491-bc96-1c5fa7b1da50" | jq -r '.rootFolderId'
+```
 
 ### Uploading a Folder with Files (Bulk Upload)<a id="bulk-upload"></a>
 
@@ -545,7 +598,12 @@ Users can perform a bulk upload by using the upload-file command on a target fol
 ardrive upload-file --local-file-path /path/to/folder  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
 ```
 
-This method of upload can be used to upload any number of files and folders within the folder tree.
+This method of upload can be used to upload any number of files and folders within the folder tree. If existing entities are encountered in the destination folder tree that would cause naming conflicts, expect the following behaviors:
+
+-   Folder names that conflict with a FILE name at the destination will cause an error to be thrown
+-   Folder names that conflict with a FOLDER name at the destination will use the existing folder ID (i.e. skip) rather than creating a new folder
+-   File names that conflict with a FOLDER name at the destination will cause an error to be thrown
+-   File names that conflict with a FILE name at the destination will be uploaded as a REVISION
 
 ### Fetching the Metadata of a File Entity
 
@@ -553,6 +611,29 @@ Simply perform the file-info command to retrieve the metadata of a file:
 
 ```shell
 ardrive file-info --file-id "e5ebc14c-5b2d-4462-8f59-7f4a62e7770f"
+```
+
+Example output:
+
+```shell
+{
+    "appName": "ArDrive-Web",
+    "appVersion": "0.1.0",
+    "arFS": "0.11",
+    "contentType": "application/json",
+    "driveId": "51062487-2e8b-4af7-bd81-4345dc28ea5d",
+    "entityType": "file",
+    "name": "2_depth.png",
+    "txId": "CZKdjqwnmxbWchGA1hjSO5ZH--4OYodIGWzI-FmX28U",
+    "unixTime": 1633625081,
+    "size": 41946,
+    "lastModifiedDate": 1605157729000,
+    "parentFolderId": "a2c8a0cb-0ca7-4dbb-8bf8-93f75f308e63",
+    "entityId": "e5ebc14c-5b2d-4462-8f59-7f4a62e7770f",
+    "fileId": "e5ebc14c-5b2d-4462-8f59-7f4a62e7770f",
+    "dataTxId": "Jz0WsWyAGVc0aE3UzACo-YJqG8OPrN3UucmDdt8Fbjc",
+    "dataContentType": "image/png"
+}
 ```
 
 ### Create New Drive and Upload Folder Pipeline Example<a id="create-upload-pipeline"></a>
