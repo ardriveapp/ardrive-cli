@@ -173,7 +173,7 @@ describe('ParametersHelper class', () => {
 
 		it('returns a wallet when a valid --seed-phrase option is provided', function () {
 			// FIXME: it takes too long
-			// this.timeout(37200);
+			this.timeout(40_000);
 			const cmd = declareCommandWithParams(program, [SeedPhraseParameter]);
 			CLICommand.parse(program, [
 				...baseArgv,
