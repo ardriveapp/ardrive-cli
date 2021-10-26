@@ -10,7 +10,7 @@ import {
 import Arweave from 'arweave';
 import { ArFSPrivateFile, ArFSPublicFile } from '../../arfs_entities';
 import { ArweaveAddress } from '../../arweave_address';
-import { ByteCount, CipherIV, DriveKey, FileID, TransactionID, UnixTime } from '../../types';
+import { ByteCount, CipherIV, DriveKey, FileID, FileKey, TransactionID, UnixTime } from '../../types';
 import { ArFSFileOrFolderBuilder } from './arfs_builders';
 
 interface FileMetaDataTransactionData {
@@ -111,7 +111,8 @@ export class ArFSPrivateFileBuilder extends ArFSFileBuilder<ArFSPrivateFile> {
 		readonly fileId: FileID,
 		readonly arweave: Arweave,
 		private readonly driveKey: DriveKey,
-		readonly owner?: ArweaveAddress
+		readonly owner?: ArweaveAddress,
+		readonly fileKey?: FileKey
 	) {
 		super({ entityId: fileId, arweave, owner });
 	}
@@ -164,7 +165,7 @@ export class ArFSPrivateFileBuilder extends ArFSFileBuilder<ArFSPrivateFile> {
 		) {
 			const txData = await this.arweave.transactions.getData(this.txId, { decode: true });
 			const dataBuffer = Buffer.from(txData);
-			const fileKey = await deriveFileKey(this.fileId, this.driveKey);
+			const fileKey = this.fileKey ?? (await deriveFileKey(this.fileId, this.driveKey));
 
 			const decryptedFileBuffer: Buffer = await fileDecrypt(this.cipherIV, fileKey, dataBuffer);
 			const decryptedFileString: string = await Utf8ArrayToStr(decryptedFileBuffer);
