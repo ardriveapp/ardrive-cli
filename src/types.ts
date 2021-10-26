@@ -1,9 +1,8 @@
 export const ArFS_O_11 = '0.11';
 export const CURRENT_ARFS_VERSION = ArFS_O_11;
 export const DEFAULT_APP_NAME = 'ArDrive-Core';
-export const DEFAULT_APP_VERSION = '1.0';
+export const DEFAULT_APP_VERSION = '1.0.0';
 
-export type ArweaveAddress = string;
 export type PublicKey = string;
 export type SeedPhrase = string;
 
@@ -17,8 +16,9 @@ export type DriveID = string;
 export type EntityID = DriveID | FolderID | FileID;
 
 export type CipherIV = string;
-export type DriveKey = Buffer;
-export type FileKey = Buffer;
+export type EntityKey = Buffer;
+export type DriveKey = EntityKey;
+export type FileKey = EntityKey;
 
 export type UnixTime = number;
 export type ByteCount = number;
@@ -40,3 +40,6 @@ export type RewardSettings = {
 	reward?: Winston;
 	feeMultiple?: FeeMultiple;
 };
+
+type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
+export type MakeOptional<T, K> = Omit<T, K> & Partial<T>;

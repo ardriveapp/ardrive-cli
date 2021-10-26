@@ -1,10 +1,9 @@
-import { ArFSPrivateFolder, ArFSPublicFolder } from '../arfsdao';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { FolderID } from '../types';
 import { GetAllRevisionsParameter, FolderIdParameter, DrivePrivacyParameters } from '../parameter_declarations';
 import { arDriveAnonymousFactory, arDriveFactory } from '..';
-
-/* eslint-disable no-console */
+import { ArFSPrivateFolder, ArFSPublicFolder } from '../arfs_entities';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 
 new CLICommand({
 	name: 'folder-info',
@@ -21,9 +20,12 @@ new CLICommand({
 				const arDrive = arDriveFactory({ wallet: wallet });
 
 				const driveId = await arDrive.getDriveIdForFolderId(folderId);
-				const driveKey = await parameters.getDriveKey(driveId);
+				const driveKey = await parameters.getDriveKey({ driveId });
 
-				return arDrive.getPrivateFolder(folderId, driveKey /*, shouldGetAllRevisions*/);
+				// We have the drive id from deriving a key, we can derive the owner
+				const driveOwner = await arDrive.getOwnerForDriveId(driveId);
+
+				return arDrive.getPrivateFolder(folderId, driveKey, driveOwner /*, shouldGetAllRevisions*/);
 			} else {
 				const arDrive = arDriveAnonymousFactory();
 				const folderId: string = options.folderId;
@@ -31,11 +33,11 @@ new CLICommand({
 			}
 		})();
 
-		// TODO: Fix base types so deleting un-used values is not necessary
+		// TODO: Fix base types so deleting un-used values is not necessary; Tickets: PE-525 + PE-556
 		delete result.lastModifiedDate;
 		delete result.syncStatus;
 
 		console.log(JSON.stringify(result, null, 4));
-		process.exit(0);
+		return SUCCESS_EXIT_CODE;
 	}
 });

@@ -1,6 +1,6 @@
 {
 	"name": "ardrive-cli",
-	"version": "0.3.0",
+	"version": "1.0.0",
 	"description": "The ArDrive Command Line Interface (CLI) contains all of the needed security, file synchronization and Arweave wallet capabilities via a node.js application.",
 	"main": "./lib/index.js",
 	"bin": {
@@ -17,8 +17,7 @@
 		"arweave-bundles": "^1.0.3",
 		"arweave-mnemonic-keys": "^0.0.9",
 		"base64-js": "^1.5.1",
-		"commander": "^8.1.0",
-		"community-js": "^1.1.36",
+		"commander": "^8.2.0",
 		"jwk-to-pem": "^2.0.4",
 		"lodash": "^4.17.21",
 		"node-fetch": "2.6.2",
@@ -60,19 +59,19 @@
 		"ts-sinon": "^2.0.1"
 	},
 	"scripts": {
-		"clean": "rimraf [lib .nyc_output node_modules]",
+		"clean": "rimraf [ lib .nyc_output node_modules coverage ]",
 		"format": "prettier --write \"src/**/*.ts\"",
 		"lint": "eslint . --ext .ts",
 		"lintfix": "eslint . --ext .ts --fix",
 		"test": "nyc mocha",
 		"coverage": "nyc --reporter text mocha",
 		"typecheck": "tsc --noemit",
-		"build": "yarn clean && tsc",
+		"build": "yarn clean && tsc --project ./tsconfig.prod.json",
 		"ci": "yarn build && yarn test",
 		"version": "yarn run format && git add -A src",
 		"postversion": "git push && git push --tags",
 		"start": "yarn run build && node ./lib/index.js",
-		"dev": "yarn clean && tsc -w"
+		"dev": "yarn clean && tsc --project ./tsconfig.prod.json -w"
 	},
 	"husky": {
 		"hooks": {
@@ -91,8 +90,5 @@
 	},
 	"files": [
 		"lib/**/*"
-	],
-	"resolutions": {
-		"ardrive-cli": "portal:/Users/ariel/devel/checkout/ardrive-cli"
-	}
+	]
 }

@@ -19,12 +19,15 @@ import { ParametersHelper } from './parameters_helper';
 import {
 	AddressParameter,
 	DriveKeyParameter,
-	DrivePasswordParameter,
+	UnsafeDrivePasswordParameter,
 	SeedPhraseParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
 import '../parameter_declarations';
 import { urlEncodeHashKey } from '../utils';
+import { stubArweaveAddress } from '../utils/stubs';
+
+const expectedArweaveAddress = stubArweaveAddress('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
 
 function declareCommandWithParams(
 	program: CliApiObject,
@@ -89,7 +92,7 @@ describe('ParametersHelper class', () => {
 	});
 
 	describe('getIsPrivate method', () => {
-		it('returns false when none of --drive-password, --drive-key, -p, or -k are provided', () => {
+		it('returns false when none of --unsafe-drive-password, --drive-key, -p, or -k are provided', () => {
 			declareCommandWithParams(program, [], async (options) => {
 				const parameters = new ParametersHelper(options);
 				expect(await parameters.getIsPrivate()).to.be.false;
@@ -97,16 +100,16 @@ describe('ParametersHelper class', () => {
 			CLICommand.parse(program, [...baseArgv, testCommandName]);
 		});
 
-		it('returns true when --drive-password is provided', () => {
-			declareCommandWithParams(program, [DrivePasswordParameter], async (options) => {
+		it('returns true when --unsafe-drive-password is provided', () => {
+			declareCommandWithParams(program, [UnsafeDrivePasswordParameter], async (options) => {
 				const parameters = new ParametersHelper(options);
 				expect(await parameters.getIsPrivate()).to.be.true;
 			});
-			CLICommand.parse(program, [...baseArgv, testCommandName, '--drive-password', 'pw']);
+			CLICommand.parse(program, [...baseArgv, testCommandName, '--unsafe-drive-password', 'pw']);
 		});
 
 		it('returns true when -p is provided', () => {
-			declareCommandWithParams(program, [DrivePasswordParameter], async (options) => {
+			declareCommandWithParams(program, [UnsafeDrivePasswordParameter], async (options) => {
 				const parameters = new ParametersHelper(options);
 				expect(await parameters.getIsPrivate()).to.be.true;
 			});
@@ -175,12 +178,17 @@ describe('ParametersHelper class', () => {
 		// 	]);
 		// });
 
-		it('throws when none of --wallet-file, -w, --seed-phrase, or -s option are provided', () => {
+		it('throws when none of --wallet-file, -w, --seed-phrase, or -s option are provided', (done) => {
 			declareCommandWithParams(program, [], async (options) => {
 				const parameters = new ParametersHelper(options);
-				// TODO: Couldn't figure out how to expect an async func to throw without chai-as-promised
-				const wallet = await parameters.getRequiredWallet().catch(() => null);
-				expect(wallet).to.be.null;
+				await parameters
+					.getRequiredWallet()
+					.then((wallet) => {
+						done(`It shouldn't have returned a wallet: ${wallet}`);
+					})
+					.catch(() => {
+						done();
+					});
 			});
 			CLICommand.parse(program, [...baseArgv, testCommandName]);
 		});
@@ -245,7 +253,7 @@ describe('ParametersHelper class', () => {
 		it('returns the address of the wallet when a valid --wallet-file is provided', () => {
 			declareCommandWithParams(program, [WalletFileParameter], async (options) => {
 				const parameters = new ParametersHelper(options);
-				expect(await parameters.getWalletAddress()).to.equal('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
+				expect(`${await parameters.getWalletAddress()}`).to.equal(`${expectedArweaveAddress}`);
 			});
 			CLICommand.parse(program, [...baseArgv, testCommandName, '--wallet-file', './test_wallet.json']);
 		});
@@ -253,7 +261,7 @@ describe('ParametersHelper class', () => {
 		it('returns the address of the wallet when a valid --w file is provided', () => {
 			declareCommandWithParams(program, [WalletFileParameter], async (options) => {
 				const parameters = new ParametersHelper(options);
-				expect(await parameters.getWalletAddress()).to.equal('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
+				expect(`${await parameters.getWalletAddress()}`).to.equal(`${expectedArweaveAddress}`);
 			});
 			CLICommand.parse(program, [...baseArgv, testCommandName, '-w', './test_wallet.json']);
 		});
@@ -261,10 +269,10 @@ describe('ParametersHelper class', () => {
 		// Note: Redundant prolonged seed-phrase tests are commented out to save testing time
 
 		// it('returns the address of the wallet when a valid --seed-phrase option is provided', () => {
-		// 	declareCommandWithParams(program, [SeedPhraseParameter], async (options) => {
-		// 		const parameters = new ParametersHelper(options);
-		// 		expect(await parameters.getWalletAddress()).to.equal('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
-		// 	});
+		// declareCommandWithParams(program, [SeedPhraseParameter], async (options) => {
+		// 	const parameters = new ParametersHelper(options);
+		// 	expect((`${await parameters.getWalletAddress()}`)).to.equal(expectedArweaveAddress);
+		// });
 		// 	CLICommand.parse(program, [
 		// 		...baseArgv,
 		// 		testCommandName,
@@ -274,10 +282,10 @@ describe('ParametersHelper class', () => {
 		// });
 
 		// it('returns the address of the wallet when a valid -s option is provided', () => {
-		// 	declareCommandWithParams(program, [SeedPhraseParameter], async (options) => {
-		// 		const parameters = new ParametersHelper(options);
-		// 		expect(await parameters.getWalletAddress()).to.equal('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
-		// 	});
+		// declareCommandWithParams(program, [SeedPhraseParameter], async (options) => {
+		// 	const parameters = new ParametersHelper(options);
+		// 	expect((`${await parameters.getWalletAddress()}`)).to.equal(expectedArweaveAddress);
+		// });
 		// 	CLICommand.parse(program, [
 		// 		...baseArgv,
 		// 		testCommandName,
@@ -289,7 +297,7 @@ describe('ParametersHelper class', () => {
 		it('returns the address provided by the --address option value', () => {
 			declareCommandWithParams(program, [AddressParameter], async (options) => {
 				const parameters = new ParametersHelper(options);
-				expect(await parameters.getWalletAddress()).to.equal('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
+				expect(`${await parameters.getWalletAddress()}`).to.equal(`${expectedArweaveAddress}`);
 			});
 			CLICommand.parse(program, [
 				...baseArgv,
@@ -302,7 +310,7 @@ describe('ParametersHelper class', () => {
 		it('returns the address provided by the -a option value', () => {
 			declareCommandWithParams(program, [AddressParameter], async (options) => {
 				const parameters = new ParametersHelper(options);
-				expect(await parameters.getWalletAddress()).to.equal('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
+				expect(`${await parameters.getWalletAddress()}`).to.equal(`${expectedArweaveAddress}`);
 			});
 			CLICommand.parse(program, [
 				...baseArgv,
@@ -323,19 +331,19 @@ describe('ParametersHelper class', () => {
 	});
 
 	describe('getDriveKey method', () => {
-		it('returns the correct drive key given a valid --wallet-file and --drive-password', () => {
-			declareCommandWithParams(program, [WalletFileParameter, DrivePasswordParameter], async (options) => {
+		it('returns the correct drive key given a valid --wallet-file and --unsafe-drive-password', () => {
+			declareCommandWithParams(program, [WalletFileParameter, UnsafeDrivePasswordParameter], async (options) => {
 				const parameters = new ParametersHelper(options);
-				expect(urlEncodeHashKey(await parameters.getDriveKey('00000000-0000-0000-0000-000000000000'))).to.equal(
-					'Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg'
-				);
+				expect(
+					urlEncodeHashKey(await parameters.getDriveKey({ driveId: '00000000-0000-0000-0000-000000000000' }))
+				).to.equal('Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg');
 			});
 			CLICommand.parse(program, [
 				...baseArgv,
 				testCommandName,
 				'--wallet-file',
 				'./test_wallet.json',
-				'--drive-password',
+				'--unsafe-drive-password',
 				'password'
 			]);
 		});
@@ -343,9 +351,9 @@ describe('ParametersHelper class', () => {
 		it('returns the drive key provided by the --drive-key option', () => {
 			declareCommandWithParams(program, [DriveKeyParameter], async (options) => {
 				const parameters = new ParametersHelper(options);
-				expect(urlEncodeHashKey(await parameters.getDriveKey('00000000-0000-0000-0000-000000000000'))).to.equal(
-					'Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg'
-				);
+				expect(
+					urlEncodeHashKey(await parameters.getDriveKey({ driveId: '00000000-0000-0000-0000-000000000000' }))
+				).to.equal('Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg');
 			});
 			CLICommand.parse(program, [
 				...baseArgv,
@@ -358,10 +366,20 @@ describe('ParametersHelper class', () => {
 		it('throws when none of --wallet-file, -w, --seed-phrase, -s, --drive-key, or -k option are provided', () => {
 			declareCommandWithParams(program, [], async (options) => {
 				const parameters = new ParametersHelper(options);
-				const driveKey = await parameters.getDriveKey('00000000-0000-0000-0000-000000000000').catch(() => null);
+				const driveKey = await parameters
+					.getDriveKey({ driveId: '00000000-0000-0000-0000-000000000000' })
+					.catch(() => null);
 				expect(driveKey).to.be.null;
 			});
 			CLICommand.parse(program, [...baseArgv, testCommandName]);
 		});
+	});
+
+	describe('getMaxDepth method', () => {
+		it(`Defaults to zero`);
+		it(`Does not accept a decimal`);
+		it(`Does not accept a negative integer`);
+		it(`Max depth is infinity when --all is specified`);
+		it(`Custom positive value is providen`);
 	});
 });

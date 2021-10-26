@@ -1,7 +1,6 @@
 import { cliWalletDao } from '..';
 import { CLICommand } from '../CLICommand';
-
-/* eslint-disable no-console */
+import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 
 new CLICommand({
 	name: 'generate-seedphrase',
@@ -9,6 +8,6 @@ new CLICommand({
 	async action() {
 		const seedPhrase = await cliWalletDao.generateSeedPhrase();
 		console.log(JSON.stringify(seedPhrase));
-		process.exit(0);
+		return SUCCESS_EXIT_CODE;
 	}
 });

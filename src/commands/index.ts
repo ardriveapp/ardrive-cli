@@ -1,5 +1,4 @@
 import { CLICommand } from '../CLICommand';
-import { showHelp } from '../utils';
 import '../parameter_declarations';
 import './create_drive';
 import './drive_info';
@@ -13,19 +12,13 @@ import './generate_seedphrase';
 import './generate_wallet';
 import './list_folder';
 import './list_drive';
+import './list_all_drives';
 import './folder_info';
 import './create_folder';
 import './file_info';
 import './move_file';
-
-const program = CLICommand.program;
+import './move_folder';
+import './get_drive_key';
+import './get_file_key';
 
 CLICommand.parse();
-const opts = program.opts();
-if (
-	opts.help ||
-	(Object.getOwnPropertyNames(opts).length === 0 && Object.getOwnPropertyNames(program.arguments).length === 0)
-) {
-	showHelp();
-	process.exit(0);
-}

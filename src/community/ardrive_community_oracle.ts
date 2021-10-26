@@ -1,11 +1,12 @@
 import { weightedRandom } from 'ardrive-core-js';
 import { ContractOracle, ContractReader } from './contract_oracle';
 import { CommunityOracle } from './community_oracle';
-import { ArweaveAddress, Winston } from '../types';
+import { Winston } from '../types';
 import { ArDriveContractOracle } from './ardrive_contract_oracle';
 import Arweave from 'arweave';
 import { SmartweaveContractReader } from './smartweave_contract_oracle';
 import { VertoContractReader } from './verto_contract_oracle';
+import { ArweaveAddress } from '../arweave_address';
 
 /**
  * Minimum ArDrive community tip from the Community Improvement Proposal Doc:
@@ -91,6 +92,6 @@ export class ArDriveCommunityOracle implements CommunityOracle {
 			throw new Error('Token holder target could not be determined for community tip distribution..');
 		}
 
-		return randomHolder;
+		return new ArweaveAddress(randomHolder);
 	}
 }

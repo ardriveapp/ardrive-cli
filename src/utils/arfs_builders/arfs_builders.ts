@@ -7,9 +7,27 @@ import {
 	GQLTransactionsResultInterface
 } from 'ardrive-core-js';
 import Arweave from 'arweave';
-import { ArFSFileOrFolderEntity, graphQLURL } from '../../arfsdao';
+import { graphQLURL } from '../../arfsdao';
+import { ArFSFileOrFolderEntity } from '../../arfs_entities';
+import { ArweaveAddress } from '../../arweave_address';
 import { buildQuery } from '../../query';
-import { ArweaveAddress, DriveID, EntityID, FileID, FolderID, TransactionID, UnixTime } from '../../types';
+import { DriveID, EntityID, EntityKey, FolderID, TransactionID, UnixTime } from '../../types';
+
+export interface ArFSMetadataEntityBuilderParams {
+	entityId: EntityID;
+	arweave: Arweave;
+	owner?: ArweaveAddress;
+}
+export type ArFSPublicMetadataEntityBuilderParams = ArFSMetadataEntityBuilderParams;
+export interface ArFSPrivateMetadataEntityBuilderParams extends ArFSMetadataEntityBuilderParams {
+	key: EntityKey;
+}
+
+export type ArFSMetadataEntityBuilderFactoryFunction<
+	T extends ArFSEntity,
+	B extends ArFSMetadataEntityBuilder<T>,
+	P extends ArFSMetadataEntityBuilderParams
+> = (params: P) => B;
 
 export abstract class ArFSMetadataEntityBuilder<T extends ArFSEntity> {
 	appName?: string;
@@ -21,8 +39,15 @@ export abstract class ArFSMetadataEntityBuilder<T extends ArFSEntity> {
 	name?: string;
 	txId?: TransactionID;
 	unixTime?: UnixTime;
+	protected readonly entityId: EntityID;
+	protected readonly arweave: Arweave;
+	protected readonly owner?: ArweaveAddress;
 
-	constructor(protected readonly entityId: EntityID, protected readonly arweave: Arweave) {}
+	constructor({ entityId, arweave, owner }: ArFSMetadataEntityBuilderParams) {
+		this.entityId = entityId;
+		this.arweave = arweave;
+		this.owner = owner;
+	}
 
 	abstract getGqlQueryParameters(): GQLTagInterface[];
 	protected abstract buildEntity(): Promise<T>;
@@ -39,7 +64,7 @@ export abstract class ArFSMetadataEntityBuilder<T extends ArFSEntity> {
 	protected async parseFromArweaveNode(node?: GQLNodeInterface, owner?: ArweaveAddress): Promise<GQLTagInterface[]> {
 		const unparsedTags: GQLTagInterface[] = [];
 		if (!node) {
-			const gqlQuery = buildQuery(this.getGqlQueryParameters(), undefined, owner);
+			const gqlQuery = buildQuery({ tags: this.getGqlQueryParameters(), owner });
 
 			const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 
@@ -89,18 +114,14 @@ export abstract class ArFSMetadataEntityBuilder<T extends ArFSEntity> {
 		return unparsedTags;
 	}
 
-	async build(node?: GQLNodeInterface, owner?: ArweaveAddress): Promise<T> {
-		await this.parseFromArweaveNode(node, owner);
+	async build(node?: GQLNodeInterface): Promise<T> {
+		await this.parseFromArweaveNode(node, this.owner);
 		return this.buildEntity();
 	}
 }
 
 export abstract class ArFSFileOrFolderBuilder<T extends ArFSFileOrFolderEntity> extends ArFSMetadataEntityBuilder<T> {
 	parentFolderId?: FolderID;
-
-	constructor(protected readonly entityId: FileID | FolderID, protected readonly arweave: Arweave) {
-		super(entityId, arweave);
-	}
 
 	protected async parseFromArweaveNode(node?: GQLNodeInterface): Promise<GQLTagInterface[]> {
 		const unparsedTags: GQLTagInterface[] = [];

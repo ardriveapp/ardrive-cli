@@ -1,4 +1,4 @@
-import { ArFSFileOrFolderEntity } from './arfsdao';
+import { ArFSFileOrFolderEntity } from './arfs_entities';
 import { FolderID } from './types';
 
 export class FolderTreeNode {
@@ -76,7 +76,7 @@ export class FolderHierarchy {
 		return tmpNode;
 	}
 
-	public subTreeOf(folderId: FolderID, maxDepth = Number.POSITIVE_INFINITY): FolderHierarchy {
+	public subTreeOf(folderId: FolderID, maxDepth = Number.MAX_SAFE_INTEGER): FolderHierarchy {
 		const newRootNode = this.folderIdToNodeMap[folderId];
 
 		const subTreeNodes = this.nodeAndChildrenOf(newRootNode, maxDepth);

@@ -9,13 +9,13 @@ import {
 	Winston,
 	NetworkReward,
 	PublicKey,
-	ArweaveAddress,
 	SeedPhrase,
 	DEFAULT_APP_NAME,
 	DEFAULT_APP_VERSION,
 	RewardSettings
 } from './types';
 import { CreateTransactionInterface } from 'arweave/node/common';
+import { ArweaveAddress } from './arweave_address';
 
 export type ARTransferResult = {
 	trxID: TransactionID;
@@ -45,7 +45,7 @@ export class JWKWallet implements Wallet {
 			.createHash('sha256')
 			.update(b64UrlToBuffer(await this.getPublicKey()))
 			.digest();
-		return Promise.resolve(bufferTob64Url(result));
+		return Promise.resolve(new ArweaveAddress(bufferTob64Url(result)));
 	}
 
 	// Use cases: generating drive keys, file keys, etc.
@@ -84,7 +84,7 @@ export class WalletDAO {
 	}
 
 	async getAddressWinstonBalance(address: ArweaveAddress): Promise<number> {
-		return Promise.resolve(+(await this.arweave.wallets.getBalance(address)));
+		return Promise.resolve(+(await this.arweave.wallets.getBalance(address.toString())));
 	}
 
 	async walletHasBalance(wallet: Wallet, winstonPrice: Winston): Promise<boolean> {
@@ -103,23 +103,47 @@ export class WalletDAO {
 			{ value: appVersion = this.appVersion },
 			{ value: trxType = 'transfer' },
 			...otherTags
-		]: GQLTagInterface[]
+		]: GQLTagInterface[],
+		assertBalance = false
 	): Promise<ARTransferResult> {
 		// TODO: Figure out how this works for other wallet types
 		const jwkWallet = fromWallet as JWKWallet;
 		const winston: Winston = this.arweave.ar.arToWinston(arAmount.toString());
 
 		// Create transaction
-		const trxAttributes: Partial<CreateTransactionInterface> = { target: toAddress, quantity: winston };
+		const trxAttributes: Partial<CreateTransactionInterface> = { target: toAddress.toString(), quantity: winston };
 
 		// If we provided our own reward settings, use them now
 		if (rewardSettings.reward) {
 			trxAttributes.reward = rewardSettings.reward;
 		}
+
+		// TODO: Use a mock arweave server instead
+		if (process.env.NODE_ENV === 'test') {
+			trxAttributes.last_tx = 'STUB';
+		}
 		const transaction = await this.arweave.createTransaction(trxAttributes, jwkWallet.getPrivateKey());
 		if (rewardSettings.feeMultiple && rewardSettings.feeMultiple > 1.0) {
 			// Round up with ceil because fractional Winston will cause an Arweave API failure
 			transaction.reward = Math.ceil(+transaction.reward * rewardSettings.feeMultiple).toString();
+		}
+
+		if (assertBalance) {
+			const fromAddress = await fromWallet.getAddress();
+			const balanceInWinston = await this.getAddressWinstonBalance(fromAddress);
+			const total = +transaction.reward + +transaction.quantity;
+			if (total > balanceInWinston) {
+				throw new Error(
+					[
+						`Insufficient funds for this transaction`,
+						`quantity: ${transaction.quantity}`,
+						`minerReward: ${transaction.reward}`,
+						`balance: ${balanceInWinston}`,
+						`total: ${total}`,
+						`difference: ${total - balanceInWinston}`
+					].join('\n\t')
+				);
+			}
 		}
 
 		// Tag file with data upload Tipping metadata

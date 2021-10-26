@@ -4,10 +4,15 @@ import { Wallet, WalletDAO } from './wallet_new';
 import Arweave from 'arweave';
 import { ArDriveCommunityOracle } from './community/ardrive_community_oracle';
 import { ArDrive, ArDriveAnonymous } from './ardrive';
-import { ArFSDAO, ArFSDAOAnonymous } from './arfsdao';
+import { ArFSDAO } from './arfsdao';
 import { ARDataPriceEstimator } from './utils/ar_data_price_estimator';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
 import { FeeMultiple } from './types';
+import { CommunityOracle } from './community/community_oracle';
+import { ArFSDAOAnonymous } from './arfsdao_anonymous';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { version: CLI_APP_VERSION } = require('../package.json');
 
 if (require.main === module) {
 	// declare all parameters
@@ -18,7 +23,7 @@ if (require.main === module) {
 }
 
 export const CLI_APP_NAME = 'ArDrive-CLI';
-export const CLI_APP_VERSION = '2.0';
+export { CLI_APP_VERSION };
 
 // TODO: Make configurable from CLI
 export const cliArweave = Arweave.init({
@@ -38,23 +43,27 @@ export interface ArDriveSettings extends ArDriveSettingsAnonymous {
 	wallet: Wallet;
 	walletDao?: WalletDAO;
 	priceEstimator?: ARDataPriceEstimator;
+	communityOracle?: CommunityOracle;
 	feeMultiple?: FeeMultiple;
 	dryRun?: boolean;
+	arfsDao?: ArFSDAO;
 }
 
 export function arDriveFactory({
 	arweave = cliArweave,
 	priceEstimator = new ARDataPriceRegressionEstimator(),
+	communityOracle = new ArDriveCommunityOracle(arweave),
 	wallet,
 	walletDao = cliWalletDao,
 	dryRun,
-	feeMultiple
+	feeMultiple,
+	arfsDao = new ArFSDAO(wallet, arweave, dryRun, CLI_APP_NAME, CLI_APP_VERSION)
 }: ArDriveSettings): ArDrive {
 	return new ArDrive(
 		wallet,
 		walletDao,
-		new ArFSDAO(wallet, arweave, dryRun, CLI_APP_NAME, CLI_APP_VERSION),
-		new ArDriveCommunityOracle(arweave),
+		arfsDao,
+		communityOracle,
 		CLI_APP_NAME,
 		CLI_APP_VERSION,
 		priceEstimator,

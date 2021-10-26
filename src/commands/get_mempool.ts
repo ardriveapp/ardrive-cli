@@ -1,7 +1,6 @@
 import { CLICommand } from '../CLICommand';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 import { fetchMempool } from '../utils';
-
-/* eslint-disable no-console */
 
 new CLICommand({
 	name: 'get-mempool',
@@ -9,6 +8,6 @@ new CLICommand({
 	async action() {
 		const transactionsInMempool = await fetchMempool();
 		console.log(JSON.stringify(transactionsInMempool, null, 4));
-		process.exit(0);
+		return SUCCESS_EXIT_CODE;
 	}
 });

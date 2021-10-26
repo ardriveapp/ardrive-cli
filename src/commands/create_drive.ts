@@ -8,9 +8,8 @@ import {
 import { arDriveFactory } from '..';
 import { JWKWallet, Wallet } from '../wallet_new';
 import { FeeMultiple } from '../types';
-import { PrivateDriveKeyData } from '../ardrive';
-
-/* eslint-disable no-console */
+import { PrivateDriveKeyData } from '../arfsdao';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 
 new CLICommand({
 	name: 'create-drive',
@@ -26,10 +25,10 @@ new CLICommand({
 		});
 		const createDriveResult = await (async function () {
 			if (await parameters.getIsPrivate()) {
-				const newDriveData = await PrivateDriveKeyData.from(
-					options.drivePassword,
-					(wallet as JWKWallet).getPrivateKey()
-				);
+				const drivePassword = await parameters.getDrivePassword(true);
+				const walletPrivateKey = (wallet as JWKWallet).getPrivateKey();
+				const newDriveData = await PrivateDriveKeyData.from(drivePassword, walletPrivateKey);
+				await ardrive.assertValidPassword(drivePassword);
 				return ardrive.createPrivateDrive(options.driveName, newDriveData);
 			} else {
 				return ardrive.createPublicDrive(options.driveName);
@@ -37,6 +36,6 @@ new CLICommand({
 		})();
 		console.log(JSON.stringify(createDriveResult, null, 4));
 
-		process.exit(0);
+		return SUCCESS_EXIT_CODE;
 	}
 });
