@@ -14,26 +14,6 @@ import { CLICommand } from './CLICommand';
 import { Command, Option } from 'commander';
 import { displayBanner } from './utils/banner';
 
-if (require.main === module) {
-	// declare all parameters
-	import('./parameter_declarations').then(() => {
-		// declares the commands
-		import('./commands').then(() => {
-			// declare a dummy optional '--banner' flag to avoid commander reporting an "unknown option '--banner'"
-			(CLICommand.program as Command).addOption(new Option('--banner').hideHelp());
-
-			// early look for the '--banner' flag before parsing the argv
-			const banner = process.argv.includes('--banner');
-			if (banner) {
-				displayBanner();
-			}
-
-			// run the action
-			CLICommand.parse();
-		});
-	});
-}
-
 export const CLI_APP_NAME = 'ArDrive-CLI';
 export const CLI_APP_VERSION = '2.0';
 
@@ -90,4 +70,24 @@ export function arDriveAnonymousFactory(
 	}
 ): ArDriveAnonymous {
 	return new ArDriveAnonymous(new ArFSDAOAnonymous(settings.arweave ?? cliArweave, CLI_APP_NAME, CLI_APP_VERSION));
+}
+
+if (require.main === module) {
+	// declare all parameters
+	import('./parameter_declarations').then(() => {
+		// declares the commands
+		import('./commands').then(() => {
+			// declare a dummy optional '--banner' flag to avoid commander reporting an "unknown option '--banner'"
+			(CLICommand.program as Command).addOption(new Option('--banner').hideHelp());
+
+			// early look for the '--banner' flag before parsing the argv
+			const banner = process.argv.includes('--banner');
+			if (banner) {
+				displayBanner();
+			}
+
+			// run the action
+			CLICommand.parse();
+		});
+	});
 }
