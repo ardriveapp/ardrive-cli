@@ -14,8 +14,4 @@ export class ArweaveAddress {
 	toString(): string {
 		return this.address;
 	}
-
-	valueOf(): string {
-		return this.address;
-	}
 }
