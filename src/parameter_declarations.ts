@@ -182,13 +182,13 @@ Parameter.declare({
 Parameter.declare({
 	name: LocalFilesParameter,
 	aliases: ['--local-files'],
-	description: `a path to a csv (tab delimited) file containing rows of data for the following columns:
-\t\t\t\t\t\t\t• CSV Columns
-\t\t\t\t\t\t\t• local file path
-\t\t\t\t\t\t\t• destination file name (optional)
-\t\t\t\t\t\t\t• parent folder ID (optional)
-\t\t\t\t\t\t\t\t• --parent-folder-id used, otherwise
-\t\t\t\t\t\t\t\t• all parent folder IDs should reside in the same drive
+	description: `(BETA) a path to a csv (tab delimited) file containing rows of data for the following columns:
+\t\t\t\t\t\t\t• CSV Columns:
+\t\t\t\t\t\t\t\t• local file path
+\t\t\t\t\t\t\t\t• destination file name (optional)
+\t\t\t\t\t\t\t\t• parent folder ID (optional)
+\t\t\t\t\t\t\t\t\t• --parent-folder-id used, otherwise
+\t\t\t\t\t\t\t• all parent folder IDs should reside in the same drive
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-file-path`,
 	forbiddenConjunctionParameters: [LocalFilePathParameter]
 });
