@@ -112,7 +112,6 @@ export class CLICommand {
 
 	// A singleton instance of the commander's program object
 	public static get program(): CliApiObject {
-		// TODO: make me private when index.ts is fully de-coupled from commander library
 		return program;
 	}
 
@@ -125,9 +124,6 @@ export class CLICommand {
 	}
 
 	public static parse(program: CliApiObject = this.program, argv: string[] = process.argv): void {
-		// Remove banner from argv to avoid error
-		argv = argv.filter((a) => a !== '--banner');
-
 		program.parse(argv);
 	}
 

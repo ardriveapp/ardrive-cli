@@ -11,17 +11,23 @@ import { FeeMultiple } from './types';
 import { CommunityOracle } from './community/community_oracle';
 import { ArFSDAOAnonymous } from './arfsdao_anonymous';
 import { CLICommand } from './CLICommand';
+import { Command, Option } from 'commander';
 
 if (require.main === module) {
 	// declare all parameters
 	import('./parameter_declarations').then(() => {
 		// declares the commands
 		import('./commands').then(() => {
+			// declare a dummy optional '--banner' flag to avoid commander reporting an "unknown option '--banner'"
+			(CLICommand.program as Command).addOption(new Option('--banner').hideHelp());
+
 			// early look for the '--banner' flag before parsing the argv
 			const banner = process.argv.includes('--banner');
 			if (banner) {
 				displayBanner();
 			}
+
+			// run the action
 			CLICommand.parse();
 		});
 	});
