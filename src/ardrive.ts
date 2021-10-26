@@ -934,7 +934,7 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	protected async checkAndAssignExistingPublicNames(wrappedFolder: ArFSFolderToUpload): Promise<void> {
-		this.checkAndAssignExistingNames(wrappedFolder, (parentFolderId) =>
+		await this.checkAndAssignExistingNames(wrappedFolder, (parentFolderId) =>
 			this.arFsDao.getPublicEntityNamesAndIdsInFolder(parentFolderId)
 		);
 	}
@@ -943,7 +943,7 @@ export class ArDrive extends ArDriveAnonymous {
 		wrappedFolder: ArFSFolderToUpload,
 		driveKey: DriveKey
 	): Promise<void> {
-		this.checkAndAssignExistingNames(wrappedFolder, (parentFolderId) =>
+		await this.checkAndAssignExistingNames(wrappedFolder, (parentFolderId) =>
 			this.arFsDao.getPrivateEntityNamesAndIdsInFolder(parentFolderId, driveKey)
 		);
 	}
