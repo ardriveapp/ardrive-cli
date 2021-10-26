@@ -38,5 +38,16 @@ describe('The ArweaveAddress class', () => {
 			const address = new ArweaveAddress('g1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
 			expect(`${address}`).to.equal('g1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
 		});
+
+		it('throws if casted to a number', () => {
+			const address = new ArweaveAddress('g1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
+			expect(() => +address).to.throw();
+		});
+
+		it('address comparison', () => {
+			const address = new ArweaveAddress('g1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
+			const addressOther = new ArweaveAddress('g1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
+			expect(address.equalsAddress(addressOther)).to.be.true;
+		});
 	});
 });
