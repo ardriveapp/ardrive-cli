@@ -1,0 +1,24 @@
+import { CLICommand } from '../CLICommand';
+import '../parameter_declarations';
+import './create_drive';
+import './drive_info';
+import './upload_file';
+import './tx_status';
+import './get_mempool';
+import './send_ar';
+import './get_balance';
+import './get_address';
+import './generate_seedphrase';
+import './generate_wallet';
+import './list_folder';
+import './list_drive';
+import './list_all_drives';
+import './folder_info';
+import './create_folder';
+import './file_info';
+import './move_file';
+import './move_folder';
+import './get_drive_key';
+import './get_file_key';
+
+CLICommand.parse();
