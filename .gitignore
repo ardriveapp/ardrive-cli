@@ -13,6 +13,7 @@ lib-cov
 
 # Coverage directory used by tools like istanbul
 coverage
+.nyc_output
 
 # Grunt intermediate storage (http://gruntjs.com/creating-plugins#storing-task-files)
 .grunt
@@ -54,6 +55,7 @@ Sync
 #Yarn
 #https://yarnpkg.com/getting-started/qa#which-files-should-be-gitignored
 #zero installs
+package-lock.json
 .yarn/*
 !.yarn/cache
 !.yarn/patches
@@ -65,3 +67,4 @@ Sync
 # Misc
 .idea
 *.db
+
