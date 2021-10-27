@@ -1791,18 +1791,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["bignumber.js", "npm:9.0.1"]
           ],
           "linkType": "HARD",
-        }],
-        ["npm:1.10.16", {
-          "packageLocation": "./.yarn/cache/arweave-npm-1.10.16-559acf76f7-2baa240095.zip/node_modules/arweave/",
-          "packageDependencies": [
-            ["arweave", "npm:1.10.16"],
-            ["arconnect", "npm:0.2.9"],
-            ["asn1.js", "npm:5.4.1"],
-            ["axios", "npm:0.21.1"],
-            ["base64-js", "npm:1.3.1"],
-            ["bignumber.js", "npm:9.0.1"]
-          ],
-          "linkType": "HARD",
         }]
       ]],
       ["arweave-bundles", [
@@ -2179,15 +2167,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["ansi-styles", "npm:3.2.1"],
             ["escape-string-regexp", "npm:1.0.5"],
             ["supports-color", "npm:5.5.0"]
-          ],
-          "linkType": "HARD",
-        }],
-        ["npm:4.1.2", {
-          "packageLocation": "./.yarn/cache/chalk-npm-4.1.2-ba8b67ab80-e3901b97d9.zip/node_modules/chalk/",
-          "packageDependencies": [
-            ["chalk", "npm:4.1.2"],
-            ["ansi-styles", "npm:4.2.1"],
-            ["supports-color", "npm:7.2.0"]
           ],
           "linkType": "HARD",
         }],
@@ -3518,13 +3497,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["figlet", "npm:1.5.2"]
           ],
           "linkType": "HARD",
-        }],
-        ["npm:1.5.2", {
-          "packageLocation": "./.yarn/cache/figlet-npm-1.5.2-5f7d8f3af4-64b6932ac1.zip/node_modules/figlet/",
-          "packageDependencies": [
-            ["figlet", "npm:1.5.2"]
-          ],
-          "linkType": "HARD",
         }]
       ]],
       ["figures", [
@@ -4252,33 +4224,12 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["inquirer", [
-        ["npm:8.1.3", {
-          "packageLocation": "./.yarn/cache/inquirer-npm-8.1.3-096249a72b-55c44bdf85.zip/node_modules/inquirer/",
-          "packageDependencies": [
-            ["inquirer", "npm:8.1.3"],
-            ["ansi-escapes", "npm:4.3.2"],
-            ["chalk", "npm:4.1.2"],
-            ["cli-cursor", "npm:3.1.0"],
-            ["cli-width", "npm:3.0.0"],
-            ["external-editor", "npm:3.1.0"],
-            ["figures", "npm:3.2.0"],
-            ["lodash", "npm:4.17.21"],
-            ["mute-stream", "npm:0.0.8"],
-            ["ora", "npm:5.4.1"],
-            ["run-async", "npm:2.4.1"],
-            ["rxjs", "npm:7.3.0"],
-            ["string-width", "npm:4.2.0"],
-            ["strip-ansi", "npm:6.0.0"],
-            ["through", "npm:2.3.8"]
-          ],
-          "linkType": "HARD",
-        }],
         ["npm:8.1.5", {
           "packageLocation": "./.yarn/cache/inquirer-npm-8.1.5-6673ea3bbe-f697814321.zip/node_modules/inquirer/",
           "packageDependencies": [
             ["inquirer", "npm:8.1.5"],
-            ["ansi-escapes", "npm:4.3.1"],
-            ["chalk", "npm:4.1.1"],
+            ["ansi-escapes", "npm:4.3.2"],
+            ["chalk", "npm:4.1.2"],
             ["cli-cursor", "npm:3.1.0"],
             ["cli-width", "npm:3.0.0"],
             ["external-editor", "npm:3.1.0"],
@@ -6944,26 +6895,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["chalk", "npm:4.1.2"],
             ["clui", "npm:0.3.6"],
             ["figlet", "npm:1.5.2"],
-            ["inquirer", "npm:8.1.3"],
-            ["json-beautify", "npm:1.1.1"],
-            ["loglevel", "npm:1.7.1"],
-            ["sentencer", "npm:0.2.1"],
-            ["yargs", "npm:17.1.1"]
-          ],
-          "linkType": "HARD",
-        }],
-        ["npm:0.4.45", {
-          "packageLocation": "./.yarn/cache/smartweave-npm-0.4.45-96bc502da0-d8d925df0b.zip/node_modules/smartweave/",
-          "packageDependencies": [
-            ["smartweave", "npm:0.4.45"],
-            ["@types/clui", "npm:0.3.0"],
-            ["@types/inquirer", "npm:7.3.1"],
-            ["@weavery/clarity", "npm:0.1.5"],
-            ["arweave", "npm:1.10.16"],
-            ["bignumber.js", "npm:9.0.1"],
-            ["chalk", "npm:4.1.2"],
-            ["clui", "npm:0.3.6"],
-            ["figlet", "npm:1.5.2"],
             ["inquirer", "npm:8.1.5"],
             ["json-beautify", "npm:1.1.1"],
             ["loglevel", "npm:1.7.1"],
@@ -7490,13 +7421,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/tslib-npm-1.14.1-102499115e-f44fe7f216.zip/node_modules/tslib/",
           "packageDependencies": [
             ["tslib", "npm:1.14.1"]
-          ],
-          "linkType": "HARD",
-        }],
-        ["npm:2.1.0", {
-          "packageLocation": "./.yarn/cache/tslib-npm-2.1.0-81c9ac9b82-d8f5bdd067.zip/node_modules/tslib/",
-          "packageDependencies": [
-            ["tslib", "npm:2.1.0"]
           ],
           "linkType": "HARD",
         }],
