@@ -644,6 +644,8 @@ Similar to folders, files are linked to a parent folder which ultimately chains 
 
 The important difference for file entities is that they also hold a reference to their data transaction ID, which is the `dataTxId` as returned by the `file-info` command. This is where your uploaded data lives on the permaweb.
 
+**NOTE: The CLI currently (v1.0.0) has progress logging on uploads DISABLED for producing clean JSON outputs that can be piped in the terminal. On larger uploads, remember to be patient. You can check your system's `node` process to confirm the process is will uploading**
+
 ### Uploading a Single File
 
 To upload a file, you'll need a parent folder id, the file to upload's file path, and the path to your wallet:
@@ -696,7 +698,7 @@ Users can perform a bulk upload by using the upload-file command on a target fol
 ardrive upload-file --local-file-path /path/to/folder  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
 ```
 
-This method of upload can be used to upload any number of files and folders within the folder tree. If existing entities are encountered in the destination folder tree that would cause naming conflicts, expect the following behaviors:
+This method of upload can be used to upload a large number of files and folders within the folder tree. If existing entities are encountered in the destination folder tree that would cause naming conflicts, expect the following behaviors:
 
 -   Folder names that conflict with a FILE name at the destination will cause an error to be thrown
 -   Folder names that conflict with a FOLDER name at the destination will use the existing folder ID (i.e. skip) rather than creating a new folder
