@@ -644,7 +644,7 @@ Similar to folders, files are linked to a parent folder which ultimately chains 
 
 The important difference for file entities is that they also hold a reference to their data transaction ID, which is the `dataTxId` as returned by the `file-info` command. This is where your uploaded data lives on the permaweb.
 
-**NOTE: The CLI currently (v1.0.0) has progress logging on uploads DISABLED for producing clean JSON outputs that can be piped in the terminal. On larger uploads, remember to be patient. You can check your system's `node` process to confirm the process is will uploading**
+**NOTE: The CLI currently (v1.0.0) has progress logging on uploads DISABLED for producing clean JSON outputs that can be piped in the terminal. On larger uploads, remember to be patient. You can check your system's `node` process to confirm the process is still uploading.**
 
 ### Uploading a Single File
 
