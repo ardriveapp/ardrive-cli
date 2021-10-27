@@ -32,8 +32,10 @@ export class CLIAction {
 		const that = this;
 		return new Promise(function (this: Promise<ActionReturnType>, resolve) {
 			if (that._promiseInstance) {
-				that.promiseInstance.then(resolve);
+				// the promise was already called, resolve when the action is finished
+				that.promiseInstance.then(resolve.bind(this));
 			} else {
+				// queque the awaiter for when the promise is called
 				that._awaiterInstances.push(this);
 			}
 		});
