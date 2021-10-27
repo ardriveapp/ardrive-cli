@@ -33,11 +33,11 @@ import { CLIAction } from './action';
 const expectedArweaveAddress = stubArweaveAddress('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
 
 /**
- *
+ * @name declareCommandWithParams
  * @param program
  * @param parameters
  * @param action  - default is set for testing propuses
- * @returns
+ * @returns {void}
  */
 function declareCommandWithParams(
 	program: CliApiObject,
