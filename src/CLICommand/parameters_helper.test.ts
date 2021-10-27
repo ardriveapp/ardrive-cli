@@ -265,10 +265,10 @@ describe('ParametersHelper class', () => {
 		it('returns null when none of --wallet-file, -w, --seed-phrase, or -s option are provided', () => {
 			const cmd = declareCommandWithParams(program, []);
 			CLICommand.parse(program, [...baseArgv, testCommandName]);
-			return cmd.runningAction.then(async (options) => {
+			return cmd.runningAction.then((options) => {
 				const parameters = new ParametersHelper(options);
-				const wallet = await parameters.getOptionalWallet().catch(() => null);
-				expect(wallet).to.be.null;
+				const walletPromise = parameters.getOptionalWallet().catch(() => null);
+				return walletPromise.then((wallet) => expect(wallet).to.be.null);
 			});
 		});
 	});
@@ -277,18 +277,24 @@ describe('ParametersHelper class', () => {
 		it('returns the address of the wallet when a valid --wallet-file is provided', () => {
 			const cmd = declareCommandWithParams(program, [WalletFileParameter]);
 			CLICommand.parse(program, [...baseArgv, testCommandName, '--wallet-file', './test_wallet.json']);
-			return cmd.runningAction.then(async (options) => {
+			return cmd.runningAction.then((options) => {
 				const parameters = new ParametersHelper(options);
-				expect(`${await parameters.getWalletAddress()}`).to.equal(`${expectedArweaveAddress}`);
+				const walletAddressPromise = parameters.getWalletAddress();
+				return walletAddressPromise.then((walletAddress) =>
+					expect(`${walletAddress}`).to.equal(`${expectedArweaveAddress}`)
+				);
 			});
 		});
 
 		it('returns the address of the wallet when a valid --w file is provided', () => {
 			const cmd = declareCommandWithParams(program, [WalletFileParameter]);
 			CLICommand.parse(program, [...baseArgv, testCommandName, '-w', './test_wallet.json']);
-			return cmd.runningAction.then(async (options) => {
+			return cmd.runningAction.then((options) => {
 				const parameters = new ParametersHelper(options);
-				expect(`${await parameters.getWalletAddress()}`).to.equal(`${expectedArweaveAddress}`);
+				const walletAddressPromise = parameters.getWalletAddress();
+				return walletAddressPromise.then((walletAddress) =>
+					expect(`${walletAddress}`).to.equal(`${expectedArweaveAddress}`)
+				);
 			});
 		});
 
@@ -328,9 +334,12 @@ describe('ParametersHelper class', () => {
 				'--address',
 				'P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4'
 			]);
-			return cmd.runningAction.then(async (options) => {
+			return cmd.runningAction.then((options) => {
 				const parameters = new ParametersHelper(options);
-				expect(`${await parameters.getWalletAddress()}`).to.equal(`${expectedArweaveAddress}`);
+				const walletAddressPromise = parameters.getWalletAddress();
+				return walletAddressPromise.then((walletAddress) =>
+					expect(`${walletAddress}`).to.equal(`${expectedArweaveAddress}`)
+				);
 			});
 		});
 
@@ -342,19 +351,22 @@ describe('ParametersHelper class', () => {
 				'-a',
 				'P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4'
 			]);
-			return cmd.runningAction.then(async (options) => {
+			return cmd.runningAction.then((options) => {
 				const parameters = new ParametersHelper(options);
-				expect(`${await parameters.getWalletAddress()}`).to.equal(`${expectedArweaveAddress}`);
+				const walletPromise = parameters.getWalletAddress();
+				return walletPromise.then((walletAddress) =>
+					expect(`${walletAddress}`).to.equal(`${expectedArweaveAddress}`)
+				);
 			});
 		});
 
 		it('throws when none of --wallet-file, -w, --seed-phrase, -s, --address, or -a option are provided', () => {
 			const cmd = declareCommandWithParams(program, []);
 			CLICommand.parse(program, [...baseArgv, testCommandName]);
-			return cmd.runningAction.then(async (options) => {
+			return cmd.runningAction.then((options) => {
 				const parameters = new ParametersHelper(options);
-				const wallet = await parameters.getWalletAddress().catch(() => null);
-				expect(wallet).to.be.null;
+				const walletPromise = parameters.getWalletAddress().catch(() => null);
+				return walletPromise.then((wallet) => expect(wallet).to.be.null);
 			});
 		});
 	});
@@ -370,11 +382,12 @@ describe('ParametersHelper class', () => {
 				'--unsafe-drive-password',
 				'password'
 			]);
-			return cmd.runningAction.then(async (options) => {
+			return cmd.runningAction.then((options) => {
 				const parameters = new ParametersHelper(options);
-				expect(
-					urlEncodeHashKey(await parameters.getDriveKey({ driveId: '00000000-0000-0000-0000-000000000000' }))
-				).to.equal('Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg');
+				const driveKeyPromise = parameters.getDriveKey({ driveId: '00000000-0000-0000-0000-000000000000' });
+				return driveKeyPromise.then((driveKey) =>
+					expect(urlEncodeHashKey(driveKey)).to.equal('Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg')
+				);
 			});
 		});
 
