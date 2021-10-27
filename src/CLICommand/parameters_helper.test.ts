@@ -21,7 +21,9 @@ import {
 	DriveKeyParameter,
 	UnsafeDrivePasswordParameter,
 	SeedPhraseParameter,
-	WalletFileParameter
+	WalletFileParameter,
+	MaxDepthParameter,
+	AllParameter
 } from '../parameter_declarations';
 import '../parameter_declarations';
 import { urlEncodeHashKey } from '../utils';
@@ -423,10 +425,54 @@ describe('ParametersHelper class', () => {
 	});
 
 	describe('getMaxDepth method', () => {
-		it(`Defaults to zero`);
-		it(`Does not accept a decimal`);
-		it(`Does not accept a negative integer`);
-		it(`Max depth is infinity when --all is specified`);
-		it(`Custom positive value is providen`);
+		it('Defaults to zero', () => {
+			const cmd = declareCommandWithParams(program, [MaxDepthParameter]);
+			CLICommand.parse(program, [...baseArgv, testCommandName]);
+			return cmd.runningAction.then((options) => {
+				const parameters = new ParametersHelper(options);
+				const maxDepthPromise = parameters.getMaxDepth();
+				return maxDepthPromise.then((maxDepth) => expect(maxDepth).to.equal(0));
+			});
+		});
+
+		it('Does not accept a decimal', () => {
+			const cmd = declareCommandWithParams(program, [MaxDepthParameter]);
+			CLICommand.parse(program, [...baseArgv, testCommandName, '--max-depth=.33']);
+			return cmd.runningAction.then((options) => {
+				const parameters = new ParametersHelper(options);
+				const maxDepthPromise = parameters.getMaxDepth().catch(() => null);
+				return maxDepthPromise.then((maxDepth) => expect(maxDepth).to.be.null);
+			});
+		});
+
+		it('Does not accept a negative integer', () => {
+			const cmd = declareCommandWithParams(program, [MaxDepthParameter]);
+			CLICommand.parse(program, [...baseArgv, testCommandName, '--max-depth=-100']);
+			return cmd.runningAction.then((options) => {
+				const parameters = new ParametersHelper(options);
+				const maxDepthPromise = parameters.getMaxDepth().catch(() => null);
+				return maxDepthPromise.then((maxDepth) => expect(maxDepth).to.be.null);
+			});
+		});
+
+		it('Max depth is the MAX_SAFE_INTEGER when --all is specified', () => {
+			const cmd = declareCommandWithParams(program, [MaxDepthParameter, AllParameter]);
+			CLICommand.parse(program, [...baseArgv, testCommandName, '--all']);
+			return cmd.runningAction.then((options) => {
+				const parameters = new ParametersHelper(options);
+				const maxDepthPromise = parameters.getMaxDepth().catch(() => null);
+				return maxDepthPromise.then((maxDepth) => expect(maxDepth).to.equal(Number.MAX_SAFE_INTEGER));
+			});
+		});
+
+		it('Custom positive value is providen', () => {
+			const cmd = declareCommandWithParams(program, [MaxDepthParameter]);
+			CLICommand.parse(program, [...baseArgv, testCommandName, '--max-depth=8']);
+			return cmd.runningAction.then((options) => {
+				const parameters = new ParametersHelper(options);
+				const maxDepthPromise = parameters.getMaxDepth().catch(() => null);
+				return maxDepthPromise.then((maxDepth) => expect(typeof maxDepth).to.equal('number'));
+			});
+		});
 	});
 });
