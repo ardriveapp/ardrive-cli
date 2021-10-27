@@ -28,7 +28,6 @@ import {
 import '../parameter_declarations';
 import { urlEncodeHashKey } from '../utils';
 import { stubArweaveAddress } from '../utils/stubs';
-import 'mocha';
 import { CLIAction } from './action';
 
 const expectedArweaveAddress = stubArweaveAddress('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
