@@ -1,4 +1,4 @@
-import { JWKWallet, Wallet, WalletDAO } from '../wallet_new';
+import { JWKWallet, Wallet, WalletDAO } from '../wallet';
 import { ParameterName } from './parameter';
 import * as fs from 'fs';
 import { deriveDriveKey, JWKInterface } from 'ardrive-core-js';

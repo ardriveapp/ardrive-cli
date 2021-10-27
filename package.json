@@ -1,16 +1,13 @@
 {
 	"name": "ardrive-cli",
 	"version": "1.0.0",
-	"description": "The ArDrive Command Line Interface (CLI) contains all of the needed security, file synchronization and Arweave wallet capabilities via a node.js application.",
+	"description": "The ArDrive Command Line Interface (CLI is a Node.js application for terminal-based ArDrive workflows. It also offers utility operations for securely interacting with Arweave wallets and inspecting various Arweave blockchain conditions.",
 	"main": "./lib/index.js",
 	"bin": {
 		"ardrive": "./lib/index.js"
 	},
 	"types": "./lib/index.d.ts",
 	"dependencies": {
-		"@types/node": "^14.14.32",
-		"@types/regression": "^2.0.2",
-		"@types/uuid": "^8.3.0",
 		"ardrive-core-js": "0.5.1",
 		"arweave": "^1.10.16",
 		"arweave-bundles": "^1.0.3",
@@ -20,9 +17,6 @@
 		"jwk-to-pem": "^2.0.4",
 		"lodash": "^4.17.21",
 		"node-fetch": "2.6.2",
-		"progress": "^2.0.3",
-		"prompt-password": "^1.2.0",
-		"prompt-sync": "^4.2.0",
 		"prompts": "^2.4.0",
 		"regression": "^2.0.1",
 		"smartweave": "^0.4.45",
@@ -35,11 +29,13 @@
 		"@types/jwk-to-pem": "^2.0.0",
 		"@types/lodash": "^4",
 		"@types/mocha": "^9.0.0",
+		"@types/node": "^14.14.32",
 		"@types/node-fetch": "2.5.3",
-		"@types/prompt-sync": "^4.1.0",
 		"@types/prompts": "^2.0.9",
+		"@types/regression": "^2.0.2",
 		"@types/sinon": "^10.0.2",
 		"@types/source-map-support": "^0",
+		"@types/uuid": "^8.3.0",
 		"@typescript-eslint/eslint-plugin": "^4.18.0",
 		"@typescript-eslint/parser": "^4.18.0",
 		"chai": "^4.3.4",
@@ -67,9 +63,6 @@
 		"typecheck": "tsc --noemit",
 		"build": "yarn clean && tsc --project ./tsconfig.prod.json",
 		"ci": "yarn build && yarn test",
-		"version": "yarn run format && git add -A src",
-		"postversion": "git push && git push --tags",
-		"start": "yarn run build && node ./lib/index.js",
 		"dev": "yarn clean && tsc --project ./tsconfig.prod.json -w"
 	},
 	"husky": {

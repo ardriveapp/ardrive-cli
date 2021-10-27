@@ -20,7 +20,7 @@ import {
 } from '../../src/utils/stubs';
 import { ARDataPriceRegressionEstimator } from '../../src/utils/ar_data_price_regression_estimator';
 import { GatewayOracle } from '../../src/utils/gateway_oracle';
-import { JWKWallet, WalletDAO } from '../../src/wallet_new';
+import { JWKWallet, WalletDAO } from '../../src/wallet';
 import { expectAsyncErrorThrow } from '../../src/utils/test_helpers';
 import { ArDriveCommunityOracle } from '../../src/community/ardrive_community_oracle';
 import { ArFSDAO, PrivateDriveKeyData } from '../../src/arfsdao';

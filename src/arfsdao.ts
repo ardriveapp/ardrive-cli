@@ -1,16 +1,9 @@
 /* eslint-disable no-console */
-import type { JWKWallet, Wallet } from './wallet_new';
+import type { JWKWallet, Wallet } from './wallet';
 import Arweave from 'arweave';
 import { v4 as uuidv4 } from 'uuid';
 import Transaction from 'arweave/node/lib/transaction';
-import {
-	deriveDriveKey,
-	GQLEdgeInterface,
-	GQLNodeInterface,
-	GQLTagInterface,
-	JWKInterface,
-	uploadDataChunk
-} from 'ardrive-core-js';
+import { deriveDriveKey, GQLEdgeInterface, GQLNodeInterface, GQLTagInterface, JWKInterface } from 'ardrive-core-js';
 import {
 	ArFSPublicFileDataPrototype,
 	ArFSObjectMetadataPrototype,
@@ -493,8 +486,10 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		// Upload file data
 		if (!this.dryRun) {
-			console.log(`Uploading public file: "${wrappedFile.filePath}" to the permaweb..`);
-			await this.sendChunkedUploadWithProgress(dataTrx);
+			const dataUploader = await this.arweave.transactions.getUploader(dataTrx);
+			while (!dataUploader.isComplete) {
+				await dataUploader.uploadChunk();
+			}
 		}
 
 		// Prepare meta data transaction
@@ -606,26 +601,26 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		);
 	}
 
-	/**
-	 * Uploads a v2 transaction in chunks with progress logging
-	 *
-	 * @example await this.sendChunkedUpload(myTransaction);
-	 */
-	async sendChunkedUploadWithProgress(trx: Transaction): Promise<void> {
-		const dataUploader = await this.arweave.transactions.getUploader(trx);
+	// /**
+	//  * Uploads a v2 transaction in chunks with progress logging
+	//  *
+	//  * @example await this.sendChunkedUpload(myTransaction);
+	//  */
+	// async sendChunkedUploadWithProgress(trx: Transaction): Promise<void> {
+	// 	const dataUploader = await this.arweave.transactions.getUploader(trx);
 
-		while (!dataUploader.isComplete) {
-			const nextChunk = await uploadDataChunk(dataUploader);
-			if (nextChunk === null) {
-				break;
-			} else {
-				// TODO: Add custom logger function that produces various levels of detail
-				console.log(
-					`${dataUploader.pctComplete}% complete, ${dataUploader.uploadedChunks}/${dataUploader.totalChunks}`
-				);
-			}
-		}
-	}
+	// 	while (!dataUploader.isComplete) {
+	// 		const nextChunk = await uploadDataChunk(dataUploader);
+	// 		if (nextChunk === null) {
+	// 			break;
+	// 		} else {
+	// 			// TODO: Add custom logger function that produces various levels of detail
+	// 			console.log(
+	// 				`${dataUploader.pctComplete}% complete, ${dataUploader.uploadedChunks}/${dataUploader.totalChunks}`
+	// 			);
+	// 		}
+	// 	}
+	// }
 
 	async prepareArFSObjectTransaction(
 		objectMetaData: ArFSObjectMetadataPrototype,

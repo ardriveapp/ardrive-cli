@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { Wallet, WalletDAO } from './wallet_new';
+import { Wallet, WalletDAO } from './wallet';
 import Arweave from 'arweave';
 import { ArDriveCommunityOracle } from './community/ardrive_community_oracle';
 import { ArDrive, ArDriveAnonymous } from './ardrive';

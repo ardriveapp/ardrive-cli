@@ -1,7 +1,7 @@
-import { JWKWallet, Wallet } from './wallet_new';
-import { JWKInterface } from './wallet';
+import { JWKWallet, Wallet } from './wallet';
 import * as fs from 'fs';
 import fetch from 'node-fetch';
+import { JWKInterface } from 'ardrive-core-js';
 
 export function readJWKFile(path: string): Wallet {
 	const walletFileData = fs.readFileSync(path, { encoding: 'utf8', flag: 'r' });
