@@ -40,11 +40,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@istanbuljs/nyc-config-typescript", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:1.0.1"],
             ["@types/chai", "npm:4.2.21"],
             ["@types/jwk-to-pem", "npm:2.0.0"],
-            ["@types/lodash", "npm:4.14.172"],
+            ["@types/lodash", "npm:4.14.176"],
             ["@types/mocha", "npm:9.0.0"],
             ["@types/node", "npm:14.14.37"],
             ["@types/node-fetch", "npm:2.5.3"],
-            ["@types/prompt-sync", "npm:4.1.0"],
             ["@types/prompts", "npm:2.4.0"],
             ["@types/regression", "npm:2.0.2"],
             ["@types/sinon", "npm:10.0.2"],
@@ -71,8 +70,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["nyc", "npm:15.1.0"],
             ["prettier", "npm:2.2.1"],
             ["progress", "npm:2.0.3"],
-            ["prompt-password", "npm:1.2.0"],
-            ["prompt-sync", "npm:4.2.0"],
             ["prompts", "npm:2.4.0"],
             ["regression", "npm:2.0.1"],
             ["rimraf", "npm:3.0.2"],
@@ -794,10 +791,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["@types/lodash", [
-        ["npm:4.14.172", {
-          "packageLocation": "./.yarn/cache/@types-lodash-npm-4.14.172-e52063c461-d4b9c66aa1.zip/node_modules/@types/lodash/",
+        ["npm:4.14.176", {
+          "packageLocation": "./.yarn/cache/@types-lodash-npm-4.14.176-34dca4acb8-cc3c9d7522.zip/node_modules/@types/lodash/",
           "packageDependencies": [
-            ["@types/lodash", "npm:4.14.172"]
+            ["@types/lodash", "npm:4.14.176"]
           ],
           "linkType": "HARD",
         }]
@@ -872,15 +869,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/@types-parse-json-npm-4.0.0-298522afa6-4a8f720afa.zip/node_modules/@types/parse-json/",
           "packageDependencies": [
             ["@types/parse-json", "npm:4.0.0"]
-          ],
-          "linkType": "HARD",
-        }]
-      ]],
-      ["@types/prompt-sync", [
-        ["npm:4.1.0", {
-          "packageLocation": "./.yarn/cache/@types-prompt-sync-npm-4.1.0-5d6d03c0bb-21bc6832fb.zip/node_modules/@types/prompt-sync/",
-          "packageDependencies": [
-            ["@types/prompt-sync", "npm:4.1.0"]
           ],
           "linkType": "HARD",
         }]
@@ -1713,11 +1701,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@istanbuljs/nyc-config-typescript", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:1.0.1"],
             ["@types/chai", "npm:4.2.21"],
             ["@types/jwk-to-pem", "npm:2.0.0"],
-            ["@types/lodash", "npm:4.14.172"],
+            ["@types/lodash", "npm:4.14.176"],
             ["@types/mocha", "npm:9.0.0"],
             ["@types/node", "npm:14.14.37"],
             ["@types/node-fetch", "npm:2.5.3"],
-            ["@types/prompt-sync", "npm:4.1.0"],
             ["@types/prompts", "npm:2.4.0"],
             ["@types/regression", "npm:2.0.2"],
             ["@types/sinon", "npm:10.0.2"],
@@ -1744,8 +1731,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["nyc", "npm:15.1.0"],
             ["prettier", "npm:2.2.1"],
             ["progress", "npm:2.0.3"],
-            ["prompt-password", "npm:1.2.0"],
-            ["prompt-sync", "npm:4.2.0"],
             ["prompts", "npm:2.4.0"],
             ["regression", "npm:2.0.1"],
             ["rimraf", "npm:3.0.2"],

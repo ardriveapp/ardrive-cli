@@ -606,9 +606,9 @@ __metadata:
   linkType: hard
 
 "@types/lodash@npm:^4":
-  version: 4.14.172
-  resolution: "@types/lodash@npm:4.14.172"
-  checksum: d4b9c66aa1775ca9105f95fdaf92b8c7ee646fcb75fa8c0617020456470b140f9204335a66e152f269f9cd531634ac3d0caa3f85ce3acdad9bc6951aa6e89aae
+  version: 4.14.176
+  resolution: "@types/lodash@npm:4.14.176"
+  checksum: cc3c9d7522a20814d1bbc5125a3d5a4a4eed72e7cf6a3b01b0810aa5dcff0cf23ab40ea4ab00fe2425dd0828cd915087d8d073757ab9c925e2872903dd3e15d0
   languageName: node
   linkType: hard
 
@@ -674,13 +674,6 @@ __metadata:
   version: 4.0.0
   resolution: "@types/parse-json@npm:4.0.0"
   checksum: 4a8f720afac47b474d3f2eece312340e72bc31bc9561cda37b596ce2ed218c0099765d302625bb67d659a8452a1f93d514f4863c11c7ebaf65430428687dc426
-  languageName: node
-  linkType: hard
-
-"@types/prompt-sync@npm:^4.1.0":
-  version: 4.1.0
-  resolution: "@types/prompt-sync@npm:4.1.0"
-  checksum: 21bc6832fb849c71bd9ac940e43fc1f91acb7f79a7e5f610141ca0b3bf97ba392be1c541598a0874bc2e9812e010854955e039dfb0c3f587b959190bb5c4aff6
   languageName: node
   linkType: hard
 
@@ -1379,7 +1372,6 @@ __metadata:
     "@types/mocha": ^9.0.0
     "@types/node": ^14.14.32
     "@types/node-fetch": 2.5.3
-    "@types/prompt-sync": ^4.1.0
     "@types/prompts": ^2.0.9
     "@types/regression": ^2.0.2
     "@types/sinon": ^10.0.2
@@ -1406,8 +1398,6 @@ __metadata:
     nyc: ^15.1.0
     prettier: ^2.2.1
     progress: ^2.0.3
-    prompt-password: ^1.2.0
-    prompt-sync: ^4.2.0
     prompts: ^2.4.0
     regression: ^2.0.1
     rimraf: ^3.0.2
