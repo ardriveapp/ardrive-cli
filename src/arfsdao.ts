@@ -493,8 +493,16 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		// Upload file data
 		if (!this.dryRun) {
-			console.log(`Uploading public file: "${wrappedFile.filePath}" to the permaweb..`);
-			await this.sendChunkedUploadWithProgress(dataTrx);
+			if (fileSize > Math.pow(2, 20) * 200) {
+				// File sizes larger than 200 MiB get progress logging by default
+				console.log(`Uploading public file: "${wrappedFile.filePath}" to the permaweb..`);
+				await this.sendChunkedUploadWithProgress(dataTrx);
+			} else {
+				const dataUploader = await this.arweave.transactions.getUploader(dataTrx);
+				while (!dataUploader.isComplete) {
+					await dataUploader.uploadChunk();
+				}
+			}
 		}
 
 		// Prepare meta data transaction
