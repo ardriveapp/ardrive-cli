@@ -1780,6 +1780,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"chalk@npm:^4.1.2":
+  version: 4.1.2
+  resolution: "chalk@npm:4.1.2"
+  dependencies:
+    ansi-styles: ^4.1.0
+    supports-color: ^7.1.0
+  checksum: e3901b97d953991712bf0b941d586175be7ca5da56a97d25187e07453c6b26cae0ac8d9c7aa9e87e7c5c986fff870771b3a8e2705b3becda868829e2e12c2a65
+  languageName: node
+  linkType: hard
+
 "chardet@npm:^0.7.0":
   version: 0.7.0
   resolution: "chardet@npm:0.7.0"
@@ -2911,6 +2921,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"figlet@npm:^1.5.2":
+  version: 1.5.2
+  resolution: "figlet@npm:1.5.2"
+  checksum: 64b6932ac1600f5d3a40a06964f420cffe3386312bfe05a128942320cbb9c78a67d421c670f2ee3e46ac323d986c37b8d7e27e0bdeebbbfcf532c90cee401f67
+  languageName: node
+  linkType: hard
+
 "figures@npm:^3.0.0":
   version: 3.2.0
   resolution: "figures@npm:3.2.0"
@@ -3563,6 +3580,28 @@ fsevents@~2.3.2:
     strip-ansi: ^6.0.0
     through: ^2.3.6
   checksum: 55c44bdf858dcab4ca93a76dc7d7c389d8f98823b451989c8d8a2e4c99137067293dbd8025987fc334a28c2287da27c748dc8e14be91888809276f34bb3349cf
+  languageName: node
+  linkType: hard
+
+"inquirer@npm:^8.1.2":
+  version: 8.1.5
+  resolution: "inquirer@npm:8.1.5"
+  dependencies:
+    ansi-escapes: ^4.2.1
+    chalk: ^4.1.1
+    cli-cursor: ^3.1.0
+    cli-width: ^3.0.0
+    external-editor: ^3.0.3
+    figures: ^3.0.0
+    lodash: ^4.17.21
+    mute-stream: 0.0.8
+    ora: ^5.4.1
+    run-async: ^2.4.0
+    rxjs: ^7.2.0
+    string-width: ^4.1.0
+    strip-ansi: ^6.0.0
+    through: ^2.3.6
+  checksum: f6978143218ff6b4861634202d93670bb4744f215df3cde0978c40c746185d8c0d50257ac87557ea315af2b4ac56c622640e2e4ab23f3a66cbb863281fca6d24
   languageName: node
   linkType: hard
 
