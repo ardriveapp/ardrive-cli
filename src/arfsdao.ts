@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import type { JWKWallet, Wallet } from './wallet_new';
+import type { JWKWallet, Wallet } from './wallet';
 import Arweave from 'arweave';
 import { v4 as uuidv4 } from 'uuid';
 import Transaction from 'arweave/node/lib/transaction';

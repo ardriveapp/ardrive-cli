@@ -12,7 +12,7 @@ import { readJWKFile } from '../../src/utils';
 import { ArweaveOracle } from '../../src/utils/arweave_oracle';
 import { ARDataPriceRegressionEstimator } from '../../src/utils/ar_data_price_regression_estimator';
 import { GatewayOracle } from '../../src/utils/gateway_oracle';
-import { WalletDAO } from '../../src/wallet_new';
+import { WalletDAO } from '../wallet';
 import { expectAsyncErrorThrow } from '../../src/utils/test_helpers';
 import { ArDriveCommunityOracle } from '../../src/community/ardrive_community_oracle';
 import { CommunityOracle } from '../../src/community/community_oracle';

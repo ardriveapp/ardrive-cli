@@ -14,7 +14,7 @@ import {
 	ByteCount,
 	MakeOptional
 } from './types';
-import { WalletDAO, Wallet, JWKWallet } from './wallet_new';
+import { WalletDAO, Wallet, JWKWallet } from './wallet';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
 import { ArFSFolderToUpload, ArFSFileToUpload } from './arfs_file_wrapper';
 import { ARDataPriceEstimator } from './utils/ar_data_price_estimator';
