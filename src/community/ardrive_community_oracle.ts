@@ -6,7 +6,7 @@ import { ArDriveContractOracle } from './ardrive_contract_oracle';
 import Arweave from 'arweave';
 import { SmartweaveContractReader } from './smartweave_contract_oracle';
 import { VertoContractReader } from './verto_contract_oracle';
-import { ArweaveAddress } from '../arweave_address';
+import { ArweaveAddress } from '../types/arweave_address';
 
 /**
  * Minimum ArDrive community tip from the Community Improvement Proposal Doc:

@@ -46,7 +46,7 @@ import { stubEntityID, stubTransactionID } from './utils/stubs';
 import { errorMessage } from './error_message';
 import { PrivateKeyData } from './private_key_data';
 import { EntityNamesAndIds } from './utils/mapper_functions';
-import { ArweaveAddress } from './arweave_address';
+import { ArweaveAddress } from './types/arweave_address';
 import { WithDriveKey } from './arfs_entity_result_factory';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';

@@ -9,7 +9,7 @@ import {
 } from 'ardrive-core-js';
 import Arweave from 'arweave';
 import { ArFSPrivateFile, ArFSPublicFile } from '../../arfs_entities';
-import { ArweaveAddress } from '../../arweave_address';
+import { ArweaveAddress } from '../../types/arweave_address';
 import { ByteCount, CipherIV, DriveKey, FileID, FileKey, TransactionID, UnixTime } from '../../types';
 import { ArFSFileOrFolderBuilder } from './arfs_builders';
 

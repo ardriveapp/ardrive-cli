@@ -1,4 +1,4 @@
-import { ArweaveAddress } from '../arweave_address';
+import { ArweaveAddress } from '../types/arweave_address';
 import { Winston } from '../types';
 
 export interface CommunityOracle {
