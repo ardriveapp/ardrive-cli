@@ -179,6 +179,8 @@ export class ArDriveAnonymous extends ArDriveType {
 	}
 }
 
+export type ConflictResolution = 'skip' | 'replace'; // | 'upsert' | 'ask'
+
 export class ArDrive extends ArDriveAnonymous {
 	constructor(
 		private readonly wallet: Wallet,
@@ -189,7 +191,8 @@ export class ArDrive extends ArDriveAnonymous {
 		private readonly appVersion: string,
 		private readonly priceEstimator: ARDataPriceEstimator = new ARDataPriceRegressionEstimator(true),
 		private readonly feeMultiple: FeeMultiple = 1.0,
-		private readonly dryRun: boolean = false
+		private readonly dryRun: boolean = false,
+		private readonly conflictResolution: ConflictResolution = 'skip'
 	) {
 		super(arFsDao);
 	}
@@ -499,9 +502,16 @@ export class ArDrive extends ArDriveAnonymous {
 			throw new Error(errorMessage.entityNameExists);
 		}
 
+		const conflictingFileName = filesAndFolderNames.files.find((f) => f.fileName === destFileName);
+
+		if (conflictingFileName && this.conflictResolution === 'skip') {
+			throw new Error(errorMessage.entityNameExists);
+		}
+		// TODO: Handle this.conflictResolution === 'upsert' and 'ask' PE-638
+
 		// File is a new revision if destination name conflicts
 		// with an existing file in the destination folder
-		const existingFileId = filesAndFolderNames.files.find((f) => f.fileName === destFileName)?.fileId;
+		const existingFileId = conflictingFileName?.fileId;
 
 		const uploadBaseCosts = await this.estimateAndAssertCostOfFileUpload(
 			wrappedFile.fileStats.size,
@@ -750,9 +760,16 @@ export class ArDrive extends ArDriveAnonymous {
 			throw new Error(errorMessage.entityNameExists);
 		}
 
+		const conflictingFileName = filesAndFolderNames.files.find((f) => f.fileName === destFileName);
+
+		if (conflictingFileName && this.conflictResolution === 'skip') {
+			throw new Error(errorMessage.entityNameExists);
+		}
+		// TODO: Handle this.conflictResolution === 'upsert' and 'ask' PE-638
+
 		// File is a new revision if destination name conflicts
 		// with an existing file in the destination folder
-		const existingFileId = filesAndFolderNames.files.find((f) => f.fileName === destFileName)?.fileId;
+		const existingFileId = conflictingFileName?.fileId;
 
 		const uploadBaseCosts = await this.estimateAndAssertCostOfFileUpload(
 			wrappedFile.fileStats.size,

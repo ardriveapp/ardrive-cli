@@ -3,12 +3,15 @@ import { arDriveFactory } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import {
 	BoostParameter,
+	ConflictResolutionParams,
 	DestinationFileNameParameter,
 	DrivePrivacyParameters,
 	DryRunParameter,
 	LocalFilePathParameter,
 	LocalFilesParameter,
-	ParentFolderIdParameter
+	ReplaceParameter,
+	ParentFolderIdParameter,
+	SkipParameter
 } from '../parameter_declarations';
 import { DriveKey, FeeMultiple, FolderID } from '../types';
 import { readJWKFile } from '../utils';
@@ -31,6 +34,7 @@ new CLICommand({
 		LocalFilesParameter,
 		BoostParameter,
 		DryRunParameter,
+		...ConflictResolutionParams,
 		...DrivePrivacyParameters
 	],
 	async action(options) {
@@ -74,10 +78,31 @@ new CLICommand({
 
 			const wallet = readJWKFile(options.walletFile);
 
+			const conflictResolution = (() => {
+				if (parameters.getParameterValue(SkipParameter)) {
+					return 'skip';
+				}
+
+				if (parameters.getParameterValue(ReplaceParameter)) {
+					return 'replace';
+				}
+
+				// if (parameters.getParameterValue(UpsertParameter)) {
+				// 	return 'upsert'
+				// };
+
+				// if (parameters.getParameterValue(AskParameter)) {
+				// 	return 'ask'
+				// };
+
+				return undefined;
+			})();
+
 			const arDrive = arDriveFactory({
 				wallet: wallet,
 				feeMultiple: options.boost as FeeMultiple,
-				dryRun: options.dryRun
+				dryRun: options.dryRun,
+				conflictResolution
 			});
 
 			await Promise.all(
