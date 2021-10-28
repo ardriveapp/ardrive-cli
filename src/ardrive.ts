@@ -667,40 +667,43 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Upload all files in the folder
 		for await (const wrappedFile of wrappedFolder.files) {
-			const fileDataRewardSettings = {
-				reward: wrappedFile.getBaseCosts().fileDataBaseReward,
-				feeMultiple: this.feeMultiple
-			};
+			// Don't upload this file if there is an existing file and conflict resolution is skip
+			if (!(this.conflictResolution === 'skip' && wrappedFile.existingId)) {
+				const fileDataRewardSettings = {
+					reward: wrappedFile.getBaseCosts().fileDataBaseReward,
+					feeMultiple: this.feeMultiple
+				};
 
-			const metadataRewardSettings = {
-				reward: wrappedFile.getBaseCosts().metaDataBaseReward,
-				feeMultiple: this.feeMultiple
-			};
+				const metadataRewardSettings = {
+					reward: wrappedFile.getBaseCosts().metaDataBaseReward,
+					feeMultiple: this.feeMultiple
+				};
 
-			const uploadFileResult = await this.arFsDao.uploadPublicFile({
-				parentFolderId: folderId,
-				wrappedFile,
-				driveId,
-				fileDataRewardSettings,
-				metadataRewardSettings,
-				existingFileId: wrappedFile.existingId
-			});
+				const uploadFileResult = await this.arFsDao.uploadPublicFile({
+					parentFolderId: folderId,
+					wrappedFile,
+					driveId,
+					fileDataRewardSettings,
+					metadataRewardSettings,
+					existingFileId: wrappedFile.existingId
+				});
 
-			// Capture all file results
-			uploadEntityFees = {
-				...uploadEntityFees,
-				[uploadFileResult.dataTrxId]: +uploadFileResult.dataTrxReward,
-				[uploadFileResult.metaDataTrxId]: +uploadFileResult.metaDataTrxReward
-			};
-			uploadEntityResults = [
-				...uploadEntityResults,
-				{
-					type: 'file',
-					metadataTxId: uploadFileResult.metaDataTrxId,
-					dataTxId: uploadFileResult.dataTrxId,
-					entityId: uploadFileResult.fileId
-				}
-			];
+				// Capture all file results
+				uploadEntityFees = {
+					...uploadEntityFees,
+					[uploadFileResult.dataTrxId]: +uploadFileResult.dataTrxReward,
+					[uploadFileResult.metaDataTrxId]: +uploadFileResult.metaDataTrxReward
+				};
+				uploadEntityResults = [
+					...uploadEntityResults,
+					{
+						type: 'file',
+						metadataTxId: uploadFileResult.metaDataTrxId,
+						dataTxId: uploadFileResult.dataTrxId,
+						entityId: uploadFileResult.fileId
+					}
+				];
+			}
 		}
 
 		// Upload folders, and children of those folders
@@ -1020,41 +1023,44 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Upload all files in the folder
 		for await (const wrappedFile of wrappedFolder.files) {
-			const fileDataRewardSettings = {
-				reward: wrappedFile.getBaseCosts().fileDataBaseReward,
-				feeMultiple: this.feeMultiple
-			};
-			const metadataRewardSettings = {
-				reward: wrappedFile.getBaseCosts().metaDataBaseReward,
-				feeMultiple: this.feeMultiple
-			};
+			// Don't upload this file if there is an existing file and conflict resolution is skip
+			if (!(this.conflictResolution === 'skip' && wrappedFile.existingId)) {
+				const fileDataRewardSettings = {
+					reward: wrappedFile.getBaseCosts().fileDataBaseReward,
+					feeMultiple: this.feeMultiple
+				};
+				const metadataRewardSettings = {
+					reward: wrappedFile.getBaseCosts().metaDataBaseReward,
+					feeMultiple: this.feeMultiple
+				};
 
-			const uploadFileResult = await this.arFsDao.uploadPrivateFile({
-				parentFolderId: folderId,
-				wrappedFile,
-				driveId,
-				driveKey,
-				fileDataRewardSettings,
-				metadataRewardSettings,
-				existingFileId: wrappedFile.existingId
-			});
+				const uploadFileResult = await this.arFsDao.uploadPrivateFile({
+					parentFolderId: folderId,
+					wrappedFile,
+					driveId,
+					driveKey,
+					fileDataRewardSettings,
+					metadataRewardSettings,
+					existingFileId: wrappedFile.existingId
+				});
 
-			// Capture all file results
-			uploadEntityFees = {
-				...uploadEntityFees,
-				[uploadFileResult.dataTrxId]: +uploadFileResult.dataTrxReward,
-				[uploadFileResult.metaDataTrxId]: +uploadFileResult.metaDataTrxReward
-			};
-			uploadEntityResults = [
-				...uploadEntityResults,
-				{
-					type: 'file',
-					metadataTxId: uploadFileResult.metaDataTrxId,
-					dataTxId: uploadFileResult.dataTrxId,
-					entityId: uploadFileResult.fileId,
-					key: urlEncodeHashKey(uploadFileResult.fileKey)
-				}
-			];
+				// Capture all file results
+				uploadEntityFees = {
+					...uploadEntityFees,
+					[uploadFileResult.dataTrxId]: +uploadFileResult.dataTrxReward,
+					[uploadFileResult.metaDataTrxId]: +uploadFileResult.metaDataTrxReward
+				};
+				uploadEntityResults = [
+					...uploadEntityResults,
+					{
+						type: 'file',
+						metadataTxId: uploadFileResult.metaDataTrxId,
+						dataTxId: uploadFileResult.dataTrxId,
+						entityId: uploadFileResult.fileId,
+						key: urlEncodeHashKey(uploadFileResult.fileKey)
+					}
+				];
+			}
 		}
 
 		// Upload folders, and children of those folders
