@@ -9,9 +9,7 @@ import {
 	DryRunParameter,
 	LocalFilePathParameter,
 	LocalFilesParameter,
-	ReplaceParameter,
-	ParentFolderIdParameter,
-	SkipParameter
+	ParentFolderIdParameter
 } from '../parameter_declarations';
 import { DriveKey, FeeMultiple, FolderID } from '../types';
 import { readJWKFile } from '../utils';
@@ -78,25 +76,7 @@ new CLICommand({
 
 			const wallet = readJWKFile(options.walletFile);
 
-			const conflictResolution = (() => {
-				if (parameters.getParameterValue(SkipParameter)) {
-					return 'skip';
-				}
-
-				if (parameters.getParameterValue(ReplaceParameter)) {
-					return 'replace';
-				}
-
-				// if (parameters.getParameterValue(UpsertParameter)) {
-				// 	return 'upsert'
-				// };
-
-				// if (parameters.getParameterValue(AskParameter)) {
-				// 	return 'ask'
-				// };
-
-				return undefined;
-			})();
+			const conflictResolution = parameters.getConflictResolution();
 
 			const arDrive = arDriveFactory({
 				wallet: wallet,

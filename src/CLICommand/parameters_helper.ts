@@ -10,13 +10,16 @@ import {
 	MaxDepthParameter,
 	SeedPhraseParameter,
 	WalletFileParameter,
-	PrivateParameter
+	PrivateParameter,
+	ReplaceParameter,
+	SkipParameter
 } from '../parameter_declarations';
 import { cliWalletDao } from '..';
 import { DriveID, DriveKey } from '../types';
 import passwordPrompt from 'prompts';
 import { PrivateKeyData } from '../private_key_data';
 import { ArweaveAddress } from '../arweave_address';
+import { ConflictResolution } from '../ardrive';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ParameterOptions = any;
@@ -202,6 +205,26 @@ export class ParametersHelper {
 		}
 
 		return maxDepthValue;
+	}
+
+	public getConflictResolution(): ConflictResolution | undefined {
+		if (this.getParameterValue(SkipParameter)) {
+			return 'skip';
+		}
+
+		if (this.getParameterValue(ReplaceParameter)) {
+			return 'replace';
+		}
+
+		// if (this.getParameterValue(UpsertParameter)) {
+		// 	return 'upsert'
+		// };
+
+		// if (this.getParameterValue(AskParameter)) {
+		// 	return 'ask'
+		// };
+
+		return undefined;
 	}
 
 	/**
