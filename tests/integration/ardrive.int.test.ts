@@ -64,6 +64,19 @@ describe('ArDrive class - integrated', () => {
 		true
 	);
 
+	const arDriveReplace = new ArDrive(
+		wallet,
+		walletDao,
+		arfsDao,
+		communityOracle,
+		'Integration Test',
+		'1.0',
+		priceEstimator,
+		1.0,
+		true,
+		'replace'
+	);
+
 	const walletOwner = stubArweaveAddress();
 	const unexpectedOwner = stubArweaveAddress('0987654321klmnopqrxtuvwxyz123456789ABCDEFGH');
 
@@ -482,10 +495,23 @@ describe('ArDrive class - integrated', () => {
 					});
 				});
 
-				it('returns the correct ArFSResult revision if destination folder has a conflicting FILE name', async () => {
+				it('throws an error if destination folder has a conflicting FILE name and conflict resolution is set to skip', async () => {
 					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 
-					const result = await arDrive.uploadPublicFile(stubEntityID, wrappedFile, 'CONFLICTING_FILE_NAME');
+					await expectAsyncErrorThrow({
+						promiseToError: arDrive.uploadPublicFile(stubEntityID, wrappedFile, 'CONFLICTING_FILE_NAME'),
+						errorMessage: 'Entity name already exists in destination folder!'
+					});
+				});
+
+				it('returns the correct ArFSResult revision if destination folder has a conflicting FILE name and conflict resolution is set to replace', async () => {
+					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
+
+					const result = await arDriveReplace.uploadPublicFile(
+						stubEntityID,
+						wrappedFile,
+						'CONFLICTING_FILE_NAME'
+					);
 
 					// Pass expected existing file id, so that the file would be considered a revision
 					assertUploadFileExpectations(result, 3204, 171, 0, '1', 'public', existingFileId);
@@ -535,10 +561,24 @@ describe('ArDrive class - integrated', () => {
 					});
 				});
 
-				it('returns the correct ArFSResult revision if destination folder has a conflicting FILE name', async () => {
+				it('throws an error if destination folder has a conflicting FILE name and conflict resolution is set to skip', async () => {
 					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 
-					const result = await arDrive.uploadPrivateFile(
+					await expectAsyncErrorThrow({
+						promiseToError: arDrive.uploadPrivateFile(
+							stubEntityID,
+							wrappedFile,
+							await getStubDriveKey(),
+							'CONFLICTING_FILE_NAME'
+						),
+						errorMessage: 'Entity name already exists in destination folder!'
+					});
+				});
+
+				it('returns the correct ArFSResult revision with if destination folder has a conflicting FILE name and conflict resolution is set to replace', async () => {
+					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
+
+					const result = await arDriveReplace.uploadPrivateFile(
 						stubEntityID,
 						wrappedFile,
 						await getStubDriveKey(),
