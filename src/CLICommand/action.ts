@@ -1,4 +1,5 @@
 import { ActionReturnType, AsyncActionCallback, ParsedParameters } from './cli';
+import { ERROR_EXIT_CODE } from './constants';
 
 export class CLIAction {
 	private _promiseInstance?: Promise<ActionReturnType>;
@@ -42,7 +43,7 @@ export class CLIAction {
 			})
 			.catch((err: Error) => {
 				this.rejectAwaiters(err);
-				throw err;
+				return ERROR_EXIT_CODE;
 			});
 	}
 
