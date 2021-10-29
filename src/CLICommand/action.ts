@@ -64,8 +64,6 @@ export class CLIAction {
 			});
 			return awaiter;
 		}
-		// return new Promise(function (this: Promise<ActionReturnType>, resolve, reject) {
-		// });
 	}
 
 	private resolveAwaiters(): void {

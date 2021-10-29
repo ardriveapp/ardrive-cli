@@ -102,14 +102,10 @@ describe('ParametersHelper class', () => {
 	});
 
 	it('Required parameter throws if missing', () => {
-		// FIXME!!!!
 		Parameter.declare(requiredParameter);
 		const cmd = declareCommandWithParams(program, [requiredParameterName]);
 		CLICommand.parse(program, [...baseArgv, testCommandName]);
 		return cmd.action.catch(() => undefined).then(() => expect(process.exitCode).to.not.equal(SUCCESS_EXIT_CODE));
-		// return cmd.runningAction.then(() => {
-		// 	return expect(process.exitCode).to.not.equal(SUCCESS_EXIT_CODE);
-		// });
 	});
 
 	describe('getIsPrivate method', () => {

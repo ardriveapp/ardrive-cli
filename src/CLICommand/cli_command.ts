@@ -113,11 +113,6 @@ export class CLICommand {
 		return this.commandDescription.action.actionAwaiter();
 	}
 
-	// public static get program(): CliApiObject {
-	// 	// TODO: make me private when index.ts is fully de-coupled from commander library
-	// 	return program;
-	// }
-
 	// A singleton instance of the commander's program object
 	private get program(): CliApiObject {
 		return this._program;
@@ -126,10 +121,9 @@ export class CLICommand {
 	public static parse(program: CliApiObject = programApi, argv: string[] = process.argv): void {
 		try {
 			program.parse(argv);
-		} catch (e) {
+		} catch {
 			exitProgram(ERROR_EXIT_CODE);
 			this.rejectPendingAwaiters();
-			// CLIAction.runningAction.setParsingError(e);
 		}
 	}
 
@@ -138,13 +132,6 @@ export class CLICommand {
 		const theOtherCommandActions = CLICommand.allCommandInstances.map((cmd) => cmd.commandDescription.action);
 		theOtherCommandActions.forEach((action) => action.didntRun());
 	}
-
-	// public static parseAsync(
-	// 	program: CliApiObject = this.program,
-	// 	argv: string[] = process.argv
-	// ): Promise<CliApiObject> {
-	// 	return program.parseAsync(argv);
-	// }
 
 	/**
 	 * For test purposes only
