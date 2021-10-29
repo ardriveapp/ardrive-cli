@@ -2189,9 +2189,9 @@ __metadata:
   linkType: hard
 
 "commander@npm:^8.2.0":
-  version: 8.2.0
-  resolution: "commander@npm:8.2.0"
-  checksum: e41e680f2afa0a409aa21d3cad6f06a3d9d2d1086e76223ebd600181b588085e6ad0c7387cf491cb96c60de0a0a50815130368b40bfde017744210d4a8fb75a7
+  version: 8.3.0
+  resolution: "commander@npm:8.3.0"
+  checksum: 0b818d97ca9c8ad461ff05f873082af0c1895e49984a2abf1090e4a85c3537c3c0f9921e38314a9de7e71941f00f710c204d3560e3a7bc0b1023eef92d6bbfc0
   languageName: node
   linkType: hard
 

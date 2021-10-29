@@ -58,7 +58,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["arweave-mnemonic-keys", "npm:0.0.9"],
             ["base64-js", "npm:1.5.1"],
             ["chai", "npm:4.3.4"],
-            ["commander", "npm:8.2.0"],
+            ["commander", "npm:8.3.0"],
             ["eslint", "npm:7.23.0"],
             ["eslint-config-prettier", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:8.1.0"],
             ["eslint-plugin-prettier", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:3.3.1"],
@@ -1731,7 +1731,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["arweave-mnemonic-keys", "npm:0.0.9"],
             ["base64-js", "npm:1.5.1"],
             ["chai", "npm:4.3.4"],
-            ["commander", "npm:8.2.0"],
+            ["commander", "npm:8.3.0"],
             ["eslint", "npm:7.23.0"],
             ["eslint-config-prettier", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:8.1.0"],
             ["eslint-plugin-prettier", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:3.3.1"],
@@ -2609,10 +2609,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           ],
           "linkType": "HARD",
         }],
-        ["npm:8.2.0", {
-          "packageLocation": "./.yarn/cache/commander-npm-8.2.0-c925691796-e41e680f2a.zip/node_modules/commander/",
+        ["npm:8.3.0", {
+          "packageLocation": "./.yarn/cache/commander-npm-8.3.0-c0d18c66d5-0b818d97ca.zip/node_modules/commander/",
           "packageDependencies": [
-            ["commander", "npm:8.2.0"]
+            ["commander", "npm:8.3.0"]
           ],
           "linkType": "HARD",
         }]
