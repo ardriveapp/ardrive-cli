@@ -10,8 +10,8 @@ describe('The CLIAction class', () => {
 			action = new CLIAction();
 		});
 
-		it('Trigger resolves into a number');
-		it('The awaiters actually resolves into the parsedParameters');
+		it('Trigger resolves with a number exit code');
+		it('The awaiters actually resolves with the parsedParameters');
 		it('There is a static CLIAction.runningAction for instantly returning');
 	});
 
