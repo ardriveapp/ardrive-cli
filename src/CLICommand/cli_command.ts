@@ -106,7 +106,7 @@ export class CLICommand {
 		_program.exitOverride();
 		setCommanderCommand(this.commandDescription, this.program);
 		CLICommand.allCommandInstances.push(this);
-		commandDescription.action.actionAwaiter().finally(CLICommand.rejectPendingAwaiters);
+		commandDescription.action.actionAwaiter().finally(CLICommand.rejectNonTriggeredAwaiters);
 	}
 
 	public get action(): Promise<ParsedParameters> {
@@ -123,11 +123,11 @@ export class CLICommand {
 			program.parse(argv);
 		} catch {
 			exitProgram(ERROR_EXIT_CODE);
-			this.rejectPendingAwaiters();
+			this.rejectNonTriggeredAwaiters();
 		}
 	}
 
-	private static rejectPendingAwaiters(): void {
+	private static rejectNonTriggeredAwaiters(): void {
 		// reject all action awaiters that haven't run
 		const theOtherCommandActions = CLICommand.allCommandInstances.map((cmd) => cmd.commandDescription.action);
 		theOtherCommandActions.forEach((action) => action.wasNotTriggered());
