@@ -10,7 +10,7 @@ export class CLIAction {
 	constructor(
 		private readonly actionCallback: AsyncActionCallback = async (opts) => {
 			/* a little hack here:
-			 * for testing propuses, the callback defaults to a dummy promise which resolves into the parsed options
+			 * for testing purposes, the callback defaults to a dummy promise which resolves into the parsed options
 			 */
 			const optsAsUnknown = opts as unknown;
 			const optsAsReturnType = optsAsUnknown as ActionReturnType;
