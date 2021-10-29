@@ -1,11 +1,13 @@
-import { ActionCallback, ActionReturnType, ParsedArguments } from './cli';
+import { ActionReturnType, AsyncActionCallback, ParsedParameters } from './cli';
 
 export class CLIAction {
 	private _promiseInstance?: Promise<ActionReturnType>;
-	private readonly _awaiterInstances: Promise<ActionReturnType>[] = [];
+	private _parsedParameters: ParsedParameters = {};
+	private readonly _awaiterInstances: ((value?: ParsedParameters, error?: Error) => void)[] = [];
+	private static _runningAction?: CLIAction;
 
 	constructor(
-		private readonly actionCallback: ActionCallback = async (opts) => {
+		private readonly actionCallback: AsyncActionCallback = async (opts) => {
 			/* a little hack here:
 			 * for testing propuses, the callback defaults to a dummy promise which resolves into the parsed options
 			 */
@@ -22,29 +24,77 @@ export class CLIAction {
 		return this._promiseInstance;
 	}
 
-	trigger(options: ParsedArguments): Promise<ActionReturnType> {
+	private get parsedParameters(): ParsedParameters {
+		if (!this._parsedParameters) {
+			throw new Error(`There's no instance of a promise before calling it`);
+		}
+		return this._parsedParameters;
+	}
+
+	async trigger(options: ParsedParameters): Promise<ActionReturnType> {
 		this._promiseInstance = this.actionCallback(options);
-		return this.promiseInstance.finally(this.resolveAwaiters.bind(this, options));
+		CLIAction._runningAction = this;
+		this._parsedParameters = options;
+		return this.promiseInstance
+			.then((exitCode) => {
+				this.resolveAwaiters();
+				return exitCode;
+			})
+			.catch((err: Error) => {
+				this.rejectAwaiters(err);
+				throw err;
+			});
 	}
 
-	actionAwaiter(): Promise<ActionReturnType> {
-		// eslint-disable-next-line @typescript-eslint/no-this-alias
-		const that = this;
-		return new Promise(function (this: Promise<ActionReturnType>, resolve) {
-			if (that._promiseInstance) {
-				// the promise was already called, resolve when the action is finished
-				that.promiseInstance.then(resolve.bind(this));
-			} else {
-				// queque the awaiter for when the promise is called
-				that._awaiterInstances.push(this);
-			}
-		});
+	actionAwaiter(): Promise<ParsedParameters> {
+		if (this._promiseInstance) {
+			// the promise was already called, resolve when the action is finished
+			return this.promiseInstance.then(() => this.parsedParameters);
+		} else {
+			// queque the awaiter for when the promise is called
+			const awaiter = new Promise<ParsedParameters>((resolve, reject) => {
+				this._awaiterInstances.push(function (value?: ParsedParameters, error?: Error): void {
+					if (value) {
+						resolve(value);
+					} else {
+						reject(error);
+					}
+				});
+			});
+			return awaiter;
+		}
+		// return new Promise(function (this: Promise<ActionReturnType>, resolve, reject) {
+		// });
 	}
 
-	private resolveAwaiters(options: ParsedArguments): void {
+	private resolveAwaiters(): void {
 		while (this._awaiterInstances.length) {
 			const awaiter = this._awaiterInstances.pop();
-			Promise.resolve.bind(awaiter)(options);
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			awaiter!(this.parsedParameters);
 		}
+	}
+
+	private rejectAwaiters(err: Error): void {
+		while (this._awaiterInstances.length) {
+			const awaiter = this._awaiterInstances.pop();
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			awaiter!(undefined, err);
+		}
+	}
+
+	public setParsingError(err: Error): void {
+		this.rejectAwaiters(err);
+	}
+
+	public didntRun(): void {
+		this.rejectAwaiters(new Error(`Action didn't run`));
+	}
+
+	public static get runningAction(): CLIAction {
+		if (!this._runningAction) {
+			throw new Error(`No action has been called yet`);
+		}
+		return this._runningAction;
 	}
 }

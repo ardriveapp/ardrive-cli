@@ -1,21 +1,19 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-import { Command } from 'commander';
+import { program } from 'commander';
 import { CLIAction } from './action';
-import { ActionReturnType, CliApiObject, ParsedArguments } from './cli';
-import { ERROR_EXIT_CODE } from './constants';
+import { CliApiObject, ParsedParameters } from './cli';
 import { Parameter, ParameterName, ParameterOverridenConfig } from './parameter';
+import { ERROR_EXIT_CODE } from './constants';
 
 export type CommandName = string;
 export interface CommandDescriptor {
 	name: CommandName;
 	parameters: (ParameterName | ParameterOverridenConfig)[];
-	action(options: ParsedArguments): Promise<number | void>;
+	action: CLIAction;
 }
 
-const program: CliApiObject = new Command() as CliApiObject;
-program.name('ardrive');
-program.addHelpCommand(true);
-program.usage('[command] [command-specific options]');
+const programAsUnknown: unknown = program;
+const programApi: CliApiObject = programAsUnknown as CliApiObject;
 
 /**
  * @name setCommanderCommand
@@ -23,7 +21,7 @@ program.usage('[command] [command-specific options]');
  * @param {CliApiObject} program the instance of the commander class
  * This function is the responsible to tell the third party library to declare a command
  */
-function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliApiObject): CLIAction {
+function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliApiObject): void {
 	let command: CliApiObject = program.command(commandDescriptor.name);
 	const parameters = commandDescriptor.parameters.map((param) => new Parameter(param));
 	parameters.forEach((parameter) => {
@@ -47,18 +45,12 @@ function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliA
 			command.option(...optionArguments);
 		}
 	});
-	const action = new CLIAction(commandDescriptor.action);
-	command = command.action(async (options) => {
-		await (async function () {
-			assertConjunctionParameters(commandDescriptor, options);
-			const exitCode = await action.trigger(options);
+	command = command.action((options) => {
+		assertConjunctionParameters(commandDescriptor, options);
+		commandDescriptor.action.trigger(options).then((exitCode) => {
 			exitProgram(exitCode || 0);
-		})().catch((err) => {
-			console.log(err.message);
-			exitProgram(ERROR_EXIT_CODE);
 		});
 	});
-	return action;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -100,42 +92,66 @@ export function assertForbidden(parameter: Parameter, options: any): void {
 }
 
 export class CLICommand {
-	private static allCommandDescriptors: CommandDescriptor[] = [];
-	private _runningAction: CLIAction;
+	private static allCommandInstances: CLICommand[] = [];
+	// private _action: CLIAction;
 
 	/**
 	 * @param {CommandDescriptor} commandDescription an immutable representation of a command
 	 * @param {string[]} argv a custom argv for testing purposes
 	 */
-	constructor(private readonly commandDescription: CommandDescriptor, private readonly _program?: CliApiObject) {
-		CLICommand.allCommandDescriptors.push(commandDescription);
-		this._runningAction = setCommanderCommand(this.commandDescription, this.program);
+	constructor(readonly commandDescription: CommandDescriptor, private readonly _program: CliApiObject = programApi) {
+		_program.name('ardrive');
+		_program.addHelpCommand(true);
+		_program.usage('[command] [command-specific options]');
+		_program.exitOverride();
+		setCommanderCommand(this.commandDescription, this.program);
+		CLICommand.allCommandInstances.push(this);
+		commandDescription.action.actionAwaiter().finally(CLICommand.rejectPendingAwaiters);
 	}
 
-	public get runningAction(): Promise<ActionReturnType> {
-		return this._runningAction.actionAwaiter();
+	public get action(): Promise<ParsedParameters> {
+		return this.commandDescription.action.actionAwaiter();
 	}
+
+	// public static get program(): CliApiObject {
+	// 	// TODO: make me private when index.ts is fully de-coupled from commander library
+	// 	return program;
+	// }
 
 	// A singleton instance of the commander's program object
-	public static get program(): CliApiObject {
-		// TODO: make me private when index.ts is fully de-coupled from commander library
-		return program;
-	}
-
 	private get program(): CliApiObject {
-		return this._program || CLICommand.program;
+		return this._program;
 	}
 
-	public static parse(program: CliApiObject = this.program, argv: string[] = process.argv): void {
-		program.parse(argv);
+	public static parse(program: CliApiObject = programApi, argv: string[] = process.argv): void {
+		try {
+			program.parse(argv);
+		} catch (e) {
+			exitProgram(ERROR_EXIT_CODE);
+			this.rejectPendingAwaiters();
+			// CLIAction.runningAction.setParsingError(e);
+		}
 	}
+
+	private static rejectPendingAwaiters(): void {
+		// reject all action awaiters that haven't run
+		const theOtherCommandActions = CLICommand.allCommandInstances.map((cmd) => cmd.commandDescription.action);
+		theOtherCommandActions.forEach((action) => action.didntRun());
+	}
+
+	// public static parseAsync(
+	// 	program: CliApiObject = this.program,
+	// 	argv: string[] = process.argv
+	// ): Promise<CliApiObject> {
+	// 	return program.parseAsync(argv);
+	// }
 
 	/**
 	 * For test purposes only
 	 * @returns {CommandDescriptor[]} all declared command descriptors
 	 */
 	public static _getAllCommandDescriptors(): CommandDescriptor[] {
-		return this.allCommandDescriptors;
+		return this.allCommandInstances.map((cmd) => cmd.commandDescription);
 	}
 }
 

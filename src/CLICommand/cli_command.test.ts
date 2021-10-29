@@ -12,16 +12,16 @@ import {
 import { CliApiObject } from './cli';
 import { baseArgv } from './test_constants';
 import { Parameter } from './parameter';
+import { CLIAction } from './action';
 
 const MY_DRIVE_NAME = 'My awesome drive!';
 const testingCommandName = 'drive-name-test';
 const driveNameCommandDescription: CommandDescriptor = {
 	name: testingCommandName,
 	parameters: [DriveNameParameter],
-	async action(option) {
-		/** This code here will run after argv is parsed */
-		expect(option.driveNameTest).to.equal(MY_DRIVE_NAME);
-	}
+	action: new CLIAction(async (option) => {
+		await expect(option.driveNameTest).to.equal(MY_DRIVE_NAME);
+	})
 };
 const driveNameArgv: string[] = [...baseArgv, testingCommandName, '--drive-name', MY_DRIVE_NAME];
 async function action() {
@@ -35,7 +35,7 @@ const commandDescriptorRequiredWallet: CommandDescriptor = {
 		WalletFileParameter,
 		{ name: UnsafeDrivePasswordParameter, requiredConjunctionParameters: [WalletFileParameter] }
 	],
-	action
+	action: new CLIAction(action)
 };
 const parsedOptionsMissingWallet = {
 	[WalletFileParameter]: undefined,
@@ -44,7 +44,7 @@ const parsedOptionsMissingWallet = {
 const commandDescriptorForbiddenWalletFileAndSeedPhrase: CommandDescriptor = {
 	name: testingCommandName,
 	parameters: [WalletFileParameter, SeedPhraseParameter],
-	action
+	action: new CLIAction(action)
 };
 const parsedCommandOptionsBothSpecified = {
 	[WalletFileParameter]: nonEmptyValue,
@@ -61,7 +61,7 @@ class TestCliApiObject {
 	parse = stub(this.program, 'parse');
 	addHelpCommand = stub(this.program, 'addHelpCommand').returnsThis();
 	opts = stub(this.program, 'opts').returnsThis();
-
+	exitOverride = stub(this.program, 'exitOverride').returnsThis();
 	name = stub(this.program, 'name').returnsThis();
 	usage = stub(this.program, 'usage').returnsThis();
 	outputHelp = stub(this.program, 'outputHelp');

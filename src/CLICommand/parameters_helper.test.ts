@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { Command } from 'commander';
-import { ActionReturnType, CliApiObject, ParsedArguments } from './cli';
+import { ActionReturnType, CliApiObject, ParsedParameters } from './cli';
 import { CLICommand, CommandDescriptor } from './cli_command';
 import { Parameter, ParameterName } from './parameter';
 import {
@@ -29,6 +29,7 @@ import '../parameter_declarations';
 import { urlEncodeHashKey } from '../utils';
 import { stubArweaveAddress } from '../utils/stubs';
 import { CLIAction } from './action';
+import { SUCCESS_EXIT_CODE } from './constants';
 
 const expectedArweaveAddress = stubArweaveAddress('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
 
@@ -42,12 +43,12 @@ const expectedArweaveAddress = stubArweaveAddress('P8aFJizMVBl7HeoRAz2i1dNYkG_Ko
 function declareCommandWithParams(
 	program: CliApiObject,
 	parameters: ParameterName[],
-	action?: (options: ParsedArguments) => Promise<ActionReturnType>
+	action?: (options: ParsedParameters) => Promise<ActionReturnType>
 ): CLICommand {
 	const command: CommandDescriptor = {
 		name: testCommandName,
 		parameters,
-		action: (options: ParsedArguments) => new CLIAction(action).trigger(options)
+		action: new CLIAction(action)
 	};
 	return new CLICommand(command, program);
 }
@@ -63,7 +64,7 @@ describe('ParametersHelper class', () => {
 		Parameter.declare(singleValueParameter);
 		const cmd = declareCommandWithParams(program, [singleValueParameterName]);
 		CLICommand.parse(program, [...baseArgv, testCommandName, '--single-value-parameter', '1234567890']);
-		return cmd.runningAction.then((options) => {
+		return cmd.action.then((options) => {
 			const parameters = new ParametersHelper(options);
 			return expect(parameters.getParameterValue(singleValueParameterName)).to.not.be.undefined;
 		});
@@ -73,7 +74,7 @@ describe('ParametersHelper class', () => {
 		Parameter.declare(booleanParameter);
 		const cmd = declareCommandWithParams(program, [booleanParameterName]);
 		CLICommand.parse(program, [...baseArgv, testCommandName]);
-		return cmd.runningAction.then((options) => {
+		return cmd.action.then((options) => {
 			const parameters = new ParametersHelper(options);
 			return expect(!!parameters.getParameterValue(booleanParameterName)).to.be.false;
 		});
@@ -83,7 +84,7 @@ describe('ParametersHelper class', () => {
 		Parameter.declare(booleanParameter);
 		const cmd = declareCommandWithParams(program, [booleanParameterName]);
 		CLICommand.parse(program, [...baseArgv, testCommandName, '--boolean-parameter']);
-		return cmd.runningAction.then((options) => {
+		return cmd.action.then((options) => {
 			const parameters = new ParametersHelper(options);
 			return expect(parameters.getParameterValue(booleanParameterName)).to.be.true;
 		});
@@ -94,7 +95,7 @@ describe('ParametersHelper class', () => {
 		Parameter.declare(arrayParameter);
 		const cmd = declareCommandWithParams(program, [arrayParameterName]);
 		CLICommand.parse(program, [...baseArgv, testCommandName, '--array-parameter', ...colorsArray]);
-		return cmd.runningAction.then((options) => {
+		return cmd.action.then((options) => {
 			const parameters = new ParametersHelper(options);
 			return expect(parameters.getParameterValue(arrayParameterName)).to.deep.equal(colorsArray);
 		});
@@ -102,15 +103,20 @@ describe('ParametersHelper class', () => {
 
 	it('Required parameter throws if missing', () => {
 		// FIXME!!!!
-		CLICommand.parse(program, [...baseArgv, requiredParameterName]);
 		Parameter.declare(requiredParameter);
+		const cmd = declareCommandWithParams(program, [requiredParameterName]);
+		CLICommand.parse(program, [...baseArgv, testCommandName]);
+		return cmd.action.catch(() => undefined).then(() => expect(process.exitCode).to.not.equal(SUCCESS_EXIT_CODE));
+		// return cmd.runningAction.then(() => {
+		// 	return expect(process.exitCode).to.not.equal(SUCCESS_EXIT_CODE);
+		// });
 	});
 
 	describe('getIsPrivate method', () => {
 		it('returns false when none of --unsafe-drive-password, --drive-key, -p, or -k are provided', () => {
 			const cmd = declareCommandWithParams(program, []);
 			CLICommand.parse(program, [...baseArgv, testCommandName]);
-			return cmd.runningAction.then((options) => {
+			return cmd.action.then((options) => {
 				const parameters = new ParametersHelper(options);
 				return parameters.getIsPrivate().then((isPrivate) => expect(isPrivate).to.be.false);
 			});
@@ -119,7 +125,7 @@ describe('ParametersHelper class', () => {
 		it('returns true when --unsafe-drive-password is provided', () => {
 			const cmd = declareCommandWithParams(program, [UnsafeDrivePasswordParameter]);
 			CLICommand.parse(program, [...baseArgv, testCommandName, '--unsafe-drive-password', 'pw']);
-			return cmd.runningAction.then((options) => {
+			return cmd.action.then((options) => {
 				const parameters = new ParametersHelper(options);
 				return parameters.getIsPrivate().then((isPrivate) => expect(isPrivate).to.be.true);
 			});
@@ -128,7 +134,7 @@ describe('ParametersHelper class', () => {
 		it('returns true when -p is provided', () => {
 			const cmd = declareCommandWithParams(program, [UnsafeDrivePasswordParameter]);
 			CLICommand.parse(program, [...baseArgv, testCommandName, '-p', 'pw']);
-			return cmd.runningAction.then((options) => {
+			return cmd.action.then((options) => {
 				const parameters = new ParametersHelper(options);
 				return parameters.getIsPrivate().then((isPrivate) => expect(isPrivate).to.be.true);
 			});
@@ -137,7 +143,7 @@ describe('ParametersHelper class', () => {
 		it('returns true when --drive-key is provided', () => {
 			const cmd = declareCommandWithParams(program, [DriveKeyParameter]);
 			CLICommand.parse(program, [...baseArgv, testCommandName, '--drive-key', 'key']);
-			return cmd.runningAction.then((options) => {
+			return cmd.action.then((options) => {
 				const parameters = new ParametersHelper(options);
 				return parameters.getIsPrivate().then((isPrivate) => expect(isPrivate).to.be.true);
 			});
@@ -146,7 +152,7 @@ describe('ParametersHelper class', () => {
 		it('returns true when -k is provided', () => {
 			const cmd = declareCommandWithParams(program, [DriveKeyParameter]);
 			CLICommand.parse(program, [...baseArgv, testCommandName, '-k', 'key']);
-			return cmd.runningAction.then((options) => {
+			return cmd.action.then((options) => {
 				const parameters = new ParametersHelper(options);
 				return parameters.getIsPrivate().then((isPrivate) => expect(isPrivate).to.be.true);
 			});
@@ -157,7 +163,7 @@ describe('ParametersHelper class', () => {
 		it('returns a wallet when a valid --wallet-file is provided', () => {
 			const cmd = declareCommandWithParams(program, [WalletFileParameter]);
 			CLICommand.parse(program, [...baseArgv, testCommandName, '--wallet-file', './test_wallet.json']);
-			return cmd.runningAction.then((options) => {
+			return cmd.action.then((options) => {
 				const parameters = new ParametersHelper(options);
 				return parameters.getRequiredWallet();
 			});
@@ -166,7 +172,7 @@ describe('ParametersHelper class', () => {
 		it('returns a wallet when a valid --w file is provided', () => {
 			const cmd = declareCommandWithParams(program, [WalletFileParameter]);
 			CLICommand.parse(program, [...baseArgv, testCommandName, '-w', './test_wallet.json']);
-			return cmd.runningAction.then((options) => {
+			return cmd.action.then((options) => {
 				const parameters = new ParametersHelper(options);
 				return parameters.getRequiredWallet();
 			});
@@ -182,7 +188,7 @@ describe('ParametersHelper class', () => {
 				'--seed-phrase',
 				'alcohol wisdom allow used april recycle exhibit parent music field cabbage treat'
 			]);
-			return cmd.runningAction.then((options) => {
+			return cmd.action.then((options) => {
 				const parameters = new ParametersHelper(options);
 				return parameters.getRequiredWallet();
 			});
@@ -206,7 +212,7 @@ describe('ParametersHelper class', () => {
 		it('throws when none of --wallet-file, -w, --seed-phrase, or -s option are provided', () => {
 			const cmd = declareCommandWithParams(program, []);
 			CLICommand.parse(program, [...baseArgv, testCommandName]);
-			return cmd.runningAction.then((options) => {
+			return cmd.action.then((options) => {
 				const parameters = new ParametersHelper(options);
 				return parameters
 					.getRequiredWallet()
@@ -220,7 +226,7 @@ describe('ParametersHelper class', () => {
 		it('returns a wallet when a valid --wallet-file is provided', () => {
 			const cmd = declareCommandWithParams(program, [WalletFileParameter]);
 			CLICommand.parse(program, [...baseArgv, testCommandName, '--wallet-file', './test_wallet.json']);
-			return cmd.runningAction.then((options) => {
+			return cmd.action.then((options) => {
 				const parameters = new ParametersHelper(options);
 				return parameters.getOptionalWallet();
 			});
@@ -229,7 +235,7 @@ describe('ParametersHelper class', () => {
 		it('returns a wallet when a valid --w file is provided', () => {
 			const cmd = declareCommandWithParams(program, [WalletFileParameter]);
 			CLICommand.parse(program, [...baseArgv, testCommandName, '-w', './test_wallet.json']);
-			return cmd.runningAction.then((options) => {
+			return cmd.action.then((options) => {
 				const parameters = new ParametersHelper(options);
 				return parameters.getOptionalWallet();
 			});
@@ -266,7 +272,7 @@ describe('ParametersHelper class', () => {
 		it('returns null when none of --wallet-file, -w, --seed-phrase, or -s option are provided', () => {
 			const cmd = declareCommandWithParams(program, []);
 			CLICommand.parse(program, [...baseArgv, testCommandName]);
-			return cmd.runningAction.then((options) => {
+			return cmd.action.then((options) => {
 				const parameters = new ParametersHelper(options);
 				const walletPromise = parameters.getOptionalWallet().catch(() => null);
 				return walletPromise.then((wallet) => expect(wallet).to.be.null);
@@ -278,7 +284,7 @@ describe('ParametersHelper class', () => {
 		it('returns the address of the wallet when a valid --wallet-file is provided', () => {
 			const cmd = declareCommandWithParams(program, [WalletFileParameter]);
 			CLICommand.parse(program, [...baseArgv, testCommandName, '--wallet-file', './test_wallet.json']);
-			return cmd.runningAction.then((options) => {
+			return cmd.action.then((options) => {
 				const parameters = new ParametersHelper(options);
 				const walletAddressPromise = parameters.getWalletAddress();
 				return walletAddressPromise.then((walletAddress) =>
@@ -290,7 +296,7 @@ describe('ParametersHelper class', () => {
 		it('returns the address of the wallet when a valid --w file is provided', () => {
 			const cmd = declareCommandWithParams(program, [WalletFileParameter]);
 			CLICommand.parse(program, [...baseArgv, testCommandName, '-w', './test_wallet.json']);
-			return cmd.runningAction.then((options) => {
+			return cmd.action.then((options) => {
 				const parameters = new ParametersHelper(options);
 				const walletAddressPromise = parameters.getWalletAddress();
 				return walletAddressPromise.then((walletAddress) =>
@@ -335,7 +341,7 @@ describe('ParametersHelper class', () => {
 				'--address',
 				'P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4'
 			]);
-			return cmd.runningAction.then((options) => {
+			return cmd.action.then((options) => {
 				const parameters = new ParametersHelper(options);
 				const walletAddressPromise = parameters.getWalletAddress();
 				return walletAddressPromise.then((walletAddress) =>
@@ -352,7 +358,7 @@ describe('ParametersHelper class', () => {
 				'-a',
 				'P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4'
 			]);
-			return cmd.runningAction.then((options) => {
+			return cmd.action.then((options) => {
 				const parameters = new ParametersHelper(options);
 				const walletPromise = parameters.getWalletAddress();
 				return walletPromise.then((walletAddress) =>
@@ -364,7 +370,7 @@ describe('ParametersHelper class', () => {
 		it('throws when none of --wallet-file, -w, --seed-phrase, -s, --address, or -a option are provided', () => {
 			const cmd = declareCommandWithParams(program, []);
 			CLICommand.parse(program, [...baseArgv, testCommandName]);
-			return cmd.runningAction.then((options) => {
+			return cmd.action.then((options) => {
 				const parameters = new ParametersHelper(options);
 				const walletPromise = parameters.getWalletAddress().catch(() => null);
 				return walletPromise.then((wallet) => expect(wallet).to.be.null);
@@ -383,7 +389,7 @@ describe('ParametersHelper class', () => {
 				'--unsafe-drive-password',
 				'password'
 			]);
-			return cmd.runningAction.then((options) => {
+			return cmd.action.then((options) => {
 				const parameters = new ParametersHelper(options);
 				const driveKeyPromise = parameters.getDriveKey({ driveId: '00000000-0000-0000-0000-000000000000' });
 				return driveKeyPromise.then((driveKey) =>
@@ -400,7 +406,7 @@ describe('ParametersHelper class', () => {
 				'--drive-key',
 				'Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg'
 			]);
-			return cmd.runningAction.then((options) => {
+			return cmd.action.then((options) => {
 				const parameters = new ParametersHelper(options);
 				return parameters
 					.getDriveKey({ driveId: '00000000-0000-0000-0000-000000000000' })
@@ -413,7 +419,7 @@ describe('ParametersHelper class', () => {
 		it('throws when none of --wallet-file, -w, --seed-phrase, -s, --drive-key, or -k option are provided', () => {
 			const cmd = declareCommandWithParams(program, []);
 			CLICommand.parse(program, [...baseArgv, testCommandName]);
-			return cmd.runningAction.then((options) => {
+			return cmd.action.then((options) => {
 				const parameters = new ParametersHelper(options);
 				const driveKeyPromise = parameters
 					.getDriveKey({ driveId: '00000000-0000-0000-0000-000000000000' })
@@ -427,7 +433,7 @@ describe('ParametersHelper class', () => {
 		it('Defaults to zero', () => {
 			const cmd = declareCommandWithParams(program, [MaxDepthParameter]);
 			CLICommand.parse(program, [...baseArgv, testCommandName]);
-			return cmd.runningAction.then((options) => {
+			return cmd.action.then((options) => {
 				const parameters = new ParametersHelper(options);
 				const maxDepthPromise = parameters.getMaxDepth();
 				return maxDepthPromise.then((maxDepth) => expect(maxDepth).to.equal(0));
@@ -437,7 +443,7 @@ describe('ParametersHelper class', () => {
 		it('Does not accept a decimal', () => {
 			const cmd = declareCommandWithParams(program, [MaxDepthParameter]);
 			CLICommand.parse(program, [...baseArgv, testCommandName, '--max-depth=.33']);
-			return cmd.runningAction.then((options) => {
+			return cmd.action.then((options) => {
 				const parameters = new ParametersHelper(options);
 				const maxDepthPromise = parameters.getMaxDepth().catch(() => null);
 				return maxDepthPromise.then((maxDepth) => expect(maxDepth).to.be.null);
@@ -447,7 +453,7 @@ describe('ParametersHelper class', () => {
 		it('Does not accept a negative integer', () => {
 			const cmd = declareCommandWithParams(program, [MaxDepthParameter]);
 			CLICommand.parse(program, [...baseArgv, testCommandName, '--max-depth=-100']);
-			return cmd.runningAction.then((options) => {
+			return cmd.action.then((options) => {
 				const parameters = new ParametersHelper(options);
 				const maxDepthPromise = parameters.getMaxDepth().catch(() => null);
 				return maxDepthPromise.then((maxDepth) => expect(maxDepth).to.be.null);
@@ -457,7 +463,7 @@ describe('ParametersHelper class', () => {
 		it('Max depth is the MAX_SAFE_INTEGER when --all is specified', () => {
 			const cmd = declareCommandWithParams(program, [MaxDepthParameter, AllParameter]);
 			CLICommand.parse(program, [...baseArgv, testCommandName, '--all']);
-			return cmd.runningAction.then((options) => {
+			return cmd.action.then((options) => {
 				const parameters = new ParametersHelper(options);
 				const maxDepthPromise = parameters.getMaxDepth().catch(() => null);
 				return maxDepthPromise.then((maxDepth) => expect(maxDepth).to.equal(Number.MAX_SAFE_INTEGER));
@@ -467,7 +473,7 @@ describe('ParametersHelper class', () => {
 		it('Custom positive value is providen', () => {
 			const cmd = declareCommandWithParams(program, [MaxDepthParameter]);
 			CLICommand.parse(program, [...baseArgv, testCommandName, '--max-depth=8']);
-			return cmd.runningAction.then((options) => {
+			return cmd.action.then((options) => {
 				const parameters = new ParametersHelper(options);
 				const maxDepthPromise = parameters.getMaxDepth().catch(() => null);
 				return maxDepthPromise.then((maxDepth) => expect(typeof maxDepth).to.equal('number'));

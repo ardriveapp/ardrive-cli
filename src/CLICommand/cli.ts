@@ -1,4 +1,6 @@
-export interface ParsedArguments {
+import { CommanderError } from 'commander';
+
+export interface ParsedParameters {
 	// TODO: make parameterName to have type ParameterName
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	[parameterName: string /** ParameterName */]: any;
@@ -17,12 +19,15 @@ export abstract class CliApiObject {
 	abstract command(commandName: string): CliApiObject;
 	abstract parse(...args: [program: CliApiObject] | [argv: string[]]): void;
 	abstract addHelpCommand(addHelp: boolean): void;
-	abstract opts(): ParsedArguments;
+	abstract opts(): ParsedParameters;
 	abstract name(name: string): CliApiObject;
 	abstract usage(usage: string): CliApiObject;
 	abstract outputHelp(): void;
+	abstract exitOverride(callback?: (commanderError: CommanderError) => void): CliApiObject;
 }
 
-export type ActionCallback = (options: ParsedArguments) => Promise<ActionReturnType>;
+export type ActionCallback = (options: ParsedParameters) => ActionReturnType; // commander action callback
+
+export type AsyncActionCallback = (options: ParsedParameters) => Promise<ActionReturnType>;
 
 export type ActionReturnType = number | void;
