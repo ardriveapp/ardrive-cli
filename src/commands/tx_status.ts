@@ -1,5 +1,6 @@
 import { cliArweave } from '..';
 import { CLICommand } from '../CLICommand';
+import { CLIAction } from '../CLICommand/action';
 import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 import { ConfirmationsParameter, TransactionIdParameter } from '../parameter_declarations';
 import { fetchMempool } from '../utils';
@@ -7,7 +8,7 @@ import { fetchMempool } from '../utils';
 new CLICommand({
 	name: 'tx-status',
 	parameters: [TransactionIdParameter, ConfirmationsParameter],
-	async action(options) {
+	action: new CLIAction(async function action(options) {
 		const { txId, confirmations } = options;
 		const transactionsInMempool = await fetchMempool();
 		const pending = transactionsInMempool.includes(txId);
@@ -36,5 +37,5 @@ new CLICommand({
 		}
 
 		return SUCCESS_EXIT_CODE;
-	}
+	})
 });

@@ -10,11 +10,12 @@ import { Wallet } from '../wallet_new';
 import { arDriveFactory } from '..';
 import { FeeMultiple } from '../types';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
+import { CLIAction } from '../CLICommand/action';
 
 new CLICommand({
 	name: 'move-file',
 	parameters: [FileIdParameter, ParentFolderIdParameter, BoostParameter, DryRunParameter, ...DrivePrivacyParameters],
-	async action(options) {
+	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
 
 		const { fileId, parentFolderId, boost, dryRun } = options;
@@ -39,5 +40,5 @@ new CLICommand({
 		console.log(JSON.stringify(createDriveResult, null, 4));
 
 		return SUCCESS_EXIT_CODE;
-	}
+	})
 });

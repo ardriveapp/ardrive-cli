@@ -1,13 +1,14 @@
 import { cliWalletDao } from '..';
 import { CLICommand } from '../CLICommand';
+import { CLIAction } from '../CLICommand/action';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 
 new CLICommand({
 	name: 'generate-seedphrase',
 	parameters: [],
-	async action() {
+	action: new CLIAction(async function action() {
 		const seedPhrase = await cliWalletDao.generateSeedPhrase();
 		console.log(JSON.stringify(seedPhrase));
 		return SUCCESS_EXIT_CODE;
-	}
+	})
 });
