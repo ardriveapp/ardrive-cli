@@ -486,17 +486,20 @@ describe('ArDrive class - integrated', () => {
 					});
 				});
 
-				it('throws an error if destination folder has a conflicting FILE name and conflict resolution is set to skip', async () => {
+				it('returns the correct empty ArFSResult if destination folder has a conflicting FILE name and conflict resolution is set to skip', async () => {
 					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 
-					await expectAsyncErrorThrow({
-						promiseToError: arDrive.uploadPublicFile({
-							parentFolderId: stubEntityID,
-							wrappedFile,
-							destinationFileName: 'CONFLICTING_FILE_NAME',
-							conflictResolution: 'skip'
-						}),
-						errorMessage: 'Entity name already exists in destination folder!'
+					const result = await arDrive.uploadPublicFile({
+						parentFolderId: stubEntityID,
+						wrappedFile,
+						destinationFileName: 'CONFLICTING_FILE_NAME',
+						conflictResolution: 'skip'
+					});
+
+					expect(result).to.deep.equal({
+						created: [],
+						tips: [],
+						fees: {}
 					});
 				});
 
@@ -562,18 +565,21 @@ describe('ArDrive class - integrated', () => {
 					});
 				});
 
-				it('throws an error if destination folder has a conflicting FILE name and conflict resolution is set to skip', async () => {
+				it('returns the correct empty ArFSResult if destination folder has a conflicting FILE name and conflict resolution is set to skip', async () => {
 					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 
-					await expectAsyncErrorThrow({
-						promiseToError: arDrive.uploadPrivateFile({
-							parentFolderId: stubEntityID,
-							wrappedFile,
-							driveKey: await getStubDriveKey(),
-							destinationFileName: 'CONFLICTING_FILE_NAME',
-							conflictResolution: 'skip'
-						}),
-						errorMessage: 'Entity name already exists in destination folder!'
+					const result = await arDrive.uploadPrivateFile({
+						parentFolderId: stubEntityID,
+						wrappedFile,
+						driveKey: await getStubDriveKey(),
+						destinationFileName: 'CONFLICTING_FILE_NAME',
+						conflictResolution: 'skip'
+					});
+
+					expect(result).to.deep.equal({
+						created: [],
+						tips: [],
+						fees: {}
 					});
 				});
 

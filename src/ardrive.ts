@@ -81,6 +81,12 @@ export interface ArFSResult {
 	fees: ArFSFees;
 }
 
+const emptyArFSResult: ArFSResult = {
+	created: [],
+	tips: [],
+	fees: {}
+};
+
 export interface MetaDataBaseCosts {
 	metaDataBaseReward: Winston;
 }
@@ -523,7 +529,7 @@ export class ArDrive extends ArDriveAnonymous {
 		const conflictingFileName = filesAndFolderNames.files.find((f) => f.fileName === destFileName);
 
 		if (conflictingFileName && conflictResolution === 'skip') {
-			throw new Error(errorMessage.entityNameExists);
+			return emptyArFSResult;
 		}
 		// TODO: Handle this.conflictResolution === 'upsert' and 'ask' PE-638
 
@@ -789,7 +795,7 @@ export class ArDrive extends ArDriveAnonymous {
 		const conflictingFileName = filesAndFolderNames.files.find((f) => f.fileName === destFileName);
 
 		if (conflictingFileName && conflictResolution === 'skip') {
-			throw new Error(errorMessage.entityNameExists);
+			return emptyArFSResult;
 		}
 		// TODO: Handle this.conflictResolution === 'upsert' and 'ask' PE-638
 
