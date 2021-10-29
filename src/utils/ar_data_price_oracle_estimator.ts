@@ -2,6 +2,7 @@ import { GatewayOracle } from './gateway_oracle';
 import type { ArweaveOracle } from './arweave_oracle';
 import { AbstractARDataPriceEstimator } from './ar_data_price_estimator';
 import { ByteCount } from '../types';
+import { Winston } from '../types/winston';
 
 export const arPerWinston = 0.000_000_000_001;
 
@@ -21,7 +22,7 @@ export class ARDataPriceOracleEstimator extends AbstractARDataPriceEstimator {
 	 *
 	 * @returns Promise for the price of an upload of size `byteCount` in Winston
 	 */
-	public async getBaseWinstonPriceForByteCount(byteCount: ByteCount): Promise<number> {
+	public async getBaseWinstonPriceForByteCount(byteCount: ByteCount): Promise<Winston> {
 		return this.oracle.getWinstonPriceForByteCount(byteCount);
 	}
 }

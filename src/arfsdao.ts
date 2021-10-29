@@ -88,6 +88,7 @@ import { PrivateKeyData } from './private_key_data';
 import { ArweaveAddress } from './types/arweave_address';
 import { EntityNamesAndIds, entityToNameMap, fileToNameAndIdMap, folderToNameAndIdMap } from './utils/mapper_functions';
 import { ListPrivateFolderParams } from './ardrive';
+import { Winston } from './types/winston';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 
@@ -207,7 +208,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			}
 		}
 
-		return { metaDataTrxId: folderTrx.id, metaDataTrxReward: folderTrx.reward, folderId };
+		return { metaDataTrxId: folderTrx.id, metaDataTrxReward: new Winston(folderTrx.reward), folderId };
 	}
 
 	// Convenience wrapper for folder creation in a known-public use case
@@ -276,7 +277,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		return resultFactory({
 			metaDataTrxId: driveTrx.id,
-			metaDataTrxReward: driveTrx.reward,
+			metaDataTrxReward: new Winston(driveTrx.reward),
 			rootFolderTrxId: rootFolderTrxId,
 			rootFolderTrxReward: rootFolderTrxReward,
 			driveId: driveId,
@@ -368,7 +369,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			}
 		}
 
-		return resultFactory({ metaDataTrxId: metaDataTrx.id, metaDataTrxReward: metaDataTrx.reward });
+		return resultFactory({ metaDataTrxId: metaDataTrx.id, metaDataTrxReward: new Winston(metaDataTrx.reward) });
 	}
 
 	async movePublicFile({
@@ -515,9 +516,9 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return resultFactoryFn(
 			{
 				dataTrxId: dataTrx.id,
-				dataTrxReward: dataTrx.reward,
+				dataTrxReward: new Winston(dataTrx.reward),
 				metaDataTrxId: metaDataTrx.id,
-				metaDataTrxReward: metaDataTrx.reward,
+				metaDataTrxReward: new Winston(metaDataTrx.reward),
 				fileId
 			},
 			metadataTrxData
@@ -636,7 +637,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		// If we provided our own reward setting, use it now
 		if (rewardSettings.reward) {
-			trxAttributes.reward = rewardSettings.reward;
+			trxAttributes.reward = rewardSettings.reward.toString();
 		}
 
 		// TODO: Use a mock arweave server instead

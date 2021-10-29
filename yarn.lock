@@ -1312,6 +1312,7 @@ __metadata:
     arweave-bundles: ^1.0.3
     arweave-mnemonic-keys: ^0.0.9
     base64-js: ^1.5.1
+    bignumber.js: ^9.0.0
     chai: ^4.3.4
     commander: ^8.2.0
     eslint: ^7.23.0
@@ -1570,7 +1571,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bignumber.js@npm:^9.0.1":
+"bignumber.js@npm:^9.0.0, bignumber.js@npm:^9.0.1":
   version: 9.0.1
   resolution: "bignumber.js@npm:9.0.1"
   checksum: 605e9639c413f344c37b23e919254f60a5017cc5ccd925e2f8fb79b36aa3d54f356df9c726f38465263236455f685d60dcf38dbe32cb0b7e4d2a32c94b035476

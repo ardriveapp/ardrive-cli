@@ -1,18 +1,18 @@
 import { weightedRandom } from 'ardrive-core-js';
 import { ContractOracle, ContractReader } from './contract_oracle';
 import { CommunityOracle } from './community_oracle';
-import { Winston } from '../types';
 import { ArDriveContractOracle } from './ardrive_contract_oracle';
 import Arweave from 'arweave';
 import { SmartweaveContractReader } from './smartweave_contract_oracle';
 import { VertoContractReader } from './verto_contract_oracle';
 import { ArweaveAddress } from '../types/arweave_address';
+import { Winston } from '../types/winston';
 
 /**
  * Minimum ArDrive community tip from the Community Improvement Proposal Doc:
  * https://arweave.net/Yop13NrLwqlm36P_FDCdMaTBwSlj0sdNGAC4FqfRUgo
  */
-export const minArDriveCommunityWinstonTip = 10_000_000;
+export const minArDriveCommunityWinstonTip = new Winston(10_000_000);
 
 /**
  * Oracle class responsible for determining the community tip
@@ -41,8 +41,8 @@ export class ArDriveCommunityOracle implements CommunityOracle {
 	 */
 	async getCommunityWinstonTip(winstonCost: Winston): Promise<Winston> {
 		const communityTipPercentage = await this.contractOracle.getTipPercentageFromContract();
-		const arDriveCommunityTip = +winstonCost * communityTipPercentage;
-		return Math.round(Math.max(arDriveCommunityTip, minArDriveCommunityWinstonTip)).toString();
+		const arDriveCommunityTip = winstonCost.times(communityTipPercentage);
+		return Winston.max(arDriveCommunityTip, minArDriveCommunityWinstonTip);
 	}
 
 	/**
