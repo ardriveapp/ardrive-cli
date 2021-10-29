@@ -19,9 +19,7 @@ const testingCommandName = 'drive-name-test';
 const driveNameCommandDescription: CommandDescriptor = {
 	name: testingCommandName,
 	parameters: [DriveNameParameter],
-	action: new CLIAction(async (option) => {
-		await expect(option.driveNameTest).to.equal(MY_DRIVE_NAME);
-	})
+	action: new CLIAction()
 };
 const driveNameArgv: string[] = [...baseArgv, testingCommandName, '--drive-name', MY_DRIVE_NAME];
 async function action() {
