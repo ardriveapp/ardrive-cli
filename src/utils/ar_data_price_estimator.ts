@@ -47,10 +47,7 @@ export abstract class AbstractARDataPriceAndCapacityEstimator extends AbstractAR
 		{ minWinstonFee, tipPercentage }: ArDriveCommunityTip
 	): Promise<ByteCount> {
 		const winstonPrice = arPrice.toWinston();
-
-		const communityWinstonFee = Winston.max(winstonPrice.minus(winstonPrice.dividedBy((1 + tipPercentage))), minWinstonFee);
-
-		console.log(`wp = ${winstonPrice}   cwf = ${communityWinstonFee}`);
+		const communityWinstonFee = Winston.max(winstonPrice.minus(winstonPrice.dividedBy(1 + tipPercentage)), minWinstonFee);
 		if (winstonPrice.isGreaterThan(communityWinstonFee)) {
 			return this.getByteCountForWinston(winstonPrice.minus(communityWinstonFee));
 		}

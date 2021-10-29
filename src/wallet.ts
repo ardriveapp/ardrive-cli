@@ -90,7 +90,7 @@ export class WalletDAO {
 
 	async walletHasBalance(wallet: Wallet, winstonPrice: Winston): Promise<boolean> {
 		const walletBalance = await this.getWalletWinstonBalance(wallet);
-		return +walletBalance > +winstonPrice;
+		return walletBalance.isGreaterThan(winstonPrice);
 	}
 
 	async sendARToAddress(

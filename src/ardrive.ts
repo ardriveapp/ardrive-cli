@@ -584,7 +584,7 @@ export class ArDrive extends ArDriveAnonymous {
 			owner: await this.wallet.getAddress()
 		});
 
-		if (+bulkEstimation.communityWinstonTip > 0) {
+		if (bulkEstimation.communityWinstonTip.isGreaterThan(new Winston(0))) {
 			// Send community tip only if communityWinstonTip has a value
 			// This can be zero when a user uses this method to upload empty folders
 
@@ -852,7 +852,7 @@ export class ArDrive extends ArDriveAnonymous {
 			owner
 		});
 
-		if (+bulkEstimation.communityWinstonTip > 0) {
+		if (bulkEstimation.communityWinstonTip.isGreaterThan(new Winston(0))) {
 			// Send community tip only if communityWinstonTip has a value
 			// This can be zero when a user uses this method to upload empty folders
 

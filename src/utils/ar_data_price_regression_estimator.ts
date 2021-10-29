@@ -117,11 +117,10 @@ export class ARDataPriceRegressionEstimator extends AbstractARDataPriceAndCapaci
 
 		// Return 0 if winston price given does not cover the base winston price for a transaction
 		// TODO: Is number sufficient here vs. BigNumber?
-		if (winston.isGreaterThan(this.predictor.baseWinstonPrice())) {
-			return +winston
-				.minus(this.predictor.baseWinstonPrice())
-				.dividedBy(this.predictor.marginalWinstonPrice())
-				.toString();
+		const baseWinstonPrice = this.predictor.baseWinstonPrice();
+		const marginalWinstonPrice = this.predictor.marginalWinstonPrice();
+		if (winston.isGreaterThan(baseWinstonPrice)) {
+			return +winston.minus(baseWinstonPrice).dividedBy(marginalWinstonPrice).toString();
 		}
 
 		return 0;

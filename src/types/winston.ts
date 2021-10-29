@@ -22,11 +22,12 @@ export class Winston {
 	}
 
 	dividedBy(divisor: BigNumber.Value): Winston {
-		return new Winston(this.amount.dividedBy(divisor).decimalPlaces(0, BigNumber.ROUND_DOWN));
+		// TODO: Best rounding strategy? Up or down?
+		return new Winston(this.amount.dividedBy(divisor).decimalPlaces(0, BigNumber.ROUND_CEIL));
 	}
 
 	isGreaterThan(winston: Winston): boolean {
-		return this.amount > winston.amount;
+		return this.amount.isGreaterThan(winston.amount);
 	}
 
 	static difference(a: Winston, b: Winston): string {
@@ -43,25 +44,30 @@ export class Winston {
 
 	static max(...winstons: Winston[]): Winston {
 		BigNumber.max();
-		return winstons.reduce((max, next) => (next.amount > max.amount ? next : max));
+		return winstons.reduce((max, next) => (next.amount.isGreaterThan(max.amount) ? next : max));
 	}
 }
 
 export class AR {
 	constructor(readonly winston: Winston) {}
 
-	static from(winstonValue: BigNumber.Value): AR {
-		const bigWinston = new BigNumber(winstonValue);
+	static from(arValue: BigNumber.Value): AR {
+		const bigWinston = new BigNumber(arValue).shiftedBy(12);
 		const numDecimalPlace = bigWinston.decimalPlaces();
 		if (numDecimalPlace > 12) {
 			throw new Error(`The AR amount must have a maximum of 12 digits of precision, but got ${numDecimalPlace}`);
 		}
-		return new AR(new Winston(winstonValue));
+		return new AR(new Winston(bigWinston));
 	}
 
 	toString(): string {
 		BigNumber.config({ DECIMAL_PLACES: 12 });
-		return new BigNumber(this.winston.toString()).shiftedBy(-12).toFixed();
+		const w = new BigNumber(this.winston.toString());
+		return w.shiftedBy(-12).toFixed();
+	}
+
+	valueOf(): string {
+		return this.toString();
 	}
 
 	toWinston(): Winston {
