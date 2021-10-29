@@ -148,11 +148,9 @@ describe('ArDrive class', () => {
 				stubPublicFileTransactionData,
 				'private'
 			);
-			expect(actual).to.deep.equal({
-				metaDataBaseReward: '147',
-				fileDataBaseReward: '1234576',
-				communityWinstonTip: '9876543210'
-			});
+			expect(`${actual.metaDataBaseReward}`).to.equal('147');
+			expect(`${actual.fileDataBaseReward}`).to.equal('1234576');
+			expect(`${actual.communityWinstonTip}`).to.equal('9876543210');
 		});
 	});
 
@@ -175,9 +173,8 @@ describe('ArDrive class', () => {
 			});
 
 			const actual = await arDrive.estimateAndAssertCostOfFolderUpload(stubPublicFileTransactionData);
-			expect(actual).to.deep.equal({
-				metaDataBaseReward: '147'
-			});
+			// TODO: Bummer to lose deep equal verification
+			expect(`${actual.metaDataBaseReward}`).to.equal('147');
 		});
 	});
 
@@ -206,10 +203,8 @@ describe('ArDrive class', () => {
 				stubPublicDriveMetadataTransactionData,
 				stubPublicFolderTransactionData
 			);
-			expect(actual).to.deep.equal({
-				driveMetaDataBaseReward: '73',
-				rootFolderMetaDataBaseReward: '19'
-			});
+			expect(`${actual.driveMetaDataBaseReward}`).to.equal('73');
+			expect(`${actual.rootFolderMetaDataBaseReward}`).to.equal('19');
 		});
 	});
 
@@ -232,9 +227,7 @@ describe('ArDrive class', () => {
 			});
 
 			const actual = await arDrive.estimateAndAssertCostOfMoveFile(stubPublicFileTransactionData);
-			expect(actual).to.deep.equal({
-				metaDataBaseReward: '147'
-			});
+			expect(`${actual.metaDataBaseReward}`).to.equal('147');
 		});
 	});
 });
