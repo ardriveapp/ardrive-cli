@@ -130,7 +130,7 @@ export class CLICommand {
 	private static rejectPendingAwaiters(): void {
 		// reject all action awaiters that haven't run
 		const theOtherCommandActions = CLICommand.allCommandInstances.map((cmd) => cmd.commandDescription.action);
-		theOtherCommandActions.forEach((action) => action.didntRun());
+		theOtherCommandActions.forEach((action) => action.wasNotTriggered());
 	}
 
 	/**

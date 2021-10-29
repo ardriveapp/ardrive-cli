@@ -86,7 +86,7 @@ export class CLIAction {
 		this.rejectAwaiters(err);
 	}
 
-	public didntRun(): void {
+	public wasNotTriggered(): void {
 		this.rejectAwaiters(new Error(`Action didn't run`));
 	}
 
