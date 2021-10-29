@@ -3,7 +3,7 @@
 import { Wallet, WalletDAO } from './wallet';
 import Arweave from 'arweave';
 import { ArDriveCommunityOracle } from './community/ardrive_community_oracle';
-import { ArDrive, ArDriveAnonymous, ConflictResolution } from './ardrive';
+import { ArDrive, ArDriveAnonymous } from './ardrive';
 import { ArFSDAO } from './arfsdao';
 import { ARDataPriceEstimator } from './utils/ar_data_price_estimator';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
@@ -47,7 +47,6 @@ export interface ArDriveSettings extends ArDriveSettingsAnonymous {
 	feeMultiple?: FeeMultiple;
 	dryRun?: boolean;
 	arfsDao?: ArFSDAO;
-	conflictResolution?: ConflictResolution;
 }
 
 export function arDriveFactory({
@@ -58,8 +57,7 @@ export function arDriveFactory({
 	walletDao = cliWalletDao,
 	dryRun,
 	feeMultiple,
-	arfsDao = new ArFSDAO(wallet, arweave, dryRun, CLI_APP_NAME, CLI_APP_VERSION),
-	conflictResolution
+	arfsDao = new ArFSDAO(wallet, arweave, dryRun, CLI_APP_NAME, CLI_APP_VERSION)
 }: ArDriveSettings): ArDrive {
 	return new ArDrive(
 		wallet,
@@ -70,8 +68,7 @@ export function arDriveFactory({
 		CLI_APP_VERSION,
 		priceEstimator,
 		feeMultiple,
-		dryRun,
-		conflictResolution
+		dryRun
 	);
 }
 

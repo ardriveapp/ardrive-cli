@@ -11,15 +11,14 @@ import {
 	SeedPhraseParameter,
 	WalletFileParameter,
 	PrivateParameter,
-	ReplaceParameter,
-	SkipParameter
+	ReplaceParameter
 } from '../parameter_declarations';
 import { cliWalletDao } from '..';
 import { DriveID, DriveKey } from '../types';
 import passwordPrompt from 'prompts';
 import { PrivateKeyData } from '../private_key_data';
 import { ArweaveAddress } from '../arweave_address';
-import { ConflictResolution } from '../ardrive';
+import { FileNameConflictResolution } from '../ardrive';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ParameterOptions = any;
@@ -207,11 +206,7 @@ export class ParametersHelper {
 		return maxDepthValue;
 	}
 
-	public getConflictResolution(): ConflictResolution | undefined {
-		if (this.getParameterValue(SkipParameter)) {
-			return 'skip';
-		}
-
+	public getFileNameConflictResolution(): FileNameConflictResolution {
 		if (this.getParameterValue(ReplaceParameter)) {
 			return 'replace';
 		}
@@ -224,7 +219,7 @@ export class ParametersHelper {
 		// 	return 'ask'
 		// };
 
-		return undefined;
+		return 'skip';
 	}
 
 	/**
