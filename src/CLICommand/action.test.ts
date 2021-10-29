@@ -1,9 +1,28 @@
+import { CLIAction } from './action';
+// import { ParsedParameters } from './cli';
+
 describe('The CLIAction class', () => {
-	it('You can run one or more awaiters in some action');
-	it('Trigger resolves into a number');
-	it('The awaiter resolves into the parsedParameters');
-	it('There will be a static runningAction after some is triggered for instantly returning');
-	it('The awaiter rejects on trigger reject');
-	it('The awaiter rejects when a parsing error is reported');
-	it('The awaiter rejects when the action was not triggered');
+	let action: CLIAction;
+
+	describe('on trigger resolve', () => {
+		// let beforeRunAwaiter: Promise<ParsedParameters>, afterRunAwaiter: Promise<ParsedParameters>;
+		before(() => {
+			action = new CLIAction();
+		});
+
+		it('Trigger resolves into a number');
+		it('The awaiters actually resolves into the parsedParameters');
+		it('There is a static CLIAction.runningAction for instantly returning');
+	});
+
+	describe('on trigger reject', () => {
+		beforeEach(() => {
+			action = new CLIAction();
+		});
+
+		it('The awaiter rejects on trigger reject');
+		it('The awaiter rejects when a parsing error is reported');
+		it('The awaiter rejects when the action was not triggered');
+		it('The static CLIAction.runningAction is undefined');
+	});
 });
