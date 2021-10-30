@@ -1,7 +1,7 @@
 import { cliArweave } from '..';
 import { CLICommand } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
-import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/constants';
+import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { ConfirmationsParameter, TransactionIdParameter } from '../parameter_declarations';
 import { fetchMempool } from '../utils';
 

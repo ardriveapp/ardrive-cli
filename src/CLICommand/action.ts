@@ -1,5 +1,5 @@
 import { ActionReturnType, AsyncActionCallback, ParsedParameters } from './cli';
-import { ERROR_EXIT_CODE } from './constants';
+import { ERROR_EXIT_CODE } from './error_codes';
 
 export class CLIAction {
 	private _promiseInstance?: Promise<ActionReturnType>;

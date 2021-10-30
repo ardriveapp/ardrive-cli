@@ -1,7 +1,7 @@
 import { cliWalletDao } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
-import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { SeedPhraseParameter } from '../parameter_declarations';
 
 new CLICommand({

@@ -3,7 +3,7 @@ import { ArweaveAddress } from '../arweave_address';
 import { CLICommand } from '../CLICommand';
 import { ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
-import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import {
 	ArAmountParameter,
 	BoostParameter,

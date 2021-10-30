@@ -9,7 +9,7 @@ import { arDriveFactory } from '..';
 import { JWKWallet, Wallet } from '../wallet_new';
 import { FeeMultiple } from '../types';
 import { PrivateDriveKeyData } from '../arfsdao';
-import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { CLIAction } from '../CLICommand/action';
 
 new CLICommand({

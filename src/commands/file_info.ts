@@ -3,7 +3,7 @@ import { GetAllRevisionsParameter, FileIdParameter, DrivePrivacyParameters } fro
 import { arDriveAnonymousFactory, arDriveFactory, cliWalletDao } from '..';
 import { FileID } from '../types';
 import { ArFSPrivateFile, ArFSPublicFile } from '../arfs_entities';
-import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { CLIAction } from '../CLICommand/action';
 
 new CLICommand({
