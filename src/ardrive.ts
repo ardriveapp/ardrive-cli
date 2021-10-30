@@ -125,7 +125,7 @@ interface MovePublicFolderParams {
 }
 type MovePrivateFolderParams = MovePublicFolderParams & WithDriveKey;
 
-export type FileNameConflictResolution = 'skip' | 'replace'; // | 'upsert' | 'ask'
+export type FileNameConflictResolution = 'skip' | 'replace' | 'upsert'; // | 'ask'
 
 export interface UploadParams {
 	parentFolderId: FolderID;
@@ -509,7 +509,7 @@ export class ArDrive extends ArDriveAnonymous {
 		parentFolderId,
 		wrappedFile,
 		destinationFileName,
-		conflictResolution = 'skip'
+		conflictResolution = 'upsert'
 	}: UploadPublicFileParams): Promise<ArFSResult> {
 		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
 
@@ -528,10 +528,22 @@ export class ArDrive extends ArDriveAnonymous {
 
 		const conflictingFileName = filesAndFolderNames.files.find((f) => f.fileName === destFileName);
 
-		if (conflictingFileName && conflictResolution === 'skip') {
-			return emptyArFSResult;
+		if (conflictingFileName) {
+			if (conflictResolution === 'skip') {
+				// File has the same name, skip the upload
+				return emptyArFSResult;
+			}
+
+			if (
+				conflictResolution === 'upsert' &&
+				conflictingFileName.lastModifiedDate === wrappedFile.lastModifiedDate
+			) {
+				// These files have the same name and last modified date, skip the upload
+				return emptyArFSResult;
+			}
+
+			// TODO: Handle this.conflictResolution === 'ask' PE-639
 		}
-		// TODO: Handle this.conflictResolution === 'upsert' and 'ask' PE-638
 
 		// File is a new revision if destination name conflicts
 		// with an existing file in the destination folder
@@ -581,7 +593,7 @@ export class ArDrive extends ArDriveAnonymous {
 		parentFolderId,
 		wrappedFolder,
 		destParentFolderName,
-		conflictResolution = 'skip'
+		conflictResolution = 'upsert'
 	}: BulkPublicUploadParams): Promise<ArFSResult> {
 		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
 
@@ -694,43 +706,49 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Upload all files in the folder
 		for await (const wrappedFile of wrappedFolder.files) {
-			// Don't upload this file if there is an existing file and conflict resolution is skip
-			if (!(conflictResolution === 'skip' && wrappedFile.existingId)) {
-				const fileDataRewardSettings = {
-					reward: wrappedFile.getBaseCosts().fileDataBaseReward,
-					feeMultiple: this.feeMultiple
-				};
-
-				const metadataRewardSettings = {
-					reward: wrappedFile.getBaseCosts().metaDataBaseReward,
-					feeMultiple: this.feeMultiple
-				};
-
-				const uploadFileResult = await this.arFsDao.uploadPublicFile({
-					parentFolderId: folderId,
-					wrappedFile,
-					driveId,
-					fileDataRewardSettings,
-					metadataRewardSettings,
-					existingFileId: wrappedFile.existingId
-				});
-
-				// Capture all file results
-				uploadEntityFees = {
-					...uploadEntityFees,
-					[uploadFileResult.dataTrxId]: +uploadFileResult.dataTrxReward,
-					[uploadFileResult.metaDataTrxId]: +uploadFileResult.metaDataTrxReward
-				};
-				uploadEntityResults = [
-					...uploadEntityResults,
-					{
-						type: 'file',
-						metadataTxId: uploadFileResult.metaDataTrxId,
-						dataTxId: uploadFileResult.dataTrxId,
-						entityId: uploadFileResult.fileId
-					}
-				];
+			if (
+				// Conflict resolution is set to skip and there is an existing file
+				(conflictResolution === 'skip' && wrappedFile.existingId) ||
+				// Conflict resolution is set to upsert and an existing file has the same last modified date
+				(conflictResolution === 'upsert' && wrappedFile.hasSameLastModifiedDate)
+			) {
+				// Continue loop, don't upload this file
+				continue;
 			}
+			const fileDataRewardSettings = {
+				reward: wrappedFile.getBaseCosts().fileDataBaseReward,
+				feeMultiple: this.feeMultiple
+			};
+
+			const metadataRewardSettings = {
+				reward: wrappedFile.getBaseCosts().metaDataBaseReward,
+				feeMultiple: this.feeMultiple
+			};
+
+			const uploadFileResult = await this.arFsDao.uploadPublicFile({
+				parentFolderId: folderId,
+				wrappedFile,
+				driveId,
+				fileDataRewardSettings,
+				metadataRewardSettings,
+				existingFileId: wrappedFile.existingId
+			});
+
+			// Capture all file results
+			uploadEntityFees = {
+				...uploadEntityFees,
+				[uploadFileResult.dataTrxId]: +uploadFileResult.dataTrxReward,
+				[uploadFileResult.metaDataTrxId]: +uploadFileResult.metaDataTrxReward
+			};
+			uploadEntityResults = [
+				...uploadEntityResults,
+				{
+					type: 'file',
+					metadataTxId: uploadFileResult.metaDataTrxId,
+					dataTxId: uploadFileResult.dataTrxId,
+					entityId: uploadFileResult.fileId
+				}
+			];
 		}
 
 		// Upload folders, and children of those folders
@@ -775,7 +793,7 @@ export class ArDrive extends ArDriveAnonymous {
 		wrappedFile,
 		driveKey,
 		destinationFileName,
-		conflictResolution
+		conflictResolution = 'upsert'
 	}: UploadPrivateFileParams): Promise<ArFSResult> {
 		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
 
@@ -794,10 +812,22 @@ export class ArDrive extends ArDriveAnonymous {
 
 		const conflictingFileName = filesAndFolderNames.files.find((f) => f.fileName === destFileName);
 
-		if (conflictingFileName && conflictResolution === 'skip') {
-			return emptyArFSResult;
+		if (conflictingFileName) {
+			if (conflictResolution === 'skip') {
+				// File has the same name, skip the upload
+				return emptyArFSResult;
+			}
+
+			if (
+				conflictResolution === 'upsert' &&
+				conflictingFileName.lastModifiedDate === wrappedFile.lastModifiedDate
+			) {
+				// These files have the same name and last modified date, skip the upload
+				return emptyArFSResult;
+			}
+
+			// TODO: Handle this.conflictResolution === 'ask' PE-639
 		}
-		// TODO: Handle this.conflictResolution === 'upsert' and 'ask' PE-638
 
 		// File is a new revision if destination name conflicts
 		// with an existing file in the destination folder
@@ -859,7 +889,7 @@ export class ArDrive extends ArDriveAnonymous {
 		wrappedFolder,
 		driveKey,
 		destParentFolderName,
-		conflictResolution = 'skip'
+		conflictResolution = 'upsert'
 	}: BulkPrivateUploadParams): Promise<ArFSResult> {
 		// Retrieve drive ID from folder ID
 		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
@@ -954,6 +984,11 @@ export class ArDrive extends ArDriveAnonymous {
 			if (fileNameConflict) {
 				// Assigns existing id for later use
 				file.existingId = fileNameConflict.fileId;
+
+				if (fileNameConflict.lastModifiedDate === file.lastModifiedDate) {
+					// Check last modified date and set to true to resolve upsert conditional
+					file.hasSameLastModifiedDate = true;
+				}
 			}
 		}
 
@@ -1055,44 +1090,51 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Upload all files in the folder
 		for await (const wrappedFile of wrappedFolder.files) {
-			// Don't upload this file if there is an existing file and conflict resolution is skip
-			if (!(conflictResolution === 'skip' && wrappedFile.existingId)) {
-				const fileDataRewardSettings = {
-					reward: wrappedFile.getBaseCosts().fileDataBaseReward,
-					feeMultiple: this.feeMultiple
-				};
-				const metadataRewardSettings = {
-					reward: wrappedFile.getBaseCosts().metaDataBaseReward,
-					feeMultiple: this.feeMultiple
-				};
-
-				const uploadFileResult = await this.arFsDao.uploadPrivateFile({
-					parentFolderId: folderId,
-					wrappedFile,
-					driveId,
-					driveKey,
-					fileDataRewardSettings,
-					metadataRewardSettings,
-					existingFileId: wrappedFile.existingId
-				});
-
-				// Capture all file results
-				uploadEntityFees = {
-					...uploadEntityFees,
-					[uploadFileResult.dataTrxId]: +uploadFileResult.dataTrxReward,
-					[uploadFileResult.metaDataTrxId]: +uploadFileResult.metaDataTrxReward
-				};
-				uploadEntityResults = [
-					...uploadEntityResults,
-					{
-						type: 'file',
-						metadataTxId: uploadFileResult.metaDataTrxId,
-						dataTxId: uploadFileResult.dataTrxId,
-						entityId: uploadFileResult.fileId,
-						key: urlEncodeHashKey(uploadFileResult.fileKey)
-					}
-				];
+			if (
+				// Conflict resolution is set to skip and there is an existing file
+				(conflictResolution === 'skip' && wrappedFile.existingId) ||
+				// Conflict resolution is set to upsert and an existing file has the same last modified date
+				(conflictResolution === 'upsert' && wrappedFile.hasSameLastModifiedDate)
+			) {
+				// Continue loop, don't upload this file
+				continue;
 			}
+
+			const fileDataRewardSettings = {
+				reward: wrappedFile.getBaseCosts().fileDataBaseReward,
+				feeMultiple: this.feeMultiple
+			};
+			const metadataRewardSettings = {
+				reward: wrappedFile.getBaseCosts().metaDataBaseReward,
+				feeMultiple: this.feeMultiple
+			};
+
+			const uploadFileResult = await this.arFsDao.uploadPrivateFile({
+				parentFolderId: folderId,
+				wrappedFile,
+				driveId,
+				driveKey,
+				fileDataRewardSettings,
+				metadataRewardSettings,
+				existingFileId: wrappedFile.existingId
+			});
+
+			// Capture all file results
+			uploadEntityFees = {
+				...uploadEntityFees,
+				[uploadFileResult.dataTrxId]: +uploadFileResult.dataTrxReward,
+				[uploadFileResult.metaDataTrxId]: +uploadFileResult.metaDataTrxReward
+			};
+			uploadEntityResults = [
+				...uploadEntityResults,
+				{
+					type: 'file',
+					metadataTxId: uploadFileResult.metaDataTrxId,
+					dataTxId: uploadFileResult.dataTrxId,
+					entityId: uploadFileResult.fileId,
+					key: urlEncodeHashKey(uploadFileResult.fileKey)
+				}
+			];
 		}
 
 		// Upload folders, and children of those folders

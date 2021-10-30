@@ -11,7 +11,8 @@ import {
 	SeedPhraseParameter,
 	WalletFileParameter,
 	PrivateParameter,
-	ReplaceParameter
+	ReplaceParameter,
+	UpsertParameter
 } from '../parameter_declarations';
 import { cliWalletDao } from '..';
 import { DriveID, DriveKey } from '../types';
@@ -211,15 +212,15 @@ export class ParametersHelper {
 			return 'replace';
 		}
 
-		// if (this.getParameterValue(UpsertParameter)) {
-		// 	return 'upsert'
-		// };
+		if (this.getParameterValue(UpsertParameter)) {
+			return 'skip';
+		}
 
 		// if (this.getParameterValue(AskParameter)) {
 		// 	return 'ask'
 		// };
 
-		return 'skip';
+		return 'upsert';
 	}
 
 	/**

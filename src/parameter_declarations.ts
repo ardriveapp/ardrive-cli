@@ -26,7 +26,7 @@ export const BoostParameter = 'boost';
 export const DryRunParameter = 'dryRun';
 export const SkipParameter = 'skip';
 export const ReplaceParameter = 'replace';
-// export const UpsertParameter = 'upsert';
+export const UpsertParameter = 'upsert';
 // export const AskParameter = 'ask';
 export const NoVerifyParameter = 'verify'; // commander maps --no-x style params to options.x and always includes in options
 
@@ -226,7 +226,7 @@ Parameter.declare({
 	aliases: ['--skip'],
 	description: '(OPTIONAL) Skip upload if there is a name conflict within destination folder',
 	type: 'boolean',
-	forbiddenConjunctionParameters: [ReplaceParameter]
+	forbiddenConjunctionParameters: [ReplaceParameter, UpsertParameter]
 });
 
 Parameter.declare({
@@ -234,7 +234,16 @@ Parameter.declare({
 	aliases: ['--replace'],
 	description: '(OPTIONAL) Create new file revisions if there is a name conflict within destination folder',
 	type: 'boolean',
-	forbiddenConjunctionParameters: [SkipParameter]
+	forbiddenConjunctionParameters: [SkipParameter, UpsertParameter]
+});
+
+Parameter.declare({
+	name: UpsertParameter,
+	aliases: ['--upsert'],
+	description:
+		'(OPTIONAL) If there is a name conflict within the destination folder and if that file was last modified at the same time as the file to upload, skip the upload',
+	type: 'boolean',
+	forbiddenConjunctionParameters: [SkipParameter, ReplaceParameter]
 });
 
 Parameter.declare({

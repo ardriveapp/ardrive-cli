@@ -86,7 +86,12 @@ import { ArFSDAOAnonymous } from './arfsdao_anonymous';
 import { ArFSFileOrFolderBuilder } from './utils/arfs_builders/arfs_builders';
 import { PrivateKeyData } from './private_key_data';
 import { ArweaveAddress } from './arweave_address';
-import { EntityNamesAndIds, entityToNameMap, fileToNameAndIdMap, folderToNameAndIdMap } from './utils/mapper_functions';
+import {
+	EntityNamesAndIds,
+	entityToNameMap,
+	fileConflictInfoMap,
+	folderToNameAndIdMap
+} from './utils/mapper_functions';
 import { ListPrivateFolderParams } from './ardrive';
 
 export const graphQLURL = 'https://arweave.net/graphql';
@@ -858,7 +863,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	async getPublicEntityNamesAndIdsInFolder(folderId: FolderID): Promise<EntityNamesAndIds> {
 		const childrenOfFolder = await this.getPublicEntitiesInFolder(folderId, true);
 		return {
-			files: childrenOfFolder.filter(fileFilter).map(fileToNameAndIdMap),
+			files: childrenOfFolder.filter(fileFilter).map(fileConflictInfoMap),
 			folders: childrenOfFolder.filter(folderFilter).map(folderToNameAndIdMap)
 		};
 	}
@@ -866,7 +871,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	async getPrivateEntityNamesAndIdsInFolder(folderId: FolderID, driveKey: DriveKey): Promise<EntityNamesAndIds> {
 		const childrenOfFolder = await this.getPrivateEntitiesInFolder(folderId, driveKey, true);
 		return {
-			files: childrenOfFolder.filter(fileFilter).map(fileToNameAndIdMap),
+			files: childrenOfFolder.filter(fileFilter).map(fileConflictInfoMap),
 			folders: childrenOfFolder.filter(folderFilter).map(folderToNameAndIdMap)
 		};
 	}

@@ -61,13 +61,18 @@ export class ArFSFileToUpload {
 
 	baseCosts?: BulkFileBaseCosts;
 	existingId?: FileID;
+	hasSameLastModifiedDate = false;
 
 	public gatherFileInfo(): FileInfo {
 		const dataContentType = this.getContentType();
-		const lastModifiedDateMS = Math.floor(this.fileStats.mtimeMs);
+		const lastModifiedDateMS = this.lastModifiedDate;
 		const fileSize = this.fileStats.size;
 
 		return { dataContentType, lastModifiedDateMS, fileSize };
+	}
+
+	public get lastModifiedDate(): UnixTime {
+		return Math.floor(this.fileStats.mtimeMs);
 	}
 
 	public getBaseCosts(): BulkFileBaseCosts {
