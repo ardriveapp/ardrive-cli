@@ -11,6 +11,10 @@ describe('Winston class', () => {
 		it('constructor throws an exception when a non-integer Winston value is provided', () => {
 			expect(() => new Winston(0.5)).to.throw(Error);
 			expect(() => new Winston('0.5')).to.throw(Error);
+			expect(() => new Winston('abc')).to.throw(Error);
+			expect(() => new Winston('!!!')).to.throw(Error);
+			expect(() => new Winston('-')).to.throw(Error);
+			expect(() => new Winston('+')).to.throw(Error);
 		});
 
 		it('constructor builds Winston values for positive integer number values without throwing an error', () => {

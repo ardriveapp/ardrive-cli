@@ -29,6 +29,13 @@ describe('AR class', () => {
 			expect(() => AR.from('-0.1')).to.throw(Error);
 			expect(() => AR.from('-18014398509481982.123456789012')).to.throw(Error);
 		});
+
+		it('throws an error when provided with a non-number string', () => {
+			expect(() => AR.from('abc')).to.throw(Error);
+			expect(() => AR.from('!!!')).to.throw(Error);
+			expect(() => AR.from('-')).to.throw(Error);
+			expect(() => AR.from('+')).to.throw(Error);
+		});
 	});
 
 	describe('toString function', () => {
