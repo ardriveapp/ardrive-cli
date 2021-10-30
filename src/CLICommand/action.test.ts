@@ -9,6 +9,10 @@ describe('The CLIAction class', () => {
 		myCustomOption: 'the parameter value'
 	};
 
+	it('The static CLIAction.runningAction throws when is read read before calling trigger()', () => {
+		expect(() => CLIAction.runningAction).to.throw();
+	});
+
 	describe('On trigger resolve', () => {
 		let beforeTriggerAwaiter: Promise<ParsedParameters>, afterTriggerAwaiter: Promise<ParsedParameters>;
 
@@ -45,7 +49,7 @@ describe('The CLIAction class', () => {
 	describe('On trigger reject', () => {
 		it('The awaiter rejects on trigger reject', () => {
 			action = new CLIAction(async () => {
-				throw new Error('BOOM!!! 3:)');
+				throw new Error('Error from inside the action');
 			});
 			action
 				.trigger(params)
@@ -53,24 +57,18 @@ describe('The CLIAction class', () => {
 				.then((err) => expect(err).to.be.instanceOf(Error));
 		});
 
-		it('The awaiter rejects when a parsing error is reported', () => {
+		it('The awaiter rejects if a parsing error is thrown', () => {
 			action = new CLIAction();
-			action.setParsingError(new Error('some wrong flag :P'));
-			return action
-				.actionAwaiter()
-				.catch((err) => err)
-				.then((err) => expect(err).to.be.instanceOf(Error));
+			const awaiter = action.actionAwaiter();
+			action.setParsingError(new Error('Error while parsing argv'));
+			return awaiter.catch((err) => err).then((err) => expect(err).to.be.instanceOf(Error));
 		});
+
 		it('The awaiter rejects when the action was not triggered', () => {
 			action = new CLIAction();
+			const awaiter = action.actionAwaiter();
 			action.wasNotTriggered();
-			return action
-				.actionAwaiter()
-				.catch((err) => err)
-				.then((err) => expect(err).to.be.instanceOf(Error));
-		});
-		it('The static CLIAction.runningAction throws when read', () => {
-			expect(() => CLIAction.runningAction).to.throw();
+			return awaiter.catch((err) => err).then((err) => expect(err).to.be.instanceOf(Error));
 		});
 	});
 });
