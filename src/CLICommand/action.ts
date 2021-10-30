@@ -32,10 +32,10 @@ export class CLIAction {
 		return this._parsedParameters;
 	}
 
-	async trigger(options: ParsedParameters): Promise<ActionReturnType> {
-		this._promiseInstance = this.actionCallback(options);
+	async trigger(params: ParsedParameters): Promise<ActionReturnType> {
+		this._promiseInstance = this.actionCallback(params);
 		CLIAction._runningAction = this;
-		this._parsedParameters = options;
+		this._parsedParameters = params;
 		return this.promiseInstance
 			.then((exitCode) => {
 				this.resolveAwaiters();
