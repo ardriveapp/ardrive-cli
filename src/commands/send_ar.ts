@@ -10,7 +10,7 @@ import {
 	DryRunParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
-import { AR } from '../types/winston';
+import { AR } from '../types/ar';
 
 new CLICommand({
 	name: 'send-ar',

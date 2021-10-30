@@ -4,7 +4,8 @@ import { ARDataPriceRegression } from './data_price_regression';
 import { ARDataPrice } from './ar_data_price';
 import { AbstractARDataPriceAndCapacityEstimator } from './ar_data_price_estimator';
 import type { ArDriveCommunityTip, ByteCount } from '../types';
-import { AR, Winston } from '../types/winston';
+import { Winston } from '../types/winston';
+import { AR } from '../types/ar';
 
 /**
  * A utility class for Arweave data pricing estimation.

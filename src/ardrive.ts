@@ -47,7 +47,8 @@ import { PrivateKeyData } from './private_key_data';
 import { EntityNamesAndIds } from './utils/mapper_functions';
 import { ArweaveAddress } from './types/arweave_address';
 import { WithDriveKey } from './arfs_entity_result_factory';
-import { AR, W, Winston } from './types/winston';
+import { W, Winston } from './types/winston';
+import { AR } from './types/ar';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 

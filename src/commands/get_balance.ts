@@ -2,7 +2,7 @@ import { cliWalletDao } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 import { AddressParameter, SeedPhraseParameter, WalletFileParameter } from '../parameter_declarations';
-import { AR } from '../types/winston';
+import { AR } from '../types/ar';
 
 new CLICommand({
 	name: 'get-balance',

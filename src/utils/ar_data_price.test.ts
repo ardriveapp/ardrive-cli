@@ -12,21 +12,6 @@ describe('ARDataPrice class', () => {
 		expect(() => new ARDataPrice(0.5, stubWinston)).to.throw(Error);
 	});
 
-	// TODO: MOVE TO A WINSTON/AR TEST
-	// it('constructor throws an exception when a negative Winston value is provided', () => {
-	// 	expect(() => new ARDataPrice(-1, -1)).to.throw(Error);
-	// 	expect(() => new ARDataPrice(0, -1)).to.throw(Error);
-	// 	expect(() => new ARDataPrice(0.5, -1)).to.throw(Error);
-	// 	expect(() => new ARDataPrice(1, -1)).to.throw(Error);
-	// });
-
-	// it('constructor throws an exception when a non-integer Winston value is provided', () => {
-	// 	expect(() => new ARDataPrice(-1, 0.5)).to.throw(Error);
-	// 	expect(() => new ARDataPrice(0, 0.5)).to.throw(Error);
-	// 	expect(() => new ARDataPrice(0.5, 0.5)).to.throw(Error);
-	// 	expect(() => new ARDataPrice(1, 0.5)).to.throw(Error);
-	// });
-
 	it('constructs a valid object when zeros are provided', () => {
 		const actual = new ARDataPrice(0, stubWinston);
 		expect(actual.numBytes).to.equal(0);

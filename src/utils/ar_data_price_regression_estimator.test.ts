@@ -4,7 +4,8 @@ import { expect } from 'chai';
 import { SinonStubbedInstance, stub } from 'sinon';
 import { ARDataPriceRegressionEstimator } from './ar_data_price_regression_estimator';
 import type { ArDriveCommunityTip } from '../types';
-import { AR, W } from '../types/winston';
+import { W } from '../types/winston';
+import { AR } from '../types/ar';
 
 describe('ARDataPriceEstimator class', () => {
 	let spyedOracle: SinonStubbedInstance<ArweaveOracle>;

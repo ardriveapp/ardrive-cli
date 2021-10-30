@@ -15,8 +15,9 @@ import {
 } from './types';
 import { CreateTransactionInterface } from 'arweave/node/common';
 import { ArweaveAddress } from './types/arweave_address';
-import { AR, W, Winston } from './types/winston';
+import { W, Winston } from './types/winston';
 import { BigNumber } from 'bignumber.js';
+import { AR } from './types/ar';
 
 export type ARTransferResult = {
 	trxID: TransactionID;
