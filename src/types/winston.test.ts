@@ -19,7 +19,8 @@ describe('Winston class', () => {
 			expect(() => new Winston(Number.MAX_SAFE_INTEGER)).to.not.throw(Error);
 		});
 
-		it('constructor builds Winston values for positive integer number strings without throwing an error', () => {
+		// Not concerned with other number notations for now, e.g. scientific notation
+		it('constructor builds Winston values for positive integer strings without throwing an error', () => {
 			expect(() => new Winston('0')).to.not.throw(Error);
 			expect(() => new Winston('1')).to.not.throw(Error);
 		});

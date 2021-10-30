@@ -35,11 +35,11 @@ export class Winston {
 	}
 
 	toString(): string {
-		return `${this.amount}`;
+		return this.amount.toFixed();
 	}
 
 	valueOf(): string {
-		return `${this.amount}`;
+		return this.amount.toFixed();
 	}
 
 	static max(...winstons: Winston[]): Winston {
