@@ -451,6 +451,9 @@ describe('ArDrive class - integrated', () => {
 		});
 
 		describe('file function', () => {
+			const matchingLastModifiedDate = 420;
+			const differentLastModifiedDate = 1337;
+
 			describe('uploadPublicFile', () => {
 				const wrappedFile = wrapFileOrFolder('test_wallet.json') as ArFSFileToUpload;
 
@@ -459,7 +462,13 @@ describe('ArDrive class - integrated', () => {
 					stub(communityOracle, 'selectTokenHolder').resolves(stubArweaveAddress());
 
 					stub(arfsDao, 'getPublicEntityNamesAndIdsInFolder').resolves({
-						files: [{ fileName: 'CONFLICTING_FILE_NAME', fileId: existingFileId }],
+						files: [
+							{
+								fileName: 'CONFLICTING_FILE_NAME',
+								fileId: existingFileId,
+								lastModifiedDate: matchingLastModifiedDate
+							}
+						],
 						folders: [{ folderName: 'CONFLICTING_FOLDER_NAME', folderId: stubEntityID }]
 					});
 				});
@@ -517,6 +526,39 @@ describe('ArDrive class - integrated', () => {
 					assertUploadFileExpectations(result, 3204, 171, 0, '1', 'public', existingFileId);
 				});
 
+				it('returns an empty ArFSResult if destination folder has a conflicting FILE name and a matching last modified date and the conflict resolution is set to upsert', async () => {
+					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
+					stub(wrappedFile, 'lastModifiedDate').get(() => matchingLastModifiedDate);
+
+					const result = await arDrive.uploadPublicFile({
+						parentFolderId: stubEntityID,
+						wrappedFile,
+						destinationFileName: 'CONFLICTING_FILE_NAME',
+						conflictResolution: 'upsert'
+					});
+
+					expect(result).to.deep.equal({
+						created: [],
+						tips: [],
+						fees: {}
+					});
+				});
+
+				it('returns the correct ArFSResult revision if destination folder has a conflicting FILE name and a different last modified date and the conflict resolution is set to upsert', async () => {
+					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
+					stub(wrappedFile, 'lastModifiedDate').get(() => differentLastModifiedDate);
+
+					const result = await arDrive.uploadPublicFile({
+						parentFolderId: stubEntityID,
+						wrappedFile,
+						destinationFileName: 'CONFLICTING_FILE_NAME',
+						conflictResolution: 'upsert'
+					});
+
+					// Pass expected existing file id, so that the file would be considered a revision
+					assertUploadFileExpectations(result, 3204, 162, 0, '1', 'public', existingFileId);
+				});
+
 				it('returns the correct ArFSResult', async () => {
 					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 
@@ -533,7 +575,13 @@ describe('ArDrive class - integrated', () => {
 					stub(communityOracle, 'selectTokenHolder').resolves(stubArweaveAddress());
 
 					stub(arfsDao, 'getPrivateEntityNamesAndIdsInFolder').resolves({
-						files: [{ fileName: 'CONFLICTING_FILE_NAME', fileId: existingFileId }],
+						files: [
+							{
+								fileName: 'CONFLICTING_FILE_NAME',
+								fileId: existingFileId,
+								lastModifiedDate: matchingLastModifiedDate
+							}
+						],
 						folders: [{ folderName: 'CONFLICTING_FOLDER_NAME', folderId: stubEntityID }]
 					});
 				});
@@ -596,6 +644,41 @@ describe('ArDrive class - integrated', () => {
 
 					// Pass expected existing file id, so that the file would be considered a revision
 					assertUploadFileExpectations(result, 3216, 187, 0, '1', 'private', existingFileId);
+				});
+
+				it('returns an empty ArFSResult if destination folder has a conflicting FILE name and a matching last modified date and the conflict resolution is set to upsert', async () => {
+					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
+					stub(wrappedFile, 'lastModifiedDate').get(() => matchingLastModifiedDate);
+
+					const result = await arDrive.uploadPrivateFile({
+						parentFolderId: stubEntityID,
+						wrappedFile,
+						destinationFileName: 'CONFLICTING_FILE_NAME',
+						conflictResolution: 'upsert',
+						driveKey: await getStubDriveKey()
+					});
+
+					expect(result).to.deep.equal({
+						created: [],
+						tips: [],
+						fees: {}
+					});
+				});
+
+				it('returns the correct ArFSResult revision if destination folder has a conflicting FILE name and a different last modified date and the conflict resolution is set to upsert', async () => {
+					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
+					stub(wrappedFile, 'lastModifiedDate').get(() => differentLastModifiedDate);
+
+					const result = await arDrive.uploadPrivateFile({
+						parentFolderId: stubEntityID,
+						wrappedFile,
+						destinationFileName: 'CONFLICTING_FILE_NAME',
+						conflictResolution: 'upsert',
+						driveKey: await getStubDriveKey()
+					});
+
+					// Pass expected existing file id, so that the file would be considered a revision
+					assertUploadFileExpectations(result, 3216, 178, 0, '1', 'private', existingFileId);
 				});
 
 				it('returns the correct ArFSResult', async () => {
