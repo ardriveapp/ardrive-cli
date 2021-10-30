@@ -1,6 +1,6 @@
 import regression, { DataPoint } from 'regression';
 import { ByteCount } from '../types';
-import { Winston } from '../types/winston';
+import { W, Winston } from '../types/winston';
 import { ARDataPrice } from './ar_data_price';
 
 /**
@@ -42,7 +42,7 @@ export class ARDataPriceRegression {
 
 		const regressionResult = this.regression.predict(numBytes);
 		// TODO: BigNumber regressions
-		return new ARDataPrice(regressionResult[0], new Winston(Math.ceil(regressionResult[1])));
+		return new ARDataPrice(regressionResult[0], W(Math.ceil(regressionResult[1])));
 	}
 
 	/**
@@ -50,7 +50,7 @@ export class ARDataPriceRegression {
 	 * which has been calculated by the regression model
 	 */
 	baseWinstonPrice(): Winston {
-		return new Winston(this.regression.equation[1]);
+		return W(this.regression.equation[1]);
 	}
 
 	/**

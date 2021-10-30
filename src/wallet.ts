@@ -15,7 +15,7 @@ import {
 } from './types';
 import { CreateTransactionInterface } from 'arweave/node/common';
 import { ArweaveAddress } from './types/arweave_address';
-import { AR, Winston } from './types/winston';
+import { AR, W, Winston } from './types/winston';
 import { BigNumber } from 'bignumber.js';
 
 export type ARTransferResult = {
@@ -85,7 +85,7 @@ export class WalletDAO {
 	}
 
 	async getAddressWinstonBalance(address: ArweaveAddress): Promise<Winston> {
-		return Promise.resolve(new Winston(+(await this.arweave.wallets.getBalance(address.toString()))));
+		return Promise.resolve(W(+(await this.arweave.wallets.getBalance(address.toString()))));
 	}
 
 	async walletHasBalance(wallet: Wallet, winstonPrice: Winston): Promise<boolean> {
@@ -135,7 +135,7 @@ export class WalletDAO {
 		if (assertBalance) {
 			const fromAddress = await fromWallet.getAddress();
 			const balanceInWinston = await this.getAddressWinstonBalance(fromAddress);
-			const total = new Winston(transaction.reward).plus(new Winston(transaction.quantity));
+			const total = W(transaction.reward).plus(W(transaction.quantity));
 			if (total.isGreaterThan(balanceInWinston)) {
 				throw new Error(
 					[
@@ -178,7 +178,7 @@ export class WalletDAO {
 			return Promise.resolve({
 				trxID: transaction.id,
 				winston,
-				reward: new Winston(new BigNumber(transaction.reward))
+				reward: W(new BigNumber(transaction.reward))
 			});
 		} else {
 			throw new Error(`Transaction failed. Response: ${response}`);

@@ -47,7 +47,7 @@ import { PrivateKeyData } from './private_key_data';
 import { EntityNamesAndIds } from './utils/mapper_functions';
 import { ArweaveAddress } from './types/arweave_address';
 import { WithDriveKey } from './arfs_entity_result_factory';
-import { AR, Winston } from './types/winston';
+import { AR, W, Winston } from './types/winston';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 
@@ -584,7 +584,7 @@ export class ArDrive extends ArDriveAnonymous {
 			owner: await this.wallet.getAddress()
 		});
 
-		if (bulkEstimation.communityWinstonTip.isGreaterThan(new Winston(0))) {
+		if (bulkEstimation.communityWinstonTip.isGreaterThan(W(0))) {
 			// Send community tip only if communityWinstonTip has a value
 			// This can be zero when a user uses this method to upload empty folders
 
@@ -852,7 +852,7 @@ export class ArDrive extends ArDriveAnonymous {
 			owner
 		});
 
-		if (bulkEstimation.communityWinstonTip.isGreaterThan(new Winston(0))) {
+		if (bulkEstimation.communityWinstonTip.isGreaterThan(W(0))) {
 			// Send community tip only if communityWinstonTip has a value
 			// This can be zero when a user uses this method to upload empty folders
 
@@ -1262,8 +1262,8 @@ export class ArDrive extends ArDriveAnonymous {
 		driveKey?: DriveKey,
 		isParentFolder = true
 	): Promise<{ totalPrice: Winston; totalFilePrice: Winston; communityWinstonTip: Winston }> {
-		let totalPrice = new Winston(0);
-		let totalFilePrice = new Winston(0);
+		let totalPrice = W(0);
+		let totalFilePrice = W(0);
 
 		if (!folderToUpload.existingId) {
 			// Don't estimate cost of folder metadata if using existing folder
@@ -1318,10 +1318,10 @@ export class ArDrive extends ArDriveAnonymous {
 		}
 
 		const totalWinstonPrice = totalPrice;
-		let communityWinstonTip = new Winston(0);
+		let communityWinstonTip = W(0);
 
 		if (isParentFolder) {
-			if (totalFilePrice.isGreaterThan(new Winston(0))) {
+			if (totalFilePrice.isGreaterThan(W(0))) {
 				communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(totalFilePrice);
 			}
 
@@ -1436,9 +1436,9 @@ export class ArDrive extends ArDriveAnonymous {
 			fileSize = this.encryptedDataSize(fileSize);
 		}
 
-		let totalPrice = new Winston(0);
-		let fileDataBaseReward = new Winston(0);
-		let communityWinstonTip = new Winston(0);
+		let totalPrice = W(0);
+		let fileDataBaseReward = W(0);
+		let communityWinstonTip = W(0);
 		if (fileSize) {
 			fileDataBaseReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(fileSize);
 			communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(fileDataBaseReward);
@@ -1492,7 +1492,7 @@ export class ArDrive extends ArDriveAnonymous {
 		driveMetaData: ArFSDriveTransactionData,
 		rootFolderMetaData: ArFSFolderTransactionData
 	): Promise<DriveUploadBaseCosts> {
-		let totalPrice = new Winston(0);
+		let totalPrice = W(0);
 		const driveMetaDataBaseReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(
 			driveMetaData.sizeOf()
 		);

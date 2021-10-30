@@ -10,20 +10,20 @@ export class Winston {
 	}
 
 	plus(winston: Winston): Winston {
-		return new Winston(this.amount.plus(winston.amount));
+		return W(this.amount.plus(winston.amount));
 	}
 
 	minus(winston: Winston): Winston {
-		return new Winston(this.amount.minus(winston.amount));
+		return W(this.amount.minus(winston.amount));
 	}
 
 	times(multiplier: BigNumber.Value): Winston {
-		return new Winston(this.amount.times(multiplier).decimalPlaces(0, BigNumber.ROUND_DOWN));
+		return W(this.amount.times(multiplier).decimalPlaces(0, BigNumber.ROUND_DOWN));
 	}
 
 	dividedBy(divisor: BigNumber.Value): Winston {
 		// TODO: Best rounding strategy? Up or down?
-		return new Winston(this.amount.dividedBy(divisor).decimalPlaces(0, BigNumber.ROUND_CEIL));
+		return W(this.amount.dividedBy(divisor).decimalPlaces(0, BigNumber.ROUND_CEIL));
 	}
 
 	isGreaterThan(winston: Winston): boolean {
@@ -57,7 +57,7 @@ export class AR {
 		if (numDecimalPlace > 12) {
 			throw new Error(`The AR amount must have a maximum of 12 digits of precision, but got ${numDecimalPlace}`);
 		}
-		return new AR(new Winston(bigWinston));
+		return new AR(W(bigWinston));
 	}
 
 	toString(): string {
@@ -73,4 +73,8 @@ export class AR {
 	toWinston(): Winston {
 		return this.winston;
 	}
+}
+
+export function W(amount: BigNumber.Value): Winston {
+	return new Winston(amount);
 }

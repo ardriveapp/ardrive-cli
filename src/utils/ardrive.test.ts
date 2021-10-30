@@ -18,7 +18,7 @@ import { ArDriveCommunityOracle } from '../../src/community/ardrive_community_or
 import { CommunityOracle } from '../../src/community/community_oracle';
 import { ArFSDAO } from '../arfsdao';
 import { stubEntityID, stubTransactionID } from './stubs';
-import { Winston } from '../types/winston';
+import { W } from '../types/winston';
 
 describe('ArDrive class', () => {
 	let arDrive: ArDrive;
@@ -46,7 +46,7 @@ describe('ArDrive class', () => {
 	beforeEach(async () => {
 		// Set pricing algo up as x = y (bytes = Winston)
 		arweaveOracleStub = stub(new GatewayOracle());
-		arweaveOracleStub.getWinstonPriceForByteCount.callsFake((input) => Promise.resolve(new Winston(input)));
+		arweaveOracleStub.getWinstonPriceForByteCount.callsFake((input) => Promise.resolve(W(input)));
 		communityOracleStub = stub(new ArDriveCommunityOracle(fakeArweave));
 		priceEstimator = new ARDataPriceRegressionEstimator(true, arweaveOracleStub);
 		walletDao = new WalletDAO(fakeArweave, 'Unit Test', '1.0');
@@ -125,10 +125,10 @@ describe('ArDrive class', () => {
 				return Promise.resolve(false);
 			});
 			stub(walletDao, 'getWalletWinstonBalance').callsFake(() => {
-				return Promise.resolve(new Winston(0));
+				return Promise.resolve(W(0));
 			});
 			communityOracleStub.getCommunityWinstonTip.callsFake(() => {
-				return Promise.resolve(new Winston(9876543210));
+				return Promise.resolve(W(9876543210));
 			});
 			await expectAsyncErrorThrow({
 				promiseToError: arDrive.estimateAndAssertCostOfFileUpload(1, stubPublicFileTransactionData, 'private')
@@ -140,7 +140,7 @@ describe('ArDrive class', () => {
 				return Promise.resolve(true);
 			});
 			communityOracleStub.getCommunityWinstonTip.callsFake(() => {
-				return Promise.resolve(new Winston(9876543210));
+				return Promise.resolve(W(9876543210));
 			});
 
 			const actual = await arDrive.estimateAndAssertCostOfFileUpload(
@@ -160,7 +160,7 @@ describe('ArDrive class', () => {
 				return Promise.resolve(false);
 			});
 			stub(walletDao, 'getWalletWinstonBalance').callsFake(() => {
-				return Promise.resolve(new Winston(0));
+				return Promise.resolve(W(0));
 			});
 			await expectAsyncErrorThrow({
 				promiseToError: arDrive.estimateAndAssertCostOfFolderUpload(stubPublicFolderTransactionData)
@@ -184,7 +184,7 @@ describe('ArDrive class', () => {
 				return Promise.resolve(false);
 			});
 			stub(walletDao, 'getWalletWinstonBalance').callsFake(() => {
-				return Promise.resolve(new Winston(0));
+				return Promise.resolve(W(0));
 			});
 			await expectAsyncErrorThrow({
 				promiseToError: arDrive.estimateAndAssertCostOfDriveCreation(
@@ -214,7 +214,7 @@ describe('ArDrive class', () => {
 				return Promise.resolve(false);
 			});
 			stub(walletDao, 'getWalletWinstonBalance').callsFake(() => {
-				return Promise.resolve(new Winston(0));
+				return Promise.resolve(W(0));
 			});
 			await expectAsyncErrorThrow({
 				promiseToError: arDrive.estimateAndAssertCostOfMoveFile(stubPublicFileTransactionData)

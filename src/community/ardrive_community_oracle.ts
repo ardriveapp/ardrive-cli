@@ -6,13 +6,13 @@ import Arweave from 'arweave';
 import { SmartweaveContractReader } from './smartweave_contract_oracle';
 import { VertoContractReader } from './verto_contract_oracle';
 import { ArweaveAddress } from '../types/arweave_address';
-import { Winston } from '../types/winston';
+import { W, Winston } from '../types/winston';
 
 /**
  * Minimum ArDrive community tip from the Community Improvement Proposal Doc:
  * https://arweave.net/Yop13NrLwqlm36P_FDCdMaTBwSlj0sdNGAC4FqfRUgo
  */
-export const minArDriveCommunityWinstonTip = new Winston(10_000_000);
+export const minArDriveCommunityWinstonTip = W(10_000_000);
 
 /**
  * Oracle class responsible for determining the community tip

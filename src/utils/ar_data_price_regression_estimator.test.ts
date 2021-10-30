@@ -4,32 +4,32 @@ import { expect } from 'chai';
 import { SinonStubbedInstance, stub } from 'sinon';
 import { ARDataPriceRegressionEstimator } from './ar_data_price_regression_estimator';
 import type { ArDriveCommunityTip } from '../types';
-import { AR, Winston } from '../types/winston';
+import { AR, W } from '../types/winston';
 
 describe('ARDataPriceEstimator class', () => {
 	let spyedOracle: SinonStubbedInstance<ArweaveOracle>;
 	let calculator: ARDataPriceRegressionEstimator;
 
-	const arDriveCommunityTip: ArDriveCommunityTip = { minWinstonFee: new Winston(10), tipPercentage: 0.15 };
+	const arDriveCommunityTip: ArDriveCommunityTip = { minWinstonFee: W(10), tipPercentage: 0.15 };
 
 	beforeEach(() => {
 		// Set pricing algo up as x = y (bytes = Winston)
 		// TODO: Get ts-sinon working with snowpack so we don't have to use a concrete type here
 		spyedOracle = stub(new GatewayOracle());
-		spyedOracle.getWinstonPriceForByteCount.callsFake((input) => Promise.resolve(new Winston(input)));
+		spyedOracle.getWinstonPriceForByteCount.callsFake((input) => Promise.resolve(W(input)));
 		calculator = new ARDataPriceRegressionEstimator(true, spyedOracle);
 	});
 
 	it('can be instantiated without making oracle calls', async () => {
 		const gatewayOracleStub = stub(new GatewayOracle());
-		gatewayOracleStub.getWinstonPriceForByteCount.callsFake(() => Promise.resolve(new Winston(123)));
+		gatewayOracleStub.getWinstonPriceForByteCount.callsFake(() => Promise.resolve(W(123)));
 		new ARDataPriceRegressionEstimator(true, gatewayOracleStub);
 		expect(gatewayOracleStub.getWinstonPriceForByteCount.notCalled).to.be.true;
 	});
 
 	it('makes 3 oracle calls during routine instantiation', async () => {
 		const gatewayOracleStub = stub(new GatewayOracle());
-		gatewayOracleStub.getWinstonPriceForByteCount.callsFake(() => Promise.resolve(new Winston(123)));
+		gatewayOracleStub.getWinstonPriceForByteCount.callsFake(() => Promise.resolve(W(123)));
 		new ARDataPriceRegressionEstimator(false, gatewayOracleStub);
 		expect(gatewayOracleStub.getWinstonPriceForByteCount.calledThrice).to.be.true;
 	});
@@ -67,12 +67,12 @@ describe('ARDataPriceEstimator class', () => {
 
 	describe('getByteCountForWinston function', () => {
 		it('returns the expected value', async () => {
-			const actualByteCountEstimation = await calculator.getByteCountForWinston(new Winston(100));
+			const actualByteCountEstimation = await calculator.getByteCountForWinston(W(100));
 			expect(actualByteCountEstimation).to.equal(100);
 		});
 
 		it('makes three oracle calls after the first price estimation request', async () => {
-			await calculator.getByteCountForWinston(new Winston(0));
+			await calculator.getByteCountForWinston(W(0));
 			expect(spyedOracle.getWinstonPriceForByteCount.calledThrice).to.be.true;
 		});
 
@@ -82,11 +82,11 @@ describe('ARDataPriceEstimator class', () => {
 			const priceEstimator = new ARDataPriceRegressionEstimator(true, spyedOracle, stubRegressionByteVolumes);
 
 			// Stub out the returned prices for each byte value to arrive at base price 5 and marginal price 1
-			spyedOracle.getWinstonPriceForByteCount.onFirstCall().callsFake(() => Promise.resolve(new Winston(5)));
-			spyedOracle.getWinstonPriceForByteCount.onSecondCall().callsFake(() => Promise.resolve(new Winston(6)));
+			spyedOracle.getWinstonPriceForByteCount.onFirstCall().callsFake(() => Promise.resolve(W(5)));
+			spyedOracle.getWinstonPriceForByteCount.onSecondCall().callsFake(() => Promise.resolve(W(6)));
 
 			// Expect 4 to be reduced to 0 because it does not cover baseWinstonPrice of 5
-			expect(await priceEstimator.getByteCountForWinston(new Winston(4))).to.equal(0);
+			expect(await priceEstimator.getByteCountForWinston(W(4))).to.equal(0);
 		});
 	});
 

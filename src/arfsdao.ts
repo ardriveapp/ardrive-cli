@@ -88,7 +88,7 @@ import { PrivateKeyData } from './private_key_data';
 import { ArweaveAddress } from './types/arweave_address';
 import { EntityNamesAndIds, entityToNameMap, fileToNameAndIdMap, folderToNameAndIdMap } from './utils/mapper_functions';
 import { ListPrivateFolderParams } from './ardrive';
-import { Winston } from './types/winston';
+import { W } from './types/winston';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 
@@ -208,7 +208,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			}
 		}
 
-		return { metaDataTrxId: folderTrx.id, metaDataTrxReward: new Winston(folderTrx.reward), folderId };
+		return { metaDataTrxId: folderTrx.id, metaDataTrxReward: W(folderTrx.reward), folderId };
 	}
 
 	// Convenience wrapper for folder creation in a known-public use case
@@ -277,7 +277,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		return resultFactory({
 			metaDataTrxId: driveTrx.id,
-			metaDataTrxReward: new Winston(driveTrx.reward),
+			metaDataTrxReward: W(driveTrx.reward),
 			rootFolderTrxId: rootFolderTrxId,
 			rootFolderTrxReward: rootFolderTrxReward,
 			driveId: driveId,
@@ -369,7 +369,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			}
 		}
 
-		return resultFactory({ metaDataTrxId: metaDataTrx.id, metaDataTrxReward: new Winston(metaDataTrx.reward) });
+		return resultFactory({ metaDataTrxId: metaDataTrx.id, metaDataTrxReward: W(metaDataTrx.reward) });
 	}
 
 	async movePublicFile({
@@ -516,9 +516,9 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return resultFactoryFn(
 			{
 				dataTrxId: dataTrx.id,
-				dataTrxReward: new Winston(dataTrx.reward),
+				dataTrxReward: W(dataTrx.reward),
 				metaDataTrxId: metaDataTrx.id,
-				metaDataTrxReward: new Winston(metaDataTrx.reward),
+				metaDataTrxReward: W(metaDataTrx.reward),
 				fileId
 			},
 			metadataTrxData

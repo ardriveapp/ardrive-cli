@@ -1,9 +1,9 @@
 import { expect } from 'chai';
-import { Winston } from '../types/winston';
+import { W } from '../types/winston';
 import { ARDataPrice } from './ar_data_price';
 
 describe('ARDataPrice class', () => {
-	const stubWinston = new Winston(0);
+	const stubWinston = W(0);
 	it('constructor throws an exception when a negative data volume is provided', () => {
 		expect(() => new ARDataPrice(-1, stubWinston)).to.throw(Error);
 	});
@@ -34,13 +34,13 @@ describe('ARDataPrice class', () => {
 	});
 
 	it('constructs a valid object when non-zero values are provided', () => {
-		const actual = new ARDataPrice(1, new Winston(1));
+		const actual = new ARDataPrice(1, W(1));
 		expect(actual.numBytes).to.equal(1);
 		expect(`${actual.winstonPrice}`).to.equal('1');
 	});
 
 	it('constructs a valid object when max Int values are provided', () => {
-		const actual = new ARDataPrice(Number.MAX_SAFE_INTEGER, new Winston(Number.MAX_SAFE_INTEGER));
+		const actual = new ARDataPrice(Number.MAX_SAFE_INTEGER, W(Number.MAX_SAFE_INTEGER));
 		expect(actual.numBytes).to.equal(Number.MAX_SAFE_INTEGER);
 		expect(`${actual.winstonPrice}`).to.equal(`${Number.MAX_SAFE_INTEGER}`);
 	});
