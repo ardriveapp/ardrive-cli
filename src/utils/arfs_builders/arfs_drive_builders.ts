@@ -72,7 +72,7 @@ export class ArFSPublicDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPublic
 			this.entityType?.length &&
 			this.txId?.length &&
 			this.unixTime &&
-			this.driveId == this.entityId &&
+			this.driveId.isEqualTo(this.entityId as EntityID) &&
 			this.drivePrivacy?.length
 		) {
 			const txData = await this.arweave.transactions.getData(this.txId, { decode: true });
@@ -100,6 +100,7 @@ export class ArFSPublicDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPublic
 				this.rootFolderId
 			);
 		}
+
 		throw new Error('Invalid drive state');
 	}
 }
