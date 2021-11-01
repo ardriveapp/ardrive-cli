@@ -518,7 +518,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Derive destination name and names already within provided destination folder
 		const destFileName = destinationFileName ?? wrappedFile.getBaseFileName();
-		const filesAndFolderNames = await this.arFsDao.getPublicEntityNamesAndIdsInFolder(parentFolderId);
+		const filesAndFolderNames = await this.arFsDao.getPublicNameConflictInfoInFolder(parentFolderId);
 
 		// Files cannot overwrite folder names
 		if (filesAndFolderNames.folders.find((f) => f.folderName === destFileName)) {
@@ -602,7 +602,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Derive destination name and names already within provided destination folder
 		const destFolderName = destParentFolderName ?? wrappedFolder.getBaseFileName();
-		const filesAndFolderNames = await this.arFsDao.getPublicEntityNamesAndIdsInFolder(parentFolderId);
+		const filesAndFolderNames = await this.arFsDao.getPublicNameConflictInfoInFolder(parentFolderId);
 
 		// Folders cannot overwrite file names
 		if (filesAndFolderNames.files.find((f) => f.fileName === destFolderName)) {
@@ -802,7 +802,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Derive destination name and names already within provided destination folder
 		const destFileName = destinationFileName ?? wrappedFile.getBaseFileName();
-		const filesAndFolderNames = await this.arFsDao.getPrivateEntityNamesAndIdsInFolder(parentFolderId, driveKey);
+		const filesAndFolderNames = await this.arFsDao.getPrivateNameConflictInfoInFolder(parentFolderId, driveKey);
 
 		// Files cannot overwrite folder names
 		if (filesAndFolderNames.folders.find((f) => f.folderName === destFileName)) {
@@ -902,7 +902,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Derive destination name and names already within provided destination folder
 		const destFolderName = destParentFolderName ?? wrappedFolder.getBaseFileName();
-		const filesAndFolderNames = await this.arFsDao.getPrivateEntityNamesAndIdsInFolder(parentFolderId, driveKey);
+		const filesAndFolderNames = await this.arFsDao.getPrivateNameConflictInfoInFolder(parentFolderId, driveKey);
 
 		// Folders cannot overwrite file names
 		if (filesAndFolderNames.files.find((f) => f.fileName === destFolderName)) {
@@ -1021,7 +1021,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 	protected async checkAndAssignExistingPublicNames(wrappedFolder: ArFSFolderToUpload): Promise<void> {
 		await this.checkAndAssignExistingNames(wrappedFolder, (parentFolderId) =>
-			this.arFsDao.getPublicEntityNamesAndIdsInFolder(parentFolderId)
+			this.arFsDao.getPublicNameConflictInfoInFolder(parentFolderId)
 		);
 	}
 
@@ -1030,7 +1030,7 @@ export class ArDrive extends ArDriveAnonymous {
 		driveKey: DriveKey
 	): Promise<void> {
 		await this.checkAndAssignExistingNames(wrappedFolder, (parentFolderId) =>
-			this.arFsDao.getPrivateEntityNamesAndIdsInFolder(parentFolderId, driveKey)
+			this.arFsDao.getPrivateNameConflictInfoInFolder(parentFolderId, driveKey)
 		);
 	}
 

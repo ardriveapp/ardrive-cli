@@ -461,7 +461,7 @@ describe('ArDrive class - integrated', () => {
 					stub(communityOracle, 'getCommunityWinstonTip').resolves('1');
 					stub(communityOracle, 'selectTokenHolder').resolves(stubArweaveAddress());
 
-					stub(arfsDao, 'getPublicEntityNamesAndIdsInFolder').resolves({
+					stub(arfsDao, 'getPublicNameConflictInfoInFolder').resolves({
 						files: [
 							{
 								fileName: 'CONFLICTING_FILE_NAME',
@@ -574,7 +574,7 @@ describe('ArDrive class - integrated', () => {
 					stub(communityOracle, 'getCommunityWinstonTip').resolves('1');
 					stub(communityOracle, 'selectTokenHolder').resolves(stubArweaveAddress());
 
-					stub(arfsDao, 'getPrivateEntityNamesAndIdsInFolder').resolves({
+					stub(arfsDao, 'getPrivateNameConflictInfoInFolder').resolves({
 						files: [
 							{
 								fileName: 'CONFLICTING_FILE_NAME',

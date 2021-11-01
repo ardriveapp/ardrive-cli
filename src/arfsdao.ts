@@ -860,7 +860,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return childrenOfFolder.map(entityToNameMap);
 	}
 
-	async getPublicEntityNamesAndIdsInFolder(folderId: FolderID): Promise<EntityNamesAndIds> {
+	async getPublicNameConflictInfoInFolder(folderId: FolderID): Promise<EntityNamesAndIds> {
 		const childrenOfFolder = await this.getPublicEntitiesInFolder(folderId, true);
 		return {
 			files: childrenOfFolder.filter(fileFilter).map(fileConflictInfoMap),
@@ -868,7 +868,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		};
 	}
 
-	async getPrivateEntityNamesAndIdsInFolder(folderId: FolderID, driveKey: DriveKey): Promise<EntityNamesAndIds> {
+	async getPrivateNameConflictInfoInFolder(folderId: FolderID, driveKey: DriveKey): Promise<EntityNamesAndIds> {
 		const childrenOfFolder = await this.getPrivateEntitiesInFolder(folderId, driveKey, true);
 		return {
 			files: childrenOfFolder.filter(fileFilter).map(fileConflictInfoMap),
