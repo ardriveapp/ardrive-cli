@@ -93,7 +93,6 @@ export function assertForbidden(parameter: Parameter, options: any): void {
 
 export class CLICommand {
 	private static allCommandInstances: CLICommand[] = [];
-	// private _action: CLIAction;
 
 	/**
 	 * @param {CommandDescriptor} commandDescription an immutable representation of a command
