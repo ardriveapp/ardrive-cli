@@ -1,5 +1,4 @@
-import { ArFSDriveEntity } from 'ardrive-core-js';
-import { ArFSFileOrFolderEntity } from '../arfs_entities';
+import { ArFSDriveEntity, ArFSFileOrFolderEntity } from '../arfs_entities';
 
 /**
  * @name lastRevisionFilter is a standard JS find/filter function intended to
@@ -34,7 +33,7 @@ export function latestRevisionFilterForDrives(
 	_index: number,
 	allEntities: ArFSDriveEntity[]
 ): boolean {
-	const allRevisions = allEntities.filter((e) => e.driveId === entity.driveId);
+	const allRevisions = allEntities.filter((e) => e.driveId.isEqualTo(entity.driveId));
 	const latestRevision = allRevisions[0];
 	return entity.txId === latestRevision.txId;
 }

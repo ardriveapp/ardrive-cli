@@ -4,13 +4,14 @@ import { ArFSPrivateFolder, ArFSPublicFolder } from '../../arfs_entities';
 import { ArweaveAddress } from '../../types/arweave_address';
 import { CipherIV, DriveKey, FolderID } from '../../types';
 import { ArFSFileOrFolderBuilder } from './arfs_builders';
+import { EID } from '../../types/entity_id';
 
 export abstract class ArFSFolderBuilder<
 	T extends ArFSPublicFolder | ArFSPrivateFolder
 > extends ArFSFileOrFolderBuilder<T> {
 	getGqlQueryParameters(): GQLTagInterface[] {
 		return [
-			{ name: 'Folder-Id', value: this.entityId },
+			{ name: 'Folder-Id', value: `${this.entityId}` },
 			{ name: 'Entity-Type', value: 'folder' }
 		];
 	}
@@ -23,7 +24,7 @@ export class ArFSPublicFolderBuilder extends ArFSFolderBuilder<ArFSPublicFolder>
 		if (!folderId) {
 			throw new Error('Folder-ID tag missing!');
 		}
-		const folderBuilder = new ArFSPublicFolderBuilder({ entityId: folderId, arweave });
+		const folderBuilder = new ArFSPublicFolderBuilder({ entityId: EID(folderId), arweave });
 		return folderBuilder;
 	}
 
@@ -38,12 +39,12 @@ export class ArFSPublicFolderBuilder extends ArFSFolderBuilder<ArFSPublicFolder>
 			this.appVersion?.length &&
 			this.arFS?.length &&
 			this.contentType?.length &&
-			this.driveId?.length &&
+			this.driveId &&
 			this.entityType?.length &&
 			this.txId?.length &&
 			this.unixTime &&
-			this.parentFolderId?.length &&
-			this.entityId?.length
+			this.parentFolderId &&
+			this.entityId
 		) {
 			const txData = await this.arweave.transactions.getData(this.txId, { decode: true });
 			const dataString = await Utf8ArrayToStr(txData);
@@ -94,7 +95,7 @@ export class ArFSPrivateFolderBuilder extends ArFSFolderBuilder<ArFSPrivateFolde
 		if (!folderId) {
 			throw new Error('Folder-ID tag missing!');
 		}
-		const folderBuilder = new ArFSPrivateFolderBuilder(folderId, arweave, driveKey);
+		const folderBuilder = new ArFSPrivateFolderBuilder(EID(folderId), arweave, driveKey);
 		return folderBuilder;
 	}
 
@@ -130,12 +131,12 @@ export class ArFSPrivateFolderBuilder extends ArFSFolderBuilder<ArFSPrivateFolde
 			this.appVersion?.length &&
 			this.arFS?.length &&
 			this.contentType?.length &&
-			this.driveId?.length &&
+			this.driveId &&
 			this.entityType?.length &&
 			this.txId?.length &&
 			this.unixTime &&
-			this.parentFolderId?.length &&
-			this.entityId?.length &&
+			this.parentFolderId &&
+			this.entityId &&
 			this.cipher?.length &&
 			this.cipherIV?.length
 		) {

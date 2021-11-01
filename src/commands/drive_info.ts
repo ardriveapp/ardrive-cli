@@ -27,9 +27,6 @@ new CLICommand({
 			}
 		})();
 
-		// TODO: Fix base types so deleting un-used values is not necessary; Tickets: PE-525 + PE-556
-		delete result.syncStatus;
-
 		console.log(JSON.stringify(result, null, 4));
 		return SUCCESS_EXIT_CODE;
 	}

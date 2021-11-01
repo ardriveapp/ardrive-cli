@@ -1,6 +1,7 @@
 import { arDriveFactory } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { DriveCreationPrivacyParameters, DriveIdParameter, NoVerifyParameter } from '../parameter_declarations';
+import { EID } from '../types/entity_id';
 import { urlEncodeHashKey } from '../utils';
 
 new CLICommand({
@@ -8,7 +9,7 @@ new CLICommand({
 	parameters: [...DriveCreationPrivacyParameters, DriveIdParameter, NoVerifyParameter],
 	async action(options) {
 		const parameters = new ParametersHelper(options);
-		const driveId = parameters.getRequiredParameterValue(DriveIdParameter);
+		const driveId = EID(parameters.getRequiredParameterValue(DriveIdParameter));
 		const driveKey = await parameters.getDriveKey({ driveId });
 		if (options.verify) {
 			const arDrive = arDriveFactory({ wallet: await parameters.getRequiredWallet() });

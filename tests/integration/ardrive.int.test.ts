@@ -37,7 +37,7 @@ describe('ArDrive class - integrated', () => {
 	const wallet = readJWKFile('./test_wallet.json');
 
 	const getStubDriveKey = async (): Promise<DriveKey> => {
-		return deriveDriveKey('stubPassword', stubEntityID, JSON.stringify((wallet as JWKWallet).getPrivateKey()));
+		return deriveDriveKey('stubPassword', `${stubEntityID}`, JSON.stringify((wallet as JWKWallet).getPrivateKey()));
 	};
 
 	const fakeArweave = Arweave.init({
@@ -309,8 +309,8 @@ describe('ArDrive class - integrated', () => {
 
 				await expectAsyncErrorThrow({
 					promiseToError: arDrive.movePublicFolder({
-						folderId: 'not used here',
-						newParentFolderId: 'we will error for drive ID reasons'
+						folderId: stubEntityID,
+						newParentFolderId: stubEntityIDAlt
 					}),
 					errorMessage: 'Entity must stay in the same drive!'
 				});
@@ -429,8 +429,8 @@ describe('ArDrive class - integrated', () => {
 
 				await expectAsyncErrorThrow({
 					promiseToError: arDrive.movePrivateFolder({
-						folderId: 'not used here',
-						newParentFolderId: 'we will error for drive ID reasons',
+						folderId: stubEntityID,
+						newParentFolderId: stubEntityIDAlt,
 						driveKey: await getStubDriveKey()
 					}),
 					errorMessage: 'Entity must stay in the same drive!'

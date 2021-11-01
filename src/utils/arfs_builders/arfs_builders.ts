@@ -1,5 +1,4 @@
 import {
-	ArFSEntity,
 	ContentType,
 	EntityType,
 	GQLNodeInterface,
@@ -8,13 +7,14 @@ import {
 } from 'ardrive-core-js';
 import Arweave from 'arweave';
 import { graphQLURL } from '../../arfsdao';
-import { ArFSFileOrFolderEntity } from '../../arfs_entities';
+import { ArFSEntity, ArFSFileOrFolderEntity } from '../../arfs_entities';
 import { ArweaveAddress } from '../../types/arweave_address';
 import { buildQuery } from '../../query';
-import { DriveID, EntityID, EntityKey, FolderID, TransactionID, UnixTime } from '../../types';
+import { DriveID, AnyEntityID, EntityKey, FolderID, TransactionID, UnixTime } from '../../types';
+import { EID } from '../../types/entity_id';
 
 export interface ArFSMetadataEntityBuilderParams {
-	entityId: EntityID;
+	entityId: AnyEntityID;
 	arweave: Arweave;
 	owner?: ArweaveAddress;
 }
@@ -39,7 +39,7 @@ export abstract class ArFSMetadataEntityBuilder<T extends ArFSEntity> {
 	name?: string;
 	txId?: TransactionID;
 	unixTime?: UnixTime;
-	protected readonly entityId: EntityID;
+	protected readonly entityId: AnyEntityID;
 	protected readonly arweave: Arweave;
 	protected readonly owner?: ArweaveAddress;
 
@@ -97,7 +97,7 @@ export abstract class ArFSMetadataEntityBuilder<T extends ArFSEntity> {
 					this.contentType = value as ContentType;
 					break;
 				case 'Drive-Id':
-					this.driveId = value;
+					this.driveId = EID(value);
 					break;
 				case 'Entity-Type':
 					this.entityType = value as EntityType;
@@ -131,7 +131,7 @@ export abstract class ArFSFileOrFolderBuilder<T extends ArFSFileOrFolderEntity> 
 			const { value } = tag;
 			switch (key) {
 				case 'Parent-Folder-Id':
-					this.parentFolderId = value;
+					this.parentFolderId = EID(value);
 					break;
 				default:
 					unparsedTags.push(tag);

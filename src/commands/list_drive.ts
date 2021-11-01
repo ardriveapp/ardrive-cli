@@ -5,6 +5,7 @@ import { ArFSPrivateFileOrFolderWithPaths, ArFSPublicFileOrFolderWithPaths } fro
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 import { DriveIdParameter, DrivePrivacyParameters, TreeDepthParams } from '../parameter_declarations';
+import { EID } from '../types/entity_id';
 import { alphabeticalOrder } from '../utils/sort_functions';
 
 new CLICommand({
@@ -12,7 +13,7 @@ new CLICommand({
 	parameters: [DriveIdParameter, ...TreeDepthParams, ...DrivePrivacyParameters],
 	async action(options) {
 		const parameters = new ParametersHelper(options, cliWalletDao);
-		const driveId = parameters.getRequiredParameterValue(DriveIdParameter);
+		const driveId = EID(parameters.getRequiredParameterValue(DriveIdParameter));
 		let children: (ArFSPrivateFileOrFolderWithPaths | ArFSPublicFileOrFolderWithPaths)[];
 		const maxDepth = await parameters.getMaxDepth(Number.MAX_SAFE_INTEGER);
 
@@ -51,7 +52,6 @@ new CLICommand({
 				delete fileOrFolderMetaData.lastModifiedDate;
 				delete fileOrFolderMetaData.size;
 			}
-			delete fileOrFolderMetaData.syncStatus;
 		});
 
 		// Display data

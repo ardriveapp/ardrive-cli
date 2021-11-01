@@ -4,6 +4,7 @@ import { GetAllRevisionsParameter, FolderIdParameter, DrivePrivacyParameters } f
 import { arDriveAnonymousFactory, arDriveFactory } from '..';
 import { ArFSPrivateFolder, ArFSPublicFolder } from '../arfs_entities';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
+import { EID } from '../types/entity_id';
 
 new CLICommand({
 	name: 'folder-info',
@@ -28,14 +29,13 @@ new CLICommand({
 				return arDrive.getPrivateFolder(folderId, driveKey, driveOwner /*, shouldGetAllRevisions*/);
 			} else {
 				const arDrive = arDriveAnonymousFactory();
-				const folderId: string = options.folderId;
+				const folderId = EID(options.folderId);
 				return arDrive.getPublicFolder(folderId /*, shouldGetAllRevisions*/);
 			}
 		})();
 
 		// TODO: Fix base types so deleting un-used values is not necessary; Tickets: PE-525 + PE-556
 		delete result.lastModifiedDate;
-		delete result.syncStatus;
 
 		console.log(JSON.stringify(result, null, 4));
 		return SUCCESS_EXIT_CODE;

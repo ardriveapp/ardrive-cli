@@ -10,6 +10,7 @@ import { arDriveFactory } from '..';
 import { Wallet } from '../wallet';
 import { FeeMultiple } from '../types';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
+import { EID } from '../types/entity_id';
 
 new CLICommand({
 	name: 'create-folder',
@@ -30,7 +31,7 @@ new CLICommand({
 			dryRun: options.dryRun
 		});
 
-		const parentFolderId = parameters.getRequiredParameterValue(ParentFolderIdParameter);
+		const parentFolderId = EID(parameters.getRequiredParameterValue(ParentFolderIdParameter));
 		const driveId = await ardrive.getDriveIdForFolderId(options.parentFolderId);
 		const folderName = options.folderName;
 

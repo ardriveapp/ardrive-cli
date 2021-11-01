@@ -4,13 +4,14 @@ import { arDriveAnonymousFactory, arDriveFactory, cliWalletDao } from '..';
 import { FileID } from '../types';
 import { ArFSPrivateFile, ArFSPublicFile } from '../arfs_entities';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
+import { EID } from '../types/entity_id';
 
 new CLICommand({
 	name: 'file-info',
 	parameters: [FileIdParameter, GetAllRevisionsParameter, ...DrivePrivacyParameters],
 	async action(options) {
 		const parameters = new ParametersHelper(options, cliWalletDao);
-		const fileId: FileID = parameters.getRequiredParameterValue(FileIdParameter);
+		const fileId: FileID = EID(parameters.getRequiredParameterValue(FileIdParameter));
 		// const shouldGetAllRevisions: boolean = options.getAllRevisions;
 
 		const result: Partial<ArFSPublicFile | ArFSPrivateFile> = await (async function () {
@@ -30,9 +31,6 @@ new CLICommand({
 				return arDrive.getPublicFile(fileId /*, shouldGetAllRevisions*/);
 			}
 		})();
-
-		// TODO: Fix base types so deleting un-used values is not necessary; Tickets: PE-525 + PE-556
-		delete result.syncStatus;
 
 		console.log(JSON.stringify(result, null, 4));
 		return SUCCESS_EXIT_CODE;

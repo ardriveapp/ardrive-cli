@@ -1,3 +1,4 @@
+import { EntityID } from './types/entity_id';
 import { Winston } from './types/winston';
 
 export const ArFS_O_11 = '0.11';
@@ -10,10 +11,11 @@ export type SeedPhrase = string;
 
 export type NetworkReward = Winston;
 
-export type FolderID = string;
-export type FileID = string;
-export type DriveID = string;
-export type EntityID = DriveID | FolderID | FileID;
+export type RootFolderID = 'root folder';
+export type FolderID = EntityID | RootFolderID;
+export type FileID = EntityID;
+export type DriveID = EntityID;
+export type AnyEntityID = DriveID | FolderID | FileID;
 
 export type CipherIV = string;
 export type EntityKey = Buffer;
