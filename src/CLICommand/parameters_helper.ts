@@ -82,8 +82,6 @@ export class ParametersHelper {
 			return new ArweaveAddress(address);
 		}
 
-		console.log((await this.getRequiredWallet()).getPublicKey());
-
 		return this.getRequiredWallet().then((wallet) => wallet.getAddress());
 	}
 
