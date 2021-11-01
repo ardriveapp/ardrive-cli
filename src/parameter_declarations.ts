@@ -241,7 +241,7 @@ Parameter.declare({
 	name: UpsertParameter,
 	aliases: ['--upsert'],
 	description:
-		'(OPTIONAL) If there is a name conflict within the destination folder and if that file was last modified at the same time as the file to upload, skip the upload',
+		'(OPTIONAL) When there is a name conflict within the destination folder, if that file was last modified at the same time as the file to upload, skip the upload, otherwise upload that file as a new revision',
 	type: 'boolean',
 	forbiddenConjunctionParameters: [SkipParameter, ReplaceParameter]
 });
