@@ -16,7 +16,6 @@ import {
 import { CreateTransactionInterface } from 'arweave/node/common';
 import { ArweaveAddress } from './types/arweave_address';
 import { W, Winston } from './types/winston';
-import { BigNumber } from 'bignumber.js';
 import { AR } from './types/ar';
 
 export type ARTransferResult = {
@@ -179,7 +178,7 @@ export class WalletDAO {
 			return Promise.resolve({
 				trxID: transaction.id,
 				winston,
-				reward: W(new BigNumber(transaction.reward))
+				reward: W(transaction.reward)
 			});
 		} else {
 			throw new Error(`Transaction failed. Response: ${response}`);
