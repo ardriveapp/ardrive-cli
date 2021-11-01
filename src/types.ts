@@ -28,7 +28,7 @@ export type TransactionID = string; // TODO: make a type that checks lengths
 
 export interface ArDriveCommunityTip {
 	tipPercentage: number;
-	minWinstonFee: Winston; // TODO: Align with Winston type?
+	minWinstonFee: Winston;
 }
 
 export type TipType = 'data upload';
