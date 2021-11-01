@@ -112,12 +112,7 @@ export class CLICommand {
 	}
 
 	public static parse(program: CliApiObject = programApi, argv: string[] = process.argv): void {
-		// try {
 		program.parse(argv);
-		// } catch (e) {
-		// 	exitProgram(ERROR_EXIT_CODE);
-		// 	this.rejectWithParsingError(e);
-		// }
 		this.rejectNonTriggeredAwaiters();
 	}
 
