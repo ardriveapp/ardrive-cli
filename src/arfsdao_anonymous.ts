@@ -14,6 +14,12 @@ import { ArweaveAddress } from './arweave_address';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 
+export interface ArFSAllPublicFoldersOfDriveParams {
+	driveId: DriveID;
+	owner: ArweaveAddress;
+	latestRevisionsOnly: boolean;
+}
+
 export interface ArFSListPublicFolderParams {
 	folderId: FolderID;
 	maxDepth: number;
@@ -173,11 +179,11 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		return latestRevisionsOnly ? allFiles.filter(latestRevisionFilter) : allFiles;
 	}
 
-	async getAllFoldersOfPublicDrive(
-		driveId: DriveID,
-		owner: ArweaveAddress,
+	async getAllFoldersOfPublicDrive({
+		driveId,
+		owner,
 		latestRevisionsOnly = false
-	): Promise<ArFSPublicFolder[]> {
+	}: ArFSAllPublicFoldersOfDriveParams): Promise<ArFSPublicFolder[]> {
 		let cursor = '';
 		let hasNextPage = true;
 		const allFolders: ArFSPublicFolder[] = [];
@@ -230,7 +236,11 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 
 		// Fetch all of the folder entities within the drive
 		const driveIdOfFolder = folder.driveId;
-		const allFolderEntitiesOfDrive = await this.getAllFoldersOfPublicDrive(driveIdOfFolder, owner, true);
+		const allFolderEntitiesOfDrive = await this.getAllFoldersOfPublicDrive({
+			driveId: driveIdOfFolder,
+			owner,
+			latestRevisionsOnly: true
+		});
 
 		// Feed entities to FolderHierarchy
 		const hierarchy = FolderHierarchy.newFromEntities(allFolderEntitiesOfDrive);

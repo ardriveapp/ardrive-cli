@@ -70,7 +70,8 @@ import {
 	ArFSUploadPrivateFileResult,
 	ArFSCreateDriveResultFactory,
 	ArFSMoveEntityResultFactory,
-	ArFSUploadFileResultFactory
+	ArFSUploadFileResultFactory,
+	WithDriveKey
 } from './arfs_entity_result_factory';
 import {
 	ArFSFileOrFolderEntity,
@@ -82,7 +83,7 @@ import {
 	ArFSPublicFile,
 	ArFSPublicFolder
 } from './arfs_entities';
-import { ArFSDAOAnonymous } from './arfsdao_anonymous';
+import { ArFSAllPublicFoldersOfDriveParams, ArFSDAOAnonymous } from './arfsdao_anonymous';
 import { ArFSFileOrFolderBuilder } from './utils/arfs_builders/arfs_builders';
 import { PrivateKeyData } from './private_key_data';
 import { ArweaveAddress } from './arweave_address';
@@ -127,6 +128,9 @@ export interface UploadPublicFileParams {
 export interface UploadPrivateFileParams extends UploadPublicFileParams {
 	driveKey: DriveKey;
 }
+
+export type ArFSAllPrivateFoldersOfDriveParams = ArFSAllPublicFoldersOfDriveParams & WithDriveKey;
+
 export interface CreateFolderSettings {
 	driveId: DriveID;
 	rewardSettings: RewardSettings;
@@ -689,12 +693,12 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return new ArFSPrivateFileBuilder(fileId, this.arweave, driveKey, owner).build();
 	}
 
-	async getAllFoldersOfPrivateDrive(
-		driveId: DriveID,
-		driveKey: DriveKey,
-		owner: ArweaveAddress,
+	async getAllFoldersOfPrivateDrive({
+		driveId,
+		driveKey,
+		owner,
 		latestRevisionsOnly = false
-	): Promise<ArFSPrivateFolder[]> {
+	}: ArFSAllPrivateFoldersOfDriveParams): Promise<ArFSPrivateFolder[]> {
 		let cursor = '';
 		let hasNextPage = true;
 		const allFolders: ArFSPrivateFolder[] = [];
@@ -884,7 +888,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	}: getPrivateChildrenFolderIdsParams): Promise<FolderID[]> {
 		return this.getChildrenFolderIds(
 			folderId,
-			await this.getAllFoldersOfPrivateDrive(driveId, driveKey, owner, true)
+			await this.getAllFoldersOfPrivateDrive({ driveId, driveKey, owner, latestRevisionsOnly: true })
 		);
 	}
 
@@ -893,7 +897,10 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		owner,
 		driveId
 	}: getPublicChildrenFolderIdsParams): Promise<FolderID[]> {
-		return this.getChildrenFolderIds(folderId, await this.getAllFoldersOfPublicDrive(driveId, owner, true));
+		return this.getChildrenFolderIds(
+			folderId,
+			await this.getAllFoldersOfPublicDrive({ driveId, owner, latestRevisionsOnly: true })
+		);
 	}
 
 	/**
@@ -919,7 +926,12 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		// Fetch all of the folder entities within the drive
 		const driveIdOfFolder = folder.driveId;
-		const allFolderEntitiesOfDrive = await this.getAllFoldersOfPrivateDrive(driveIdOfFolder, driveKey, owner, true);
+		const allFolderEntitiesOfDrive = await this.getAllFoldersOfPrivateDrive({
+			driveId: driveIdOfFolder,
+			driveKey,
+			owner,
+			latestRevisionsOnly: true
+		});
 
 		const hierarchy = FolderHierarchy.newFromEntities(allFolderEntitiesOfDrive);
 		const searchFolderIDs = hierarchy.folderIdSubtreeFromFolderId(folderId, maxDepth - 1);
