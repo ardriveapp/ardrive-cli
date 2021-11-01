@@ -14,6 +14,12 @@ import { ArweaveAddress } from './types/arweave_address';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 
+export interface ArFSAllPublicFoldersOfDriveParams {
+	driveId: DriveID;
+	owner: ArweaveAddress;
+	latestRevisionsOnly: boolean;
+}
+
 export interface ArFSListPublicFolderParams {
 	folderId: FolderID;
 	maxDepth: number;
@@ -140,6 +146,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 
 	async getPublicFilesWithParentFolderIds(
 		folderIDs: FolderID[],
+		owner: ArweaveAddress,
 		latestRevisionsOnly = false
 	): Promise<ArFSPublicFile[]> {
 		let cursor = '';
@@ -152,7 +159,8 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 					{ name: 'Parent-Folder-Id', value: folderIDs },
 					{ name: 'Entity-Type', value: 'file' }
 				],
-				cursor
+				cursor,
+				owner
 			});
 
 			const response = await this.arweave.api.post(graphQLURL, gqlQuery);
@@ -171,7 +179,11 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		return latestRevisionsOnly ? allFiles.filter(latestRevisionFilter) : allFiles;
 	}
 
-	async getAllFoldersOfPublicDrive(driveId: DriveID, latestRevisionsOnly = false): Promise<ArFSPublicFolder[]> {
+	async getAllFoldersOfPublicDrive({
+		driveId,
+		owner,
+		latestRevisionsOnly = false
+	}: ArFSAllPublicFoldersOfDriveParams): Promise<ArFSPublicFolder[]> {
 		let cursor = '';
 		let hasNextPage = true;
 		const allFolders: ArFSPublicFolder[] = [];
@@ -182,13 +194,15 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 					{ name: 'Drive-Id', value: driveId },
 					{ name: 'Entity-Type', value: 'folder' }
 				],
-				cursor
+				cursor,
+				owner
 			});
 
 			const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 			const { data } = response.data;
 			const { transactions } = data;
 			const { edges } = transactions;
+
 			hasNextPage = transactions.pageInfo.hasNextPage;
 			const folders: Promise<ArFSPublicFolder>[] = edges.map(async (edge: GQLEdgeInterface) => {
 				const { node } = edge;
@@ -222,7 +236,11 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 
 		// Fetch all of the folder entities within the drive
 		const driveIdOfFolder = folder.driveId;
-		const allFolderEntitiesOfDrive = await this.getAllFoldersOfPublicDrive(driveIdOfFolder, true);
+		const allFolderEntitiesOfDrive = await this.getAllFoldersOfPublicDrive({
+			driveId: driveIdOfFolder,
+			owner,
+			latestRevisionsOnly: true
+		});
 
 		// Feed entities to FolderHierarchy
 		const hierarchy = FolderHierarchy.newFromEntities(allFolderEntitiesOfDrive);
@@ -238,7 +256,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		}
 
 		// Fetch all file entities within all Folders of the drive
-		const childrenFileEntities = await this.getPublicFilesWithParentFolderIds(searchFolderIDs, true);
+		const childrenFileEntities = await this.getPublicFilesWithParentFolderIds(searchFolderIDs, owner, true);
 
 		const children = [...childrenFolderEntities, ...childrenFileEntities];
 

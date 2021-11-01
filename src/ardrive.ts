@@ -372,7 +372,8 @@ export class ArDrive extends ArDriveAnonymous {
 
 		const childrenFolderIds = await this.arFsDao.getPublicChildrenFolderIds({
 			folderId,
-			driveId: destFolderDriveId
+			driveId: destFolderDriveId,
+			owner
 		});
 
 		if (childrenFolderIds.includes(newParentFolderId)) {
@@ -439,7 +440,8 @@ export class ArDrive extends ArDriveAnonymous {
 		const childrenFolderIds = await this.arFsDao.getPrivateChildrenFolderIds({
 			folderId,
 			driveId: destFolderDriveId,
-			driveKey
+			driveKey,
+			owner
 		});
 
 		if (childrenFolderIds.includes(newParentFolderId)) {
