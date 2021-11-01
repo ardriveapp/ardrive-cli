@@ -98,23 +98,18 @@ export class CLICommand {
 	 * @param {CommandDescriptor} commandDescription an immutable representation of a command
 	 * @param {string[]} argv a custom argv for testing purposes
 	 */
-	constructor(readonly commandDescription: CommandDescriptor, private readonly _program: CliApiObject = programApi) {
-		_program.name('ardrive');
-		_program.addHelpCommand(true);
-		_program.usage('[command] [command-specific options]');
-		_program.exitOverride();
-		setCommanderCommand(this.commandDescription, this.program);
+	constructor(readonly commandDescription: CommandDescriptor, program: CliApiObject = programApi) {
+		program.name('ardrive');
+		program.addHelpCommand(true);
+		program.usage('[command] [command-specific options]');
+		program.exitOverride();
+		setCommanderCommand(this.commandDescription, program);
 		CLICommand.allCommandInstances.push(this);
 		commandDescription.action.actionAwaiter().finally(CLICommand.rejectNonTriggeredAwaiters);
 	}
 
 	public get action(): Promise<ParsedParameters> {
 		return this.commandDescription.action.actionAwaiter();
-	}
-
-	// A singleton instance of the commander's program object
-	private get program(): CliApiObject {
-		return this._program;
 	}
 
 	public static parse(program: CliApiObject = programApi, argv: string[] = process.argv): void {
