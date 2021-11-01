@@ -104,7 +104,6 @@ export class CLICommand {
 		program.exitOverride();
 		setCommanderCommand(this.commandDescription, program);
 		CLICommand.allCommandInstances.push(this);
-		// commandDescription.action.actionAwaiter().finally(CLICommand.rejectNonTriggeredAwaiters);
 	}
 
 	public get action(): Promise<ParsedParameters> {
