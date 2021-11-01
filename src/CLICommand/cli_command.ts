@@ -3,7 +3,6 @@ import { program } from 'commander';
 import { CLIAction } from './action';
 import { CliApiObject, ParsedParameters } from './cli';
 import { Parameter, ParameterName, ParameterOverridenConfig } from './parameter';
-import { ERROR_EXIT_CODE } from './error_codes';
 
 export type CommandName = string;
 export interface CommandDescriptor {
@@ -126,12 +125,6 @@ export class CLICommand {
 		// reject all action awaiters that haven't run
 		const theOtherCommandActions = CLICommand.allCommandInstances.map((cmd) => cmd.commandDescription.action);
 		theOtherCommandActions.forEach((action) => action.wasNotTriggered());
-	}
-
-	private static rejectWithParsingError(err: Error): void {
-		// reject all action awaiters that haven't run
-		const theOtherCommandActions = CLICommand.allCommandInstances.map((cmd) => cmd.commandDescription.action);
-		theOtherCommandActions.forEach((action) => action.setParsingError(err));
 	}
 
 	/**
