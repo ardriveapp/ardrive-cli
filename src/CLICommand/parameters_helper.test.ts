@@ -26,6 +26,7 @@ import {
 import '../parameter_declarations';
 import { urlEncodeHashKey } from '../utils';
 import { stubArweaveAddress } from '../utils/stubs';
+import { EID } from '../types/entity_id';
 
 const expectedArweaveAddress = stubArweaveAddress('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
 
@@ -335,7 +336,9 @@ describe('ParametersHelper class', () => {
 			declareCommandWithParams(program, [WalletFileParameter, UnsafeDrivePasswordParameter], async (options) => {
 				const parameters = new ParametersHelper(options);
 				expect(
-					urlEncodeHashKey(await parameters.getDriveKey({ driveId: '00000000-0000-0000-0000-000000000000' }))
+					urlEncodeHashKey(
+						await parameters.getDriveKey({ driveId: EID('00000000-0000-0000-0000-000000000000') })
+					)
 				).to.equal('Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg');
 			});
 			CLICommand.parse(program, [
@@ -352,7 +355,9 @@ describe('ParametersHelper class', () => {
 			declareCommandWithParams(program, [DriveKeyParameter], async (options) => {
 				const parameters = new ParametersHelper(options);
 				expect(
-					urlEncodeHashKey(await parameters.getDriveKey({ driveId: '00000000-0000-0000-0000-000000000000' }))
+					urlEncodeHashKey(
+						await parameters.getDriveKey({ driveId: EID('00000000-0000-0000-0000-000000000000') })
+					)
 				).to.equal('Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg');
 			});
 			CLICommand.parse(program, [
@@ -367,7 +372,7 @@ describe('ParametersHelper class', () => {
 			declareCommandWithParams(program, [], async (options) => {
 				const parameters = new ParametersHelper(options);
 				const driveKey = await parameters
-					.getDriveKey({ driveId: '00000000-0000-0000-0000-000000000000' })
+					.getDriveKey({ driveId: EID('00000000-0000-0000-0000-000000000000') })
 					.catch(() => null);
 				expect(driveKey).to.be.null;
 			});
