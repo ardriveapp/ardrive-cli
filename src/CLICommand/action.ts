@@ -32,6 +32,13 @@ export class CLIAction {
 		return this._parsedParameters;
 	}
 
+	public static get runningAction(): CLIAction {
+		if (!this._runningAction) {
+			throw new Error(`No action has been called yet`);
+		}
+		return this._runningAction;
+	}
+
 	async trigger(params: ParsedParameters): Promise<ActionReturnType> {
 		this._promiseInstance = this.actionCallback(params);
 		CLIAction._runningAction = this;
@@ -88,12 +95,5 @@ export class CLIAction {
 
 	public wasNotTriggered(): void {
 		this.rejectAwaiters(new Error(`Action didn't run`));
-	}
-
-	public static get runningAction(): CLIAction {
-		if (!this._runningAction) {
-			throw new Error(`No action has been called yet`);
-		}
-		return this._runningAction;
 	}
 }
