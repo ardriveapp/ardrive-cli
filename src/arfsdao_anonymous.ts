@@ -183,7 +183,6 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		const allFolders: ArFSPublicFolder[] = [];
 
 		while (hasNextPage) {
-			console.log('owner in getAll', owner);
 			const gqlQuery = buildQuery({
 				tags: [
 					{ name: 'Drive-Id', value: driveId },
