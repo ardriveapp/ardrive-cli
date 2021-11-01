@@ -3,6 +3,8 @@ import { CLIAction } from './action';
 import { ParsedParameters } from './cli';
 import { ALL_VALID_EXIT_CODES, SUCCESS_EXIT_CODE } from './error_codes';
 
+const dummyActionHandler = () => Promise.resolve(SUCCESS_EXIT_CODE);
+
 describe('The CLIAction class', () => {
 	let action: CLIAction;
 	const params: ParsedParameters = {
@@ -17,16 +19,8 @@ describe('The CLIAction class', () => {
 		let beforeTriggerAwaiter: Promise<ParsedParameters>, afterTriggerAwaiter: Promise<ParsedParameters>;
 
 		before(() => {
-			action = new CLIAction(async () => SUCCESS_EXIT_CODE);
+			action = new CLIAction(dummyActionHandler);
 			beforeTriggerAwaiter = action.actionAwaiter();
-		});
-
-		it('Trigger resolves with the parsed options when no callback is passed', () => {
-			// a feature for easy testing command executions
-			const actionWithNoCallback = new CLIAction();
-			return actionWithNoCallback
-				.trigger(params)
-				.then((parsedParameters) => expect(parsedParameters).to.eql(params));
 		});
 
 		it('Trigger resolves with a valid exit code', () => {
@@ -58,14 +52,14 @@ describe('The CLIAction class', () => {
 		});
 
 		it('The awaiter rejects if a parsing error is thrown', () => {
-			action = new CLIAction();
+			action = new CLIAction(dummyActionHandler);
 			const awaiter = action.actionAwaiter();
 			action.setParsingError(new Error('Error while parsing argv'));
 			return awaiter.catch((err) => err).then((err) => expect(err).to.be.instanceOf(Error));
 		});
 
 		it('The awaiter rejects when the action was not triggered', () => {
-			action = new CLIAction();
+			action = new CLIAction(dummyActionHandler);
 			const awaiter = action.actionAwaiter();
 			action.wasNotTriggered();
 			return awaiter.catch((err) => err).then((err) => expect(err).to.be.instanceOf(Error));

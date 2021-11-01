@@ -14,16 +14,7 @@ export class CLIAction {
 	 * Create an instance of CLIAction
 	 * @param {AsyncActionCallback} actionCallback the handler method of the action
 	 */
-	constructor(
-		private readonly actionCallback: AsyncActionCallback = async (opts) => {
-			/* a little hack here:
-			 * for testing purposes, the callback defaults to a dummy promise which resolves into the parsed options
-			 */
-			const optsAsUnknown = opts as unknown;
-			const optsAsReturnType = optsAsUnknown as ActionReturnType;
-			return optsAsReturnType;
-		}
-	) {}
+	constructor(private readonly actionCallback: AsyncActionCallback) {}
 
 	private get promiseInstance(): Promise<ActionReturnType> {
 		if (!this._promiseInstance) {

@@ -105,7 +105,7 @@ export class CLICommand {
 		program.exitOverride();
 		setCommanderCommand(this.commandDescription, program);
 		CLICommand.allCommandInstances.push(this);
-		commandDescription.action.actionAwaiter().finally(CLICommand.rejectNonTriggeredAwaiters);
+		// commandDescription.action.actionAwaiter().finally(CLICommand.rejectNonTriggeredAwaiters);
 	}
 
 	public get action(): Promise<ParsedParameters> {
@@ -113,18 +113,25 @@ export class CLICommand {
 	}
 
 	public static parse(program: CliApiObject = programApi, argv: string[] = process.argv): void {
-		try {
-			program.parse(argv);
-		} catch {
-			exitProgram(ERROR_EXIT_CODE);
-			this.rejectNonTriggeredAwaiters();
-		}
+		// try {
+		program.parse(argv);
+		// } catch (e) {
+		// 	exitProgram(ERROR_EXIT_CODE);
+		// 	this.rejectWithParsingError(e);
+		// }
+		this.rejectNonTriggeredAwaiters();
 	}
 
 	private static rejectNonTriggeredAwaiters(): void {
 		// reject all action awaiters that haven't run
 		const theOtherCommandActions = CLICommand.allCommandInstances.map((cmd) => cmd.commandDescription.action);
 		theOtherCommandActions.forEach((action) => action.wasNotTriggered());
+	}
+
+	private static rejectWithParsingError(err: Error): void {
+		// reject all action awaiters that haven't run
+		const theOtherCommandActions = CLICommand.allCommandInstances.map((cmd) => cmd.commandDescription.action);
+		theOtherCommandActions.forEach((action) => action.setParsingError(err));
 	}
 
 	/**

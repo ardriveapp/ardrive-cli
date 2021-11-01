@@ -33,6 +33,8 @@ import { SUCCESS_EXIT_CODE } from './error_codes';
 
 const expectedArweaveAddress = stubArweaveAddress('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
 
+const dummyActionHandler = () => Promise.resolve(SUCCESS_EXIT_CODE);
+
 /**
  * @name declareCommandWithParams
  * @param program
@@ -48,7 +50,7 @@ function declareCommandWithParams(
 	const command: CommandDescriptor = {
 		name: testCommandName,
 		parameters,
-		action: new CLIAction(action)
+		action: new CLIAction(action || dummyActionHandler)
 	};
 	return new CLICommand(command, program);
 }
@@ -104,8 +106,8 @@ describe('ParametersHelper class', () => {
 	it('Required parameter throws if missing', () => {
 		Parameter.declare(requiredParameter);
 		const cmd = declareCommandWithParams(program, [requiredParameterName]);
-		CLICommand.parse(program, [...baseArgv, testCommandName]);
-		return cmd.action.catch(() => undefined).then(() => expect(process.exitCode).to.not.equal(SUCCESS_EXIT_CODE));
+		expect(() => CLICommand.parse(program, [...baseArgv, testCommandName])).to.throw();
+		// return cmd.action.catch(() => undefined).then(() => expect(process.exitCode).to.not.equal(SUCCESS_EXIT_CODE));
 	});
 
 	describe('getIsPrivate method', () => {
