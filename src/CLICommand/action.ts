@@ -1,12 +1,19 @@
 import { ActionReturnType, AsyncActionCallback, ParsedParameters } from './cli';
 import { ERROR_EXIT_CODE } from './error_codes';
 
+/**
+ * A wrapper for the command action callback
+ */
 export class CLIAction {
 	private _promiseInstance?: Promise<ActionReturnType>;
 	private _parsedParameters: ParsedParameters = {};
 	private readonly _awaiterInstances: ((value?: ParsedParameters, error?: Error) => void)[] = [];
 	private static _runningAction?: CLIAction;
 
+	/**
+	 * Create an instance of CLIAction
+	 * @param {AsyncActionCallback} actionCallback the handler method of the action
+	 */
 	constructor(
 		private readonly actionCallback: AsyncActionCallback = async (opts) => {
 			/* a little hack here:
@@ -32,6 +39,12 @@ export class CLIAction {
 		return this._parsedParameters;
 	}
 
+	/**
+	 * A static member refering to the executed action
+	 * @name runningAction
+	 * @type {CLIAction}
+	 * @throws - When read before any action has run
+	 */
 	public static get runningAction(): CLIAction {
 		if (!this._runningAction) {
 			throw new Error(`No action has been called yet`);
@@ -39,6 +52,12 @@ export class CLIAction {
 		return this._runningAction;
 	}
 
+	/**
+	 * Triggers the callback of the action and returns its promise
+	 * @name trigger
+	 * @param {ParsedParameters} params - A key/value dict representing the parsed argv
+	 * @returns {Promise<ActionReturnType>} - The promise of the callback
+	 */
 	async trigger(params: ParsedParameters): Promise<ActionReturnType> {
 		this._promiseInstance = this.actionCallback(params);
 		CLIAction._runningAction = this;
@@ -54,6 +73,10 @@ export class CLIAction {
 			});
 	}
 
+	/**
+	 * A hook promise to the action callback
+	 * @returns {Promise<ParsedParameters} - Resolves into the parsed parameters; rejects if the callback throws, or if another action has run
+	 */
 	actionAwaiter(): Promise<ParsedParameters> {
 		if (this._promiseInstance) {
 			// the promise was already called, resolve when the action is finished
@@ -89,10 +112,19 @@ export class CLIAction {
 		}
 	}
 
+	/**
+	 * Rejects all the awaiters of this specific action with the given err
+	 * @param {Error} err - The error thrown while parsing the argv
+	 * @returns {void}
+	 */
 	public setParsingError(err: Error): void {
 		this.rejectAwaiters(err);
 	}
 
+	/**
+	 * Rejects all the awaiters of this specific action because another action has run
+	 * @returns {void}
+	 */
 	public wasNotTriggered(): void {
 		this.rejectAwaiters(new Error(`Action didn't run`));
 	}
