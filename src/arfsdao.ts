@@ -147,6 +147,7 @@ export interface CreatePrivateFolderSettings extends CreateFolderSettings {
 interface getPublicChildrenFolderIdsParams {
 	folderId: FolderID;
 	driveId: DriveID;
+	owner: ArweaveAddress;
 }
 interface getPrivateChildrenFolderIdsParams extends getPublicChildrenFolderIdsParams {
 	driveKey: DriveKey;
@@ -691,6 +692,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	async getAllFoldersOfPrivateDrive(
 		driveId: DriveID,
 		driveKey: DriveKey,
+		owner: ArweaveAddress,
 		latestRevisionsOnly = false
 	): Promise<ArFSPrivateFolder[]> {
 		let cursor = '';
@@ -703,7 +705,8 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 					{ name: 'Drive-Id', value: driveId },
 					{ name: 'Entity-Type', value: 'folder' }
 				],
-				cursor
+				cursor,
+				owner
 			});
 
 			const response = await this.arweave.api.post(graphQLURL, gqlQuery);
@@ -726,6 +729,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	async getPrivateFilesWithParentFolderIds(
 		folderIDs: FolderID[],
 		driveKey: DriveKey,
+		owner: ArweaveAddress,
 		latestRevisionsOnly = false
 	): Promise<ArFSPrivateFile[]> {
 		let cursor = '';
@@ -738,7 +742,8 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 					{ name: 'Parent-Folder-Id', value: folderIDs },
 					{ name: 'Entity-Type', value: 'file' }
 				],
-				cursor
+				cursor,
+				owner
 			});
 
 			const response = await this.arweave.api.post(graphQLURL, gqlQuery);
@@ -874,12 +879,21 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	async getPrivateChildrenFolderIds({
 		folderId,
 		driveId,
-		driveKey
+		driveKey,
+		owner
 	}: getPrivateChildrenFolderIdsParams): Promise<FolderID[]> {
-		return this.getChildrenFolderIds(folderId, await this.getAllFoldersOfPrivateDrive(driveId, driveKey, true));
+		return this.getChildrenFolderIds(
+			folderId,
+			await this.getAllFoldersOfPrivateDrive(driveId, driveKey, owner, true)
+		);
 	}
-	async getPublicChildrenFolderIds({ folderId, driveId }: getPublicChildrenFolderIdsParams): Promise<FolderID[]> {
-		return this.getChildrenFolderIds(folderId, await this.getAllFoldersOfPublicDrive(driveId, true));
+
+	async getPublicChildrenFolderIds({
+		folderId,
+		owner,
+		driveId
+	}: getPublicChildrenFolderIdsParams): Promise<FolderID[]> {
+		return this.getChildrenFolderIds(folderId, await this.getAllFoldersOfPublicDrive(driveId, owner, true));
 	}
 
 	/**
@@ -905,7 +919,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		// Fetch all of the folder entities within the drive
 		const driveIdOfFolder = folder.driveId;
-		const allFolderEntitiesOfDrive = await this.getAllFoldersOfPrivateDrive(driveIdOfFolder, driveKey, true);
+		const allFolderEntitiesOfDrive = await this.getAllFoldersOfPrivateDrive(driveIdOfFolder, driveKey, owner, true);
 
 		const hierarchy = FolderHierarchy.newFromEntities(allFolderEntitiesOfDrive);
 		const searchFolderIDs = hierarchy.folderIdSubtreeFromFolderId(folderId, maxDepth - 1);
@@ -920,7 +934,12 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		}
 
 		// Fetch all file entities within all Folders of the drive
-		const childrenFileEntities = await this.getPrivateFilesWithParentFolderIds(searchFolderIDs, driveKey, true);
+		const childrenFileEntities = await this.getPrivateFilesWithParentFolderIds(
+			searchFolderIDs,
+			driveKey,
+			owner,
+			true
+		);
 
 		const children = [...childrenFolderEntities, ...childrenFileEntities];
 
