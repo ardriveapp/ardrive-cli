@@ -715,7 +715,7 @@ This method of upload can be used to upload a large number of files and folders 
 -   File names that conflict with a FOLDER name at the destination will cause an error to be thrown
 -   When the intended file name conflicts with a FILE name at the destination the file will be SKIPPED if the last modified date matches the file to upload. If they have different last modified dates, it will be uploaded as a new REVISION
 
-Similar to the single file upload, the above FILE to FILE name conflict resolution behavior can be modified. Use the `--replace` option to force new revisions on all conflicts within the bulk upload regardless of last modified date. Or use the `--skip` option to simply skip all FILE to FILE and/or FILE to FOLDER name conflicts.
+Similar to the single file upload, the above FILE to FILE name conflict resolution behavior can be modified. Use the `--replace` option to force new revisions on all conflicts within the bulk upload regardless of last modified date. Or use the `--skip` option to simply skip ALL name conflicts.
 
 ### Fetching the Metadata of a File Entity
 
