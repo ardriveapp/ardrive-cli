@@ -14,6 +14,7 @@ import {
 import { DriveKey, FeeMultiple, FolderID } from '../types';
 import { readJWKFile } from '../utils';
 import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/constants';
+import { fileNameConflictAskPrompt } from '../prompts';
 
 interface UploadFileParameter {
 	parentFolderId: FolderID;
@@ -115,7 +116,8 @@ new CLICommand({
 									wrappedFile: wrappedEntity,
 									driveKey,
 									destinationFileName,
-									conflictResolution
+									conflictResolution,
+									fileNameConflictAskPrompt
 								});
 							}
 						} else {

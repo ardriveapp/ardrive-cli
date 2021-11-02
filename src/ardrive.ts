@@ -125,10 +125,25 @@ interface MovePublicFolderParams {
 }
 type MovePrivateFolderParams = MovePublicFolderParams & WithDriveKey;
 
-export type FileNameConflictResolution = 'skip' | 'replace' | 'upsert'; // | 'ask'
+export type FileNameConflictResolution = 'skip' | 'replace' | 'upsert' | 'ask';
+
+export interface FileNameConflictAskPromptParams {
+	fileName: string;
+	fileId: FileID;
+	hasSameLastModifiedDate: boolean;
+}
+
+export type FileNameConflictAskPrompt = ({
+	fileName,
+	fileId,
+	hasSameLastModifiedDate
+}: FileNameConflictAskPromptParams) => Promise<
+	{ resolution: 'skip' | 'replace' } | { resolution: 'rename'; newFileName: string }
+>;
 
 export interface UploadParams {
 	parentFolderId: FolderID;
+	fileNameConflictAskPrompt?: FileNameConflictAskPrompt;
 	conflictResolution?: FileNameConflictResolution;
 }
 
@@ -793,6 +808,7 @@ export class ArDrive extends ArDriveAnonymous {
 		wrappedFile,
 		driveKey,
 		destinationFileName,
+		fileNameConflictAskPrompt,
 		conflictResolution = 'upsert'
 	}: UploadPrivateFileParams): Promise<ArFSResult> {
 		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
@@ -812,6 +828,8 @@ export class ArDrive extends ArDriveAnonymous {
 
 		const conflictingFileName = filesAndFolderNames.files.find((f) => f.fileName === destFileName);
 
+		let existingFileId: FileID | undefined;
+
 		if (conflictingFileName) {
 			if (conflictResolution === 'skip') {
 				// File has the same name, skip the upload
@@ -826,12 +844,41 @@ export class ArDrive extends ArDriveAnonymous {
 				return emptyArFSResult;
 			}
 
-			// TODO: Handle this.conflictResolution === 'ask' PE-639
-		}
+			if (conflictResolution === 'replace') {
+				// Proceed with new revision
+				existingFileId = conflictingFileName.fileId;
+			}
 
-		// File is a new revision if destination name conflicts
-		// with an existing file in the destination folder
-		const existingFileId = conflictingFileName?.fileId;
+			if (conflictResolution === 'ask') {
+				if (!fileNameConflictAskPrompt) {
+					throw new Error('App must provide a file name conflict resolution prompt to use the --ask option!');
+				}
+
+				const userInput = await fileNameConflictAskPrompt({
+					fileName: conflictingFileName.fileName,
+					fileId: conflictingFileName.fileId,
+					hasSameLastModifiedDate: conflictingFileName.lastModifiedDate === wrappedFile.lastModifiedDate
+				});
+
+				switch (userInput.resolution) {
+					case 'skip':
+						return emptyArFSResult;
+
+					case 'rename':
+						if (destinationFileName === userInput.newFileName) {
+							throw new Error('You must provide a different name to rename the file!');
+						}
+						// Use specified new file name
+						destinationFileName = userInput.newFileName;
+						break;
+
+					case 'replace':
+						// Proceed with new revision
+						existingFileId = conflictingFileName.fileId;
+						break;
+				}
+			}
+		}
 
 		const uploadBaseCosts = await this.estimateAndAssertCostOfFileUpload(
 			wrappedFile.fileStats.size,
