@@ -1,10 +1,11 @@
 import { deriveDriveKey, driveDecrypt, Utf8ArrayToStr } from 'ardrive-core-js';
 import { CipherIV, DriveID, DriveKey } from './types';
+import { EntityID } from './types/entity_id';
 import { JWKWallet } from './wallet';
 
 type DriveIdKeyPair = { [key: string /* DriveID */]: DriveKey };
 
-export type EntityMetaDataTransactionData = { [key: string]: string | number };
+export type EntityMetaDataTransactionData = { [key: string]: string | number | EntityID };
 
 // Users may optionally supply any drive keys, a password, or a wallet
 interface PrivateKeyDataParams {

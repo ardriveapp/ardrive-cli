@@ -179,7 +179,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			// Assert that drive ID is consistent with parent folder ID
 			const actualDriveId = await this.getDriveIdForFolderId(parentFolderId);
 
-			if (!actualDriveId.isEqualTo(driveId)) {
+			if (!actualDriveId.equals(driveId)) {
 				throw new Error(
 					`Drive id: ${driveId} does not match actual drive id: ${actualDriveId} for parent folder id`
 				);
