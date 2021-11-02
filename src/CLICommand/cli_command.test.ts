@@ -13,19 +13,19 @@ import { CliApiObject } from './cli';
 import { baseArgv } from './test_constants';
 import { Parameter } from './parameter';
 import { CLIAction } from './action';
+import { SUCCESS_EXIT_CODE } from './error_codes';
 
 const MY_DRIVE_NAME = 'My awesome drive!';
 const testingCommandName = 'drive-name-test';
+async function dummyAction() {
+	return SUCCESS_EXIT_CODE;
+}
 const driveNameCommandDescription: CommandDescriptor = {
 	name: testingCommandName,
 	parameters: [DriveNameParameter],
-	action: new CLIAction()
+	action: new CLIAction(dummyAction)
 };
 const driveNameArgv: string[] = [...baseArgv, testingCommandName, '--drive-name', MY_DRIVE_NAME];
-async function action() {
-	// eslint-disable-next-line no-console
-	console.log('DUMMY ACTION');
-}
 const nonEmptyValue = 'non-empty value';
 const commandDescriptorRequiredWallet: CommandDescriptor = {
 	name: testingCommandName,
@@ -33,7 +33,7 @@ const commandDescriptorRequiredWallet: CommandDescriptor = {
 		WalletFileParameter,
 		{ name: UnsafeDrivePasswordParameter, requiredConjunctionParameters: [WalletFileParameter] }
 	],
-	action: new CLIAction(action)
+	action: new CLIAction(dummyAction)
 };
 const parsedOptionsMissingWallet = {
 	[WalletFileParameter]: undefined,
@@ -42,7 +42,7 @@ const parsedOptionsMissingWallet = {
 const commandDescriptorForbiddenWalletFileAndSeedPhrase: CommandDescriptor = {
 	name: testingCommandName,
 	parameters: [WalletFileParameter, SeedPhraseParameter],
-	action: new CLIAction(action)
+	action: new CLIAction(dummyAction)
 };
 const parsedCommandOptionsBothSpecified = {
 	[WalletFileParameter]: nonEmptyValue,
