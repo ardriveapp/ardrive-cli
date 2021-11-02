@@ -33,7 +33,7 @@ export function latestRevisionFilterForDrives(
 	_index: number,
 	allEntities: ArFSDriveEntity[]
 ): boolean {
-	const allRevisions = allEntities.filter((e) => e.driveId.isEqualTo(entity.driveId));
+	const allRevisions = allEntities.filter((e) => e.driveId.equals(entity.driveId));
 	const latestRevision = allRevisions[0];
 	return entity.txId === latestRevision.txId;
 }

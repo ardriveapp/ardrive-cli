@@ -73,7 +73,7 @@ export class ArFSPublicDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPublic
 			this.entityType?.length &&
 			this.txId?.length &&
 			this.unixTime &&
-			this.driveId.isEqualTo(this.entityId as EntityID) &&
+			this.driveId.equals(this.entityId as EntityID) &&
 			this.drivePrivacy?.length
 		) {
 			const txData = await this.arweave.transactions.getData(this.txId, { decode: true });

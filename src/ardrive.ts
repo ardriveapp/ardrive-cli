@@ -233,7 +233,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		const originalFileMetaData = await this.getPublicFile(fileId);
 
-		if (!destFolderDriveId.isEqualTo(originalFileMetaData.driveId)) {
+		if (!destFolderDriveId.equals(originalFileMetaData.driveId)) {
 			throw new Error(errorMessage.cannotMoveToDifferentDrive);
 		}
 
@@ -291,7 +291,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		const originalFileMetaData = await this.getPrivateFile(fileId, driveKey);
 
-		if (!destFolderDriveId.isEqualTo(originalFileMetaData.driveId)) {
+		if (!destFolderDriveId.equals(originalFileMetaData.driveId)) {
 			throw new Error(errorMessage.cannotMoveToDifferentDrive);
 		}
 
@@ -356,7 +356,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		const originalFolderMetaData = await this.getPublicFolder(folderId);
 
-		if (!destFolderDriveId.isEqualTo(originalFolderMetaData.driveId)) {
+		if (!destFolderDriveId.equals(originalFolderMetaData.driveId)) {
 			throw new Error(errorMessage.cannotMoveToDifferentDrive);
 		}
 
@@ -423,7 +423,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		const originalFolderMetaData = await this.getPrivateFolder(folderId, driveKey);
 
-		if (!destFolderDriveId.isEqualTo(originalFolderMetaData.driveId)) {
+		if (!destFolderDriveId.equals(originalFolderMetaData.driveId)) {
 			throw new Error(errorMessage.cannotMoveToDifferentDrive);
 		}
 

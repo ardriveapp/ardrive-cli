@@ -29,6 +29,18 @@ describe('EntityID class', () => {
 		});
 	});
 
+	describe('toPrimitive function', () => {
+		it('returns the correct Entity ID string when hint is string', () => {
+			const eid = new EntityID('01234567-89ab-cdef-0000-000000000000');
+			expect(`${eid}`).to.equal('01234567-89ab-cdef-0000-000000000000');
+		});
+
+		it('throws an error when hint is number', () => {
+			const eid = new EntityID('01234567-89ab-cdef-0000-000000000000');
+			expect(() => +eid).to.throw(Error);
+		});
+	});
+
 	describe('toString function', () => {
 		it('returns the correct Entity ID string', () => {
 			const eid = new EntityID('01234567-89ab-cdef-0000-000000000000');
@@ -49,12 +61,12 @@ describe('EntityID class', () => {
 			const eid1 = new EntityID('01234567-89ab-cdef-0000-000000000000');
 			const eid2 = new EntityID('01234567-89ab-cdef-0000-000000000000');
 			const eid3 = new EntityID('01234567-89ab-cdef-0000-000000000001');
-			expect(eid1.isEqualTo(eid2), `${eid1} and ${eid2}`).to.be.true;
-			expect(eid2.isEqualTo(eid1), `${eid2} and ${eid1}`).to.be.true;
-			expect(eid1.isEqualTo(eid3), `${eid1} and ${eid3}`).to.be.false;
-			expect(eid3.isEqualTo(eid1), `${eid3} and ${eid1}`).to.be.false;
-			expect(eid2.isEqualTo(eid3), `${eid2} and ${eid3}`).to.be.false;
-			expect(eid3.isEqualTo(eid2), `${eid3} and ${eid2}`).to.be.false;
+			expect(eid1.equals(eid2), `${eid1} and ${eid2}`).to.be.true;
+			expect(eid2.equals(eid1), `${eid2} and ${eid1}`).to.be.true;
+			expect(eid1.equals(eid3), `${eid1} and ${eid3}`).to.be.false;
+			expect(eid3.equals(eid1), `${eid3} and ${eid1}`).to.be.false;
+			expect(eid2.equals(eid3), `${eid2} and ${eid3}`).to.be.false;
+			expect(eid3.equals(eid2), `${eid3} and ${eid2}`).to.be.false;
 		});
 	});
 });
