@@ -1,6 +1,6 @@
 import Arweave from 'arweave';
 import { readContract } from 'smartweave';
-import { TransactionID } from '../types';
+import { TransactionID } from '../types/transaction_id';
 import { ContractReader } from './contract_oracle';
 
 /**
@@ -12,6 +12,6 @@ export class SmartweaveContractReader implements ContractReader {
 
 	/** Fetches smartweave contracts from Arweave with smartweave-js */
 	async readContract(txId: TransactionID): Promise<unknown> {
-		return readContract(this.arweave, txId);
+		return readContract(this.arweave, `${txId}`);
 	}
 }

@@ -26,8 +26,6 @@ export type UnixTime = number;
 export type ByteCount = number;
 export type DataContentType = string;
 
-export type TransactionID = string; // TODO: make a type that checks lengths
-
 export interface ArDriveCommunityTip {
 	tipPercentage: number;
 	minWinstonFee: Winston;

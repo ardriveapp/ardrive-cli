@@ -1,4 +1,4 @@
-import { TransactionID } from '../types';
+import { TransactionID } from '../types/transaction_id';
 import { CommunityContractData, CommunityTipPercentage } from './contract_types';
 
 /** An oracle interface responsible for reading contracts and retrieving the ArDrive Community Contract */

@@ -6,17 +6,8 @@ import {
 	driveEncrypt,
 	fileEncrypt
 } from 'ardrive-core-js';
-import {
-	ByteCount,
-	CipherIV,
-	DataContentType,
-	DriveKey,
-	FileID,
-	FileKey,
-	FolderID,
-	TransactionID,
-	UnixTime
-} from './types';
+import { ByteCount, CipherIV, DataContentType, DriveKey, FileID, FileKey, FolderID, UnixTime } from './types';
+import { TransactionID } from './types/transaction_id';
 
 export interface ArFSObjectTransactionData {
 	asTransactionData(): string | Buffer;
@@ -145,7 +136,7 @@ export class ArFSPublicFileMetadataTransactionData extends ArFSFileMetadataTrans
 			name: this.name,
 			size: this.size,
 			lastModifiedDate: this.lastModifiedDate,
-			dataTxId: this.dataTxId,
+			dataTxId: `${this.dataTxId}`,
 			dataContentType: this.dataContentType
 		});
 	}
@@ -179,7 +170,7 @@ export class ArFSPrivateFileMetadataTransactionData extends ArFSFileMetadataTran
 					name: name,
 					size: size,
 					lastModifiedDate: lastModifiedDate,
-					dataTxId: dataTxId,
+					dataTxId: `${dataTxId}`,
 					dataContentType: dataContentType
 				})
 			)

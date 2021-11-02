@@ -2,7 +2,6 @@ import { ArFSDAO, PrivateDriveKeyData } from './arfsdao';
 import { CommunityOracle } from './community/community_oracle';
 import { deriveDriveKey, DrivePrivacy, GQLTagInterface } from 'ardrive-core-js';
 import {
-	TransactionID,
 	DriveID,
 	FolderID,
 	TipType,
@@ -50,6 +49,7 @@ import { ArweaveAddress } from './types/arweave_address';
 import { WithDriveKey } from './arfs_entity_result_factory';
 import { W, Winston } from './types/winston';
 import { AR } from './types/ar';
+import { TransactionID } from './types/transaction_id';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 
@@ -278,7 +278,7 @@ export class ArDrive extends ArDriveAnonymous {
 			],
 			tips: [],
 			fees: {
-				[moveFileResult.metaDataTrxId]: moveFileResult.metaDataTrxReward
+				[`${moveFileResult.metaDataTrxId}`]: moveFileResult.metaDataTrxReward
 			}
 		});
 	}
@@ -339,7 +339,7 @@ export class ArDrive extends ArDriveAnonymous {
 			],
 			tips: [],
 			fees: {
-				[moveFileResult.metaDataTrxId]: moveFileResult.metaDataTrxReward
+				[`${moveFileResult.metaDataTrxId}`]: moveFileResult.metaDataTrxReward
 			}
 		});
 	}
@@ -406,7 +406,7 @@ export class ArDrive extends ArDriveAnonymous {
 			],
 			tips: [],
 			fees: {
-				[moveFolderResult.metaDataTrxId]: moveFolderResult.metaDataTrxReward
+				[`${moveFolderResult.metaDataTrxId}`]: moveFolderResult.metaDataTrxReward
 			}
 		});
 	}
@@ -478,7 +478,7 @@ export class ArDrive extends ArDriveAnonymous {
 			],
 			tips: [],
 			fees: {
-				[moveFolderResult.metaDataTrxId]: moveFolderResult.metaDataTrxReward
+				[`${moveFolderResult.metaDataTrxId}`]: moveFolderResult.metaDataTrxReward
 			}
 		});
 	}
@@ -540,9 +540,9 @@ export class ArDrive extends ArDriveAnonymous {
 			],
 			tips: [tipData],
 			fees: {
-				[uploadFileResult.dataTrxId]: uploadFileResult.dataTrxReward,
-				[uploadFileResult.metaDataTrxId]: uploadFileResult.metaDataTrxReward,
-				[tipData.txId]: communityTipTrxReward
+				[`${uploadFileResult.dataTrxId}`]: uploadFileResult.dataTrxReward,
+				[`${uploadFileResult.metaDataTrxId}`]: uploadFileResult.metaDataTrxReward,
+				[`${tipData.txId}`]: communityTipTrxReward
 			}
 		});
 	}
@@ -599,7 +599,7 @@ export class ArDrive extends ArDriveAnonymous {
 			return Promise.resolve({
 				created: results.entityResults,
 				tips: [tipData],
-				fees: { ...results.feeResults, [tipData.txId]: communityTipTrxReward }
+				fees: { ...results.feeResults, [`${tipData.txId}`]: communityTipTrxReward }
 			});
 		}
 
@@ -647,7 +647,7 @@ export class ArDrive extends ArDriveAnonymous {
 			const { metaDataTrxId, folderId: newFolderId, metaDataTrxReward } = createFolderResult;
 
 			// Capture parent folder results
-			uploadEntityFees = { [metaDataTrxId]: metaDataTrxReward };
+			uploadEntityFees = { [`${metaDataTrxId}`]: metaDataTrxReward };
 			uploadEntityResults = [
 				{
 					type: 'folder',
@@ -683,8 +683,8 @@ export class ArDrive extends ArDriveAnonymous {
 			// Capture all file results
 			uploadEntityFees = {
 				...uploadEntityFees,
-				[uploadFileResult.dataTrxId]: uploadFileResult.dataTrxReward,
-				[uploadFileResult.metaDataTrxId]: uploadFileResult.metaDataTrxReward
+				[`${uploadFileResult.dataTrxId}`]: uploadFileResult.dataTrxReward,
+				[`${uploadFileResult.metaDataTrxId}`]: uploadFileResult.metaDataTrxReward
 			};
 			uploadEntityResults = [
 				...uploadEntityResults,
@@ -802,9 +802,9 @@ export class ArDrive extends ArDriveAnonymous {
 			],
 			tips: [tipData],
 			fees: {
-				[uploadFileResult.dataTrxId]: uploadFileResult.dataTrxReward,
-				[uploadFileResult.metaDataTrxId]: uploadFileResult.metaDataTrxReward,
-				[tipData.txId]: communityTipTrxReward
+				[`${uploadFileResult.dataTrxId}`]: uploadFileResult.dataTrxReward,
+				[`${uploadFileResult.metaDataTrxId}`]: uploadFileResult.metaDataTrxReward,
+				[`${tipData.txId}`]: communityTipTrxReward
 			}
 		});
 	}
@@ -867,7 +867,7 @@ export class ArDrive extends ArDriveAnonymous {
 			return Promise.resolve({
 				created: results.entityResults,
 				tips: [tipData],
-				fees: { ...results.feeResults, [tipData.txId]: communityTipTrxReward }
+				fees: { ...results.feeResults, [`${tipData.txId}`]: communityTipTrxReward }
 			});
 		}
 
@@ -992,7 +992,7 @@ export class ArDrive extends ArDriveAnonymous {
 			const { metaDataTrxId, folderId: newFolderId, metaDataTrxReward } = createFolderResult;
 
 			// Capture parent folder results
-			uploadEntityFees = { [metaDataTrxId]: metaDataTrxReward };
+			uploadEntityFees = { [`${metaDataTrxId}`]: metaDataTrxReward };
 			uploadEntityResults = [
 				{
 					type: 'folder',
@@ -1029,8 +1029,8 @@ export class ArDrive extends ArDriveAnonymous {
 			// Capture all file results
 			uploadEntityFees = {
 				...uploadEntityFees,
-				[uploadFileResult.dataTrxId]: uploadFileResult.dataTrxReward,
-				[uploadFileResult.metaDataTrxId]: uploadFileResult.metaDataTrxReward
+				[`${uploadFileResult.dataTrxId}`]: uploadFileResult.dataTrxReward,
+				[`${uploadFileResult.metaDataTrxId}`]: uploadFileResult.metaDataTrxReward
 			};
 			uploadEntityResults = [
 				...uploadEntityResults,
@@ -1104,7 +1104,7 @@ export class ArDrive extends ArDriveAnonymous {
 			],
 			tips: [],
 			fees: {
-				[metaDataTrxId]: metaDataTrxReward
+				[`${metaDataTrxId}`]: metaDataTrxReward
 			}
 		});
 	}
@@ -1151,7 +1151,7 @@ export class ArDrive extends ArDriveAnonymous {
 			],
 			tips: [],
 			fees: {
-				[metaDataTrxId]: metaDataTrxReward
+				[`${metaDataTrxId}`]: metaDataTrxReward
 			}
 		});
 	}
@@ -1192,8 +1192,8 @@ export class ArDrive extends ArDriveAnonymous {
 			],
 			tips: [],
 			fees: {
-				[createDriveResult.metaDataTrxId]: createDriveResult.metaDataTrxReward,
-				[createDriveResult.rootFolderTrxId]: createDriveResult.rootFolderTrxReward
+				[`${createDriveResult.metaDataTrxId}`]: createDriveResult.metaDataTrxReward,
+				[`${createDriveResult.rootFolderTrxId}`]: createDriveResult.rootFolderTrxReward
 			}
 		});
 	}
@@ -1242,8 +1242,8 @@ export class ArDrive extends ArDriveAnonymous {
 			],
 			tips: [],
 			fees: {
-				[createDriveResult.metaDataTrxId]: createDriveResult.metaDataTrxReward,
-				[createDriveResult.rootFolderTrxId]: createDriveResult.rootFolderTrxReward
+				[`${createDriveResult.metaDataTrxId}`]: createDriveResult.metaDataTrxReward,
+				[`${createDriveResult.rootFolderTrxId}`]: createDriveResult.rootFolderTrxReward
 			}
 		});
 	}
