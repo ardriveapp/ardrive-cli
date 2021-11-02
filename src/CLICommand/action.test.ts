@@ -11,7 +11,7 @@ describe('The CLIAction class', () => {
 		myCustomOption: 'the parameter value'
 	};
 
-	it('The static CLIAction.runningAction throws when is read read before calling trigger()', () => {
+	it('throws an error when runningAction is called before the `trigger` method', () => {
 		expect(() => CLIAction.runningAction).to.throw();
 	});
 
