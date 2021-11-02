@@ -774,7 +774,8 @@ function assertUploadFileExpectations(
 
 	const feeKeys = Object.keys(result.fees);
 	expect(feeKeys[0]).to.match(trxIdRegex);
-	expect(feeKeys[0]).to.equal(fileEntity.dataTxId.toString());
+	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+	expect(feeKeys[0]).to.equal(fileEntity.dataTxId!.toString());
 	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 	expect(`${result.fees[fileEntity.dataTxId!.toString()]}`).to.equal(`${fileFee}`);
 
