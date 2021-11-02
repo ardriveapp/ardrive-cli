@@ -62,7 +62,7 @@ export class ArFSFileToUpload {
 
 	baseCosts?: BulkFileBaseCosts;
 	existingId?: FileID;
-	folderNameConflict = false;
+	existingFolderAtDestConflict = false;
 	hasSameLastModifiedDate = false;
 
 	public gatherFileInfo(): FileInfo {
@@ -109,7 +109,7 @@ export class ArFSFolderToUpload {
 	baseCosts?: MetaDataBaseCosts;
 	existingId?: FolderID;
 	destinationName?: string;
-	fileNameConflict = false;
+	existingFileAtDestConflict = false;
 
 	constructor(public readonly filePath: FilePath, public readonly fileStats: fs.Stats) {
 		const entitiesInFolder = fs.readdirSync(this.filePath);
@@ -143,23 +143,25 @@ export class ArFSFolderToUpload {
 		for await (const file of this.files) {
 			const baseFileName = file.getBaseFileName();
 
-			const folderNameConflict = existingEntityNamesAndIds.folders.find(
+			const existingFolderAtDestConflict = existingEntityNamesAndIds.folders.find(
 				({ folderName }) => folderName === baseFileName
 			);
 
-			if (folderNameConflict) {
+			if (existingFolderAtDestConflict) {
 				// Folder name cannot conflict with a file name
-				file.folderNameConflict = true;
+				file.existingFolderAtDestConflict = true;
 				continue;
 			}
 
-			const fileNameConflict = existingEntityNamesAndIds.files.find(({ fileName }) => fileName === baseFileName);
+			const existingFileAtDestConflict = existingEntityNamesAndIds.files.find(
+				({ fileName }) => fileName === baseFileName
+			);
 
 			// Conflicting file name creates a REVISION by default
-			if (fileNameConflict) {
-				file.existingId = fileNameConflict.fileId;
+			if (existingFileAtDestConflict) {
+				file.existingId = existingFileAtDestConflict.fileId;
 
-				if (fileNameConflict.lastModifiedDate === file.lastModifiedDate) {
+				if (existingFileAtDestConflict.lastModifiedDate === file.lastModifiedDate) {
 					// Check last modified date and set to true to resolve upsert conditional
 					file.hasSameLastModifiedDate = true;
 				}
@@ -169,24 +171,24 @@ export class ArFSFolderToUpload {
 		for await (const folder of this.folders) {
 			const baseFolderName = folder.getBaseFileName();
 
-			const fileNameConflict = existingEntityNamesAndIds.files.find(
+			const existingFileAtDestConflict = existingEntityNamesAndIds.files.find(
 				({ fileName }) => fileName === baseFolderName
 			);
 
-			if (fileNameConflict) {
+			if (existingFileAtDestConflict) {
 				// Folder name cannot conflict with a file name
-				this.fileNameConflict = true;
+				this.existingFileAtDestConflict = true;
 				continue;
 			}
 
-			const folderNameConflict = existingEntityNamesAndIds.folders.find(
+			const existingFolderAtDestConflict = existingEntityNamesAndIds.folders.find(
 				({ folderName }) => folderName === baseFolderName
 			);
 
 			// Conflicting folder name uses EXISTING folder by default
-			if (folderNameConflict) {
+			if (existingFolderAtDestConflict) {
 				// Assigns existing id for later use
-				folder.existingId = folderNameConflict.folderId;
+				folder.existingId = existingFolderAtDestConflict.folderId;
 
 				// Recurse into existing folder on folder name conflict
 				await folder.checkAndAssignExistingNames(getExistingNamesFn);

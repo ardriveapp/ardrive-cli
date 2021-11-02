@@ -678,7 +678,7 @@ export class ArDrive extends ArDriveAnonymous {
 		let uploadEntityResults: ArFSEntityData[] = [];
 		let folderId: FolderID;
 
-		if (wrappedFolder.fileNameConflict) {
+		if (wrappedFolder.existingFileAtDestConflict) {
 			if (conflictResolution === skipOnConflicts) {
 				// Return empty result on skip
 				return { entityResults: [], feeResults: {} };
@@ -1007,7 +1007,7 @@ export class ArDrive extends ArDriveAnonymous {
 		let uploadEntityResults: ArFSEntityData[] = [];
 		let folderId: FolderID;
 
-		if (wrappedFolder.fileNameConflict) {
+		if (wrappedFolder.existingFileAtDestConflict) {
 			if (conflictResolution === skipOnConflicts) {
 				// Return empty result on skip
 				return { entityResults: [], feeResults: {} };
@@ -1065,7 +1065,7 @@ export class ArDrive extends ArDriveAnonymous {
 				continue;
 			}
 
-			if (wrappedFile.folderNameConflict) {
+			if (wrappedFile.existingFolderAtDestConflict) {
 				if (conflictResolution === skipOnConflicts) {
 					// Continue loop, skip uploading this file
 					continue;
