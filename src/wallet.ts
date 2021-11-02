@@ -6,7 +6,6 @@ import Arweave from 'arweave';
 import * as mnemonicKeys from 'arweave-mnemonic-keys';
 import {
 	TransactionID,
-	Winston,
 	NetworkReward,
 	PublicKey,
 	SeedPhrase,
@@ -15,7 +14,9 @@ import {
 	RewardSettings
 } from './types';
 import { CreateTransactionInterface } from 'arweave/node/common';
-import { ArweaveAddress } from './arweave_address';
+import { ArweaveAddress } from './types/arweave_address';
+import { W, Winston } from './types/winston';
+import { AR } from './types/ar';
 
 export type ARTransferResult = {
 	trxID: TransactionID;
@@ -79,21 +80,21 @@ export class WalletDAO {
 		return Promise.resolve(new JWKWallet(jwkWallet));
 	}
 
-	async getWalletWinstonBalance(wallet: Wallet): Promise<number> {
+	async getWalletWinstonBalance(wallet: Wallet): Promise<Winston> {
 		return this.getAddressWinstonBalance(await wallet.getAddress());
 	}
 
-	async getAddressWinstonBalance(address: ArweaveAddress): Promise<number> {
-		return Promise.resolve(+(await this.arweave.wallets.getBalance(address.toString())));
+	async getAddressWinstonBalance(address: ArweaveAddress): Promise<Winston> {
+		return Promise.resolve(W(+(await this.arweave.wallets.getBalance(address.toString()))));
 	}
 
 	async walletHasBalance(wallet: Wallet, winstonPrice: Winston): Promise<boolean> {
 		const walletBalance = await this.getWalletWinstonBalance(wallet);
-		return +walletBalance > +winstonPrice;
+		return walletBalance.isGreaterThan(winstonPrice);
 	}
 
 	async sendARToAddress(
-		arAmount: number,
+		arAmount: AR,
 		fromWallet: Wallet,
 		toAddress: ArweaveAddress,
 		rewardSettings: RewardSettings = {},
@@ -108,14 +109,17 @@ export class WalletDAO {
 	): Promise<ARTransferResult> {
 		// TODO: Figure out how this works for other wallet types
 		const jwkWallet = fromWallet as JWKWallet;
-		const winston: Winston = this.arweave.ar.arToWinston(arAmount.toString());
+		const winston: Winston = arAmount.toWinston();
 
 		// Create transaction
-		const trxAttributes: Partial<CreateTransactionInterface> = { target: toAddress.toString(), quantity: winston };
+		const trxAttributes: Partial<CreateTransactionInterface> = {
+			target: toAddress.toString(),
+			quantity: winston.toString()
+		};
 
 		// If we provided our own reward settings, use them now
 		if (rewardSettings.reward) {
-			trxAttributes.reward = rewardSettings.reward;
+			trxAttributes.reward = rewardSettings.reward.toString();
 		}
 
 		// TODO: Use a mock arweave server instead
@@ -131,8 +135,8 @@ export class WalletDAO {
 		if (assertBalance) {
 			const fromAddress = await fromWallet.getAddress();
 			const balanceInWinston = await this.getAddressWinstonBalance(fromAddress);
-			const total = +transaction.reward + +transaction.quantity;
-			if (total > balanceInWinston) {
+			const total = W(transaction.reward).plus(W(transaction.quantity));
+			if (total.isGreaterThan(balanceInWinston)) {
 				throw new Error(
 					[
 						`Insufficient funds for this transaction`,
@@ -140,7 +144,7 @@ export class WalletDAO {
 						`minerReward: ${transaction.reward}`,
 						`balance: ${balanceInWinston}`,
 						`total: ${total}`,
-						`difference: ${total - balanceInWinston}`
+						`difference: ${Winston.difference(total, balanceInWinston)}`
 					].join('\n\t')
 				);
 			}
@@ -174,7 +178,7 @@ export class WalletDAO {
 			return Promise.resolve({
 				trxID: transaction.id,
 				winston,
-				reward: transaction.reward
+				reward: W(transaction.reward)
 			});
 		} else {
 			throw new Error(`Transaction failed. Response: ${response}`);

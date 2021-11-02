@@ -10,7 +10,7 @@ import { ArFSPublicFolderBuilder } from './utils/arfs_builders/arfs_folder_build
 import { ArFSPublicFileBuilder } from './utils/arfs_builders/arfs_file_builders';
 import { ArFSPublicDrive, ArFSPublicFile, ArFSPublicFileOrFolderWithPaths, ArFSPublicFolder } from './arfs_entities';
 import { PrivateKeyData } from './private_key_data';
-import { ArweaveAddress } from './arweave_address';
+import { ArweaveAddress } from './types/arweave_address';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 

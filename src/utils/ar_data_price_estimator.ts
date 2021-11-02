@@ -1,14 +1,16 @@
 import type { ArDriveCommunityTip, ByteCount } from '../types';
+import { AR } from '../types/ar';
+import { Winston } from '../types/winston';
 
 export const arPerWinston = 0.000_000_000_001;
 
 export interface ARDataPriceEstimator {
-	getBaseWinstonPriceForByteCount(byteCount: ByteCount): Promise<number>;
-	getARPriceForByteCount: (byteCount: ByteCount, arDriveCommunityTip: ArDriveCommunityTip) => Promise<number>;
+	getBaseWinstonPriceForByteCount(byteCount: ByteCount): Promise<Winston>;
+	getARPriceForByteCount: (byteCount: ByteCount, arDriveCommunityTip: ArDriveCommunityTip) => Promise<AR>;
 }
 
 export abstract class AbstractARDataPriceEstimator implements ARDataPriceEstimator {
-	abstract getBaseWinstonPriceForByteCount(byteCount: ByteCount): Promise<number>;
+	abstract getBaseWinstonPriceForByteCount(byteCount: ByteCount): Promise<Winston>;
 
 	/**
 	 * Estimates the price in AR for a given byte count, including the ArDrive community tip
@@ -16,25 +18,25 @@ export abstract class AbstractARDataPriceEstimator implements ARDataPriceEstimat
 	async getARPriceForByteCount(
 		byteCount: ByteCount,
 		{ minWinstonFee, tipPercentage }: ArDriveCommunityTip
-	): Promise<number> {
+	): Promise<AR> {
 		const winstonPrice = await this.getBaseWinstonPriceForByteCount(byteCount);
-		const communityWinstonFee = Math.max(winstonPrice * tipPercentage, minWinstonFee);
+		const communityWinstonFee = Winston.max(winstonPrice.times(tipPercentage), minWinstonFee);
 
-		const totalWinstonPrice = winstonPrice + communityWinstonFee;
+		const totalWinstonPrice = winstonPrice.plus(communityWinstonFee);
 
-		return totalWinstonPrice * arPerWinston;
+		return new AR(totalWinstonPrice);
 	}
 }
 
 export interface ARDataCapacityEstimator {
-	getByteCountForWinston: (winston: number) => Promise<ByteCount>;
-	getByteCountForAR: (arPrice: number, arDriveCommunityTip: ArDriveCommunityTip) => Promise<ByteCount>;
+	getByteCountForWinston: (winston: Winston) => Promise<ByteCount>;
+	getByteCountForAR: (arPrice: AR, arDriveCommunityTip: ArDriveCommunityTip) => Promise<ByteCount>;
 }
 
 // prettier-ignore
 export abstract class AbstractARDataPriceAndCapacityEstimator extends AbstractARDataPriceEstimator implements ARDataCapacityEstimator
 {
-	abstract getByteCountForWinston(winston: number): Promise<ByteCount>;
+	abstract getByteCountForWinston(winston: Winston): Promise<ByteCount>;
 
 	/**
 	 * Estimates the number of bytes that can be stored for a given amount of AR
@@ -42,17 +44,13 @@ export abstract class AbstractARDataPriceAndCapacityEstimator extends AbstractAR
 	 * @remarks Returns 0 bytes when the price does not cover minimum ArDrive community fee
 	 */
 	public async getByteCountForAR(
-		arPrice: number,
+		arPrice: AR,
 		{ minWinstonFee, tipPercentage }: ArDriveCommunityTip
-	): Promise<number> {
-		const winstonPrice = arPrice / arPerWinston;
-
-		const communityWinstonFee = Math.max(winstonPrice - winstonPrice / (1 + tipPercentage), minWinstonFee);
-
-		const winstonPriceWithoutFee = Math.round(winstonPrice - communityWinstonFee);
-
-		if (winstonPriceWithoutFee > 0) {
-			return this.getByteCountForWinston(winstonPriceWithoutFee);
+	): Promise<ByteCount> {
+		const winstonPrice = arPrice.toWinston();
+		const communityWinstonFee = Winston.max(winstonPrice.minus(winstonPrice.dividedBy(1 + tipPercentage)), minWinstonFee);
+		if (winstonPrice.isGreaterThan(communityWinstonFee)) {
+			return this.getByteCountForWinston(winstonPrice.minus(communityWinstonFee));
 		}
 
 		// Specified `arPrice` does not cover provided `minimumWinstonFee`

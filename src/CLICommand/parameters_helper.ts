@@ -16,7 +16,7 @@ import { cliWalletDao } from '..';
 import { DriveID, DriveKey } from '../types';
 import passwordPrompt from 'prompts';
 import { PrivateKeyData } from '../private_key_data';
-import { ArweaveAddress } from '../arweave_address';
+import { ArweaveAddress } from '../types/arweave_address';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ParameterOptions = any;

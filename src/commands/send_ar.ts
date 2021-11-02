@@ -1,5 +1,5 @@
 import { cliWalletDao } from '..';
-import { ArweaveAddress } from '../arweave_address';
+import { ArweaveAddress } from '../types/arweave_address';
 import { CLICommand } from '../CLICommand';
 import { ParametersHelper } from '../CLICommand';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
@@ -10,20 +10,19 @@ import {
 	DryRunParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
-import { assertARPrecision } from '../utils/ar_unit';
+import { AR } from '../types/ar';
 
 new CLICommand({
 	name: 'send-ar',
 	parameters: [ArAmountParameter, DestinationAddressParameter, WalletFileParameter, BoostParameter, DryRunParameter],
 	async action(options) {
-		assertARPrecision(options.arAmount);
 		const parameters = new ParametersHelper(options);
-		const arAmount: number = +options.arAmount;
+		const arAmount = AR.from(options.arAmount);
 		const destAddress = new ArweaveAddress(options.destAddress);
 		const wallet = await parameters.getRequiredWallet();
 		const walletAddress = await wallet.getAddress();
 		console.log(`Source address: ${walletAddress}`);
-		console.log(`AR amount sent: ${arAmount.toFixed(12)}`);
+		console.log(`AR amount sent: ${arAmount.toString()}`);
 		console.log(`Destination address: ${destAddress}`);
 		const rewardSetting = options.boost ? { feeMultiple: +options.boost } : undefined;
 

@@ -1,4 +1,4 @@
-import { ArweaveAddress } from './arweave_address';
+import { ArweaveAddress } from './types/arweave_address';
 
 const ownerFragment = `
 	owner {

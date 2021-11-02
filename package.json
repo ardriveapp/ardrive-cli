@@ -13,6 +13,7 @@
 		"arweave-bundles": "^1.0.3",
 		"arweave-mnemonic-keys": "^0.0.9",
 		"base64-js": "^1.5.1",
+		"bignumber.js": "^9.0.0",
 		"commander": "^8.2.0",
 		"jwk-to-pem": "^2.0.4",
 		"lodash": "^4.17.21",

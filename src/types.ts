@@ -1,3 +1,5 @@
+import { Winston } from './types/winston';
+
 export const ArFS_O_11 = '0.11';
 export const CURRENT_ARFS_VERSION = ArFS_O_11;
 export const DEFAULT_APP_NAME = 'ArDrive-Core';
@@ -6,8 +8,6 @@ export const DEFAULT_APP_VERSION = '1.0.0';
 export type PublicKey = string;
 export type SeedPhrase = string;
 
-/** TODO: Use big int library on Winston types */
-export type Winston = string; // TODO: make a type that checks validity
 export type NetworkReward = Winston;
 
 export type FolderID = string;
@@ -28,7 +28,7 @@ export type TransactionID = string; // TODO: make a type that checks lengths
 
 export interface ArDriveCommunityTip {
 	tipPercentage: number;
-	minWinstonFee: number; // TODO: Align with Winston type?
+	minWinstonFee: Winston;
 }
 
 export type TipType = 'data upload';

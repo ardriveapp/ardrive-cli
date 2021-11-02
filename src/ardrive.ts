@@ -1,9 +1,8 @@
 import { ArFSDAO, PrivateDriveKeyData } from './arfsdao';
 import { CommunityOracle } from './community/community_oracle';
-import { ArFSDriveEntity, deriveDriveKey, DrivePrivacy, GQLTagInterface, winstonToAr } from 'ardrive-core-js';
+import { ArFSDriveEntity, deriveDriveKey, DrivePrivacy, GQLTagInterface } from 'ardrive-core-js';
 import {
 	TransactionID,
-	Winston,
 	DriveID,
 	FolderID,
 	TipType,
@@ -46,8 +45,10 @@ import { stubEntityID, stubTransactionID } from './utils/stubs';
 import { errorMessage } from './error_message';
 import { PrivateKeyData } from './private_key_data';
 import { EntityNamesAndIds } from './utils/mapper_functions';
-import { ArweaveAddress } from './arweave_address';
+import { ArweaveAddress } from './types/arweave_address';
 import { WithDriveKey } from './arfs_entity_result_factory';
+import { W, Winston } from './types/winston';
+import { AR } from './types/ar';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 
@@ -73,7 +74,7 @@ export interface TipResult {
 	reward: Winston;
 }
 
-export type ArFSFees = { [key: string]: number };
+export type ArFSFees = { [key: string]: Winston };
 
 export interface ArFSResult {
 	created: ArFSEntityData[];
@@ -200,10 +201,10 @@ export class ArDrive extends ArDriveAnonymous {
 		const arTransferBaseFee = await this.priceEstimator.getBaseWinstonPriceForByteCount(0);
 
 		const transferResult = await this.walletDao.sendARToAddress(
-			winstonToAr(+communityWinstonTip),
+			new AR(communityWinstonTip),
 			this.wallet,
 			tokenHolder,
-			{ reward: arTransferBaseFee.toString(), feeMultiple: this.feeMultiple },
+			{ reward: arTransferBaseFee, feeMultiple: this.feeMultiple },
 			this.dryRun,
 			this.getTipTags(),
 			assertBalance
@@ -276,7 +277,7 @@ export class ArDrive extends ArDriveAnonymous {
 			],
 			tips: [],
 			fees: {
-				[moveFileResult.metaDataTrxId]: +moveFileResult.metaDataTrxReward
+				[moveFileResult.metaDataTrxId]: moveFileResult.metaDataTrxReward
 			}
 		});
 	}
@@ -337,7 +338,7 @@ export class ArDrive extends ArDriveAnonymous {
 			],
 			tips: [],
 			fees: {
-				[moveFileResult.metaDataTrxId]: +moveFileResult.metaDataTrxReward
+				[moveFileResult.metaDataTrxId]: moveFileResult.metaDataTrxReward
 			}
 		});
 	}
@@ -404,7 +405,7 @@ export class ArDrive extends ArDriveAnonymous {
 			],
 			tips: [],
 			fees: {
-				[moveFolderResult.metaDataTrxId]: +moveFolderResult.metaDataTrxReward
+				[moveFolderResult.metaDataTrxId]: moveFolderResult.metaDataTrxReward
 			}
 		});
 	}
@@ -476,7 +477,7 @@ export class ArDrive extends ArDriveAnonymous {
 			],
 			tips: [],
 			fees: {
-				[moveFolderResult.metaDataTrxId]: +moveFolderResult.metaDataTrxReward
+				[moveFolderResult.metaDataTrxId]: moveFolderResult.metaDataTrxReward
 			}
 		});
 	}
@@ -538,9 +539,9 @@ export class ArDrive extends ArDriveAnonymous {
 			],
 			tips: [tipData],
 			fees: {
-				[uploadFileResult.dataTrxId]: +uploadFileResult.dataTrxReward,
-				[uploadFileResult.metaDataTrxId]: +uploadFileResult.metaDataTrxReward,
-				[tipData.txId]: +communityTipTrxReward
+				[uploadFileResult.dataTrxId]: uploadFileResult.dataTrxReward,
+				[uploadFileResult.metaDataTrxId]: uploadFileResult.metaDataTrxReward,
+				[tipData.txId]: communityTipTrxReward
 			}
 		});
 	}
@@ -586,7 +587,7 @@ export class ArDrive extends ArDriveAnonymous {
 			owner: await this.wallet.getAddress()
 		});
 
-		if (+bulkEstimation.communityWinstonTip > 0) {
+		if (bulkEstimation.communityWinstonTip.isGreaterThan(W(0))) {
 			// Send community tip only if communityWinstonTip has a value
 			// This can be zero when a user uses this method to upload empty folders
 
@@ -597,7 +598,7 @@ export class ArDrive extends ArDriveAnonymous {
 			return Promise.resolve({
 				created: results.entityResults,
 				tips: [tipData],
-				fees: { ...results.feeResults, [tipData.txId]: +communityTipTrxReward }
+				fees: { ...results.feeResults, [tipData.txId]: communityTipTrxReward }
 			});
 		}
 
@@ -645,7 +646,7 @@ export class ArDrive extends ArDriveAnonymous {
 			const { metaDataTrxId, folderId: newFolderId, metaDataTrxReward } = createFolderResult;
 
 			// Capture parent folder results
-			uploadEntityFees = { [metaDataTrxId]: +metaDataTrxReward };
+			uploadEntityFees = { [metaDataTrxId]: metaDataTrxReward };
 			uploadEntityResults = [
 				{
 					type: 'folder',
@@ -681,8 +682,8 @@ export class ArDrive extends ArDriveAnonymous {
 			// Capture all file results
 			uploadEntityFees = {
 				...uploadEntityFees,
-				[uploadFileResult.dataTrxId]: +uploadFileResult.dataTrxReward,
-				[uploadFileResult.metaDataTrxId]: +uploadFileResult.metaDataTrxReward
+				[uploadFileResult.dataTrxId]: uploadFileResult.dataTrxReward,
+				[uploadFileResult.metaDataTrxId]: uploadFileResult.metaDataTrxReward
 			};
 			uploadEntityResults = [
 				...uploadEntityResults,
@@ -800,9 +801,9 @@ export class ArDrive extends ArDriveAnonymous {
 			],
 			tips: [tipData],
 			fees: {
-				[uploadFileResult.dataTrxId]: +uploadFileResult.dataTrxReward,
-				[uploadFileResult.metaDataTrxId]: +uploadFileResult.metaDataTrxReward,
-				[tipData.txId]: +communityTipTrxReward
+				[uploadFileResult.dataTrxId]: uploadFileResult.dataTrxReward,
+				[uploadFileResult.metaDataTrxId]: uploadFileResult.metaDataTrxReward,
+				[tipData.txId]: communityTipTrxReward
 			}
 		});
 	}
@@ -854,7 +855,7 @@ export class ArDrive extends ArDriveAnonymous {
 			owner
 		});
 
-		if (+bulkEstimation.communityWinstonTip > 0) {
+		if (bulkEstimation.communityWinstonTip.isGreaterThan(W(0))) {
 			// Send community tip only if communityWinstonTip has a value
 			// This can be zero when a user uses this method to upload empty folders
 
@@ -865,7 +866,7 @@ export class ArDrive extends ArDriveAnonymous {
 			return Promise.resolve({
 				created: results.entityResults,
 				tips: [tipData],
-				fees: { ...results.feeResults, [tipData.txId]: +communityTipTrxReward }
+				fees: { ...results.feeResults, [tipData.txId]: communityTipTrxReward }
 			});
 		}
 
@@ -990,7 +991,7 @@ export class ArDrive extends ArDriveAnonymous {
 			const { metaDataTrxId, folderId: newFolderId, metaDataTrxReward } = createFolderResult;
 
 			// Capture parent folder results
-			uploadEntityFees = { [metaDataTrxId]: +metaDataTrxReward };
+			uploadEntityFees = { [metaDataTrxId]: metaDataTrxReward };
 			uploadEntityResults = [
 				{
 					type: 'folder',
@@ -1027,8 +1028,8 @@ export class ArDrive extends ArDriveAnonymous {
 			// Capture all file results
 			uploadEntityFees = {
 				...uploadEntityFees,
-				[uploadFileResult.dataTrxId]: +uploadFileResult.dataTrxReward,
-				[uploadFileResult.metaDataTrxId]: +uploadFileResult.metaDataTrxReward
+				[uploadFileResult.dataTrxId]: uploadFileResult.dataTrxReward,
+				[uploadFileResult.metaDataTrxId]: uploadFileResult.metaDataTrxReward
 			};
 			uploadEntityResults = [
 				...uploadEntityResults,
@@ -1102,7 +1103,7 @@ export class ArDrive extends ArDriveAnonymous {
 			],
 			tips: [],
 			fees: {
-				[metaDataTrxId]: +metaDataTrxReward
+				[metaDataTrxId]: metaDataTrxReward
 			}
 		});
 	}
@@ -1149,7 +1150,7 @@ export class ArDrive extends ArDriveAnonymous {
 			],
 			tips: [],
 			fees: {
-				[metaDataTrxId]: +metaDataTrxReward
+				[metaDataTrxId]: metaDataTrxReward
 			}
 		});
 	}
@@ -1190,8 +1191,8 @@ export class ArDrive extends ArDriveAnonymous {
 			],
 			tips: [],
 			fees: {
-				[createDriveResult.metaDataTrxId]: +createDriveResult.metaDataTrxReward,
-				[createDriveResult.rootFolderTrxId]: +createDriveResult.rootFolderTrxReward
+				[createDriveResult.metaDataTrxId]: createDriveResult.metaDataTrxReward,
+				[createDriveResult.rootFolderTrxId]: createDriveResult.rootFolderTrxReward
 			}
 		});
 	}
@@ -1240,8 +1241,8 @@ export class ArDrive extends ArDriveAnonymous {
 			],
 			tips: [],
 			fees: {
-				[createDriveResult.metaDataTrxId]: +createDriveResult.metaDataTrxReward,
-				[createDriveResult.rootFolderTrxId]: +createDriveResult.rootFolderTrxReward
+				[createDriveResult.metaDataTrxId]: createDriveResult.metaDataTrxReward,
+				[createDriveResult.rootFolderTrxId]: createDriveResult.rootFolderTrxReward
 			}
 		});
 	}
@@ -1264,8 +1265,8 @@ export class ArDrive extends ArDriveAnonymous {
 		driveKey?: DriveKey,
 		isParentFolder = true
 	): Promise<{ totalPrice: Winston; totalFilePrice: Winston; communityWinstonTip: Winston }> {
-		let totalPrice = 0;
-		let totalFilePrice = 0;
+		let totalPrice = W(0);
+		let totalFilePrice = W(0);
 
 		if (!folderToUpload.existingId) {
 			// Don't estimate cost of folder metadata if using existing folder
@@ -1280,12 +1281,12 @@ export class ArDrive extends ArDriveAnonymous {
 			const metaDataBaseReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(
 				folderMetadataTrxData.sizeOf()
 			);
-			const parentFolderWinstonPrice = metaDataBaseReward.toString();
+			const parentFolderWinstonPrice = metaDataBaseReward;
 
 			// Assign base costs to folder
 			folderToUpload.baseCosts = { metaDataBaseReward: parentFolderWinstonPrice };
 
-			totalPrice += +parentFolderWinstonPrice;
+			totalPrice = totalPrice.plus(parentFolderWinstonPrice);
 		}
 
 		for await (const file of folderToUpload.files) {
@@ -1300,37 +1301,37 @@ export class ArDrive extends ArDriveAnonymous {
 				stubFileMetaData.sizeOf()
 			);
 
-			totalPrice += fileDataBaseReward;
-			totalPrice += metaDataBaseReward;
+			totalPrice = totalPrice.plus(fileDataBaseReward);
+			totalPrice = totalPrice.plus(metaDataBaseReward);
 
-			totalFilePrice += fileDataBaseReward;
+			totalFilePrice = totalFilePrice.plus(fileDataBaseReward);
 
 			// Assign base costs to the file
 			file.baseCosts = {
-				fileDataBaseReward: fileDataBaseReward.toString(),
-				metaDataBaseReward: metaDataBaseReward.toString()
+				fileDataBaseReward: fileDataBaseReward,
+				metaDataBaseReward: metaDataBaseReward
 			};
 		}
 
 		for await (const folder of folderToUpload.folders) {
 			const childFolderResults = await this.estimateAndAssertCostOfBulkUpload(folder, driveKey, false);
 
-			totalPrice += +childFolderResults.totalPrice;
-			totalFilePrice += +childFolderResults.totalFilePrice;
+			totalPrice = totalPrice.plus(childFolderResults.totalPrice);
+			totalFilePrice = totalFilePrice.plus(childFolderResults.totalFilePrice);
 		}
 
-		const totalWinstonPrice = totalPrice.toString();
-		let communityWinstonTip = '0';
+		const totalWinstonPrice = totalPrice;
+		let communityWinstonTip = W(0);
 
 		if (isParentFolder) {
-			if (totalFilePrice > 0) {
-				communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(String(totalFilePrice));
+			if (totalFilePrice.isGreaterThan(W(0))) {
+				communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(totalFilePrice);
 			}
 
 			// Check and assert balance of the total bulk upload if this folder is the parent folder
 			const walletHasBalance = await this.walletDao.walletHasBalance(
 				this.wallet,
-				String(+communityWinstonTip + +totalWinstonPrice)
+				communityWinstonTip.plus(totalWinstonPrice)
 			);
 
 			if (!walletHasBalance) {
@@ -1344,7 +1345,11 @@ export class ArDrive extends ArDriveAnonymous {
 			}
 		}
 
-		return { totalPrice: String(totalPrice), totalFilePrice: String(totalFilePrice), communityWinstonTip };
+		return {
+			totalPrice,
+			totalFilePrice,
+			communityWinstonTip
+		};
 	}
 
 	async assertOwnerAddress(owner: ArweaveAddress): Promise<void> {
@@ -1404,10 +1409,9 @@ export class ArDrive extends ArDriveAnonymous {
 	async estimateAndAssertCostOfMoveFile(
 		fileTransactionData: ArFSFileMetadataTransactionData
 	): Promise<MetaDataBaseCosts> {
-		const fileMetaTransactionDataReward = String(
-			await this.priceEstimator.getBaseWinstonPriceForByteCount(fileTransactionData.sizeOf())
+		const fileMetaTransactionDataReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(
+			fileTransactionData.sizeOf()
 		);
-
 		const walletHasBalance = await this.walletDao.walletHasBalance(this.wallet, fileMetaTransactionDataReward);
 
 		if (!walletHasBalance) {
@@ -1435,21 +1439,21 @@ export class ArDrive extends ArDriveAnonymous {
 			fileSize = this.encryptedDataSize(fileSize);
 		}
 
-		let totalPrice = 0;
-		let fileDataBaseReward = 0;
-		let communityWinstonTip = '0';
+		let totalPrice = W(0);
+		let fileDataBaseReward = W(0);
+		let communityWinstonTip = W(0);
 		if (fileSize) {
 			fileDataBaseReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(fileSize);
-			communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(fileDataBaseReward.toString());
+			communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(fileDataBaseReward);
 			const tipReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(0);
-			totalPrice += fileDataBaseReward;
-			totalPrice += +communityWinstonTip;
-			totalPrice += tipReward;
+			totalPrice = totalPrice.plus(fileDataBaseReward);
+			totalPrice = totalPrice.plus(communityWinstonTip);
+			totalPrice = totalPrice.plus(tipReward);
 		}
 		const metaDataBaseReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(metaData.sizeOf());
-		totalPrice += metaDataBaseReward;
+		totalPrice = totalPrice.plus(metaDataBaseReward);
 
-		const totalWinstonPrice = totalPrice.toString();
+		const totalWinstonPrice = totalPrice;
 
 		const walletHasBalance = await this.walletDao.walletHasBalance(this.wallet, totalWinstonPrice);
 
@@ -1462,15 +1466,15 @@ export class ArDrive extends ArDriveAnonymous {
 		}
 
 		return {
-			fileDataBaseReward: fileDataBaseReward.toString(),
-			metaDataBaseReward: metaDataBaseReward.toString(),
+			fileDataBaseReward: fileDataBaseReward,
+			metaDataBaseReward: metaDataBaseReward,
 			communityWinstonTip
 		};
 	}
 
 	async estimateAndAssertCostOfFolderUpload(metaData: ArFSObjectTransactionData): Promise<MetaDataBaseCosts> {
 		const metaDataBaseReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(metaData.sizeOf());
-		const totalWinstonPrice = metaDataBaseReward.toString();
+		const totalWinstonPrice = metaDataBaseReward;
 
 		const walletHasBalance = await this.walletDao.walletHasBalance(this.wallet, totalWinstonPrice);
 
@@ -1491,17 +1495,17 @@ export class ArDrive extends ArDriveAnonymous {
 		driveMetaData: ArFSDriveTransactionData,
 		rootFolderMetaData: ArFSFolderTransactionData
 	): Promise<DriveUploadBaseCosts> {
-		let totalPrice = 0;
+		let totalPrice = W(0);
 		const driveMetaDataBaseReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(
 			driveMetaData.sizeOf()
 		);
-		totalPrice += driveMetaDataBaseReward;
+		totalPrice = totalPrice.plus(driveMetaDataBaseReward);
 		const rootFolderMetaDataBaseReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(
 			rootFolderMetaData.sizeOf()
 		);
-		totalPrice += rootFolderMetaDataBaseReward;
+		totalPrice = totalPrice.plus(rootFolderMetaDataBaseReward);
 
-		const totalWinstonPrice = totalPrice.toString();
+		const totalWinstonPrice = totalPrice;
 
 		const walletHasBalance = await this.walletDao.walletHasBalance(this.wallet, totalWinstonPrice);
 
@@ -1514,8 +1518,8 @@ export class ArDrive extends ArDriveAnonymous {
 		}
 
 		return {
-			driveMetaDataBaseReward: driveMetaDataBaseReward.toString(),
-			rootFolderMetaDataBaseReward: rootFolderMetaDataBaseReward.toString()
+			driveMetaDataBaseReward,
+			rootFolderMetaDataBaseReward
 		};
 	}
 

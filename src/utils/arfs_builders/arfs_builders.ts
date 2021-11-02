@@ -9,7 +9,7 @@ import {
 import Arweave from 'arweave';
 import { graphQLURL } from '../../arfsdao';
 import { ArFSFileOrFolderEntity } from '../../arfs_entities';
-import { ArweaveAddress } from '../../arweave_address';
+import { ArweaveAddress } from '../../types/arweave_address';
 import { buildQuery } from '../../query';
 import { DriveID, EntityID, EntityKey, FolderID, TransactionID, UnixTime } from '../../types';
 

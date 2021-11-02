@@ -86,9 +86,10 @@ import {
 import { ArFSAllPublicFoldersOfDriveParams, ArFSDAOAnonymous } from './arfsdao_anonymous';
 import { ArFSFileOrFolderBuilder } from './utils/arfs_builders/arfs_builders';
 import { PrivateKeyData } from './private_key_data';
-import { ArweaveAddress } from './arweave_address';
+import { ArweaveAddress } from './types/arweave_address';
 import { EntityNamesAndIds, entityToNameMap, fileToNameAndIdMap, folderToNameAndIdMap } from './utils/mapper_functions';
 import { ListPrivateFolderParams } from './ardrive';
+import { W } from './types/winston';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 
@@ -212,7 +213,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			}
 		}
 
-		return { metaDataTrxId: folderTrx.id, metaDataTrxReward: folderTrx.reward, folderId };
+		return { metaDataTrxId: folderTrx.id, metaDataTrxReward: W(folderTrx.reward), folderId };
 	}
 
 	// Convenience wrapper for folder creation in a known-public use case
@@ -281,7 +282,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		return resultFactory({
 			metaDataTrxId: driveTrx.id,
-			metaDataTrxReward: driveTrx.reward,
+			metaDataTrxReward: W(driveTrx.reward),
 			rootFolderTrxId: rootFolderTrxId,
 			rootFolderTrxReward: rootFolderTrxReward,
 			driveId: driveId,
@@ -373,7 +374,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			}
 		}
 
-		return resultFactory({ metaDataTrxId: metaDataTrx.id, metaDataTrxReward: metaDataTrx.reward });
+		return resultFactory({ metaDataTrxId: metaDataTrx.id, metaDataTrxReward: W(metaDataTrx.reward) });
 	}
 
 	async movePublicFile({
@@ -520,9 +521,9 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return resultFactoryFn(
 			{
 				dataTrxId: dataTrx.id,
-				dataTrxReward: dataTrx.reward,
+				dataTrxReward: W(dataTrx.reward),
 				metaDataTrxId: metaDataTrx.id,
-				metaDataTrxReward: metaDataTrx.reward,
+				metaDataTrxReward: W(metaDataTrx.reward),
 				fileId
 			},
 			metadataTrxData
@@ -641,7 +642,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		// If we provided our own reward setting, use it now
 		if (rewardSettings.reward) {
-			trxAttributes.reward = rewardSettings.reward;
+			trxAttributes.reward = rewardSettings.reward.toString();
 		}
 
 		// TODO: Use a mock arweave server instead
