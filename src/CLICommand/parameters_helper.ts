@@ -12,7 +12,7 @@ import {
 	WalletFileParameter,
 	PrivateParameter,
 	ReplaceParameter,
-	UpsertParameter
+	SkipParameter
 } from '../parameter_declarations';
 import { cliWalletDao } from '..';
 import { DriveID, DriveKey } from '../types';
@@ -212,7 +212,7 @@ export class ParametersHelper {
 			return replaceOnConflicts;
 		}
 
-		if (this.getParameterValue(UpsertParameter)) {
+		if (this.getParameterValue(SkipParameter)) {
 			return skipOnConflicts;
 		}
 

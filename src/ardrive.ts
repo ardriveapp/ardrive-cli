@@ -630,7 +630,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Estimate and assert the cost of the entire bulk upload
 		// This will assign the calculated base costs to each wrapped file and folder
-		const bulkEstimation = await this.estimateAndAssertCostOfBulkUpload(wrappedFolder);
+		const bulkEstimation = await this.estimateAndAssertCostOfBulkUpload(wrappedFolder, conflictResolution);
 
 		// TODO: Add interactive confirmation of price estimation before uploading
 
@@ -678,15 +678,20 @@ export class ArDrive extends ArDriveAnonymous {
 		let uploadEntityResults: ArFSEntityData[] = [];
 		let folderId: FolderID;
 
+		if (
+			conflictResolution === skipOnConflicts &&
+			(wrappedFolder.existingFileAtDestConflict || wrappedFolder.existingId)
+		) {
+			// When conflict resolution is set to skip, return empty result if an
+			// existing folder is found or there is conflict with a file name
+			return { entityResults: [], feeResults: {} };
+		}
+
 		if (wrappedFolder.existingFileAtDestConflict) {
-			if (conflictResolution === skipOnConflicts) {
-				// Return empty result on skip
-				return { entityResults: [], feeResults: {} };
-			}
-			// Otherwise throw an error, folder names cannot conflict with file names
+			// Folder names cannot conflict with file names
 			throw new Error(errorMessage.entityNameExists);
 		} else if (wrappedFolder.existingId) {
-			// Use existing parent folder ID for bulk upload
+			// Re-use existing parent folder ID for bulk upload if it exists
 			folderId = wrappedFolder.existingId;
 		} else {
 			// Create the parent folder
@@ -942,7 +947,11 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Estimate and assert the cost of the entire bulk upload
 		// This will assign the calculated base costs to each wrapped file and folder
-		const bulkEstimation = await this.estimateAndAssertCostOfBulkUpload(wrappedFolder, driveKey);
+		const bulkEstimation = await this.estimateAndAssertCostOfBulkUpload(
+			wrappedFolder,
+			conflictResolution,
+			driveKey
+		);
 
 		// TODO: Add interactive confirmation of price estimation before uploading
 
@@ -1007,16 +1016,20 @@ export class ArDrive extends ArDriveAnonymous {
 		let uploadEntityResults: ArFSEntityData[] = [];
 		let folderId: FolderID;
 
+		if (
+			conflictResolution === skipOnConflicts &&
+			(wrappedFolder.existingFileAtDestConflict || wrappedFolder.existingId)
+		) {
+			// When conflict resolution is set to skip, return empty result if an
+			// existing folder is found or there is conflict with a file name
+			return { entityResults: [], feeResults: {} };
+		}
+
 		if (wrappedFolder.existingFileAtDestConflict) {
-			if (conflictResolution === skipOnConflicts) {
-				// Return empty result on skip
-				return { entityResults: [], feeResults: {} };
-			}
-			// Otherwise throw an error, folder names cannot conflict with file names
+			// Folder names cannot conflict with file names
 			throw new Error(errorMessage.entityNameExists);
 		} else if (wrappedFolder.existingId) {
-			// Use existing parent folder ID for bulk upload.
-			// This happens when the parent folder's name conflicts
+			// Re-use existing parent folder ID for bulk upload if it exists
 			folderId = wrappedFolder.existingId;
 		} else {
 			// Create parent folder
@@ -1332,14 +1345,24 @@ export class ArDrive extends ArDriveAnonymous {
 	 *  */
 	async estimateAndAssertCostOfBulkUpload(
 		folderToUpload: ArFSFolderToUpload,
+		conflictResolution: FileNameConflictResolution,
 		driveKey?: DriveKey,
 		isParentFolder = true
 	): Promise<{ totalPrice: Winston; totalFilePrice: Winston; communityWinstonTip: Winston }> {
 		let totalPrice = 0;
 		let totalFilePrice = 0;
 
+		if (
+			conflictResolution === skipOnConflicts &&
+			(folderToUpload.existingFileAtDestConflict || folderToUpload.existingId)
+		) {
+			// When conflict resolution is set to skip, return empty estimation if an
+			// existing folder is found or there is conflict with a file name
+			return { totalPrice: '0', totalFilePrice: '0', communityWinstonTip: '0' };
+		}
+
+		// Don't estimate cost of folder metadata if using existing folder
 		if (!folderToUpload.existingId) {
-			// Don't estimate cost of folder metadata if using existing folder
 			const folderMetadataTrxData = await (async () => {
 				const folderName = folderToUpload.destinationName ?? folderToUpload.getBaseFileName();
 
@@ -1360,6 +1383,14 @@ export class ArDrive extends ArDriveAnonymous {
 		}
 
 		for await (const file of folderToUpload.files) {
+			if (
+				(conflictResolution === skipOnConflicts && (file.existingId || file.existingFolderAtDestConflict)) ||
+				(conflictResolution === upsertOnConflicts && file.hasSameLastModifiedDate)
+			) {
+				// File will skipped, don't estimate it; continue the loop
+				continue;
+			}
+
 			const fileSize = driveKey ? file.encryptedDataSize() : file.fileStats.size;
 
 			const fileDataBaseReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(fileSize);
@@ -1384,7 +1415,12 @@ export class ArDrive extends ArDriveAnonymous {
 		}
 
 		for await (const folder of folderToUpload.folders) {
-			const childFolderResults = await this.estimateAndAssertCostOfBulkUpload(folder, driveKey, false);
+			const childFolderResults = await this.estimateAndAssertCostOfBulkUpload(
+				folder,
+				conflictResolution,
+				driveKey,
+				false
+			);
 
 			totalPrice += +childFolderResults.totalPrice;
 			totalFilePrice += +childFolderResults.totalFilePrice;
