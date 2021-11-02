@@ -43,14 +43,16 @@ describe('The ArweaveAddress class', () => {
 			const address = new ArweaveAddress('g1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
 			expect(() => +address).to.throw();
 		});
+	});
 
-		it('address comparison: same address', () => {
+	describe('equalsAddress function', () => {
+		it('returns true for mathing addresses', () => {
 			const address = new ArweaveAddress('g1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
 			const addressOther = new ArweaveAddress('g1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
 			expect(address.equalsAddress(addressOther)).to.be.true;
 		});
 
-		it('address comparison: different addresses', () => {
+		it('returns false for different addresses', () => {
 			const address = new ArweaveAddress('g1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
 			const addressOther = new ArweaveAddress('a1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
 			expect(address.equalsAddress(addressOther)).to.be.false;
