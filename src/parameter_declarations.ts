@@ -40,7 +40,7 @@ export const DriveCreationPrivacyParameters = [
 export const DrivePrivacyParameters = [DriveKeyParameter, ...DriveCreationPrivacyParameters];
 export const TreeDepthParams = [AllParameter, MaxDepthParameter];
 
-export const ConflictResolutionParams = [SkipParameter, ReplaceParameter /* , UpsertParameter, AskParameter */];
+export const ConflictResolutionParams = [SkipParameter, ReplaceParameter, UpsertParameter /* , AskParameter */];
 
 /**
  * Note: importing this file will declare all the above parameters
