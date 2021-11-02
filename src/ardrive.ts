@@ -522,6 +522,11 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Files cannot overwrite folder names
 		if (filesAndFolderNames.folders.find((f) => f.folderName === destFileName)) {
+			if (conflictResolution === 'skip') {
+				// Return empty result if resolution set to skip on FILE to FOLDER name conflicts
+				return emptyArFSResult;
+			}
+
 			// TODO: Add optional interactive prompt to resolve name conflicts in ticket PE-599
 			throw new Error(errorMessage.entityNameExists);
 		}
@@ -806,6 +811,11 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Files cannot overwrite folder names
 		if (filesAndFolderNames.folders.find((f) => f.folderName === destFileName)) {
+			if (conflictResolution === 'skip') {
+				// Return empty result if resolution set to skip on FILE to FOLDER name conflicts
+				return emptyArFSResult;
+			}
+
 			// TODO: Add optional interactive prompt to resolve name conflicts in ticket PE-599
 			throw new Error(errorMessage.entityNameExists);
 		}
