@@ -135,12 +135,15 @@ export type FileNameConflictAskPrompt = ({
 	fileId,
 	hasSameLastModifiedDate
 }: FileNameConflictAskPromptParams) => Promise<
-	{ resolution: 'skip' | 'replace' } | { resolution: 'rename'; newFileName: string }
+	| { resolution: typeof skipOnConflicts | typeof replaceOnConflicts }
+	| { resolution: typeof renameOnConflicts; newFileName: string }
 >;
+
 export const skipOnConflicts = 'skip';
 export const replaceOnConflicts = 'replace';
 export const upsertOnConflicts = 'upsert';
 export const askOnConflicts = 'ask';
+export const renameOnConflicts = 'rename';
 
 export type FileNameConflictResolution =
 	| typeof skipOnConflicts
@@ -865,22 +868,26 @@ export class ArDrive extends ArDriveAnonymous {
 				return emptyArFSResult;
 			}
 
-			if (
-				conflictResolution === upsertOnConflicts &&
-				conflictingFileName.lastModifiedDate === wrappedFile.lastModifiedDate
-			) {
-				// These files have the same name and last modified date, skip the upload
-				return emptyArFSResult;
+			if (conflictResolution === upsertOnConflicts) {
+				if (conflictingFileName.lastModifiedDate === wrappedFile.lastModifiedDate) {
+					// These files have the same name and last modified date, skip the upload
+					return emptyArFSResult;
+				}
+
+				// Otherwise, proceed with creating a new revision
+				existingFileId = conflictingFileName.fileId;
 			}
 
-			if (conflictResolution === 'replace') {
+			if (conflictResolution === replaceOnConflicts) {
 				// Proceed with new revision
 				existingFileId = conflictingFileName.fileId;
 			}
 
 			if (conflictResolution === 'ask') {
 				if (!fileNameConflictAskPrompt) {
-					throw new Error('App must provide a file name conflict resolution prompt to use the --ask option!');
+					throw new Error(
+						'App must provide a file name conflict resolution prompt to use the `ask` conflict resolution!'
+					);
 				}
 
 				const userInput = await fileNameConflictAskPrompt({
@@ -890,18 +897,18 @@ export class ArDrive extends ArDriveAnonymous {
 				});
 
 				switch (userInput.resolution) {
-					case 'skip':
+					case skipOnConflicts:
 						return emptyArFSResult;
 
-					case 'rename':
+					case renameOnConflicts:
 						if (destinationFileName === userInput.newFileName) {
-							throw new Error('You must provide a different name to rename the file!');
+							throw new Error('You must provide a different name!');
 						}
 						// Use specified new file name
 						destinationFileName = userInput.newFileName;
 						break;
 
-					case 'replace':
+					case replaceOnConflicts:
 						// Proceed with new revision
 						existingFileId = conflictingFileName.fileId;
 						break;

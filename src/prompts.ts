@@ -1,5 +1,5 @@
 import prompts from 'prompts';
-import { FileNameConflictAskPrompt } from './ardrive';
+import { FileNameConflictAskPrompt, renameOnConflicts, replaceOnConflicts, skipOnConflicts } from './ardrive';
 
 export const fileNameConflictAskPrompt: FileNameConflictAskPrompt = async ({
 	fileId,
@@ -15,28 +15,28 @@ export const fileNameConflictAskPrompt: FileNameConflictAskPrompt = async ({
 		} last modified date
 		\nPlease select how to proceed:`,
 		choices: [
-			{ title: 'Replace as new revision', value: 'replace' },
-			{ title: 'Upload with a different file name', value: 'rename' },
-			{ title: 'Skip upload', value: 'skip' }
+			{ title: 'Replace as new revision', value: replaceOnConflicts },
+			{ title: 'Upload with a different file name', value: renameOnConflicts },
+			{ title: 'Skip upload', value: skipOnConflicts }
 		]
 	});
 
-	if (resolution === 'skip') {
-		return { resolution: 'skip' };
+	if (resolution === skipOnConflicts) {
+		return { resolution: skipOnConflicts };
 	}
 
-	if (resolution === 'replace') {
-		return { resolution: 'replace' };
+	if (resolution === replaceOnConflicts) {
+		return { resolution: replaceOnConflicts };
 	}
 
-	if (resolution === 'rename') {
+	if (resolution === renameOnConflicts) {
 		const { newFileName } = await prompts({
 			type: 'text',
 			name: 'newFileName',
 			message: 'Enter new file name'
 		});
 
-		return { resolution: 'rename', newFileName };
+		return { resolution: renameOnConflicts, newFileName };
 	}
 
 	throw new Error('File name conflict prompt was interrupted or could not be resolved!');
