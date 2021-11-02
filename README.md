@@ -690,7 +690,31 @@ NOTE: To upload to the root of a drive, specify its root folder ID as the parent
 ardrive drive-info -d "c7f87712-b54e-4491-bc96-1c5fa7b1da50" | jq -r '.rootFolderId'
 ```
 
-By default, the single `upload-file` command will use the upsert behavior. It will check the destination folder for a file with a conflicting name. If no conflicts are found, it will insert (upload) the file.
+### Uploading a Folder with Files (Bulk Upload)<a id="bulk-upload"></a>
+
+Users can perform a bulk upload by using the upload-file command on a target folder. The command will reconstruct the folder hierarchy on local disk as ArFS folders on the permaweb and upload each file into their corresponding folders:
+
+```shell
+ardrive upload-file --local-file-path /path/to/folder  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
+```
+
+### Name Conflict Resolution on Upload
+
+By default, the `upload-file` command will use the upsert behavior if existing entities are encountered in the destination folder tree that would cause naming conflicts.
+
+Expect the behaviors from the following table for each resolution setting:
+
+| Source Type | Conflict at Dest | `skip` | `replace` | `upsert` (default) |
+| ----------- | ---------------- | ------ | --------- | ------------------ |
+| File        | None             | Insert | Insert    | Insert             |
+| File        | Matching File    | Skip   | Update    | skip               |
+| File        | Different File   | Skip   | Update    | update             |
+| File        | Folder           | Skip   | Fail      | Fail               |
+| Folder      | None             | Insert | Insert    | Insert             |
+| Folder      | File             | Skip   | Fail      | Fail               |
+| Folder      | Folder           | Skip   | Re-use    | Re-use             |
+
+The default upsert behavior will check the destination folder for a file with a conflicting name. If no conflicts are found, it will insert (upload) the file.
 
 In the case that there is a FILE to FILE name conflict found, it will only update it if necessary. To determine if an update is necessary, upsert will compare the last modified dates of conflicting file and the file being uploaded. When they are matching, the upload will be skipped. Otherwise the file will be updated as a new revision.
 
@@ -700,22 +724,9 @@ To override the upsert behavior, use the `--replace` option to always make new r
 ardrive upload-file --replace --local-file-path /path/to/file.txt  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
 ```
 
-### Uploading a Folder with Files (Bulk Upload)<a id="bulk-upload"></a>
-
-Users can perform a bulk upload by using the upload-file command on a target folder. The command will reconstruct the folder hierarchy on local disk as ArFS folders on the permaweb and upload each file into their corresponding folders:
-
 ```shell
-ardrive upload-file --local-file-path /path/to/folder  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
+ardrive upload-file --skip --local-file-path /path/to/file.txt  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
 ```
-
-This method of upload can be used to upload a large number of files and folders within the folder tree. If existing entities are encountered in the destination folder tree that would cause naming conflicts, expect the following default behaviors:
-
--   Folder names that conflict with a FILE name at the destination will cause an error to be thrown
--   Folder names that conflict with a FOLDER name at the destination will use the existing folder ID (i.e. skip) rather than creating a new folder
--   File names that conflict with a FOLDER name at the destination will cause an error to be thrown
--   When the intended file name conflicts with a FILE name at the destination the file will be SKIPPED if the last modified date matches the file to upload. If they have different last modified dates, it will be uploaded as a new REVISION
-
-Similar to the single file upload, the above FILE to FILE name conflict resolution behavior can be modified. Use the `--replace` option to force new revisions on all conflicts within the bulk upload regardless of last modified date. Or use the `--skip` option to simply skip ALL name conflicts.
 
 ### Fetching the Metadata of a File Entity
 
