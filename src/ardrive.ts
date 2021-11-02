@@ -678,7 +678,14 @@ export class ArDrive extends ArDriveAnonymous {
 		let uploadEntityResults: ArFSEntityData[] = [];
 		let folderId: FolderID;
 
-		if (wrappedFolder.existingId) {
+		if (wrappedFolder.fileNameConflict) {
+			if (conflictResolution === skipOnConflicts) {
+				// Return empty result on skip
+				return { entityResults: [], feeResults: {} };
+			}
+			// Otherwise throw an error, folder names cannot conflict with file names
+			throw new Error(errorMessage.entityNameExists);
+		} else if (wrappedFolder.existingId) {
 			// Use existing parent folder ID for bulk upload
 			folderId = wrappedFolder.existingId;
 		} else {
@@ -1003,7 +1010,7 @@ export class ArDrive extends ArDriveAnonymous {
 		if (wrappedFolder.fileNameConflict) {
 			if (conflictResolution === skipOnConflicts) {
 				// Return empty result on skip
-				return { entityResults: uploadEntityResults, feeResults: uploadEntityFees };
+				return { entityResults: [], feeResults: {} };
 			}
 			// Otherwise throw an error, folder names cannot conflict with file names
 			throw new Error(errorMessage.entityNameExists);
