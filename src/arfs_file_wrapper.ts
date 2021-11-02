@@ -125,7 +125,9 @@ export class ArFSFolderToUpload {
 			} else {
 				// Child is a file, build a new file
 				const childFile = new ArFSFileToUpload(absoluteEntityPath, entityStats);
-				this.files.push(childFile);
+				if (childFile.getBaseFileName() !== '.DS_Store') {
+					this.files.push(childFile);
+				}
 			}
 		}
 	}
