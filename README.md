@@ -690,9 +690,11 @@ NOTE: To upload to the root of a drive, specify its root folder ID as the parent
 ardrive drive-info -d "c7f87712-b54e-4491-bc96-1c5fa7b1da50" | jq -r '.rootFolderId'
 ```
 
-By default, the single `upload-file` command will `--upsert` on name conflicts found. This means that when it finds a file in the destination folder with the same name, it will compare the last modified dates of that file and the file to upload. If they are matching, the upload will be skipped, otherwise the upload will be added as a new revision.
+By default, the single `upload-file` command will use the upsert behavior. It will check the destination folder for a file with a conflicting name. If no conflicts are found, it will insert (upload) the file.
 
-To override this behavior, use the `--replace` option to always make new revisions of a file or the `--skip` option to always skip the upload on name conflicts:
+In the case that there is a FILE to FILE name conflict found, it will only update it if necessary. To determine if an update is necessary, upsert will compare the last modified dates of conflicting file and the file being uploaded. When they are matching, the upload will be skipped. Otherwise the file will be updated as a new revision.
+
+To override the upsert behavior, use the `--replace` option to always make new revisions of a file or the `--skip` option to always skip the upload on name conflicts:
 
 ```shell
 ardrive upload-file --replace --local-file-path /path/to/file.txt  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
@@ -713,7 +715,7 @@ This method of upload can be used to upload a large number of files and folders 
 -   File names that conflict with a FOLDER name at the destination will cause an error to be thrown
 -   When the intended file name conflicts with a FILE name at the destination the file will be SKIPPED if the last modified date matches the file to upload. If they have different last modified dates, it will be uploaded as a new REVISION
 
-Similar to the single file upload, the above FILE to FILE name conflict resolution behavior can be modified. Use the `--replace` option to will force new revisions on all conflicts within the bulk upload regardless of last modified date. Or use the `--skip` option to simply skip all FILE to FILE name conflicts.
+Similar to the single file upload, the above FILE to FILE name conflict resolution behavior can be modified. Use the `--replace` option to force new revisions on all conflicts within the bulk upload regardless of last modified date. Or use the `--skip` option to simply skip all FILE to FILE and/or FILE to FOLDER name conflicts.
 
 ### Fetching the Metadata of a File Entity
 
