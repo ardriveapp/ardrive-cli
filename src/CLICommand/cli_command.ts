@@ -117,15 +117,14 @@ export class CLICommand {
 
 	private static rejectNonTriggeredAwaiters(): void {
 		// reject all action awaiters that haven't run
-		const theOtherCommandActions = CLICommand.allCommandInstances.map((cmd) => cmd.commandDescription.action);
+		const theOtherCommandActions = CLICommand.getAllCommandDescriptors().map((descriptor) => descriptor.action);
 		theOtherCommandActions.forEach((action) => action.wasNotTriggered());
 	}
 
 	/**
-	 * For test purposes only
 	 * @returns {CommandDescriptor[]} all declared command descriptors
 	 */
-	public static _getAllCommandDescriptors(): CommandDescriptor[] {
+	public static getAllCommandDescriptors(): CommandDescriptor[] {
 		return this.allCommandInstances.map((cmd) => cmd.commandDescription);
 	}
 }

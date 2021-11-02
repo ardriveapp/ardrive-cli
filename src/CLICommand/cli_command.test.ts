@@ -100,7 +100,7 @@ describe('CLICommand class', () => {
 	});
 
 	it('No colliding parameters', () => {
-		const allCommandDescriptors = CLICommand._getAllCommandDescriptors();
+		const allCommandDescriptors = CLICommand.getAllCommandDescriptors();
 		allCommandDescriptors.forEach((command) => {
 			const parameters = command.parameters.map((param) => new Parameter(param));
 			parameters.forEach((parameter_1, index) => {
