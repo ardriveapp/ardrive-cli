@@ -45,7 +45,6 @@ import {
 import { stubEntityID, stubTransactionID } from './utils/stubs';
 import { errorMessage } from './error_message';
 import { PrivateKeyData } from './private_key_data';
-import { EntityNamesAndIds } from './utils/mapper_functions';
 import { ArweaveAddress } from './arweave_address';
 import { WithDriveKey } from './arfs_entity_result_factory';
 
@@ -965,72 +964,8 @@ export class ArDrive extends ArDriveAnonymous {
 		});
 	}
 
-	protected async checkAndAssignExistingNames(
-		wrappedFolder: ArFSFolderToUpload,
-		getExistingNamesFn: (parentFolderId: FolderID) => Promise<EntityNamesAndIds>
-	): Promise<void> {
-		if (!wrappedFolder.existingId) {
-			// Folder has no existing ID to check
-			return;
-		}
-
-		const existingEntityNamesAndIds = await getExistingNamesFn(wrappedFolder.existingId);
-
-		for await (const file of wrappedFolder.files) {
-			const baseFileName = file.getBaseFileName();
-
-			const folderNameConflict = existingEntityNamesAndIds.folders.find(
-				({ folderName }) => folderName === baseFileName
-			);
-
-			// File name cannot conflict with a folder name
-			if (folderNameConflict) {
-				throw new Error(errorMessage.entityNameExists);
-			}
-
-			const fileNameConflict = existingEntityNamesAndIds.files.find(({ fileName }) => fileName === baseFileName);
-
-			// Conflicting file name creates a REVISION by default
-			if (fileNameConflict) {
-				// Assigns existing id for later use
-				file.existingId = fileNameConflict.fileId;
-
-				if (fileNameConflict.lastModifiedDate === file.lastModifiedDate) {
-					// Check last modified date and set to true to resolve upsert conditional
-					file.hasSameLastModifiedDate = true;
-				}
-			}
-		}
-
-		for await (const folder of wrappedFolder.folders) {
-			const baseFolderName = folder.getBaseFileName();
-
-			const fileNameConflict = existingEntityNamesAndIds.files.find(
-				({ fileName }) => fileName === baseFolderName
-			);
-
-			// Folder name cannot conflict with a file name
-			if (fileNameConflict) {
-				throw new Error(errorMessage.entityNameExists);
-			}
-
-			const folderNameConflict = existingEntityNamesAndIds.folders.find(
-				({ folderName }) => folderName === baseFolderName
-			);
-
-			// Conflicting folder name uses EXISTING folder by default
-			if (folderNameConflict) {
-				// Assigns existing id for later use
-				folder.existingId = folderNameConflict.folderId;
-
-				// Recurse into existing folder on folder name conflict
-				await this.checkAndAssignExistingNames(folder, getExistingNamesFn);
-			}
-		}
-	}
-
 	protected async checkAndAssignExistingPublicNames(wrappedFolder: ArFSFolderToUpload): Promise<void> {
-		await this.checkAndAssignExistingNames(wrappedFolder, (parentFolderId) =>
+		await wrappedFolder.checkAndAssignExistingNames((parentFolderId) =>
 			this.arFsDao.getPublicNameConflictInfoInFolder(parentFolderId)
 		);
 	}
@@ -1039,7 +974,7 @@ export class ArDrive extends ArDriveAnonymous {
 		wrappedFolder: ArFSFolderToUpload,
 		driveKey: DriveKey
 	): Promise<void> {
-		await this.checkAndAssignExistingNames(wrappedFolder, (parentFolderId) =>
+		await wrappedFolder.checkAndAssignExistingNames((parentFolderId) =>
 			this.arFsDao.getPrivateNameConflictInfoInFolder(parentFolderId, driveKey)
 		);
 	}
@@ -1059,7 +994,14 @@ export class ArDrive extends ArDriveAnonymous {
 		let uploadEntityResults: ArFSEntityData[] = [];
 		let folderId: FolderID;
 
-		if (wrappedFolder.existingId) {
+		if (wrappedFolder.fileNameConflict) {
+			if (conflictResolution === 'skip') {
+				// Return empty result on skip
+				return { entityResults: uploadEntityResults, feeResults: uploadEntityFees };
+			}
+			// Otherwise throw an error, folder names cannot conflict with file names
+			throw new Error(errorMessage.entityNameExists);
+		} else if (wrappedFolder.existingId) {
 			// Use existing parent folder ID for bulk upload.
 			// This happens when the parent folder's name conflicts
 			folderId = wrappedFolder.existingId;
@@ -1108,6 +1050,16 @@ export class ArDrive extends ArDriveAnonymous {
 			) {
 				// Continue loop, don't upload this file
 				continue;
+			}
+
+			if (wrappedFile.folderNameConflict) {
+				if (conflictResolution === 'skip') {
+					// Continue loop, skip uploading this file
+					continue;
+				}
+
+				// Otherwise throw an error, file names cannot conflict with folder names
+				throw new Error(errorMessage.entityNameExists);
 			}
 
 			const fileDataRewardSettings = {
