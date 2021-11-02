@@ -11,6 +11,7 @@ import { ArFSDriveEntity, ArFSPrivateDrive, ArFSPublicDrive, ENCRYPTED_DATA_PLAC
 import { EntityMetaDataTransactionData, PrivateKeyData } from '../../private_key_data';
 import { CipherIV, DriveKey, FolderID } from '../../types';
 import { EID, EntityID } from '../../types/entity_id';
+import { stubEntityID } from '../stubs';
 import {
 	ArFSMetadataEntityBuilder,
 	ArFSMetadataEntityBuilderParams,
@@ -19,7 +20,7 @@ import {
 
 interface DriveMetaDataTransactionData extends EntityMetaDataTransactionData {
 	name: string;
-	rootFolderId: string; // TODO: how can we use real ID types here?
+	rootFolderId: FolderID;
 }
 
 export class ArFSPublicDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPublicDrive> {
@@ -185,7 +186,7 @@ export class ArFSPrivateDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPriva
 			const decryptedDriveJSON: DriveMetaDataTransactionData = await JSON.parse(decryptedDriveString);
 
 			this.name = decryptedDriveJSON.name;
-			this.rootFolderId = EID(decryptedDriveJSON.rootFolderId);
+			this.rootFolderId = decryptedDriveJSON.rootFolderId;
 
 			return new ArFSPrivateDrive(
 				this.appName,
@@ -206,6 +207,14 @@ export class ArFSPrivateDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPriva
 		}
 
 		throw new Error('Invalid drive state');
+	}
+}
+
+// A utility type to assist with fail-safe decryption of private entities
+export class EncryptedEntityID extends EntityID {
+	constructor() {
+		super(`${stubEntityID}`); // Unused after next line
+		this.entityId = ENCRYPTED_DATA_PLACEHOLDER;
 	}
 }
 
@@ -304,7 +313,7 @@ export class SafeArFSDriveBuilder extends ArFSMetadataEntityBuilder<ArFSDriveEnt
 					if (this.cipher?.length && this.driveAuthMode?.length && this.cipherIV?.length) {
 						const placeholderDriveData = {
 							name: ENCRYPTED_DATA_PLACEHOLDER,
-							rootFolderId: ENCRYPTED_DATA_PLACEHOLDER
+							rootFolderId: new EncryptedEntityID()
 						};
 						return this.privateKeyData.safelyDecryptToJson<DriveMetaDataTransactionData>(
 							this.cipherIV,
@@ -321,7 +330,7 @@ export class SafeArFSDriveBuilder extends ArFSMetadataEntityBuilder<ArFSDriveEnt
 			})();
 
 			this.name = dataJSON.name;
-			this.rootFolderId = EID(dataJSON.rootFolderId);
+			this.rootFolderId = dataJSON.rootFolderId;
 
 			if (isPrivate) {
 				return new ArFSPrivateDrive(
