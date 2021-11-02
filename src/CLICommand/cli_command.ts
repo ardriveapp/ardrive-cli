@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { program } from 'commander';
 import { CLIAction } from './action';
-import { CliApiObject, ParsedParameters } from './cli';
+import { CliApiObject, ExitCode, ParsedParameters } from './cli';
 import { Parameter, ParameterName, ParameterOverridenConfig } from './parameter';
 
 export type CommandName = string;
@@ -130,6 +130,6 @@ export class CLICommand {
 	}
 }
 
-function exitProgram(exitCode: number): void {
+function exitProgram(exitCode: ExitCode): void {
 	process.exitCode = exitCode;
 }

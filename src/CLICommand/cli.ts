@@ -30,4 +30,6 @@ export type ActionCallback = (options: ParsedParameters) => ActionReturnType; //
 
 export type AsyncActionCallback = (options: ParsedParameters) => Promise<ActionReturnType>;
 
-export type ActionReturnType = number | void;
+export type ActionReturnType = ExitCode | void;
+
+export type ExitCode = number;
