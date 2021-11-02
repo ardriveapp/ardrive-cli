@@ -707,8 +707,8 @@ Expect the behaviors from the following table for each resolution setting:
 | Source Type | Conflict at Dest | `skip` | `replace` | `upsert` (default) |
 | ----------- | ---------------- | ------ | --------- | ------------------ |
 | File        | None             | Insert | Insert    | Insert             |
-| File        | Matching File    | Skip   | Update    | skip               |
-| File        | Different File   | Skip   | Update    | update             |
+| File        | Matching File    | Skip   | Update    | Skip               |
+| File        | Different File   | Skip   | Update    | Update             |
 | File        | Folder           | Skip   | Fail      | Fail               |
 | Folder      | None             | Insert | Insert    | Insert             |
 | Folder      | File             | Skip   | Fail      | Fail               |
