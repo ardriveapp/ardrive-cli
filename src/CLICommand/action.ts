@@ -7,7 +7,7 @@ import { ERROR_EXIT_CODE } from './error_codes';
 export class CLIAction {
 	private _promiseInstance?: Promise<ActionReturnType>;
 	private _parsedParameters: ParsedParameters = {};
-	private readonly _awaiterInstances: ((value?: ParsedParameters, error?: Error) => void)[] = [];
+	private awaiterDone?: (value?: ParsedParameters, error?: Error) => void;
 	private static _runningAction?: CLIAction;
 
 	/**
@@ -55,11 +55,11 @@ export class CLIAction {
 		this._parsedParameters = params;
 		return this.promiseInstance
 			.then((exitCode) => {
-				this.resolveAwaiters();
+				this.resolveAwaiter();
 				return exitCode;
 			})
 			.catch((err: Error) => {
-				this.rejectAwaiters(err);
+				this.rejectAwaiter(err);
 				return ERROR_EXIT_CODE;
 			});
 	}
@@ -75,31 +75,29 @@ export class CLIAction {
 		} else {
 			// queque the awaiter for when the promise is called
 			const awaiter = new Promise<ParsedParameters>((resolve, reject) => {
-				this._awaiterInstances.push(function (value?: ParsedParameters, error?: Error): void {
+				this.awaiterDone = function (value?: ParsedParameters, error?: Error): void {
 					if (value) {
 						resolve(value);
 					} else {
 						reject(error);
 					}
-				});
+				};
 			});
 			return awaiter;
 		}
 	}
 
-	private resolveAwaiters(): void {
-		while (this._awaiterInstances.length) {
-			const awaiter = this._awaiterInstances.pop();
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			awaiter!(this.parsedParameters);
+	private resolveAwaiter(): void {
+		if (this.awaiterDone) {
+			const awaiter = this.awaiterDone;
+			awaiter(this.parsedParameters);
 		}
 	}
 
-	private rejectAwaiters(err: Error): void {
-		while (this._awaiterInstances.length) {
-			const awaiter = this._awaiterInstances.pop();
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			awaiter!(undefined, err);
+	private rejectAwaiter(err: Error): void {
+		if (this.awaiterDone) {
+			const awaiter = this.awaiterDone;
+			awaiter(undefined, err);
 		}
 	}
 
@@ -109,7 +107,7 @@ export class CLIAction {
 	 * @returns {void}
 	 */
 	public setParsingError(err: Error): void {
-		this.rejectAwaiters(err);
+		this.rejectAwaiter(err);
 	}
 
 	/**
@@ -117,6 +115,6 @@ export class CLIAction {
 	 * @returns {void}
 	 */
 	public wasNotTriggered(): void {
-		this.rejectAwaiters(new Error(`Action didn't run`));
+		this.rejectAwaiter(new Error(`Action didn't run`));
 	}
 }
