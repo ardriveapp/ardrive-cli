@@ -124,7 +124,13 @@ interface MovePublicFolderParams {
 }
 type MovePrivateFolderParams = MovePublicFolderParams & WithDriveKey;
 
-export type FileNameConflictResolution = 'skip' | 'replace' | 'upsert'; // | 'ask'
+export const skipOnConflicts = 'skip';
+export const replaceOnConflicts = 'replace';
+export const upsertOnConflicts = 'upsert';
+// export  const askOnConflicts = 'ask';
+
+export type FileNameConflictResolution = typeof skipOnConflicts | typeof replaceOnConflicts | typeof upsertOnConflicts;
+// | typeof askOnConflicts;
 
 export interface UploadParams {
 	parentFolderId: FolderID;
@@ -508,7 +514,7 @@ export class ArDrive extends ArDriveAnonymous {
 		parentFolderId,
 		wrappedFile,
 		destinationFileName,
-		conflictResolution = 'upsert'
+		conflictResolution = upsertOnConflicts
 	}: UploadPublicFileParams): Promise<ArFSResult> {
 		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
 
@@ -521,7 +527,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Files cannot overwrite folder names
 		if (filesAndFolderNames.folders.find((f) => f.folderName === destFileName)) {
-			if (conflictResolution === 'skip') {
+			if (conflictResolution === skipOnConflicts) {
 				// Return empty result if resolution set to skip on FILE to FOLDER name conflicts
 				return emptyArFSResult;
 			}
@@ -533,13 +539,13 @@ export class ArDrive extends ArDriveAnonymous {
 		const conflictingFileName = filesAndFolderNames.files.find((f) => f.fileName === destFileName);
 
 		if (conflictingFileName) {
-			if (conflictResolution === 'skip') {
+			if (conflictResolution === skipOnConflicts) {
 				// File has the same name, skip the upload
 				return emptyArFSResult;
 			}
 
 			if (
-				conflictResolution === 'upsert' &&
+				conflictResolution === upsertOnConflicts &&
 				conflictingFileName.lastModifiedDate === wrappedFile.lastModifiedDate
 			) {
 				// These files have the same name and last modified date, skip the upload
@@ -597,7 +603,7 @@ export class ArDrive extends ArDriveAnonymous {
 		parentFolderId,
 		wrappedFolder,
 		destParentFolderName,
-		conflictResolution = 'upsert'
+		conflictResolution = upsertOnConflicts
 	}: BulkPublicUploadParams): Promise<ArFSResult> {
 		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
 
@@ -712,9 +718,9 @@ export class ArDrive extends ArDriveAnonymous {
 		for await (const wrappedFile of wrappedFolder.files) {
 			if (
 				// Conflict resolution is set to skip and there is an existing file
-				(conflictResolution === 'skip' && wrappedFile.existingId) ||
+				(conflictResolution === skipOnConflicts && wrappedFile.existingId) ||
 				// Conflict resolution is set to upsert and an existing file has the same last modified date
-				(conflictResolution === 'upsert' && wrappedFile.hasSameLastModifiedDate)
+				(conflictResolution === upsertOnConflicts && wrappedFile.hasSameLastModifiedDate)
 			) {
 				// Continue loop, don't upload this file
 				continue;
@@ -797,7 +803,7 @@ export class ArDrive extends ArDriveAnonymous {
 		wrappedFile,
 		driveKey,
 		destinationFileName,
-		conflictResolution = 'upsert'
+		conflictResolution = upsertOnConflicts
 	}: UploadPrivateFileParams): Promise<ArFSResult> {
 		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
 
@@ -810,7 +816,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// Files cannot overwrite folder names
 		if (filesAndFolderNames.folders.find((f) => f.folderName === destFileName)) {
-			if (conflictResolution === 'skip') {
+			if (conflictResolution === skipOnConflicts) {
 				// Return empty result if resolution set to skip on FILE to FOLDER name conflicts
 				return emptyArFSResult;
 			}
@@ -822,13 +828,13 @@ export class ArDrive extends ArDriveAnonymous {
 		const conflictingFileName = filesAndFolderNames.files.find((f) => f.fileName === destFileName);
 
 		if (conflictingFileName) {
-			if (conflictResolution === 'skip') {
+			if (conflictResolution === skipOnConflicts) {
 				// File has the same name, skip the upload
 				return emptyArFSResult;
 			}
 
 			if (
-				conflictResolution === 'upsert' &&
+				conflictResolution === upsertOnConflicts &&
 				conflictingFileName.lastModifiedDate === wrappedFile.lastModifiedDate
 			) {
 				// These files have the same name and last modified date, skip the upload
@@ -898,7 +904,7 @@ export class ArDrive extends ArDriveAnonymous {
 		wrappedFolder,
 		driveKey,
 		destParentFolderName,
-		conflictResolution = 'upsert'
+		conflictResolution = upsertOnConflicts
 	}: BulkPrivateUploadParams): Promise<ArFSResult> {
 		// Retrieve drive ID from folder ID
 		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
@@ -995,7 +1001,7 @@ export class ArDrive extends ArDriveAnonymous {
 		let folderId: FolderID;
 
 		if (wrappedFolder.fileNameConflict) {
-			if (conflictResolution === 'skip') {
+			if (conflictResolution === skipOnConflicts) {
 				// Return empty result on skip
 				return { entityResults: uploadEntityResults, feeResults: uploadEntityFees };
 			}
@@ -1044,16 +1050,16 @@ export class ArDrive extends ArDriveAnonymous {
 		for await (const wrappedFile of wrappedFolder.files) {
 			if (
 				// Conflict resolution is set to skip and there is an existing file
-				(conflictResolution === 'skip' && wrappedFile.existingId) ||
+				(conflictResolution === skipOnConflicts && wrappedFile.existingId) ||
 				// Conflict resolution is set to upsert and an existing file has the same last modified date
-				(conflictResolution === 'upsert' && wrappedFile.hasSameLastModifiedDate)
+				(conflictResolution === upsertOnConflicts && wrappedFile.hasSameLastModifiedDate)
 			) {
 				// Continue loop, don't upload this file
 				continue;
 			}
 
 			if (wrappedFile.folderNameConflict) {
-				if (conflictResolution === 'skip') {
+				if (conflictResolution === skipOnConflicts) {
 					// Continue loop, skip uploading this file
 					continue;
 				}

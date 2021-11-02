@@ -19,7 +19,7 @@ import { DriveID, DriveKey } from '../types';
 import passwordPrompt from 'prompts';
 import { PrivateKeyData } from '../private_key_data';
 import { ArweaveAddress } from '../arweave_address';
-import { FileNameConflictResolution } from '../ardrive';
+import { FileNameConflictResolution, replaceOnConflicts, skipOnConflicts, upsertOnConflicts } from '../ardrive';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ParameterOptions = any;
@@ -209,18 +209,18 @@ export class ParametersHelper {
 
 	public getFileNameConflictResolution(): FileNameConflictResolution {
 		if (this.getParameterValue(ReplaceParameter)) {
-			return 'replace';
+			return replaceOnConflicts;
 		}
 
 		if (this.getParameterValue(UpsertParameter)) {
-			return 'skip';
+			return skipOnConflicts;
 		}
 
 		// if (this.getParameterValue(AskParameter)) {
-		// 	return 'ask'
+		// 	return askOnConflicts;
 		// };
 
-		return 'upsert';
+		return upsertOnConflicts;
 	}
 
 	/**
