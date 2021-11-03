@@ -4,6 +4,8 @@ import { ARDataPriceRegression } from './data_price_regression';
 import { ARDataPrice } from './ar_data_price';
 import { AbstractARDataPriceAndCapacityEstimator } from './ar_data_price_estimator';
 import type { ArDriveCommunityTip, ByteCount } from '../types';
+import { Winston } from '../types/winston';
+import { AR } from '../types/ar';
 
 /**
  * A utility class for Arweave data pricing estimation.
@@ -84,7 +86,7 @@ export class ARDataPriceRegressionEstimator extends AbstractARDataPriceAndCapaci
 	 *
 	 * @remarks Will fetch pricing data for regression modeling if a regression has not yet been run.
 	 */
-	public async getBaseWinstonPriceForByteCount(byteCount: ByteCount): Promise<number> {
+	public async getBaseWinstonPriceForByteCount(byteCount: ByteCount): Promise<Winston> {
 		// Lazily generate the price predictor
 		if (!this.predictor) {
 			await this.refreshPriceData();
@@ -105,11 +107,7 @@ export class ARDataPriceRegressionEstimator extends AbstractARDataPriceAndCapaci
 	 * @remarks Will fetch pricing data for regression modeling if a regression has not yet been run.
 	 * @remarks The ArDrive community fee is not considered in this estimation
 	 */
-	public async getByteCountForWinston(winston: number): Promise<ByteCount> {
-		if (winston < 0 || !Number.isInteger(winston)) {
-			throw new Error('winston value should be a non-negative integer!');
-		}
-
+	public async getByteCountForWinston(winston: Winston): Promise<ByteCount> {
 		// Lazily generate the price predictor
 		if (!this.predictor) {
 			await this.refreshPriceData();
@@ -119,7 +117,14 @@ export class ARDataPriceRegressionEstimator extends AbstractARDataPriceAndCapaci
 		}
 
 		// Return 0 if winston price given does not cover the base winston price for a transaction
-		return Math.max(0, (winston - this.predictor.baseWinstonPrice()) / this.predictor.marginalWinstonPrice());
+		// TODO: Is number sufficient here vs. BigNumber?
+		const baseWinstonPrice = this.predictor.baseWinstonPrice();
+		const marginalWinstonPrice = this.predictor.marginalWinstonPrice();
+		if (winston.isGreaterThan(baseWinstonPrice)) {
+			return +winston.minus(baseWinstonPrice).dividedBy(marginalWinstonPrice).toString();
+		}
+
+		return 0;
 	}
 
 	/**
@@ -129,7 +134,7 @@ export class ARDataPriceRegressionEstimator extends AbstractARDataPriceAndCapaci
 	 * @remarks Returns 0 bytes when the price does not cover minimum ArDrive community fee
 	 */
 	public async getByteCountForAR(
-		arPrice: number,
+		arPrice: AR,
 		{ minWinstonFee, tipPercentage }: ArDriveCommunityTip
 	): Promise<ByteCount> {
 		// Lazily generate the price predictor

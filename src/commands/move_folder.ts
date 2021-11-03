@@ -6,7 +6,7 @@ import {
 	ParentFolderIdParameter,
 	DrivePrivacyParameters
 } from '../parameter_declarations';
-import { Wallet } from '../wallet_new';
+import { Wallet } from '../wallet';
 import { arDriveFactory } from '..';
 import { FeeMultiple } from '../types';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';

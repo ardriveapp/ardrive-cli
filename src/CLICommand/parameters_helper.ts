@@ -1,4 +1,4 @@
-import { JWKWallet, Wallet, WalletDAO } from '../wallet_new';
+import { JWKWallet, Wallet, WalletDAO } from '../wallet';
 import { ParameterName } from './parameter';
 import * as fs from 'fs';
 import { deriveDriveKey, JWKInterface } from 'ardrive-core-js';
@@ -16,7 +16,7 @@ import { cliWalletDao } from '..';
 import { DriveID, DriveKey } from '../types';
 import passwordPrompt from 'prompts';
 import { PrivateKeyData } from '../private_key_data';
-import { ArweaveAddress } from '../arweave_address';
+import { ArweaveAddress } from '../types/arweave_address';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ParameterOptions = any;

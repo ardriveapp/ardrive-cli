@@ -7,7 +7,7 @@ import {
 	DrivePrivacyParameters
 } from '../parameter_declarations';
 import { arDriveFactory } from '..';
-import { Wallet } from '../wallet_new';
+import { Wallet } from '../wallet';
 import { FeeMultiple } from '../types';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { CLIAction } from '../CLICommand/action';

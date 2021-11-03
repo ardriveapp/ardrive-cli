@@ -1,7 +1,7 @@
 import { fileDecrypt, GQLNodeInterface, GQLTagInterface, Utf8ArrayToStr } from 'ardrive-core-js';
 import Arweave from 'arweave';
 import { ArFSPrivateFolder, ArFSPublicFolder } from '../../arfs_entities';
-import { ArweaveAddress } from '../../arweave_address';
+import { ArweaveAddress } from '../../types/arweave_address';
 import { CipherIV, DriveKey, FolderID } from '../../types';
 import { ArFSFileOrFolderBuilder } from './arfs_builders';
 

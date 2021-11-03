@@ -1,5 +1,6 @@
 import regression, { DataPoint } from 'regression';
 import { ByteCount } from '../types';
+import { W, Winston } from '../types/winston';
 import { ARDataPrice } from './ar_data_price';
 
 /**
@@ -21,7 +22,8 @@ export class ARDataPriceRegression {
 		}
 
 		const dataPoints: DataPoint[] = pricingData.map(
-			(pricingDatapoint) => [pricingDatapoint.numBytes, pricingDatapoint.winstonPrice] as DataPoint
+			// TODO: BigNumber regressions
+			(pricingDatapoint) => [pricingDatapoint.numBytes, +pricingDatapoint.winstonPrice.toString()] as DataPoint
 		);
 
 		this.regression = regression.linear(dataPoints);
@@ -39,15 +41,16 @@ export class ARDataPriceRegression {
 		}
 
 		const regressionResult = this.regression.predict(numBytes);
-		return new ARDataPrice(regressionResult[0], Math.ceil(regressionResult[1]));
+		// TODO: BigNumber regressions
+		return new ARDataPrice(regressionResult[0], W(Math.ceil(regressionResult[1])));
 	}
 
 	/**
 	 * Returns the current base AR price in Winston for submitting an Arweave transaction,
 	 * which has been calculated by the regression model
 	 */
-	baseWinstonPrice(): number {
-		return this.regression.equation[1];
+	baseWinstonPrice(): Winston {
+		return W(this.regression.equation[1]);
 	}
 
 	/**

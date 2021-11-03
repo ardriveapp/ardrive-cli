@@ -12,12 +12,13 @@ import { readJWKFile } from '../../src/utils';
 import { ArweaveOracle } from '../../src/utils/arweave_oracle';
 import { ARDataPriceRegressionEstimator } from '../../src/utils/ar_data_price_regression_estimator';
 import { GatewayOracle } from '../../src/utils/gateway_oracle';
-import { WalletDAO } from '../../src/wallet_new';
+import { WalletDAO } from '../wallet';
 import { expectAsyncErrorThrow } from '../../src/utils/test_helpers';
 import { ArDriveCommunityOracle } from '../../src/community/ardrive_community_oracle';
 import { CommunityOracle } from '../../src/community/community_oracle';
 import { ArFSDAO } from '../arfsdao';
 import { stubEntityID, stubTransactionID } from './stubs';
+import { W } from '../types/winston';
 
 describe('ArDrive class', () => {
 	let arDrive: ArDrive;
@@ -45,7 +46,7 @@ describe('ArDrive class', () => {
 	beforeEach(async () => {
 		// Set pricing algo up as x = y (bytes = Winston)
 		arweaveOracleStub = stub(new GatewayOracle());
-		arweaveOracleStub.getWinstonPriceForByteCount.callsFake((input) => Promise.resolve(input));
+		arweaveOracleStub.getWinstonPriceForByteCount.callsFake((input) => Promise.resolve(W(input)));
 		communityOracleStub = stub(new ArDriveCommunityOracle(fakeArweave));
 		priceEstimator = new ARDataPriceRegressionEstimator(true, arweaveOracleStub);
 		walletDao = new WalletDAO(fakeArweave, 'Unit Test', '1.0');
@@ -124,7 +125,10 @@ describe('ArDrive class', () => {
 				return Promise.resolve(false);
 			});
 			stub(walletDao, 'getWalletWinstonBalance').callsFake(() => {
-				return Promise.resolve(0);
+				return Promise.resolve(W(0));
+			});
+			communityOracleStub.getCommunityWinstonTip.callsFake(() => {
+				return Promise.resolve(W(9876543210));
 			});
 			await expectAsyncErrorThrow({
 				promiseToError: arDrive.estimateAndAssertCostOfFileUpload(1, stubPublicFileTransactionData, 'private')
@@ -136,7 +140,7 @@ describe('ArDrive class', () => {
 				return Promise.resolve(true);
 			});
 			communityOracleStub.getCommunityWinstonTip.callsFake(() => {
-				return Promise.resolve('9876543210');
+				return Promise.resolve(W(9876543210));
 			});
 
 			const actual = await arDrive.estimateAndAssertCostOfFileUpload(
@@ -144,11 +148,9 @@ describe('ArDrive class', () => {
 				stubPublicFileTransactionData,
 				'private'
 			);
-			expect(actual).to.deep.equal({
-				metaDataBaseReward: '147',
-				fileDataBaseReward: '1234576',
-				communityWinstonTip: '9876543210'
-			});
+			expect(`${actual.metaDataBaseReward}`).to.equal('147');
+			expect(`${actual.fileDataBaseReward}`).to.equal('1234576');
+			expect(`${actual.communityWinstonTip}`).to.equal('9876543210');
 		});
 	});
 
@@ -158,7 +160,7 @@ describe('ArDrive class', () => {
 				return Promise.resolve(false);
 			});
 			stub(walletDao, 'getWalletWinstonBalance').callsFake(() => {
-				return Promise.resolve(0);
+				return Promise.resolve(W(0));
 			});
 			await expectAsyncErrorThrow({
 				promiseToError: arDrive.estimateAndAssertCostOfFolderUpload(stubPublicFolderTransactionData)
@@ -171,9 +173,8 @@ describe('ArDrive class', () => {
 			});
 
 			const actual = await arDrive.estimateAndAssertCostOfFolderUpload(stubPublicFileTransactionData);
-			expect(actual).to.deep.equal({
-				metaDataBaseReward: '147'
-			});
+			// TODO: Bummer to lose deep equal verification
+			expect(`${actual.metaDataBaseReward}`).to.equal('147');
 		});
 	});
 
@@ -183,7 +184,7 @@ describe('ArDrive class', () => {
 				return Promise.resolve(false);
 			});
 			stub(walletDao, 'getWalletWinstonBalance').callsFake(() => {
-				return Promise.resolve(0);
+				return Promise.resolve(W(0));
 			});
 			await expectAsyncErrorThrow({
 				promiseToError: arDrive.estimateAndAssertCostOfDriveCreation(
@@ -202,10 +203,8 @@ describe('ArDrive class', () => {
 				stubPublicDriveMetadataTransactionData,
 				stubPublicFolderTransactionData
 			);
-			expect(actual).to.deep.equal({
-				driveMetaDataBaseReward: '73',
-				rootFolderMetaDataBaseReward: '19'
-			});
+			expect(`${actual.driveMetaDataBaseReward}`).to.equal('73');
+			expect(`${actual.rootFolderMetaDataBaseReward}`).to.equal('19');
 		});
 	});
 
@@ -215,7 +214,7 @@ describe('ArDrive class', () => {
 				return Promise.resolve(false);
 			});
 			stub(walletDao, 'getWalletWinstonBalance').callsFake(() => {
-				return Promise.resolve(0);
+				return Promise.resolve(W(0));
 			});
 			await expectAsyncErrorThrow({
 				promiseToError: arDrive.estimateAndAssertCostOfMoveFile(stubPublicFileTransactionData)
@@ -228,9 +227,7 @@ describe('ArDrive class', () => {
 			});
 
 			const actual = await arDrive.estimateAndAssertCostOfMoveFile(stubPublicFileTransactionData);
-			expect(actual).to.deep.equal({
-				metaDataBaseReward: '147'
-			});
+			expect(`${actual.metaDataBaseReward}`).to.equal('147');
 		});
 	});
 });

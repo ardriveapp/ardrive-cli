@@ -1,16 +1,9 @@
 /* eslint-disable no-console */
-import type { JWKWallet, Wallet } from './wallet_new';
+import type { JWKWallet, Wallet } from './wallet';
 import Arweave from 'arweave';
 import { v4 as uuidv4 } from 'uuid';
 import Transaction from 'arweave/node/lib/transaction';
-import {
-	deriveDriveKey,
-	GQLEdgeInterface,
-	GQLNodeInterface,
-	GQLTagInterface,
-	JWKInterface,
-	uploadDataChunk
-} from 'ardrive-core-js';
+import { deriveDriveKey, GQLEdgeInterface, GQLNodeInterface, GQLTagInterface, JWKInterface } from 'ardrive-core-js';
 import {
 	ArFSPublicFileDataPrototype,
 	ArFSObjectMetadataPrototype,
@@ -77,7 +70,8 @@ import {
 	ArFSUploadPrivateFileResult,
 	ArFSCreateDriveResultFactory,
 	ArFSMoveEntityResultFactory,
-	ArFSUploadFileResultFactory
+	ArFSUploadFileResultFactory,
+	WithDriveKey
 } from './arfs_entity_result_factory';
 import {
 	ArFSFileOrFolderEntity,
@@ -89,12 +83,13 @@ import {
 	ArFSPublicFile,
 	ArFSPublicFolder
 } from './arfs_entities';
-import { ArFSDAOAnonymous } from './arfsdao_anonymous';
+import { ArFSAllPublicFoldersOfDriveParams, ArFSDAOAnonymous } from './arfsdao_anonymous';
 import { ArFSFileOrFolderBuilder } from './utils/arfs_builders/arfs_builders';
 import { PrivateKeyData } from './private_key_data';
-import { ArweaveAddress } from './arweave_address';
+import { ArweaveAddress } from './types/arweave_address';
 import { EntityNamesAndIds, entityToNameMap, fileToNameAndIdMap, folderToNameAndIdMap } from './utils/mapper_functions';
 import { ListPrivateFolderParams } from './ardrive';
+import { W } from './types/winston';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 
@@ -134,6 +129,9 @@ export interface UploadPublicFileParams {
 export interface UploadPrivateFileParams extends UploadPublicFileParams {
 	driveKey: DriveKey;
 }
+
+export type ArFSAllPrivateFoldersOfDriveParams = ArFSAllPublicFoldersOfDriveParams & WithDriveKey;
+
 export interface CreateFolderSettings {
 	driveId: DriveID;
 	rewardSettings: RewardSettings;
@@ -154,6 +152,7 @@ export interface CreatePrivateFolderSettings extends CreateFolderSettings {
 interface getPublicChildrenFolderIdsParams {
 	folderId: FolderID;
 	driveId: DriveID;
+	owner: ArweaveAddress;
 }
 interface getPrivateChildrenFolderIdsParams extends getPublicChildrenFolderIdsParams {
 	driveKey: DriveKey;
@@ -214,7 +213,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			}
 		}
 
-		return { metaDataTrxId: folderTrx.id, metaDataTrxReward: folderTrx.reward, folderId };
+		return { metaDataTrxId: folderTrx.id, metaDataTrxReward: W(folderTrx.reward), folderId };
 	}
 
 	// Convenience wrapper for folder creation in a known-public use case
@@ -283,7 +282,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		return resultFactory({
 			metaDataTrxId: driveTrx.id,
-			metaDataTrxReward: driveTrx.reward,
+			metaDataTrxReward: W(driveTrx.reward),
 			rootFolderTrxId: rootFolderTrxId,
 			rootFolderTrxReward: rootFolderTrxReward,
 			driveId: driveId,
@@ -375,7 +374,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			}
 		}
 
-		return resultFactory({ metaDataTrxId: metaDataTrx.id, metaDataTrxReward: metaDataTrx.reward });
+		return resultFactory({ metaDataTrxId: metaDataTrx.id, metaDataTrxReward: W(metaDataTrx.reward) });
 	}
 
 	async movePublicFile({
@@ -493,8 +492,10 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		// Upload file data
 		if (!this.dryRun) {
-			console.log(`Uploading public file: "${wrappedFile.filePath}" to the permaweb..`);
-			await this.sendChunkedUploadWithProgress(dataTrx);
+			const dataUploader = await this.arweave.transactions.getUploader(dataTrx);
+			while (!dataUploader.isComplete) {
+				await dataUploader.uploadChunk();
+			}
 		}
 
 		// Prepare meta data transaction
@@ -520,9 +521,9 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return resultFactoryFn(
 			{
 				dataTrxId: dataTrx.id,
-				dataTrxReward: dataTrx.reward,
+				dataTrxReward: W(dataTrx.reward),
 				metaDataTrxId: metaDataTrx.id,
-				metaDataTrxReward: metaDataTrx.reward,
+				metaDataTrxReward: W(metaDataTrx.reward),
 				fileId
 			},
 			metadataTrxData
@@ -606,26 +607,26 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		);
 	}
 
-	/**
-	 * Uploads a v2 transaction in chunks with progress logging
-	 *
-	 * @example await this.sendChunkedUpload(myTransaction);
-	 */
-	async sendChunkedUploadWithProgress(trx: Transaction): Promise<void> {
-		const dataUploader = await this.arweave.transactions.getUploader(trx);
+	// /**
+	//  * Uploads a v2 transaction in chunks with progress logging
+	//  *
+	//  * @example await this.sendChunkedUpload(myTransaction);
+	//  */
+	// async sendChunkedUploadWithProgress(trx: Transaction): Promise<void> {
+	// 	const dataUploader = await this.arweave.transactions.getUploader(trx);
 
-		while (!dataUploader.isComplete) {
-			const nextChunk = await uploadDataChunk(dataUploader);
-			if (nextChunk === null) {
-				break;
-			} else {
-				// TODO: Add custom logger function that produces various levels of detail
-				console.log(
-					`${dataUploader.pctComplete}% complete, ${dataUploader.uploadedChunks}/${dataUploader.totalChunks}`
-				);
-			}
-		}
-	}
+	// 	while (!dataUploader.isComplete) {
+	// 		const nextChunk = await uploadDataChunk(dataUploader);
+	// 		if (nextChunk === null) {
+	// 			break;
+	// 		} else {
+	// 			// TODO: Add custom logger function that produces various levels of detail
+	// 			console.log(
+	// 				`${dataUploader.pctComplete}% complete, ${dataUploader.uploadedChunks}/${dataUploader.totalChunks}`
+	// 			);
+	// 		}
+	// 	}
+	// }
 
 	async prepareArFSObjectTransaction(
 		objectMetaData: ArFSObjectMetadataPrototype,
@@ -641,7 +642,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		// If we provided our own reward setting, use it now
 		if (rewardSettings.reward) {
-			trxAttributes.reward = rewardSettings.reward;
+			trxAttributes.reward = rewardSettings.reward.toString();
 		}
 
 		// TODO: Use a mock arweave server instead
@@ -693,11 +694,12 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		return new ArFSPrivateFileBuilder(fileId, this.arweave, driveKey, owner).build();
 	}
 
-	async getAllFoldersOfPrivateDrive(
-		driveId: DriveID,
-		driveKey: DriveKey,
+	async getAllFoldersOfPrivateDrive({
+		driveId,
+		driveKey,
+		owner,
 		latestRevisionsOnly = false
-	): Promise<ArFSPrivateFolder[]> {
+	}: ArFSAllPrivateFoldersOfDriveParams): Promise<ArFSPrivateFolder[]> {
 		let cursor = '';
 		let hasNextPage = true;
 		const allFolders: ArFSPrivateFolder[] = [];
@@ -708,7 +710,8 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 					{ name: 'Drive-Id', value: driveId },
 					{ name: 'Entity-Type', value: 'folder' }
 				],
-				cursor
+				cursor,
+				owner
 			});
 
 			const response = await this.arweave.api.post(graphQLURL, gqlQuery);
@@ -731,6 +734,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	async getPrivateFilesWithParentFolderIds(
 		folderIDs: FolderID[],
 		driveKey: DriveKey,
+		owner: ArweaveAddress,
 		latestRevisionsOnly = false
 	): Promise<ArFSPrivateFile[]> {
 		let cursor = '';
@@ -743,7 +747,8 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 					{ name: 'Parent-Folder-Id', value: folderIDs },
 					{ name: 'Entity-Type', value: 'file' }
 				],
-				cursor
+				cursor,
+				owner
 			});
 
 			const response = await this.arweave.api.post(graphQLURL, gqlQuery);
@@ -879,12 +884,24 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	async getPrivateChildrenFolderIds({
 		folderId,
 		driveId,
-		driveKey
+		driveKey,
+		owner
 	}: getPrivateChildrenFolderIdsParams): Promise<FolderID[]> {
-		return this.getChildrenFolderIds(folderId, await this.getAllFoldersOfPrivateDrive(driveId, driveKey, true));
+		return this.getChildrenFolderIds(
+			folderId,
+			await this.getAllFoldersOfPrivateDrive({ driveId, driveKey, owner, latestRevisionsOnly: true })
+		);
 	}
-	async getPublicChildrenFolderIds({ folderId, driveId }: getPublicChildrenFolderIdsParams): Promise<FolderID[]> {
-		return this.getChildrenFolderIds(folderId, await this.getAllFoldersOfPublicDrive(driveId, true));
+
+	async getPublicChildrenFolderIds({
+		folderId,
+		owner,
+		driveId
+	}: getPublicChildrenFolderIdsParams): Promise<FolderID[]> {
+		return this.getChildrenFolderIds(
+			folderId,
+			await this.getAllFoldersOfPublicDrive({ driveId, owner, latestRevisionsOnly: true })
+		);
 	}
 
 	/**
@@ -910,7 +927,12 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		// Fetch all of the folder entities within the drive
 		const driveIdOfFolder = folder.driveId;
-		const allFolderEntitiesOfDrive = await this.getAllFoldersOfPrivateDrive(driveIdOfFolder, driveKey, true);
+		const allFolderEntitiesOfDrive = await this.getAllFoldersOfPrivateDrive({
+			driveId: driveIdOfFolder,
+			driveKey,
+			owner,
+			latestRevisionsOnly: true
+		});
 
 		const hierarchy = FolderHierarchy.newFromEntities(allFolderEntitiesOfDrive);
 		const searchFolderIDs = hierarchy.folderIdSubtreeFromFolderId(folderId, maxDepth - 1);
@@ -925,7 +947,12 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		}
 
 		// Fetch all file entities within all Folders of the drive
-		const childrenFileEntities = await this.getPrivateFilesWithParentFolderIds(searchFolderIDs, driveKey, true);
+		const childrenFileEntities = await this.getPrivateFilesWithParentFolderIds(
+			searchFolderIDs,
+			driveKey,
+			owner,
+			true
+		);
 
 		const children = [...childrenFolderEntities, ...childrenFileEntities];
 

@@ -6,7 +6,7 @@ import {
 	DryRunParameter
 } from '../parameter_declarations';
 import { arDriveFactory } from '..';
-import { JWKWallet, Wallet } from '../wallet_new';
+import { JWKWallet, Wallet } from '../wallet';
 import { FeeMultiple } from '../types';
 import { PrivateDriveKeyData } from '../arfsdao';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
