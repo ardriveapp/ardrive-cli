@@ -4,9 +4,10 @@ import * as crypto from 'crypto';
 import jwkToPem, { JWK } from 'jwk-to-pem';
 import Arweave from 'arweave';
 import * as mnemonicKeys from 'arweave-mnemonic-keys';
-import { NetworkReward, PublicKey, SeedPhrase, DEFAULT_APP_NAME, DEFAULT_APP_VERSION, RewardSettings } from './types';
+import { NetworkReward, PublicKey, DEFAULT_APP_NAME, DEFAULT_APP_VERSION, RewardSettings } from './types';
 import { CreateTransactionInterface } from 'arweave/node/common';
 import { W, Winston, ArweaveAddress, AR, TransactionID, TxID } from './types/';
+import { SeedPhrase } from './types/seed_phrase';
 
 export type ARTransferResult = {
 	trxID: TransactionID;
@@ -66,7 +67,7 @@ export class WalletDAO {
 	}
 
 	async generateJWKWallet(seedPhrase: SeedPhrase): Promise<JWKWallet> {
-		const jwkWallet: JWKInterface = await mnemonicKeys.getKeyFromMnemonic(seedPhrase);
+		const jwkWallet: JWKInterface = await mnemonicKeys.getKeyFromMnemonic(seedPhrase.toString());
 		return Promise.resolve(new JWKWallet(jwkWallet));
 	}
 
