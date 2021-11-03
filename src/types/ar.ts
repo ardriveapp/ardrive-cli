@@ -26,4 +26,8 @@ export class AR {
 	toWinston(): Winston {
 		return this.winston;
 	}
+
+	toJSON(): string {
+		return this.toString();
+	}
 }

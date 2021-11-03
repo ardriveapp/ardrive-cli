@@ -30,6 +30,10 @@ export class TransactionID implements Equatable<TransactionID> {
 	equals(entityId: TransactionID): boolean {
 		return this.transactionId === entityId.transactionId;
 	}
+
+	toJSON(): string {
+		return this.toString();
+	}
 }
 
 export function TxID(transactionId: string): TransactionID {
