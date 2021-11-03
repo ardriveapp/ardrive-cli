@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import { extToMime } from 'ardrive-core-js';
 import { basename, join } from 'path';
-import { ByteCount, DataContentType, FileID, FolderID, Manifest, UnixTime } from './types';
+import { ByteCount, DataContentType, FileID, FolderID, Manifest, MANIFEST_CONTENT_TYPE, UnixTime } from './types';
 import { BulkFileBaseCosts, MetaDataBaseCosts } from './ardrive';
 
 type BaseFileName = string;
@@ -62,7 +62,7 @@ export class ArFSManifestToUpload implements ArFSEntityToUpload {
 	constructor(public readonly manifest: Manifest) {}
 
 	public gatherFileInfo(): FileInfo {
-		const dataContentType = 'application/json';
+		const dataContentType = MANIFEST_CONTENT_TYPE;
 		const lastModifiedDateMS = Math.round(Date.now() / 1000); // new unix time
 
 		return { dataContentType, lastModifiedDateMS, fileSize: this.size };

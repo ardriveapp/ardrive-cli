@@ -5,6 +5,7 @@ export const DEFAULT_APP_VERSION = '1.0.0';
 
 export const JSON_CONTENT_TYPE = 'application/json';
 export const PRIVATE_CONTENT_TYPE = 'application/octet-stream';
+export const MANIFEST_CONTENT_TYPE = 'application/x.arweave-manifest+json';
 
 export type PublicKey = string;
 export type SeedPhrase = string;
@@ -47,6 +48,7 @@ export type RewardSettings = {
 type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
 export type MakeOptional<T, K> = Omit<T, K> & Partial<T>;
 
+// These interfaces taken from arweave-deploy
 export interface ManifestPathMap {
 	[index: string]: { id: string };
 }

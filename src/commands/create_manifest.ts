@@ -1,6 +1,4 @@
-import { arDriveFactory, cliArweave, cliWalletDao } from '..';
-import { ArDriveAnonymous } from '../ardrive';
-import { ArFSDAOAnonymous } from '../arfsdao_anonymous';
+import { arDriveFactory, cliWalletDao } from '..';
 import { ArFSPrivateFileOrFolderWithPaths, ArFSPublicFileOrFolderWithPaths } from '../arfs_entities';
 import { ArFSManifestToUpload } from '../arfs_file_wrapper';
 import { CLICommand, ParametersHelper } from '../CLICommand';
@@ -9,11 +7,12 @@ import {
 	BoostParameter,
 	DestinationFileNameParameter,
 	DriveIdParameter,
-	DrivePrivacyParameters,
 	DryRunParameter,
-	TreeDepthParams
+	SeedPhraseParameter,
+	TreeDepthParams,
+	WalletFileParameter
 } from '../parameter_declarations';
-import { FeeMultiple, Manifest, ManifestPathMap } from '../types';
+import { FeeMultiple, Manifest, ManifestPathMap, MANIFEST_CONTENT_TYPE } from '../types';
 import { alphabeticalOrder } from '../utils/sort_functions';
 
 new CLICommand({
@@ -23,16 +22,15 @@ new CLICommand({
 		DestinationFileNameParameter,
 		BoostParameter,
 		DryRunParameter,
-		...TreeDepthParams,
-		...DrivePrivacyParameters
+		WalletFileParameter,
+		SeedPhraseParameter,
+		...TreeDepthParams
 	],
 	async action(options) {
 		if (!options.destFileName) {
 			options.destFileName = 'ArDrive Manifest.json';
 		}
 		const parameters = new ParametersHelper(options, cliWalletDao);
-
-		let rootFolderId: string;
 
 		const wallet = await parameters.getRequiredWallet();
 
@@ -43,32 +41,13 @@ new CLICommand({
 		});
 
 		const driveId = parameters.getRequiredParameterValue(DriveIdParameter);
-		let children: (ArFSPrivateFileOrFolderWithPaths | ArFSPublicFileOrFolderWithPaths)[];
 		const maxDepth = await parameters.getMaxDepth(Number.MAX_SAFE_INTEGER);
 
-		if (await parameters.getIsPrivate()) {
-			const wallet = await parameters.getRequiredWallet();
-			const arDrive = arDriveFactory({ wallet });
-			const driveKey = await parameters.getDriveKey({ driveId });
-			const drive = await arDrive.getPrivateDrive(driveId, driveKey);
-			rootFolderId = drive.rootFolderId;
+		const drive = await arDrive.getPublicDrive(driveId);
+		const rootFolderId = drive.rootFolderId;
+		const driveName = drive.name;
 
-			// We have the drive id from deriving a key, we can derive the owner
-			const driveOwner = await arDrive.getOwnerForDriveId(driveId);
-
-			children = await arDrive.listPrivateFolder({
-				folderId: rootFolderId,
-				driveKey,
-				maxDepth,
-				includeRoot: true,
-				owner: driveOwner
-			});
-		} else {
-			const arDrive = new ArDriveAnonymous(new ArFSDAOAnonymous(cliArweave));
-			const drive = await arDrive.getPublicDrive(driveId);
-			rootFolderId = drive.rootFolderId;
-			children = await arDrive.listPublicFolder({ folderId: rootFolderId, maxDepth, includeRoot: true });
-		}
+		const children = await arDrive.listPublicFolder({ folderId: rootFolderId, maxDepth, includeRoot: true });
 
 		const sortedChildren = children.sort((a, b) => alphabeticalOrder(a.path, b.path)) as (
 			| Partial<ArFSPrivateFileOrFolderWithPaths>
@@ -87,15 +66,18 @@ new CLICommand({
 		});
 
 		// TURN SORTED CHILDREN INTO MANIFEST
-		// These interfaces taken from arweave-deploy
 
-		const indexPath = 'index.html';
 		const pathMap: ManifestPathMap = {};
 		sortedChildren.forEach((child) => {
-			if (child.dataTxId && child.path) {
-				pathMap[child.path] = { id: child.dataTxId };
+			if (child.dataTxId && child.path && child.dataContentType !== MANIFEST_CONTENT_TYPE) {
+				pathMap[child.path.slice(1)] = { id: child.dataTxId };
 			}
 		});
+
+		// Use index.html in root folder if it exists, otherwise show first file found
+		const indexPath = Object.keys(pathMap).includes(`${driveName}/index.html`)
+			? `${driveName}/index.html`
+			: Object.keys(pathMap)[0];
 
 		const arweaveManifest: Manifest = {
 			manifest: 'arweave/paths',
@@ -106,24 +88,18 @@ new CLICommand({
 			paths: pathMap
 		};
 
-		// Display manifest
-		// console.log(JSON.stringify(arweaveManifest, null, 4));
-		// console.log(JSON.stringify(sortedChildren, null, 4));
+		// TODO: Private manifests 🤔
+		const result = await arDrive.uploadPublicManifest(
+			rootFolderId,
+			new ArFSManifestToUpload(arweaveManifest),
+			options.destFileName
+		);
 
-		const result = await (async () => {
-			if (await parameters.getIsPrivate()) {
-				// const driveKey = await parameters.getDriveKey({ driveId });
-				// return arDrive.uploadPrivateFile(rootFolderId, manifestEntity, driveKey, options.destFileName);
-				throw new Error('implement me');
-			} else {
-				return arDrive.uploadPublicManifest(
-					rootFolderId,
-					new ArFSManifestToUpload(arweaveManifest),
-					options.destFileName
-				);
-			}
-		})();
-		console.log(JSON.stringify({ manifest: arweaveManifest, ...result }, null, 4));
+		const allLinks = Object.keys(arweaveManifest.paths).map(
+			(path) => `arweave.net/${result.created[0].dataTxId}/${path}`
+		);
+
+		console.log(JSON.stringify({ manifest: arweaveManifest, ...result, links: allLinks }, null, 4));
 
 		return SUCCESS_EXIT_CODE;
 	}
