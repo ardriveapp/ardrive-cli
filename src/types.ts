@@ -11,8 +11,7 @@ export type SeedPhrase = string;
 
 export type NetworkReward = Winston;
 
-export type RootFolderID = 'root folder';
-export type FolderID = EntityID | RootFolderID;
+export type FolderID = EntityID;
 export type FileID = EntityID;
 export type DriveID = EntityID;
 export type AnyEntityID = DriveID | FolderID | FileID;

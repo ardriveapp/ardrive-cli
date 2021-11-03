@@ -237,7 +237,7 @@ export class ArDrive extends ArDriveAnonymous {
 			throw new Error(errorMessage.cannotMoveToDifferentDrive);
 		}
 
-		if (`${originalFileMetaData.parentFolderId}` === `${newParentFolderId}`) {
+		if (originalFileMetaData.parentFolderId.equals(newParentFolderId)) {
 			throw new Error(errorMessage.cannotMoveIntoSamePlace('File', newParentFolderId));
 		}
 
