@@ -650,7 +650,6 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		// If we've opted to boost the transaction, do so now
 		if (rewardSettings.feeMultiple?.wouldBoostReward()) {
-			// Round up with ceil because fractional Winston will cause an Arweave API failure
 			transaction.reward = rewardSettings.feeMultiple.boostReward(transaction.reward);
 		}
 

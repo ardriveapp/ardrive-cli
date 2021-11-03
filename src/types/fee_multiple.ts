@@ -37,6 +37,7 @@ export class FeeMultiple {
 	}
 
 	boostReward(reward: string): string {
+		// Round up with because fractional Winston will cause an Arweave API failure
 		return new BigNumber(reward).times(new BigNumber(this.feeMultiple)).toFixed(0, BigNumber.ROUND_UP);
 	}
 }

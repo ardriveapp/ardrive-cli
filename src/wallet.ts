@@ -119,7 +119,6 @@ export class WalletDAO {
 		}
 		const transaction = await this.arweave.createTransaction(trxAttributes, jwkWallet.getPrivateKey());
 		if (rewardSettings.feeMultiple?.wouldBoostReward()) {
-			// Round up with ceil because fractional Winston will cause an Arweave API failure
 			transaction.reward = rewardSettings.feeMultiple.boostReward(transaction.reward);
 		}
 
