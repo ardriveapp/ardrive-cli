@@ -163,7 +163,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		while (hasNextPage) {
 			const gqlQuery = buildQuery({
 				tags: [
-					{ name: 'Parent-Folder-Id', value: folderIDs.map(toString) },
+					{ name: 'Parent-Folder-Id', value: folderIDs.map((fid) => fid.toString()) },
 					{ name: 'Entity-Type', value: 'file' }
 				],
 				cursor,
