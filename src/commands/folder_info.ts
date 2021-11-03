@@ -34,6 +34,9 @@ new CLICommand({
 		})();
 
 		// TODO: Fix base types so deleting un-used values is not necessary; Tickets: PE-525 + PE-556
+		delete result.size;
+		delete result.dataTxId;
+		delete result.dataContentType;
 		delete result.lastModifiedDate;
 		delete result.syncStatus;
 
