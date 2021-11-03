@@ -8,7 +8,6 @@ import {
 } from '../parameter_declarations';
 import { Wallet } from '../wallet';
 import { arDriveFactory } from '..';
-import { FeeMultiple } from '../types/';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 
 new CLICommand({
@@ -23,12 +22,12 @@ new CLICommand({
 	async action(options) {
 		const parameters = new ParametersHelper(options);
 
-		const { folderId, parentFolderId: newParentFolderId, boost, dryRun } = options;
+		const { folderId, parentFolderId: newParentFolderId, dryRun } = options;
 
 		const wallet: Wallet = await parameters.getRequiredWallet();
 		const ardrive = arDriveFactory({
 			wallet: wallet,
-			feeMultiple: new FeeMultiple(boost),
+			feeMultiple: parameters.getOptionalBoostSetting(),
 			dryRun: dryRun
 		});
 
