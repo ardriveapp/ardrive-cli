@@ -8,7 +8,9 @@ describe('EntityID class', () => {
 				'00000000-0000-0000-0000-000000000000',
 				'99999999-9999-9999-9999-999999999999',
 				'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
-				'ffffffff-ffff-ffff-ffff-ffffffffffff'
+				'ffffffff-ffff-ffff-ffff-ffffffffffff',
+				'AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA',
+				'FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF'
 			];
 			eidInputs.forEach((eid) => expect(() => new EntityID(eid)).to.not.throw(Error));
 		});
@@ -21,11 +23,9 @@ describe('EntityID class', () => {
 				'99999999-9999-999909999-999999999999',
 				'99999999-9999-9999-99990999999999999',
 				'gggggggg-gggg-gggg-gggg-gggggggggggg',
-				'AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA',
-				'FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF',
 				'!@#$%^&*-()_+-=;"<->,./-?-----------'
 			];
-			eidInputs.forEach((eid) => expect(() => new EntityID(eid)).to.throw(Error));
+			eidInputs.forEach((eid) => expect(() => new EntityID(eid), `${eid} should throw`).to.throw(Error));
 		});
 	});
 

@@ -4,7 +4,18 @@ import { ArFSPrivateFolder, ArFSPublicFolder } from '../../arfs_entities';
 import { ArweaveAddress } from '../../types/arweave_address';
 import { CipherIV, DriveKey, FolderID } from '../../types';
 import { ArFSFileOrFolderBuilder } from './arfs_builders';
-import { EID } from '../../types/entity_id';
+import { EID, EntityID } from '../../types/entity_id';
+import { stubEntityID } from '../stubs';
+
+export const ROOT_FOLDER_ID_PLACEHOLDER = 'root folder';
+
+// A utility type to assist with fail-safe decryption of private entities
+export class RootFolderID extends EntityID {
+	constructor() {
+		super(`${stubEntityID}`); // Unused after next line
+		this.entityId = ROOT_FOLDER_ID_PLACEHOLDER;
+	}
+}
 
 export abstract class ArFSFolderBuilder<
 	T extends ArFSPublicFolder | ArFSPrivateFolder
@@ -31,7 +42,7 @@ export class ArFSPublicFolderBuilder extends ArFSFolderBuilder<ArFSPublicFolder>
 	protected async buildEntity(): Promise<ArFSPublicFolder> {
 		if (!this.parentFolderId) {
 			// Root folders do not have a Parent-Folder-Id tag
-			this.parentFolderId = 'root folder';
+			this.parentFolderId = new RootFolderID();
 		}
 
 		if (
@@ -123,7 +134,7 @@ export class ArFSPrivateFolderBuilder extends ArFSFolderBuilder<ArFSPrivateFolde
 	protected async buildEntity(): Promise<ArFSPrivateFolder> {
 		if (!this.parentFolderId) {
 			// Root folders do not have a Parent-Folder-Id tag
-			this.parentFolderId = 'root folder';
+			this.parentFolderId = new RootFolderID();
 		}
 
 		if (
