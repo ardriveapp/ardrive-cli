@@ -1,64 +1,79 @@
 import { expect } from 'chai';
-import { TransactionID } from './';
+import { TransactionID, TxID } from './';
 
 describe('TransactionID class', () => {
 	describe('constructor', () => {
 		it('constructs valid TransactionIDs given healthy inputs', () => {
-			const txidInputs = ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'];
+			const txidInputs = [
+				'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+				'ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ',
+				'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+				'ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ',
+				'0000000000000000000000000000000000000000000',
+				'9999999999999999999999999999999999999999999',
+				'-------------------------------------------',
+				'___________________________________________',
+				'abcdefghijklmnopqrstuvwxyz0123456789_-ABCXY'
+			];
 			txidInputs.forEach((txid) => expect(() => new TransactionID(txid)).to.not.throw(Error));
 		});
 
 		it('throws an error when provided invalid inputs', () => {
-			const txidInputs = [''];
+			const txidInputs = [
+				'',
+				'                                           ',
+				'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+				'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+				'!@#$%^&*()+={}[]|;"<>/?}ZZZZZZZZZZZZZZZZZZZZ'
+			];
 			txidInputs.forEach((txid) => expect(() => new TransactionID(txid)).to.throw(Error));
 		});
 	});
 
-	// describe('toPrimitive function', () => {
-	// 	it('returns the correct Entity ID string when hint is string', () => {
-	// 		const eid = new EntityID('01234567-89ab-cdef-0000-000000000000');
-	// 		expect(`${eid}`).to.equal('01234567-89ab-cdef-0000-000000000000');
-	// 	});
+	describe('toPrimitive function', () => {
+		it('returns the correct Transaction ID string when hint is string', () => {
+			const txid = new TransactionID('XHGs4-ibl7Bct2Vqt4LDq9FxzjxU7CqqETg9oFz83vP');
+			expect(`${txid}`).to.equal('XHGs4-ibl7Bct2Vqt4LDq9FxzjxU7CqqETg9oFz83vP');
+		});
 
-	// 	it('throws an error when hint is number', () => {
-	// 		const eid = new EntityID('01234567-89ab-cdef-0000-000000000000');
-	// 		expect(() => +eid).to.throw(Error);
-	// 	});
-	// });
+		it('throws an error when hint is number', () => {
+			const txid = new TransactionID('XHGs4-ibl7Bct2Vqt4LDq9FxzjxU7CqqETg9oFz83vP');
+			expect(() => +txid).to.throw(Error);
+		});
+	});
 
-	// describe('toString function', () => {
-	// 	it('returns the correct Entity ID string', () => {
-	// 		const eid = new EntityID('01234567-89ab-cdef-0000-000000000000');
-	// 		expect(eid.toString()).to.equal('01234567-89ab-cdef-0000-000000000000');
-	// 		expect(`${eid}`).to.equal('01234567-89ab-cdef-0000-000000000000');
-	// 	});
-	// });
+	describe('toString function', () => {
+		it('returns the correct Transaction ID string', () => {
+			const txid = new TransactionID('XHGs4-ibl7Bct2Vqt4LDq9FxzjxU7CqqETg9oFz83vP');
+			expect(txid.toString()).to.equal('XHGs4-ibl7Bct2Vqt4LDq9FxzjxU7CqqETg9oFz83vP');
+		});
+	});
 
-	// describe('valueOf function', () => {
-	// 	it('returns the correct Entity ID string value', () => {
-	// 		const eid = new EntityID('01234567-89ab-cdef-0000-000000000000');
-	// 		expect(eid.valueOf()).to.equal('01234567-89ab-cdef-0000-000000000000');
-	// 	});
-	// });
+	describe('valueOf function', () => {
+		it('returns the correct Transaction ID string value', () => {
+			const txid = new TransactionID('XHGs4-ibl7Bct2Vqt4LDq9FxzjxU7CqqETg9oFz83vP');
+			expect(txid.valueOf()).to.equal('XHGs4-ibl7Bct2Vqt4LDq9FxzjxU7CqqETg9oFz83vP');
+		});
+	});
 
-	// describe('isEqualTo function', () => {
-	// 	it('correctly evaluates equality', () => {
-	// 		const eid1 = new EntityID('01234567-89ab-cdef-0000-000000000000');
-	// 		const eid2 = new EntityID('01234567-89ab-cdef-0000-000000000000');
-	// 		const eid3 = new EntityID('01234567-89ab-cdef-0000-000000000001');
-	// 		expect(eid1.equals(eid2), `${eid1} and ${eid2}`).to.be.true;
-	// 		expect(eid2.equals(eid1), `${eid2} and ${eid1}`).to.be.true;
-	// 		expect(eid1.equals(eid3), `${eid1} and ${eid3}`).to.be.false;
-	// 		expect(eid3.equals(eid1), `${eid3} and ${eid1}`).to.be.false;
-	// 		expect(eid2.equals(eid3), `${eid2} and ${eid3}`).to.be.false;
-	// 		expect(eid3.equals(eid2), `${eid3} and ${eid2}`).to.be.false;
-	// 	});
-	// });
+	describe('equals function', () => {
+		it('correctly evaluates equality', () => {
+			const txid1 = new TransactionID('XHGs4-ibl7Bct2Vqt4LDq9FxzjxU7CqqETg9oFz83vP');
+			const txid2 = new TransactionID('XHGs4-ibl7Bct2Vqt4LDq9FxzjxU7CqqETg9oFz83vP');
+			const txid3 = new TransactionID('XHGs4-ibl7Bct2Vqt4LDq9FxzjxU7CqqETg9oFz83vR');
+			expect(txid1.equals(txid2), `${txid1} and ${txid2}`).to.be.true;
+			expect(txid2.equals(txid1), `${txid2} and ${txid1}`).to.be.true;
+			expect(txid1.equals(txid3), `${txid1} and ${txid3}`).to.be.false;
+			expect(txid3.equals(txid1), `${txid3} and ${txid1}`).to.be.false;
+			expect(txid2.equals(txid3), `${txid2} and ${txid3}`).to.be.false;
+			expect(txid3.equals(txid2), `${txid3} and ${txid2}`).to.be.false;
+		});
+	});
 });
 
-// describe('EID function', () => {
-// 	it('returns the correct EntityID', () => {
-// 		const expected = new EntityID('01234567-89ab-cdef-0000-000000000000');
-// 		expect(`${EID('01234567-89ab-cdef-0000-000000000000')}`).to.equal(`${expected}`);
-// 	});
-// });
+describe('TxID function', () => {
+	it('returns the correct Transaction ID', () => {
+		const expected = new TransactionID('XHGs4-ibl7Bct2Vqt4LDq9FxzjxU7CqqETg9oFz83vP');
+		expect(`${TxID('XHGs4-ibl7Bct2Vqt4LDq9FxzjxU7CqqETg9oFz83vP')}`).to.equal(`${expected}`);
+	});
+});

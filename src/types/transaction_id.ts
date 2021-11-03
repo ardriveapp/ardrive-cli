@@ -1,6 +1,6 @@
 import { Equatable } from './equatable';
 
-const trxIdRegex = /^([a-zA-Z]|[0-9]|-|_){43}$/;
+const trxIdRegex = /^(\w|-){43}$/;
 
 export class TransactionID implements Equatable<TransactionID> {
 	constructor(private readonly transactionId: string) {
