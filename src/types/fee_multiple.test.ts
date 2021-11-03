@@ -51,20 +51,6 @@ describe('FeeMultiple class', () => {
 		});
 	});
 
-	describe('equals function', () => {
-		it('correctly evaluates equality', () => {
-			const fm1 = new FeeMultiple(2.1);
-			const fm2 = new FeeMultiple(2.1);
-			const fm3 = new FeeMultiple(1.0);
-			expect(fm1.equals(fm2), `${fm1} and ${fm2}`).to.be.true;
-			expect(fm2.equals(fm1), `${fm2} and ${fm1}`).to.be.true;
-			expect(fm1.equals(fm3), `${fm1} and ${fm3}`).to.be.false;
-			expect(fm3.equals(fm1), `${fm3} and ${fm1}`).to.be.false;
-			expect(fm2.equals(fm3), `${fm2} and ${fm3}`).to.be.false;
-			expect(fm3.equals(fm2), `${fm3} and ${fm2}`).to.be.false;
-		});
-	});
-
 	describe('wouldBoostReward function', () => {
 		it('returns true when the FeeMultiple > 1.0', () => {
 			const feeMultiple = new FeeMultiple(1.0001);

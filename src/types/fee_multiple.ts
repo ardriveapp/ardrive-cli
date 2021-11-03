@@ -23,11 +23,6 @@ export class FeeMultiple {
 		return this.feeMultiple;
 	}
 
-	equals(other: FeeMultiple): boolean {
-		// Hard to say what precision to use here. Use EPSILON by default since most multiples will be pretty small
-		return Math.abs(this.feeMultiple - other.feeMultiple) < Number.EPSILON;
-	}
-
 	toJSON(): string {
 		return this.toString();
 	}
