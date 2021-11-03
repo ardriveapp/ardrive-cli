@@ -43,3 +43,15 @@ export type RewardSettings = {
 
 type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
 export type MakeOptional<T, K> = Omit<T, K> & Partial<T>;
+
+export interface ManifestPathMap {
+	[index: string]: { id: string };
+}
+export interface Manifest {
+	manifest: 'arweave/paths';
+	version: '0.1.0';
+	index?: {
+		path: string;
+	};
+	paths: ManifestPathMap;
+}

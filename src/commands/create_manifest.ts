@@ -12,7 +12,7 @@ import {
 	DryRunParameter,
 	TreeDepthParams
 } from '../parameter_declarations';
-import { FeeMultiple } from '../types';
+import { FeeMultiple, Manifest, ManifestPathMap } from '../types';
 import { readJWKFile } from '../utils';
 import { alphabeticalOrder } from '../utils/sort_functions';
 
@@ -88,17 +88,6 @@ new CLICommand({
 
 		// TURN SORTED CHILDREN INTO MANIFEST
 		// These interfaces taken from arweave-deploy
-		interface ManifestPathMap {
-			[index: string]: { id: string };
-		}
-		interface Manifest {
-			manifest: 'arweave/paths';
-			version: '0.1.0';
-			index?: {
-				path: string;
-			};
-			paths: ManifestPathMap;
-		}
 
 		//const indexPath = noIndex ? null : 'index.html';
 		const indexPath = 'index.html';
@@ -127,7 +116,7 @@ new CLICommand({
 				const driveKey = await parameters.getDriveKey({ driveId });
 				return arDrive.uploadPrivateFile(rootFolderId, manifestEntity, driveKey, options.destFileName);
 			} else {
-				return arDrive.uploadPublicFile(rootFolderId, manifestEntity, options.destFileName);
+				return arDrive.uploadPublicManifest(rootFolderId, arweaveManifest, options.destFileName);
 			}
 		})();
 		console.log(JSON.stringify(result, null, 4));
