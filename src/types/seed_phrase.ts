@@ -1,6 +1,6 @@
 import { Equatable } from './equatable';
 
-const seedPhraseRegex = /^(\b[a-zA-Z]+\b(\s+(?=\b[a-zA-Z]+\b)|$)){12}$/;
+const seedPhraseRegex =/^(\b[a-z]+\b(\s+\b|$)){12}$/i;
 
 export class SeedPhrase implements Equatable<SeedPhrase> {
 	constructor(private readonly seedPhrase: string) {
