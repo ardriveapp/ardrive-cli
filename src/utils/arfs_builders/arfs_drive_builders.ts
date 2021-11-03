@@ -73,7 +73,7 @@ export class ArFSPublicDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPublic
 			this.entityType?.length &&
 			this.txId?.length &&
 			this.unixTime &&
-			this.driveId.equals(this.entityId as EntityID) &&
+			this.driveId.equals(this.entityId) &&
 			this.drivePrivacy?.length
 		) {
 			const txData = await this.arweave.transactions.getData(this.txId, { decode: true });
@@ -317,7 +317,7 @@ export class SafeArFSDriveBuilder extends ArFSMetadataEntityBuilder<ArFSDriveEnt
 						};
 						return this.privateKeyData.safelyDecryptToJson<DriveMetaDataTransactionData>(
 							this.cipherIV,
-							this.entityId as EntityID,
+							this.entityId,
 							dataBuffer,
 							placeholderDriveData
 						);
