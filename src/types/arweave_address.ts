@@ -7,19 +7,11 @@ export class ArweaveAddress {
 		}
 	}
 
-	[Symbol.toPrimitive](hint: 'number' | 'string' | 'default'): string {
-		if (hint === 'number') {
-			throw new Error('Address is a string!!!!');
-		}
-		return this.address;
-	}
-
 	equalsAddress(other: ArweaveAddress): boolean {
-		return `${this}` === `${other}`;
+		return this.address === other.address;
 	}
 
 	toString(): string {
-		// calls the toPrimitive symbol
-		return `${this}`;
+		return this.address;
 	}
 }
