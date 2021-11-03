@@ -83,12 +83,9 @@ import {
 import { ArFSAllPublicFoldersOfDriveParams, ArFSDAOAnonymous } from './arfsdao_anonymous';
 import { ArFSFileOrFolderBuilder } from './utils/arfs_builders/arfs_builders';
 import { PrivateKeyData } from './private_key_data';
-import { ArweaveAddress } from './types/arweave_address';
+import { ArweaveAddress, W, TxID, EID } from './types/';
 import { EntityNamesAndIds, entityToNameMap, fileToNameAndIdMap, folderToNameAndIdMap } from './utils/mapper_functions';
 import { ListPrivateFolderParams } from './ardrive';
-import { W } from './types/winston';
-import { TxID } from './types/transaction_id';
-import { EID } from './types/entity_id';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 

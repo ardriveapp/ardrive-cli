@@ -12,7 +12,7 @@ import { ArFSPrivateFile, ArFSPublicFile } from '../../arfs_entities';
 import { ArweaveAddress } from '../../types/arweave_address';
 import { ByteCount, CipherIV, DriveKey, FileID, FileKey, UnixTime } from '../../types';
 import { ArFSFileOrFolderBuilder } from './arfs_builders';
-import { TransactionID } from '../../types/transaction_id';
+import { TransactionID } from '../../types/';
 import { EID } from '../../types/entity_id';
 
 interface FileMetaDataTransactionData {

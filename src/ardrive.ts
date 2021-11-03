@@ -45,11 +45,8 @@ import { stubEntityID, stubTransactionID } from './utils/stubs';
 import { errorMessage } from './error_message';
 import { PrivateKeyData } from './private_key_data';
 import { EntityNamesAndIds } from './utils/mapper_functions';
-import { ArweaveAddress } from './types/arweave_address';
+import { ArweaveAddress, W, Winston, AR, TransactionID } from './types/';
 import { WithDriveKey } from './arfs_entity_result_factory';
-import { W, Winston } from './types/winston';
-import { AR } from './types/ar';
-import { TransactionID } from './types/transaction_id';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 

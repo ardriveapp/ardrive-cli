@@ -16,8 +16,7 @@ import {
 	ArFSPublicFolder
 } from './arfs_entities';
 import { PrivateKeyData } from './private_key_data';
-import { ArweaveAddress } from './types/arweave_address';
-import { EID } from './types/entity_id';
+import { ArweaveAddress, EID } from './types/';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 

@@ -9,7 +9,7 @@ import {
 import { ArweaveAddress } from '../types/arweave_address';
 import { ArFS_O_11, DriveID, FolderID } from '../types';
 import { EID } from '../types/entity_id';
-import { TxID } from '../types/transaction_id';
+import { TxID } from '../types/';
 
 export const stubArweaveAddress = (address = 'abcdefghijklmnopqrxtuvwxyz123456789ABCDEFGH'): ArweaveAddress =>
 	new ArweaveAddress(address);

@@ -6,10 +6,7 @@ import Arweave from 'arweave';
 import * as mnemonicKeys from 'arweave-mnemonic-keys';
 import { NetworkReward, PublicKey, SeedPhrase, DEFAULT_APP_NAME, DEFAULT_APP_VERSION, RewardSettings } from './types';
 import { CreateTransactionInterface } from 'arweave/node/common';
-import { ArweaveAddress } from './types/arweave_address';
-import { W, Winston } from './types/winston';
-import { AR } from './types/ar';
-import { TransactionID, TxID } from './types/transaction_id';
+import { W, Winston, ArweaveAddress, AR, TransactionID, TxID } from './types/';
 
 export type ARTransferResult = {
 	trxID: TransactionID;

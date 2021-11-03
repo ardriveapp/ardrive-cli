@@ -1,7 +1,6 @@
 import { ArFSFileMetadataTransactionData } from './arfs_trx_data_types';
 import { DriveID, FolderID, FileID, FileKey, DriveKey } from './types';
-import { TransactionID } from './types/transaction_id';
-import { Winston } from './types/winston';
+import { TransactionID, Winston } from './types/';
 
 export interface ArFSWriteResult {
 	metaDataTrxId: TransactionID;

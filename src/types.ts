@@ -1,5 +1,4 @@
-import { EntityID } from './types/entity_id';
-import { Winston } from './types/winston';
+import { EntityID, Winston } from './types/';
 
 export const ArFS_O_11 = '0.11';
 export const CURRENT_ARFS_VERSION = ArFS_O_11;

@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { AR } from './ar';
+import { AR } from './';
 
 describe('AR class', () => {
 	describe('from function', () => {

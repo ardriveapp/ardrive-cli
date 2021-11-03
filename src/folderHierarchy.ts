@@ -1,6 +1,6 @@
 import { ArFSFileOrFolderEntity } from './arfs_entities';
 import { FolderID } from './types';
-import { EID } from './types/entity_id';
+import { EID } from './types/';
 
 export class FolderTreeNode {
 	constructor(

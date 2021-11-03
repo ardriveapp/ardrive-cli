@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { EID, EntityID } from './entity_id';
+import { EID, EntityID } from './';
 
 describe('EntityID class', () => {
 	describe('constructor', () => {

@@ -1,6 +1,8 @@
+import { Equatable } from './equatable';
+
 const trxIdRegex = /^([a-zA-Z]|[0-9]|-|_){43}$/;
 
-export class TransactionID {
+export class TransactionID implements Equatable<TransactionID> {
 	constructor(private readonly transactionId: string) {
 		if (!transactionId.match(trxIdRegex)) {
 			throw new Error(
@@ -9,12 +11,24 @@ export class TransactionID {
 		}
 	}
 
+	[Symbol.toPrimitive](hint?: string): string {
+		if (hint === 'number') {
+			throw new Error('Transaction IDs cannot be interpreted as a number!');
+		}
+
+		return this.toString();
+	}
+
 	toString(): string {
 		return this.transactionId;
 	}
 
 	valueOf(): string {
 		return this.transactionId;
+	}
+
+	equals(entityId: TransactionID): boolean {
+		return this.transactionId === entityId.transactionId;
 	}
 }
 
