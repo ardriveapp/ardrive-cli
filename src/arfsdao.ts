@@ -649,16 +649,16 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const transaction = await this.arweave.createTransaction(trxAttributes, wallet.getPrivateKey());
 
 		// If we've opted to boost the transaction, do so now
-		if (rewardSettings.feeMultiple && rewardSettings.feeMultiple > 1.0) {
+		if (rewardSettings.feeMultiple?.wouldBoostReward()) {
 			// Round up with ceil because fractional Winston will cause an Arweave API failure
-			transaction.reward = Math.ceil(+transaction.reward * rewardSettings.feeMultiple).toString();
+			transaction.reward = rewardSettings.feeMultiple.boostReward(transaction.reward);
 		}
 
 		// Add baseline ArFS Tags
 		transaction.addTag('App-Name', this.appName);
 		transaction.addTag('App-Version', this.appVersion);
 		transaction.addTag('ArFS', CURRENT_ARFS_VERSION);
-		if (rewardSettings.feeMultiple && rewardSettings.feeMultiple > 1.0) {
+		if (rewardSettings.feeMultiple?.wouldBoostReward()) {
 			transaction.addTag('Boost', rewardSettings.feeMultiple.toString());
 		}
 

@@ -27,7 +27,7 @@ import { ArFSDAO, PrivateDriveKeyData } from '../../src/arfsdao';
 import { deriveDriveKey, DrivePrivacy } from 'ardrive-core-js';
 import { DriveKey, FileID } from '../../src/types';
 import { ArFSFileToUpload, wrapFileOrFolder } from '../../src/arfs_file_wrapper';
-import { W, Winston } from '../../src/types/winston';
+import { W, Winston, FeeMultiple } from '../../src/types/';
 import { RootFolderID } from '../../src/utils/arfs_builders/arfs_folder_builders';
 
 // Don't use the existing constants just to make sure our expectations don't change
@@ -63,7 +63,7 @@ describe('ArDrive class - integrated', () => {
 		'Integration Test',
 		'1.0',
 		priceEstimator,
-		1.0,
+		new FeeMultiple(1.0),
 		true
 	);
 

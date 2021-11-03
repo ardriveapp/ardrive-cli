@@ -10,7 +10,7 @@ import {
 	DryRunParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
-import { AR } from '../types/';
+import { AR, FeeMultiple } from '../types/';
 
 new CLICommand({
 	name: 'send-ar',
@@ -24,7 +24,7 @@ new CLICommand({
 		console.log(`Source address: ${walletAddress}`);
 		console.log(`AR amount sent: ${arAmount.toString()}`);
 		console.log(`Destination address: ${destAddress}`);
-		const rewardSetting = options.boost ? { feeMultiple: +options.boost } : undefined;
+		const rewardSetting = options.boost ? { feeMultiple: new FeeMultiple(+options.boost) } : undefined;
 
 		const arTransferResult = await cliWalletDao.sendARToAddress(
 			arAmount,

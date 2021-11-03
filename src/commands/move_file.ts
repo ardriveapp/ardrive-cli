@@ -8,7 +8,7 @@ import {
 } from '../parameter_declarations';
 import { Wallet } from '../wallet';
 import { arDriveFactory } from '..';
-import { FeeMultiple } from '../types';
+import { FeeMultiple } from '../types/';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 
 new CLICommand({
@@ -22,7 +22,7 @@ new CLICommand({
 		const wallet: Wallet = await parameters.getRequiredWallet();
 		const ardrive = arDriveFactory({
 			wallet: wallet,
-			feeMultiple: boost as FeeMultiple,
+			feeMultiple: new FeeMultiple(boost),
 			dryRun: dryRun
 		});
 

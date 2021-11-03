@@ -7,7 +7,7 @@ import { ArDrive, ArDriveAnonymous } from './ardrive';
 import { ArFSDAO } from './arfsdao';
 import { ARDataPriceEstimator } from './utils/ar_data_price_estimator';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
-import { FeeMultiple } from './types';
+import { FeeMultiple } from './types/';
 import { CommunityOracle } from './community/community_oracle';
 import { ArFSDAOAnonymous } from './arfsdao_anonymous';
 

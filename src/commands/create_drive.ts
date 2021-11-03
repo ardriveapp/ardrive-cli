@@ -7,7 +7,7 @@ import {
 } from '../parameter_declarations';
 import { arDriveFactory } from '..';
 import { JWKWallet, Wallet } from '../wallet';
-import { FeeMultiple } from '../types';
+import { FeeMultiple } from '../types/';
 import { PrivateDriveKeyData } from '../arfsdao';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 
@@ -20,7 +20,7 @@ new CLICommand({
 
 		const ardrive = arDriveFactory({
 			wallet: wallet,
-			feeMultiple: options.boost as FeeMultiple,
+			feeMultiple: new FeeMultiple(options.boost),
 			dryRun: options.dryRun
 		});
 		const createDriveResult = await (async function () {

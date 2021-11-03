@@ -10,9 +10,10 @@ import {
 	LocalFilesParameter,
 	ParentFolderIdParameter
 } from '../parameter_declarations';
-import { DriveKey, FeeMultiple, FolderID } from '../types';
+import { DriveKey, FolderID } from '../types';
 import { readJWKFile } from '../utils';
 import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/constants';
+import { FeeMultiple } from '../types/';
 
 interface UploadFileParameter {
 	parentFolderId: FolderID;
@@ -76,7 +77,7 @@ new CLICommand({
 
 			const arDrive = arDriveFactory({
 				wallet: wallet,
-				feeMultiple: options.boost as FeeMultiple,
+				feeMultiple: new FeeMultiple(options.boost),
 				dryRun: options.dryRun
 			});
 

@@ -1,4 +1,4 @@
-import { EntityID, Winston } from './types/';
+import { EntityID, Winston, FeeMultiple } from './types/';
 
 export const ArFS_O_11 = '0.11';
 export const CURRENT_ARFS_VERSION = ArFS_O_11;
@@ -31,7 +31,6 @@ export interface ArDriveCommunityTip {
 export type TipType = 'data upload';
 
 export type GQLCursor = string;
-export type FeeMultiple = number; // TODO: assert always >= 1.0
 
 export type RewardSettings = {
 	reward?: Winston;
