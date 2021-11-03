@@ -12,12 +12,11 @@ import {
 	EntityID,
 	FileID,
 	ByteCount,
-	MakeOptional,
-	Manifest
+	MakeOptional
 } from './types';
 import { WalletDAO, Wallet, JWKWallet } from './wallet';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
-import { ArFSFolderToUpload, ArFSFileToUpload } from './arfs_file_wrapper';
+import { ArFSFolderToUpload, ArFSFileToUpload, ArFSManifestToUpload, ArFSEntityToUpload } from './arfs_file_wrapper';
 import { ARDataPriceEstimator } from './utils/ar_data_price_estimator';
 import {
 	ArFSDriveTransactionData,
@@ -548,32 +547,28 @@ export class ArDrive extends ArDriveAnonymous {
 
 	async uploadPublicManifest(
 		parentFolderId: FolderID,
-		arweaveManifest: Manifest,
-		destinationFileName?: string
+		arweaveManifest: ArFSManifestToUpload,
+		destManifestName?: string
 	): Promise<ArFSResult> {
 		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
 
 		const owner = await this.getOwnerForDriveId(driveId);
 		await this.assertOwnerAddress(owner);
 
-		// Derive destination name and names already within provided destination folder
-		const destFileName = destinationFileName ?? 'DriveManifest.json';
+		const destFileName = destManifestName ?? 'DriveManifest.json';
+
+		// TODO: Handle collision with existing manifest. New manifest will always be a new file, with
+		// upsert by default this means it will only skip here on --skip conflict
+
 		const filesAndFolderNames = await this.arFsDao.getPublicEntityNamesAndIdsInFolder(parentFolderId);
 
-		// Files cannot overwrite folder names
-		if (filesAndFolderNames.folders.find((f) => f.folderName === destFileName)) {
-			// TODO: Add optional interactive prompt to resolve name conflicts in ticket PE-599
-			throw new Error(errorMessage.entityNameExists);
-		}
-
-		// File is a new revision if destination name conflicts
-		// with an existing file in the destination folder
+		// Manifest becomes a new revision if the destination name
+		// conflicts with an existing file in the destination folder
 		const existingFileId = filesAndFolderNames.files.find((f) => f.fileName === destFileName)?.fileId;
 
-		const size = new TextEncoder().encode(JSON.stringify(arweaveManifest)).length;
 		const uploadBaseCosts = await this.estimateAndAssertCostOfFileUpload(
-			size,
-			this.stubPublicFileMetadata(wrappedFile, destinationFileName),
+			arweaveManifest.size,
+			this.stubPublicFileMetadata(arweaveManifest, destFileName),
 			'public'
 		);
 		const fileDataRewardSettings = { reward: uploadBaseCosts.fileDataBaseReward, feeMultiple: this.feeMultiple };
@@ -581,11 +576,11 @@ export class ArDrive extends ArDriveAnonymous {
 
 		const uploadFileResult = await this.arFsDao.uploadPublicFile({
 			parentFolderId,
-			wrappedFile,
+			wrappedFile: arweaveManifest,
 			driveId,
 			fileDataRewardSettings,
 			metadataRewardSettings,
-			destFileName: destinationFileName,
+			destFileName,
 			existingFileId
 		});
 
@@ -1595,7 +1590,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 	// Provides for stubbing metadata during cost estimations since the data trx ID won't yet be known
 	private stubPublicFileMetadata(
-		wrappedFile: ArFSFileToUpload,
+		wrappedFile: ArFSEntityToUpload,
 		destinationFileName?: string
 	): ArFSPublicFileMetadataTransactionData {
 		const { fileSize, dataContentType, lastModifiedDateMS } = wrappedFile.gatherFileInfo();

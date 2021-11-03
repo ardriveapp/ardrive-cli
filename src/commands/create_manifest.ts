@@ -2,6 +2,7 @@ import { arDriveFactory, cliArweave, cliWalletDao } from '..';
 import { ArDriveAnonymous } from '../ardrive';
 import { ArFSDAOAnonymous } from '../arfsdao_anonymous';
 import { ArFSPrivateFileOrFolderWithPaths, ArFSPublicFileOrFolderWithPaths } from '../arfs_entities';
+import { ArFSManifestToUpload } from '../arfs_file_wrapper';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 import {
@@ -13,7 +14,6 @@ import {
 	TreeDepthParams
 } from '../parameter_declarations';
 import { FeeMultiple, Manifest, ManifestPathMap } from '../types';
-import { readJWKFile } from '../utils';
 import { alphabeticalOrder } from '../utils/sort_functions';
 
 new CLICommand({
@@ -34,7 +34,7 @@ new CLICommand({
 
 		let rootFolderId: string;
 
-		const wallet = readJWKFile(options.walletFile);
+		const wallet = await parameters.getRequiredWallet();
 
 		const arDrive = arDriveFactory({
 			wallet: wallet,
@@ -89,7 +89,6 @@ new CLICommand({
 		// TURN SORTED CHILDREN INTO MANIFEST
 		// These interfaces taken from arweave-deploy
 
-		//const indexPath = noIndex ? null : 'index.html';
 		const indexPath = 'index.html';
 		const pathMap: ManifestPathMap = {};
 		sortedChildren.forEach((child) => {
@@ -107,19 +106,24 @@ new CLICommand({
 			paths: pathMap
 		};
 
-		// Display data
-		console.log(JSON.stringify(arweaveManifest));
-		console.log(JSON.stringify(sortedChildren, null, 4));
+		// Display manifest
+		// console.log(JSON.stringify(arweaveManifest, null, 4));
+		// console.log(JSON.stringify(sortedChildren, null, 4));
 
 		const result = await (async () => {
 			if (await parameters.getIsPrivate()) {
-				const driveKey = await parameters.getDriveKey({ driveId });
-				return arDrive.uploadPrivateFile(rootFolderId, manifestEntity, driveKey, options.destFileName);
+				// const driveKey = await parameters.getDriveKey({ driveId });
+				// return arDrive.uploadPrivateFile(rootFolderId, manifestEntity, driveKey, options.destFileName);
+				throw new Error('implement me');
 			} else {
-				return arDrive.uploadPublicManifest(rootFolderId, arweaveManifest, options.destFileName);
+				return arDrive.uploadPublicManifest(
+					rootFolderId,
+					new ArFSManifestToUpload(arweaveManifest),
+					options.destFileName
+				);
 			}
 		})();
-		console.log(JSON.stringify(result, null, 4));
+		console.log(JSON.stringify({ manifest: arweaveManifest, ...result }, null, 4));
 
 		return SUCCESS_EXIT_CODE;
 	}

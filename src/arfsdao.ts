@@ -28,7 +28,7 @@ import {
 	ArFSPublicFolderTransactionData
 } from './arfs_trx_data_types';
 import { ASCENDING_ORDER, buildQuery } from './query';
-import { ArFSFileToUpload } from './arfs_file_wrapper';
+import { ArFSEntityToUpload } from './arfs_file_wrapper';
 import {
 	DriveID,
 	FolderID,
@@ -117,7 +117,7 @@ export type ArFSListPrivateFolderParams = Required<ListPrivateFolderParams>;
 
 export interface UploadPublicFileParams {
 	parentFolderId: FolderID;
-	wrappedFile: ArFSFileToUpload;
+	wrappedFile: ArFSEntityToUpload;
 	driveId: DriveID;
 	fileDataRewardSettings: RewardSettings;
 	metadataRewardSettings: RewardSettings;
@@ -463,7 +463,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	}
 
 	async uploadFile<R extends ArFSUploadFileResult, D extends ArFSFileMetadataTransactionData>(
-		wrappedFile: ArFSFileToUpload,
+		wrappedFile: ArFSEntityToUpload,
 		fileDataRewardSettings: RewardSettings,
 		metadataRewardSettings: RewardSettings,
 		dataPrototypeFactoryFn: FileDataPrototypeFactory,
