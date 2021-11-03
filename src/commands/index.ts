@@ -20,5 +20,6 @@ import './move_file';
 import './move_folder';
 import './get_drive_key';
 import './get_file_key';
+import './create_manifest';
 
 CLICommand.parse();
