@@ -16,6 +16,7 @@ import {
 	EntityID,
 	FileID,
 	FolderID,
+	JSON_CONTENT_TYPE,
 	TransactionID,
 	UnixTime
 } from './types';
@@ -257,7 +258,7 @@ export class ArFSPublicFolder extends ArFSFileOrFolderEntity {
 			unixTime,
 			0,
 			stubTransactionID,
-			'application/json',
+			JSON_CONTENT_TYPE,
 			parentFolderId,
 			entityId
 		);
@@ -292,7 +293,7 @@ export class ArFSPrivateFolder extends ArFSFileOrFolderEntity {
 			unixTime,
 			0,
 			stubTransactionID,
-			'application/json',
+			JSON_CONTENT_TYPE,
 			parentFolderId,
 			entityId
 		);
