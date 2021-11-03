@@ -1,6 +1,7 @@
 import { Equatable } from './equatable';
 
-const entityIdRegex = /^([a-f]|[0-9]){8}-([a-f]|[0-9]){4}-([a-f]|[0-9]){4}-([a-f]|[0-9]){4}-([a-f]|[0-9]){12}$/;
+// RFC 4122 Section 3 requires that the characters be generated in lower case, while being case-insensitive on input.
+const entityIdRegex = /^[a-f\d]{8}-([a-f\d]{4}-){3}[a-f\d]{12}$/i;
 
 export class EntityID implements Equatable<EntityID> {
 	constructor(protected entityId: string) {

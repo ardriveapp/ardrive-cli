@@ -30,7 +30,8 @@ import { ArFSFileToUpload, wrapFileOrFolder } from '../../src/arfs_file_wrapper'
 import { W, Winston } from '../../src/types/winston';
 import { RootFolderID } from '../../src/utils/arfs_builders/arfs_folder_builders';
 
-const entityIdRegex = /^([a-f]|[0-9]){8}-([a-f]|[0-9]){4}-([a-f]|[0-9]){4}-([a-f]|[0-9]){4}-([a-f]|[0-9]){12}$/;
+// Don't use the existing constants just to make sure our expectations don't change
+const entityIdRegex = /^[a-f\d]{8}-([a-f\d]{4}-){3}[a-f\d]{12}$/i;
 const trxIdRegex = /^([a-zA-Z]|[0-9]|-|_){43}$/;
 const fileKeyRegex = /^([a-zA-Z]|[0-9]|-|_|\/|\+){43}$/;
 
