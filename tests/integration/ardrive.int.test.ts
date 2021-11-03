@@ -28,6 +28,7 @@ import { deriveDriveKey, DrivePrivacy } from 'ardrive-core-js';
 import { DriveKey, FileID } from '../../src/types';
 import { ArFSFileToUpload, wrapFileOrFolder } from '../../src/arfs_file_wrapper';
 import { W, Winston } from '../../src/types/winston';
+import { RootFolderID } from '../../src/utils/arfs_builders/arfs_folder_builders';
 
 const entityIdRegex = /^([a-f]|[0-9]){8}-([a-f]|[0-9]){4}-([a-f]|[0-9]){4}-([a-f]|[0-9]){4}-([a-f]|[0-9]){12}$/;
 const trxIdRegex = /^([a-zA-Z]|[0-9]|-|_){43}$/;
@@ -215,7 +216,7 @@ describe('ArDrive class - integrated', () => {
 
 		describe('movePublicFolder', () => {
 			const folderHierarchy = {
-				rootFolder: stubPublicFolder({ folderId: stubEntityIDRoot, parentFolderId: 'root folder' }),
+				rootFolder: stubPublicFolder({ folderId: stubEntityIDRoot, parentFolderId: new RootFolderID() }),
 				parentFolder: stubPublicFolder({ folderId: stubEntityIDParent, parentFolderId: stubEntityIDRoot }),
 				childFolder: stubPublicFolder({ folderId: stubEntityIDChild, parentFolderId: stubEntityIDParent }),
 				grandChildFolder: stubPublicFolder({
@@ -331,7 +332,7 @@ describe('ArDrive class - integrated', () => {
 
 		describe('movePrivateFolder', () => {
 			const folderHierarchy = {
-				rootFolder: stubPrivateFolder({ folderId: stubEntityIDRoot, parentFolderId: 'root folder' }),
+				rootFolder: stubPrivateFolder({ folderId: stubEntityIDRoot, parentFolderId: new RootFolderID() }),
 				parentFolder: stubPrivateFolder({ folderId: stubEntityIDParent, parentFolderId: stubEntityIDRoot }),
 				childFolder: stubPrivateFolder({ folderId: stubEntityIDChild, parentFolderId: stubEntityIDParent }),
 				grandChildFolder: stubPrivateFolder({
