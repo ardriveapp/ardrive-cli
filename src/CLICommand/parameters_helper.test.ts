@@ -468,7 +468,7 @@ describe('ParametersHelper class', () => {
 			});
 		});
 
-		it('Custom positive value is providen', () => {
+		it('Custom positive value is provided', () => {
 			const cmd = declareCommandWithParams(program, [MaxDepthParameter]);
 			CLICommand.parse(program, [...baseArgv, testCommandName, '--max-depth=8']);
 			return cmd.action.then((options) => {

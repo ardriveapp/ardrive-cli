@@ -73,7 +73,7 @@ export class CLIAction {
 			// the promise was already called, resolve when the action is finished
 			return this.promiseInstance.then(() => this.parsedParameters);
 		} else {
-			// queque the awaiter for when the promise is called
+			// queue the awaiter for when the promise is called
 			const awaiter = new Promise<ParsedParameters>((resolve, reject) => {
 				this.awaiterDone = function (value?: ParsedParameters, error?: Error): void {
 					if (value) {
