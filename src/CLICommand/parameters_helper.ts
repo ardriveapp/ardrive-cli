@@ -17,6 +17,7 @@ import { DriveID, DriveKey } from '../types';
 import passwordPrompt from 'prompts';
 import { PrivateKeyData } from '../private_key_data';
 import { ArweaveAddress } from '../types/arweave_address';
+import { SeedPhrase } from '../types/seed_phrase';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ParameterOptions = any;
@@ -67,7 +68,7 @@ export class ParametersHelper {
 			const walletJWK: JWKInterface = walletJSON as JWKInterface;
 			return new JWKWallet(walletJWK);
 		} else if (seedPhrase) {
-			return await this.walletDao.generateJWKWallet(seedPhrase);
+			return await this.walletDao.generateJWKWallet(new SeedPhrase(seedPhrase));
 		}
 		throw new Error('Neither a wallet file nor seed phrase was provided!');
 	}
