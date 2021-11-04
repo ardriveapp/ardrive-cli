@@ -72,7 +72,7 @@ describe('EntityID class', () => {
 	describe('toJSON function', () => {
 		it('returns the correct JSON value', () => {
 			const entityId = new EntityID('01234567-89ab-cdef-0000-000000000000');
-			expect(entityId.toJSON()).to.equal('01234567-89ab-cdef-0000-000000000000');
+			expect(JSON.stringify({ entityId })).to.equal('{"entityId":"01234567-89ab-cdef-0000-000000000000"}');
 		});
 	});
 });

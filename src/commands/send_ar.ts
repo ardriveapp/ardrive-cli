@@ -1,5 +1,5 @@
 import { cliWalletDao } from '..';
-import { ArweaveAddress } from '../types/arweave_address';
+import { ArweaveAddress, AR, FeeMultiple } from '../types';
 import { CLICommand } from '../CLICommand';
 import { ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
@@ -11,7 +11,6 @@ import {
 	DryRunParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
-import { AR, FeeMultiple } from '../types/';
 import { assertARPrecision } from '../utils/ar_unit';
 
 new CLICommand({

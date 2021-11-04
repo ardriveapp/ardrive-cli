@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import { TransactionID } from '../types/';
+import { TransactionID } from '../types';
 import { ContractReader } from './contract_oracle';
 
 /**

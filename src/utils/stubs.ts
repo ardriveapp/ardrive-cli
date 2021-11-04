@@ -6,10 +6,7 @@ import {
 	ArFSPublicFile,
 	ArFSPrivateFile
 } from '../arfs_entities';
-import { ArweaveAddress } from '../types/arweave_address';
-import { ArFS_O_11, DriveID, FolderID } from '../types';
-import { EID } from '../types/entity_id';
-import { ByteCount, TxID, UnixTime } from '../types/';
+import { ArweaveAddress, ArFS_O_11, DriveID, FolderID, EID, ByteCount, TxID, UnixTime } from '../types';
 
 export const stubArweaveAddress = (address = 'abcdefghijklmnopqrxtuvwxyz123456789ABCDEFGH'): ArweaveAddress =>
 	new ArweaveAddress(address);

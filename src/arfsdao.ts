@@ -37,7 +37,11 @@ import {
 	DEFAULT_APP_NAME,
 	DEFAULT_APP_VERSION,
 	CURRENT_ARFS_VERSION,
-	RewardSettings
+	RewardSettings,
+	ArweaveAddress,
+	W,
+	TxID,
+	EID
 } from './types';
 import { CreateTransactionInterface } from 'arweave/node/common';
 import { ArFSPrivateFileBuilder, ArFSPublicFileBuilder } from './utils/arfs_builders/arfs_file_builders';
@@ -83,7 +87,6 @@ import {
 import { ArFSAllPublicFoldersOfDriveParams, ArFSDAOAnonymous } from './arfsdao_anonymous';
 import { ArFSFileOrFolderBuilder } from './utils/arfs_builders/arfs_builders';
 import { PrivateKeyData } from './private_key_data';
-import { ArweaveAddress, W, TxID, EID } from './types/';
 import { EntityNamesAndIds, entityToNameMap, fileToNameAndIdMap, folderToNameAndIdMap } from './utils/mapper_functions';
 import { ListPrivateFolderParams } from './ardrive';
 
@@ -602,27 +605,6 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			existingFileId
 		);
 	}
-
-	// /**
-	//  * Uploads a v2 transaction in chunks with progress logging
-	//  *
-	//  * @example await this.sendChunkedUpload(myTransaction);
-	//  */
-	// async sendChunkedUploadWithProgress(trx: Transaction): Promise<void> {
-	// 	const dataUploader = await this.arweave.transactions.getUploader(trx);
-
-	// 	while (!dataUploader.isComplete) {
-	// 		const nextChunk = await uploadDataChunk(dataUploader);
-	// 		if (nextChunk === null) {
-	// 			break;
-	// 		} else {
-	// 			// TODO: Add custom logger function that produces various levels of detail
-	// 			console.log(
-	// 				`${dataUploader.pctComplete}% complete, ${dataUploader.uploadedChunks}/${dataUploader.totalChunks}`
-	// 			);
-	// 		}
-	// 	}
-	// }
 
 	async prepareArFSObjectTransaction(
 		objectMetaData: ArFSObjectMetadataPrototype,

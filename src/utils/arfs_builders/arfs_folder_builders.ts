@@ -1,10 +1,8 @@
 import { fileDecrypt, GQLNodeInterface, GQLTagInterface, Utf8ArrayToStr } from 'ardrive-core-js';
 import Arweave from 'arweave';
 import { ArFSPrivateFolder, ArFSPublicFolder } from '../../arfs_entities';
-import { ArweaveAddress } from '../../types/arweave_address';
-import { CipherIV, DriveKey, FolderID } from '../../types';
 import { ArFSFileOrFolderBuilder } from './arfs_builders';
-import { EID, EntityID } from '../../types/entity_id';
+import { ArweaveAddress, CipherIV, DriveKey, FolderID, EID, EntityID } from '../../types';
 import { stubEntityID } from '../stubs';
 
 export const ROOT_FOLDER_ID_PLACEHOLDER = 'root folder';

@@ -28,7 +28,7 @@ import {
 import '../parameter_declarations';
 import { urlEncodeHashKey } from '../utils';
 import { stubArweaveAddress } from '../utils/stubs';
-import { EID } from '../types/entity_id';
+import { EID } from '../types';
 import { CLIAction } from './action';
 import { SUCCESS_EXIT_CODE } from './error_codes';
 

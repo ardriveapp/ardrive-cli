@@ -1,4 +1,4 @@
-import { EntityID, Winston, FeeMultiple } from './types/';
+import { EntityID, Winston, FeeMultiple } from '.';
 
 export const ArFS_O_11 = '0.11';
 export const CURRENT_ARFS_VERSION = ArFS_O_11;

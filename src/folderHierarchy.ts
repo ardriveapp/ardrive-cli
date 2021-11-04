@@ -1,6 +1,5 @@
 import { ArFSFileOrFolderEntity } from './arfs_entities';
-import { FolderID } from './types';
-import { EID } from './types/';
+import { FolderID, EID } from './types';
 import { ROOT_FOLDER_ID_PLACEHOLDER } from './utils/arfs_builders/arfs_folder_builders';
 
 export class FolderTreeNode {
@@ -136,7 +135,7 @@ export class FolderHierarchy {
 		}
 		let folderNode = this.folderIdToNodeMap[`${folderId}`];
 		const nodesInPathToFolder = [folderNode];
-		while (folderNode.parent && `${folderNode.folderId}` !== `${this.rootNode.folderId}`) {
+		while (folderNode.parent && !folderNode.folderId.equals(this.rootNode.folderId)) {
 			folderNode = folderNode.parent;
 			nodesInPathToFolder.push(folderNode);
 		}
@@ -157,7 +156,7 @@ export class FolderHierarchy {
 		}
 		let folderNode = this.folderIdToNodeMap[`${folderId}`];
 		const nodesInPathToFolder = [folderNode];
-		while (folderNode.parent && `${folderNode.folderId}` !== `${this.rootNode.folderId}`) {
+		while (folderNode.parent && !folderNode.folderId.equals(this.rootNode.folderId)) {
 			folderNode = folderNode.parent;
 			nodesInPathToFolder.push(folderNode);
 		}
@@ -176,7 +175,7 @@ export class FolderHierarchy {
 		}
 		let folderNode = this.folderIdToNodeMap[`${folderId}`];
 		const nodesInPathToFolder = [folderNode];
-		while (folderNode.parent && `${folderNode.folderId}` !== `${this.rootNode.folderId}`) {
+		while (folderNode.parent && !folderNode.folderId.equals(this.rootNode.folderId)) {
 			folderNode = folderNode.parent;
 			nodesInPathToFolder.push(folderNode);
 		}

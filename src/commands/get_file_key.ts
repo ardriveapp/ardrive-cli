@@ -9,8 +9,7 @@ import {
 	FileIdParameter,
 	NoVerifyParameter
 } from '../parameter_declarations';
-import { DriveID } from '../types';
-import { EID } from '../types/entity_id';
+import { DriveID, EID } from '../types';
 import { urlEncodeHashKey } from '../utils';
 import { ArFSPrivateFileBuilder } from '../utils/arfs_builders/arfs_file_builders';
 

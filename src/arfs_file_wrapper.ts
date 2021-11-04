@@ -1,9 +1,8 @@
 import * as fs from 'fs';
 import { extToMime } from 'ardrive-core-js';
 import { basename, join } from 'path';
-import { DataContentType, FileID, FolderID } from './types';
+import { DataContentType, FileID, FolderID, ByteCount, UnixTime } from './types';
 import { BulkFileBaseCosts, MetaDataBaseCosts } from './ardrive';
-import { ByteCount, UnixTime } from './types/';
 
 type BaseFileName = string;
 type FilePath = string;

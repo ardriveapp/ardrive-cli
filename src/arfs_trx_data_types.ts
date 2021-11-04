@@ -6,8 +6,17 @@ import {
 	driveEncrypt,
 	fileEncrypt
 } from 'ardrive-core-js';
-import { CipherIV, DataContentType, DriveKey, FileID, FileKey, FolderID } from './types';
-import { ByteCount, TransactionID, UnixTime } from './types/';
+import {
+	CipherIV,
+	DataContentType,
+	DriveKey,
+	FileID,
+	FileKey,
+	FolderID,
+	ByteCount,
+	TransactionID,
+	UnixTime
+} from './types';
 
 export interface ArFSObjectTransactionData {
 	asTransactionData(): string | Buffer;

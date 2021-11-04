@@ -1,7 +1,7 @@
 import { GatewayOracle } from './gateway_oracle';
 import type { ArweaveOracle } from './arweave_oracle';
 import { AbstractARDataPriceEstimator } from './ar_data_price_estimator';
-import { ByteCount, Winston } from '../types/';
+import { ByteCount, Winston } from '../types';
 
 export const arPerWinston = 0.000_000_000_001;
 

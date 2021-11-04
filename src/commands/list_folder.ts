@@ -4,7 +4,7 @@ import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { DrivePrivacyParameters, ParentFolderIdParameter, TreeDepthParams } from '../parameter_declarations';
-import { EID } from '../types/entity_id';
+import { EID } from '../types';
 import { alphabeticalOrder } from '../utils/sort_functions';
 
 new CLICommand({

@@ -1,4 +1,6 @@
-export class ArweaveAddress {
+import { Equatable } from './equatable';
+
+export class ArweaveAddress implements Equatable<ArweaveAddress> {
 	constructor(private readonly address: string) {
 		if (!address.match(new RegExp('^[a-zA-Z0-9_-]{43}$'))) {
 			throw new Error(
@@ -7,7 +9,15 @@ export class ArweaveAddress {
 		}
 	}
 
-	equalsAddress(other: ArweaveAddress): boolean {
+	[Symbol.toPrimitive](hint?: string): string {
+		if (hint === 'number') {
+			throw new Error('Arweave addresses cannot be interpreted as a number!');
+		}
+
+		return this.toString();
+	}
+
+	equals(other: ArweaveAddress): boolean {
 		return this.address === other.address;
 	}
 

@@ -1,7 +1,6 @@
 import type { ArweaveOracle } from './arweave_oracle';
 import fetch from 'node-fetch';
-import { ByteCount } from '../types/';
-import { W, Winston } from '../types/winston';
+import { ByteCount, W, Winston } from '../types';
 import { BigNumber } from 'bignumber.js';
 
 export class GatewayOracle implements ArweaveOracle {

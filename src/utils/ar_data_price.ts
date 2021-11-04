@@ -1,4 +1,4 @@
-import { ByteCount, Winston } from '../types/';
+import { ByteCount, Winston } from '../types';
 
 /**
  * Immutable data container type representing a market price in Winston for a particular volume

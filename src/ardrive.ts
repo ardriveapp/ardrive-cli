@@ -1,7 +1,22 @@
 import { ArFSDAO, PrivateDriveKeyData } from './arfsdao';
 import { CommunityOracle } from './community/community_oracle';
 import { deriveDriveKey, DrivePrivacy, GQLTagInterface } from 'ardrive-core-js';
-import { DriveID, FolderID, TipType, DriveKey, AnyEntityID, FileID, MakeOptional } from './types';
+import {
+	DriveID,
+	FolderID,
+	TipType,
+	DriveKey,
+	AnyEntityID,
+	FileID,
+	MakeOptional,
+	ArweaveAddress,
+	ByteCount,
+	W,
+	Winston,
+	AR,
+	TransactionID,
+	FeeMultiple
+} from './types';
 import { WalletDAO, Wallet, JWKWallet } from './wallet';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
 import { ArFSFolderToUpload, ArFSFileToUpload } from './arfs_file_wrapper';
@@ -35,7 +50,6 @@ import { stubEntityID, stubTransactionID } from './utils/stubs';
 import { errorMessage } from './error_message';
 import { PrivateKeyData } from './private_key_data';
 import { EntityNamesAndIds } from './utils/mapper_functions';
-import { ArweaveAddress, ByteCount, W, Winston, AR, TransactionID, FeeMultiple } from './types/';
 import { WithDriveKey } from './arfs_entity_result_factory';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
@@ -282,7 +296,7 @@ export class ArDrive extends ArDriveAnonymous {
 			throw new Error(errorMessage.cannotMoveToDifferentDrive);
 		}
 
-		if (`${originalFileMetaData.parentFolderId}` === `${newParentFolderId}`) {
+		if (originalFileMetaData.parentFolderId.equals(newParentFolderId)) {
 			throw new Error(errorMessage.cannotMoveIntoSamePlace('File', newParentFolderId));
 		}
 
@@ -332,7 +346,7 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	async movePublicFolder({ folderId, newParentFolderId }: MovePublicFolderParams): Promise<ArFSResult> {
-		if (`${folderId}` === `${newParentFolderId}`) {
+		if (folderId.equals(newParentFolderId)) {
 			throw new Error(errorMessage.folderCannotMoveIntoItself);
 		}
 
@@ -347,7 +361,7 @@ export class ArDrive extends ArDriveAnonymous {
 			throw new Error(errorMessage.cannotMoveToDifferentDrive);
 		}
 
-		if (`${originalFolderMetaData.parentFolderId}` === `${newParentFolderId}`) {
+		if (originalFolderMetaData.parentFolderId.equals(newParentFolderId)) {
 			throw new Error(errorMessage.cannotMoveIntoSamePlace('Folder', newParentFolderId));
 		}
 
@@ -399,7 +413,7 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	async movePrivateFolder({ folderId, newParentFolderId, driveKey }: MovePrivateFolderParams): Promise<ArFSResult> {
-		if (`${folderId}` === `${newParentFolderId}`) {
+		if (folderId.equals(newParentFolderId)) {
 			throw new Error(errorMessage.folderCannotMoveIntoItself);
 		}
 
@@ -414,7 +428,7 @@ export class ArDrive extends ArDriveAnonymous {
 			throw new Error(errorMessage.cannotMoveToDifferentDrive);
 		}
 
-		if (`${originalFolderMetaData.parentFolderId}` === `${newParentFolderId}`) {
+		if (originalFolderMetaData.parentFolderId.equals(newParentFolderId)) {
 			throw new Error(errorMessage.cannotMoveIntoSamePlace('Folder', newParentFolderId));
 		}
 
@@ -1338,7 +1352,7 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	async assertOwnerAddress(owner: ArweaveAddress): Promise<void> {
-		if (!owner.equalsAddress(await this.wallet.getAddress())) {
+		if (!owner.equals(await this.wallet.getAddress())) {
 			throw new Error('Supplied wallet is not the owner of this drive!');
 		}
 	}

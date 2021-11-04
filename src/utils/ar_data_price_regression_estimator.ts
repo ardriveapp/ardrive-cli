@@ -2,8 +2,7 @@ import { GatewayOracle } from './gateway_oracle';
 import type { ArweaveOracle } from './arweave_oracle';
 import { ARDataPriceRegression } from './data_price_regression';
 import { AbstractARDataPriceAndCapacityEstimator } from './ar_data_price_estimator';
-import type { ArDriveCommunityTip } from '../types';
-import { AR, ByteCount, Winston } from '../types/';
+import { ArDriveCommunityTip, AR, ByteCount, Winston } from '../types';
 
 /**
  * A utility class for Arweave data pricing estimation.

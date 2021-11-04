@@ -45,7 +45,7 @@ describe('UnixTime class', () => {
 	describe('toJSON function', () => {
 		it('returns the correct JSON value', () => {
 			const unixTime = new UnixTime(12345);
-			expect(unixTime.toJSON()).to.equal(12345);
+			expect(JSON.stringify({ unixTime })).to.equal('{"unixTime":12345}');
 		});
 	});
 });

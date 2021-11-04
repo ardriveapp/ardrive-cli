@@ -33,30 +33,50 @@ describe('The ArweaveAddress class', () => {
 		});
 	});
 
-	describe('interpolated toString function', () => {
-		it('returns the underlying address string', () => {
+	describe('toPrimitive function', () => {
+		it('returns the correct ByteCount string when hint is string', () => {
 			const address = new ArweaveAddress('g1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
 			expect(`${address}`).to.equal('g1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
 		});
 
-		it('throws if casted to a number');
-		// it('throws if casted to a number', () => {
-		// 	const address = new ArweaveAddress('g1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
-		// 	expect(() => +address).to.throw();
-		// });
+		it('throws when hint is number', () => {
+			const address = new ArweaveAddress('g1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
+			expect(() => +address).to.throw();
+		});
 	});
 
-	describe('equalsAddress function', () => {
+	describe('equals function', () => {
 		it('returns true for mathing addresses', () => {
 			const address = new ArweaveAddress('g1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
 			const addressOther = new ArweaveAddress('g1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
-			expect(address.equalsAddress(addressOther)).to.be.true;
+			expect(address.equals(addressOther)).to.be.true;
 		});
 
 		it('returns false for different addresses', () => {
 			const address = new ArweaveAddress('g1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
 			const addressOther = new ArweaveAddress('a1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
-			expect(address.equalsAddress(addressOther)).to.be.false;
+			expect(address.equals(addressOther)).to.be.false;
+		});
+	});
+
+	describe('toString function', () => {
+		it('returns the correct ArweaveAddress string', () => {
+			const address = new ArweaveAddress('g1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
+			expect(address.toString()).to.equal('g1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
+		});
+	});
+
+	describe('valueOf function', () => {
+		it('returns the correct ArweaveAddress string value', () => {
+			const address = new ArweaveAddress('g1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
+			expect(address.valueOf()).to.equal('g1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
+		});
+	});
+
+	describe('toJSON function', () => {
+		it('returns the correct JSON value', () => {
+			const address = new ArweaveAddress('g1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
+			expect(JSON.stringify({ address })).to.equal('{"address":"g1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0"}');
 		});
 	});
 });

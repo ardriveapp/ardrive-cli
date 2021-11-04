@@ -8,12 +8,18 @@ import {
 import Arweave from 'arweave';
 import { graphQLURL } from '../../arfsdao';
 import { ArFSEntity, ArFSFileOrFolderEntity } from '../../arfs_entities';
-import { ArweaveAddress } from '../../types/arweave_address';
 import { buildQuery } from '../../query';
-import { DriveID, AnyEntityID, EntityKey, FolderID } from '../../types';
-import { TransactionID, TxID, UnixTime } from '../../types/';
-import { EID } from '../../types/entity_id';
-
+import {
+	ArweaveAddress,
+	DriveID,
+	AnyEntityID,
+	EntityKey,
+	FolderID,
+	TransactionID,
+	TxID,
+	UnixTime,
+	EID
+} from '../../types';
 export interface ArFSMetadataEntityBuilderParams {
 	entityId: AnyEntityID;
 	arweave: Arweave;

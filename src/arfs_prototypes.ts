@@ -15,8 +15,7 @@ import {
 } from './arfs_trx_data_types';
 import Transaction from 'arweave/node/lib/transaction';
 import { ContentType, DrivePrivacy, GQLTagInterface } from 'ardrive-core-js';
-import { DataContentType, DriveID, FileID, FolderID } from './types';
-import { UnixTime } from './types/';
+import { DataContentType, DriveID, FileID, FolderID, UnixTime } from './types';
 
 export abstract class ArFSObjectMetadataPrototype {
 	abstract protectedTags: string[];

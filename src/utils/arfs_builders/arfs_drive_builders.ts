@@ -9,8 +9,7 @@ import {
 import Arweave from 'arweave';
 import { ArFSDriveEntity, ArFSPrivateDrive, ArFSPublicDrive, ENCRYPTED_DATA_PLACEHOLDER } from '../../arfs_entities';
 import { EntityMetaDataTransactionData, PrivateKeyData } from '../../private_key_data';
-import { CipherIV, DriveKey, FolderID } from '../../types';
-import { EID, EntityID } from '../../types/';
+import { CipherIV, DriveKey, FolderID, EID, EntityID } from '../../types';
 import { stubEntityID } from '../stubs';
 import {
 	ArFSMetadataEntityBuilder,

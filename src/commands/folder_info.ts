@@ -1,11 +1,10 @@
 import { CLICommand, ParametersHelper } from '../CLICommand';
-import { FolderID } from '../types';
+import { FolderID, EID } from '../types';
 import { GetAllRevisionsParameter, FolderIdParameter, DrivePrivacyParameters } from '../parameter_declarations';
 import { arDriveAnonymousFactory, arDriveFactory } from '..';
 import { ArFSPrivateFolder, ArFSPublicFolder } from '../arfs_entities';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { CLIAction } from '../CLICommand/action';
-import { EID } from '../types/entity_id';
 
 new CLICommand({
 	name: 'folder-info',
