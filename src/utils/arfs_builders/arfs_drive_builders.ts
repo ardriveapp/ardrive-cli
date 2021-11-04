@@ -1,5 +1,4 @@
 import {
-	ArFSDriveEntity,
 	DriveAuthMode,
 	driveDecrypt,
 	DrivePrivacy,
@@ -8,9 +7,11 @@ import {
 	Utf8ArrayToStr
 } from 'ardrive-core-js';
 import Arweave from 'arweave';
-import { ArFSPrivateDrive, ArFSPublicDrive } from '../../arfs_entities';
+import { ArFSDriveEntity, ArFSPrivateDrive, ArFSPublicDrive, ENCRYPTED_DATA_PLACEHOLDER } from '../../arfs_entities';
 import { EntityMetaDataTransactionData, PrivateKeyData } from '../../private_key_data';
 import { CipherIV, DriveKey, FolderID } from '../../types';
+import { EID, EntityID } from '../../types/entity_id';
+import { stubEntityID } from '../stubs';
 import {
 	ArFSMetadataEntityBuilder,
 	ArFSMetadataEntityBuilderParams,
@@ -22,8 +23,6 @@ interface DriveMetaDataTransactionData extends EntityMetaDataTransactionData {
 	rootFolderId: FolderID;
 }
 
-export const ENCRYPTED_DATA_PLACEHOLDER = 'ENCRYPTED';
-
 export class ArFSPublicDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPublicDrive> {
 	drivePrivacy?: DrivePrivacy;
 	rootFolderId?: FolderID;
@@ -34,13 +33,13 @@ export class ArFSPublicDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPublic
 		if (!driveId) {
 			throw new Error('Drive-ID tag missing!');
 		}
-		const driveBuilder = new ArFSPublicDriveBuilder({ entityId: driveId, arweave });
+		const driveBuilder = new ArFSPublicDriveBuilder({ entityId: EID(driveId), arweave });
 		return driveBuilder;
 	}
 
 	getGqlQueryParameters(): GQLTagInterface[] {
 		return [
-			{ name: 'Drive-Id', value: this.entityId },
+			{ name: 'Drive-Id', value: `${this.entityId}` },
 			{ name: 'Entity-Type', value: 'drive' },
 			{ name: 'Drive-Privacy', value: 'public' }
 		];
@@ -70,11 +69,11 @@ export class ArFSPublicDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPublic
 			this.appVersion?.length &&
 			this.arFS?.length &&
 			this.contentType?.length &&
-			this.driveId?.length &&
+			this.driveId &&
 			this.entityType?.length &&
 			this.txId?.length &&
 			this.unixTime &&
-			this.driveId == this.entityId &&
+			this.driveId.equals(this.entityId) &&
 			this.drivePrivacy?.length
 		) {
 			const txData = await this.arweave.transactions.getData(this.txId, { decode: true });
@@ -102,6 +101,7 @@ export class ArFSPublicDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPublic
 				this.rootFolderId
 			);
 		}
+
 		throw new Error('Invalid drive state');
 	}
 }
@@ -121,7 +121,7 @@ export class ArFSPrivateDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPriva
 
 	getGqlQueryParameters(): GQLTagInterface[] {
 		return [
-			{ name: 'Drive-Id', value: this.entityId },
+			{ name: 'Drive-Id', value: `${this.entityId}` },
 			{ name: 'Entity-Type', value: 'drive' },
 			{ name: 'Drive-Privacy', value: 'private' }
 		];
@@ -133,7 +133,7 @@ export class ArFSPrivateDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPriva
 		if (!driveId) {
 			throw new Error('Drive-ID tag missing!');
 		}
-		const fileBuilder = new ArFSPrivateDriveBuilder({ entityId: driveId, arweave, key: driveKey });
+		const fileBuilder = new ArFSPrivateDriveBuilder({ entityId: EID(driveId), arweave, key: driveKey });
 		return fileBuilder;
 	}
 
@@ -170,7 +170,7 @@ export class ArFSPrivateDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPriva
 			this.appVersion?.length &&
 			this.arFS?.length &&
 			this.contentType?.length &&
-			this.driveId?.length &&
+			this.driveId &&
 			this.entityType?.length &&
 			this.txId?.length &&
 			this.unixTime &&
@@ -210,6 +210,14 @@ export class ArFSPrivateDriveBuilder extends ArFSMetadataEntityBuilder<ArFSPriva
 	}
 }
 
+// A utility type to assist with fail-safe decryption of private entities
+export class EncryptedEntityID extends EntityID {
+	constructor() {
+		super(`${stubEntityID}`); // Unused after next line
+		this.entityId = ENCRYPTED_DATA_PLACEHOLDER;
+	}
+}
+
 export interface SafeArFSPrivateMetadataEntityBuilderParams extends ArFSMetadataEntityBuilderParams {
 	privateKeyData: PrivateKeyData;
 }
@@ -230,7 +238,7 @@ export class SafeArFSDriveBuilder extends ArFSMetadataEntityBuilder<ArFSDriveEnt
 
 	getGqlQueryParameters(): GQLTagInterface[] {
 		return [
-			{ name: 'Drive-Id', value: this.entityId },
+			{ name: 'Drive-Id', value: `${this.entityId}` },
 			{ name: 'Entity-Type', value: 'drive' }
 		];
 	}
@@ -246,7 +254,7 @@ export class SafeArFSDriveBuilder extends ArFSMetadataEntityBuilder<ArFSDriveEnt
 			throw new Error('Drive-ID tag missing!');
 		}
 		const driveBuilder = new SafeArFSDriveBuilder({
-			entityId: driveId,
+			entityId: EID(driveId),
 			arweave,
 			// TODO: Make all private builders optionally take driveKey and fail gracefully, populating fields with 'ENCRYPTED'
 			privateKeyData
@@ -287,7 +295,7 @@ export class SafeArFSDriveBuilder extends ArFSMetadataEntityBuilder<ArFSDriveEnt
 			this.appVersion?.length &&
 			this.arFS?.length &&
 			this.contentType?.length &&
-			this.driveId?.length &&
+			this.driveId &&
 			this.entityType?.length &&
 			this.txId?.length &&
 			this.unixTime &&
@@ -305,7 +313,7 @@ export class SafeArFSDriveBuilder extends ArFSMetadataEntityBuilder<ArFSDriveEnt
 					if (this.cipher?.length && this.driveAuthMode?.length && this.cipherIV?.length) {
 						const placeholderDriveData = {
 							name: ENCRYPTED_DATA_PLACEHOLDER,
-							rootFolderId: ENCRYPTED_DATA_PLACEHOLDER
+							rootFolderId: new EncryptedEntityID()
 						};
 						return this.privateKeyData.safelyDecryptToJson<DriveMetaDataTransactionData>(
 							this.cipherIV,

@@ -4,13 +4,25 @@ import { ArFSPrivateFolder, ArFSPublicFolder } from '../../arfs_entities';
 import { ArweaveAddress } from '../../types/arweave_address';
 import { CipherIV, DriveKey, FolderID } from '../../types';
 import { ArFSFileOrFolderBuilder } from './arfs_builders';
+import { EID, EntityID } from '../../types/entity_id';
+import { stubEntityID } from '../stubs';
+
+export const ROOT_FOLDER_ID_PLACEHOLDER = 'root folder';
+
+// A utility type to provide a FolderID placeholder for root folders (which never have a parentFolderId)
+export class RootFolderID extends EntityID {
+	constructor() {
+		super(`${stubEntityID}`); // Unused after next line
+		this.entityId = ROOT_FOLDER_ID_PLACEHOLDER;
+	}
+}
 
 export abstract class ArFSFolderBuilder<
 	T extends ArFSPublicFolder | ArFSPrivateFolder
 > extends ArFSFileOrFolderBuilder<T> {
 	getGqlQueryParameters(): GQLTagInterface[] {
 		return [
-			{ name: 'Folder-Id', value: this.entityId },
+			{ name: 'Folder-Id', value: `${this.entityId}` },
 			{ name: 'Entity-Type', value: 'folder' }
 		];
 	}
@@ -23,14 +35,14 @@ export class ArFSPublicFolderBuilder extends ArFSFolderBuilder<ArFSPublicFolder>
 		if (!folderId) {
 			throw new Error('Folder-ID tag missing!');
 		}
-		const folderBuilder = new ArFSPublicFolderBuilder({ entityId: folderId, arweave });
+		const folderBuilder = new ArFSPublicFolderBuilder({ entityId: EID(folderId), arweave });
 		return folderBuilder;
 	}
 
 	protected async buildEntity(): Promise<ArFSPublicFolder> {
 		if (!this.parentFolderId) {
 			// Root folders do not have a Parent-Folder-Id tag
-			this.parentFolderId = 'root folder';
+			this.parentFolderId = new RootFolderID();
 		}
 
 		if (
@@ -38,12 +50,12 @@ export class ArFSPublicFolderBuilder extends ArFSFolderBuilder<ArFSPublicFolder>
 			this.appVersion?.length &&
 			this.arFS?.length &&
 			this.contentType?.length &&
-			this.driveId?.length &&
+			this.driveId &&
 			this.entityType?.length &&
 			this.txId?.length &&
 			this.unixTime &&
-			this.parentFolderId?.length &&
-			this.entityId?.length
+			this.parentFolderId &&
+			this.entityId
 		) {
 			const txData = await this.arweave.transactions.getData(this.txId, { decode: true });
 			const dataString = await Utf8ArrayToStr(txData);
@@ -94,7 +106,7 @@ export class ArFSPrivateFolderBuilder extends ArFSFolderBuilder<ArFSPrivateFolde
 		if (!folderId) {
 			throw new Error('Folder-ID tag missing!');
 		}
-		const folderBuilder = new ArFSPrivateFolderBuilder(folderId, arweave, driveKey);
+		const folderBuilder = new ArFSPrivateFolderBuilder(EID(folderId), arweave, driveKey);
 		return folderBuilder;
 	}
 
@@ -122,7 +134,7 @@ export class ArFSPrivateFolderBuilder extends ArFSFolderBuilder<ArFSPrivateFolde
 	protected async buildEntity(): Promise<ArFSPrivateFolder> {
 		if (!this.parentFolderId) {
 			// Root folders do not have a Parent-Folder-Id tag
-			this.parentFolderId = 'root folder';
+			this.parentFolderId = new RootFolderID();
 		}
 
 		if (
@@ -130,12 +142,12 @@ export class ArFSPrivateFolderBuilder extends ArFSFolderBuilder<ArFSPrivateFolde
 			this.appVersion?.length &&
 			this.arFS?.length &&
 			this.contentType?.length &&
-			this.driveId?.length &&
+			this.driveId &&
 			this.entityType?.length &&
 			this.txId?.length &&
 			this.unixTime &&
-			this.parentFolderId?.length &&
-			this.entityId?.length &&
+			this.parentFolderId &&
+			this.entityId &&
 			this.cipher?.length &&
 			this.cipherIV?.length
 		) {

@@ -4,6 +4,7 @@ import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { DrivePrivacyParameters, ParentFolderIdParameter, TreeDepthParams } from '../parameter_declarations';
+import { EID } from '../types/entity_id';
 import { alphabeticalOrder } from '../utils/sort_functions';
 
 new CLICommand({
@@ -11,7 +12,7 @@ new CLICommand({
 	parameters: [ParentFolderIdParameter, ...TreeDepthParams, ...DrivePrivacyParameters],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
-		const folderId = parameters.getRequiredParameterValue(ParentFolderIdParameter);
+		const folderId = EID(parameters.getRequiredParameterValue(ParentFolderIdParameter));
 		let children: (ArFSPrivateFileOrFolderWithPaths | ArFSPublicFileOrFolderWithPaths)[];
 		const maxDepth = await parameters.getMaxDepth(0);
 
@@ -42,7 +43,6 @@ new CLICommand({
 				delete fileOrFolderMetaData.lastModifiedDate;
 				delete fileOrFolderMetaData.size;
 			}
-			delete fileOrFolderMetaData.syncStatus;
 		});
 
 		// Display data

@@ -10,6 +10,7 @@ import {
 	NoVerifyParameter
 } from '../parameter_declarations';
 import { DriveID } from '../types';
+import { EID } from '../types/entity_id';
 import { urlEncodeHashKey } from '../utils';
 import { ArFSPrivateFileBuilder } from '../utils/arfs_builders/arfs_file_builders';
 
@@ -24,7 +25,7 @@ new CLICommand({
 	],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
-		const fileId = parameters.getRequiredParameterValue(FileIdParameter);
+		const fileId = EID(parameters.getRequiredParameterValue(FileIdParameter));
 
 		// Obviate the need for a drive ID when a drive key is specified
 		const driveKey = await (async () => {
@@ -35,11 +36,11 @@ new CLICommand({
 
 			// Lean on getDriveKey with a specified driveID
 			// TODO: In the future, loosen driveID requirement and fetch from fileID
-			const driveId: DriveID = parameters.getRequiredParameterValue(DriveIdParameter);
+			const driveId: DriveID = EID(parameters.getRequiredParameterValue(DriveIdParameter));
 			return await parameters.getDriveKey({ driveId });
 		})();
 
-		const fileKey = await deriveFileKey(fileId, driveKey);
+		const fileKey = await deriveFileKey(`${fileId}`, driveKey);
 		if (options.verify) {
 			await new ArFSPrivateFileBuilder(fileId, cliArweave, driveKey, undefined, fileKey).build();
 		}

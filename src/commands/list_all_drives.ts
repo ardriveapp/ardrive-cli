@@ -1,5 +1,5 @@
-import { ArFSDriveEntity } from 'ardrive-core-js';
 import { arDriveAnonymousFactory, cliWalletDao } from '..';
+import { ArFSDriveEntity } from '../arfs_entities';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
@@ -16,11 +16,6 @@ new CLICommand({
 		const privateKeyData = await parameters.getPrivateKeyData();
 
 		const drives: Partial<ArFSDriveEntity>[] = await ardrive.getAllDrivesForAddress(address, privateKeyData);
-
-		// TODO: Fix base types so deleting un-used values is not necessary; Tickets: PE-525 + PE-556
-		for (const drive of drives) {
-			delete drive.syncStatus;
-		}
 
 		// Display data
 		console.log(JSON.stringify(drives, null, 4));

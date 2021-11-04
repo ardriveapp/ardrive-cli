@@ -38,7 +38,7 @@ export class ArFSPublicDriveTransactionData extends ArFSDriveTransactionData {
 	asTransactionData(): string {
 		return JSON.stringify({
 			name: this.name,
-			rootFolderId: this.rootFolderId
+			rootFolderId: `${this.rootFolderId}`
 		});
 	}
 }
@@ -64,7 +64,7 @@ export class ArFSPrivateDriveTransactionData extends ArFSDriveTransactionData {
 			Buffer.from(
 				JSON.stringify({
 					name: name,
-					rootFolderId: rootFolderId
+					rootFolderId: `${rootFolderId}`
 				})
 			)
 		);
@@ -171,7 +171,7 @@ export class ArFSPrivateFileMetadataTransactionData extends ArFSFileMetadataTran
 		fileId: FileID,
 		driveKey: DriveKey
 	): Promise<ArFSPrivateFileMetadataTransactionData> {
-		const fileKey: FileKey = await deriveFileKey(fileId, driveKey);
+		const fileKey: FileKey = await deriveFileKey(`${fileId}`, driveKey);
 		const { cipher, cipherIV, data }: ArFSEncryptedData = await fileEncrypt(
 			fileKey,
 			Buffer.from(
@@ -223,7 +223,7 @@ export class ArFSPrivateFileDataTransactionData extends ArFSFileDataTransactionD
 		fileId: FileID,
 		driveKey: DriveKey
 	): Promise<ArFSPrivateFileDataTransactionData> {
-		const fileKey: FileKey = await deriveFileKey(fileId, driveKey);
+		const fileKey: FileKey = await deriveFileKey(`${fileId}`, driveKey);
 		const { cipher, cipherIV, data }: ArFSEncryptedData = await fileEncrypt(fileKey, fileData);
 		return new ArFSPrivateFileDataTransactionData(cipher, cipherIV, data);
 	}

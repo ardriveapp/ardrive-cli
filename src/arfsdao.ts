@@ -43,11 +43,7 @@ import { CreateTransactionInterface } from 'arweave/node/common';
 import { ArFSPrivateFileBuilder, ArFSPublicFileBuilder } from './utils/arfs_builders/arfs_file_builders';
 import { ArFSPrivateFolderBuilder, ArFSPublicFolderBuilder } from './utils/arfs_builders/arfs_folder_builders';
 import { latestRevisionFilter, fileFilter, folderFilter } from './utils/filter_methods';
-import {
-	ArFSPrivateDriveBuilder,
-	ENCRYPTED_DATA_PLACEHOLDER,
-	SafeArFSDriveBuilder
-} from './utils/arfs_builders/arfs_drive_builders';
+import { ArFSPrivateDriveBuilder, SafeArFSDriveBuilder } from './utils/arfs_builders/arfs_drive_builders';
 import { FolderHierarchy } from './folderHierarchy';
 import {
 	CreateDriveMetaDataFactory,
@@ -81,7 +77,8 @@ import {
 	ArFSPrivateFolder,
 	ArFSPublicDrive,
 	ArFSPublicFile,
-	ArFSPublicFolder
+	ArFSPublicFolder,
+	ENCRYPTED_DATA_PLACEHOLDER
 } from './arfs_entities';
 import { ArFSAllPublicFoldersOfDriveParams, ArFSDAOAnonymous } from './arfsdao_anonymous';
 import { ArFSFileOrFolderBuilder } from './utils/arfs_builders/arfs_builders';
@@ -90,6 +87,7 @@ import { ArweaveAddress } from './types/arweave_address';
 import { EntityNamesAndIds, entityToNameMap, fileToNameAndIdMap, folderToNameAndIdMap } from './utils/mapper_functions';
 import { ListPrivateFolderParams } from './ardrive';
 import { W } from './types/winston';
+import { EID } from './types/entity_id';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 
@@ -99,7 +97,7 @@ export class PrivateDriveKeyData {
 	static async from(drivePassword: string, privateKey: JWKInterface): Promise<PrivateDriveKeyData> {
 		const driveId = uuidv4();
 		const driveKey = await deriveDriveKey(drivePassword, driveId, JSON.stringify(privateKey));
-		return new PrivateDriveKeyData(driveId, driveKey);
+		return new PrivateDriveKeyData(EID(driveId), driveKey);
 	}
 }
 
@@ -180,7 +178,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			// Assert that drive ID is consistent with parent folder ID
 			const actualDriveId = await this.getDriveIdForFolderId(parentFolderId);
 
-			if (actualDriveId !== driveId) {
+			if (!actualDriveId.equals(driveId)) {
 				throw new Error(
 					`Drive id: ${driveId} does not match actual drive id: ${actualDriveId} for parent folder id`
 				);
@@ -199,7 +197,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		}
 
 		// Generate a new folder ID
-		const folderId = uuidv4();
+		const folderId = EID(uuidv4());
 
 		// Create a root folder metadata transaction
 		const folderMetadata = folderPrototypeFactory(folderId, parentFolderId);
@@ -298,7 +296,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	): Promise<ArFSCreateDriveResult> {
 		return this.createDrive<ArFSCreateDriveResult>(
 			driveRewardSettings,
-			() => uuidv4(),
+			() => EID(uuidv4()),
 			async (driveId) => {
 				const folderData = new ArFSPublicFolderTransactionData(driveName);
 				return this.createPublicFolder({
@@ -478,7 +476,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const destinationFileName = destFileName ?? wrappedFile.getBaseFileName();
 
 		// Use existing file ID (create a revision) or generate new file ID
-		const fileId = existingFileId ?? uuidv4();
+		const fileId = existingFileId ?? EID(uuidv4());
 
 		// Gather file information
 		const { fileSize, dataContentType, lastModifiedDateMS } = wrappedFile.gatherFileInfo();
@@ -707,7 +705,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		while (hasNextPage) {
 			const gqlQuery = buildQuery({
 				tags: [
-					{ name: 'Drive-Id', value: driveId },
+					{ name: 'Drive-Id', value: `${driveId}` },
 					{ name: 'Entity-Type', value: 'folder' }
 				],
 				cursor,
@@ -744,7 +742,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		while (hasNextPage) {
 			const gqlQuery = buildQuery({
 				tags: [
-					{ name: 'Parent-Folder-Id', value: folderIDs },
+					{ name: 'Parent-Folder-Id', value: folderIDs.map((fid) => fid.toString()) },
 					{ name: 'Entity-Type', value: 'file' }
 				],
 				cursor,
@@ -786,7 +784,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		while (hasNextPage) {
 			const gqlQuery = buildQuery({
 				tags: [
-					{ name: 'Parent-Folder-Id', value: parentFolderId },
+					{ name: 'Parent-Folder-Id', value: `${parentFolderId}` },
 					{ name: 'Entity-Type', value: ['file', 'folder'] }
 				],
 				cursor,
@@ -988,7 +986,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const safelyBuiltDrive = await safeDriveBuilder.build();
 		if (
 			safelyBuiltDrive.name === ENCRYPTED_DATA_PLACEHOLDER ||
-			safelyBuiltDrive.rootFolderId === ENCRYPTED_DATA_PLACEHOLDER
+			`${safelyBuiltDrive.rootFolderId}` === ENCRYPTED_DATA_PLACEHOLDER
 		) {
 			throw new Error(`Invalid password! Please type the same as your other private drives!`);
 		}

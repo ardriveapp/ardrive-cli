@@ -1,16 +1,23 @@
 /* eslint-disable no-console */
 import Arweave from 'arweave';
-import { ArFSDriveEntity, GQLEdgeInterface } from 'ardrive-core-js';
+import { GQLEdgeInterface } from 'ardrive-core-js';
 import { ASCENDING_ORDER, buildQuery } from './query';
-import { DriveID, FolderID, FileID, DEFAULT_APP_NAME, DEFAULT_APP_VERSION, EntityID } from './types';
+import { DriveID, FolderID, FileID, DEFAULT_APP_NAME, DEFAULT_APP_VERSION, AnyEntityID } from './types';
 import { latestRevisionFilter, latestRevisionFilterForDrives } from './utils/filter_methods';
 import { FolderHierarchy } from './folderHierarchy';
 import { ArFSPublicDriveBuilder, SafeArFSDriveBuilder } from './utils/arfs_builders/arfs_drive_builders';
 import { ArFSPublicFolderBuilder } from './utils/arfs_builders/arfs_folder_builders';
 import { ArFSPublicFileBuilder } from './utils/arfs_builders/arfs_file_builders';
-import { ArFSPublicDrive, ArFSPublicFile, ArFSPublicFileOrFolderWithPaths, ArFSPublicFolder } from './arfs_entities';
+import {
+	ArFSDriveEntity,
+	ArFSPublicDrive,
+	ArFSPublicFile,
+	ArFSPublicFileOrFolderWithPaths,
+	ArFSPublicFolder
+} from './arfs_entities';
 import { PrivateKeyData } from './private_key_data';
 import { ArweaveAddress } from './types/arweave_address';
+import { EID } from './types/entity_id';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 
@@ -46,7 +53,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 	}
 
 	public async getOwnerForDriveId(driveId: DriveID): Promise<ArweaveAddress> {
-		const gqlQuery = buildQuery({ tags: [{ name: 'Drive-Id', value: driveId }], sort: ASCENDING_ORDER });
+		const gqlQuery = buildQuery({ tags: [{ name: 'Drive-Id', value: `${driveId}` }], sort: ASCENDING_ORDER });
 		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 		const edges: GQLEdgeInterface[] = response.data.data.transactions.edges;
 
@@ -60,8 +67,8 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		return new ArweaveAddress(driveOwnerAddress);
 	}
 
-	async getDriveIDForEntityId(entityId: EntityID, gqlTypeTag: 'File-Id' | 'Folder-Id'): Promise<DriveID> {
-		const gqlQuery = buildQuery({ tags: [{ name: gqlTypeTag, value: entityId }] });
+	async getDriveIDForEntityId(entityId: AnyEntityID, gqlTypeTag: 'File-Id' | 'Folder-Id'): Promise<DriveID> {
+		const gqlQuery = buildQuery({ tags: [{ name: gqlTypeTag, value: `${entityId}` }] });
 
 		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 		const { data } = response.data;
@@ -75,7 +82,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 
 		const driveIdTag = edges[0].node.tags.find((t) => t.name === 'Drive-Id');
 		if (driveIdTag) {
-			return driveIdTag.value;
+			return EID(driveIdTag.value);
 		}
 
 		throw new Error(`No Drive-Id tag found for meta data transaction of ${gqlTypeTag}: ${entityId}`);
@@ -156,7 +163,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		while (hasNextPage) {
 			const gqlQuery = buildQuery({
 				tags: [
-					{ name: 'Parent-Folder-Id', value: folderIDs },
+					{ name: 'Parent-Folder-Id', value: folderIDs.map((fid) => fid.toString()) },
 					{ name: 'Entity-Type', value: 'file' }
 				],
 				cursor,
@@ -191,7 +198,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		while (hasNextPage) {
 			const gqlQuery = buildQuery({
 				tags: [
-					{ name: 'Drive-Id', value: driveId },
+					{ name: 'Drive-Id', value: `${driveId}` },
 					{ name: 'Entity-Type', value: 'folder' }
 				],
 				cursor,

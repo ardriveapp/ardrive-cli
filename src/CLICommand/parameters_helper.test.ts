@@ -28,6 +28,7 @@ import {
 import '../parameter_declarations';
 import { urlEncodeHashKey } from '../utils';
 import { stubArweaveAddress } from '../utils/stubs';
+import { EID } from '../types/entity_id';
 import { CLIAction } from './action';
 import { SUCCESS_EXIT_CODE } from './error_codes';
 
@@ -388,7 +389,9 @@ describe('ParametersHelper class', () => {
 			]);
 			return cmd.action.then((options) => {
 				const parameters = new ParametersHelper(options);
-				const driveKeyPromise = parameters.getDriveKey({ driveId: '00000000-0000-0000-0000-000000000000' });
+				const driveKeyPromise = parameters.getDriveKey({
+					driveId: EID('00000000-0000-0000-0000-000000000000')
+				});
 				return driveKeyPromise.then((driveKey) =>
 					expect(urlEncodeHashKey(driveKey)).to.equal('Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg')
 				);
@@ -406,7 +409,7 @@ describe('ParametersHelper class', () => {
 			return cmd.action.then((options) => {
 				const parameters = new ParametersHelper(options);
 				return parameters
-					.getDriveKey({ driveId: '00000000-0000-0000-0000-000000000000' })
+					.getDriveKey({ driveId: EID('00000000-0000-0000-0000-000000000000') })
 					.then((driveKey) =>
 						expect(urlEncodeHashKey(driveKey)).to.equal('Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg')
 					);
@@ -419,7 +422,7 @@ describe('ParametersHelper class', () => {
 			return cmd.action.then((options) => {
 				const parameters = new ParametersHelper(options);
 				const driveKeyPromise = parameters
-					.getDriveKey({ driveId: '00000000-0000-0000-0000-000000000000' })
+					.getDriveKey({ driveId: EID('00000000-0000-0000-0000-000000000000') })
 					.catch(() => null);
 				return driveKeyPromise.then((driveKey) => expect(driveKey).to.be.null);
 			});

@@ -113,7 +113,7 @@ export class ParametersHelper {
 		// • (--wallet-file or --seed-phrase) + (--unsafe-drive-password or --private password)
 
 		if (useCache) {
-			const cachedDriveKey = ParametersHelper.driveKeyCache[driveId];
+			const cachedDriveKey = ParametersHelper.driveKeyCache[`${driveId}`];
 			if (cachedDriveKey) {
 				return cachedDriveKey;
 			}
@@ -122,7 +122,7 @@ export class ParametersHelper {
 		const driveKey = this.getParameterValue(DriveKeyParameter);
 		if (driveKey) {
 			const paramDriveKey = Buffer.from(driveKey, 'base64');
-			ParametersHelper.driveKeyCache[driveId] = paramDriveKey;
+			ParametersHelper.driveKeyCache[`${driveId}`] = paramDriveKey;
 			return paramDriveKey;
 		}
 
@@ -131,10 +131,10 @@ export class ParametersHelper {
 			const wallet: JWKWallet = (await this.getRequiredWallet()) as JWKWallet;
 			const derivedDriveKey: DriveKey = await deriveDriveKey(
 				drivePassword,
-				driveId,
+				`${driveId}`,
 				JSON.stringify(wallet.getPrivateKey())
 			);
-			ParametersHelper.driveKeyCache[driveId] = derivedDriveKey;
+			ParametersHelper.driveKeyCache[`${driveId}`] = derivedDriveKey;
 			return derivedDriveKey;
 		}
 		throw new Error(`No drive key or password provided for drive ID ${driveId}!`);

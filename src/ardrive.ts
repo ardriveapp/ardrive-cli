@@ -1,6 +1,6 @@
 import { ArFSDAO, PrivateDriveKeyData } from './arfsdao';
 import { CommunityOracle } from './community/community_oracle';
-import { ArFSDriveEntity, deriveDriveKey, DrivePrivacy, GQLTagInterface } from 'ardrive-core-js';
+import { deriveDriveKey, DrivePrivacy, GQLTagInterface } from 'ardrive-core-js';
 import {
 	TransactionID,
 	DriveID,
@@ -8,7 +8,7 @@ import {
 	TipType,
 	FeeMultiple,
 	DriveKey,
-	EntityID,
+	AnyEntityID,
 	FileID,
 	ByteCount,
 	MakeOptional
@@ -32,6 +32,7 @@ import {
 import { urlEncodeHashKey } from './utils';
 import { ArFSDAOAnonymous, ArFSDAOType, ArFSListPublicFolderParams } from './arfsdao_anonymous';
 import {
+	ArFSDriveEntity,
 	ArFSPrivateDrive,
 	ArFSPrivateFile,
 	ArFSPrivateFileOrFolderWithPaths,
@@ -56,7 +57,7 @@ export interface ArFSEntityData {
 	type: ArFSEntityDataType;
 	metadataTxId: TransactionID;
 	dataTxId?: TransactionID;
-	entityId: EntityID;
+	entityId: AnyEntityID;
 	key?: string;
 }
 
@@ -232,11 +233,11 @@ export class ArDrive extends ArDriveAnonymous {
 
 		const originalFileMetaData = await this.getPublicFile(fileId);
 
-		if (destFolderDriveId !== originalFileMetaData.driveId) {
+		if (!destFolderDriveId.equals(originalFileMetaData.driveId)) {
 			throw new Error(errorMessage.cannotMoveToDifferentDrive);
 		}
 
-		if (originalFileMetaData.parentFolderId === newParentFolderId) {
+		if (originalFileMetaData.parentFolderId.equals(newParentFolderId)) {
 			throw new Error(errorMessage.cannotMoveIntoSamePlace('File', newParentFolderId));
 		}
 
@@ -290,11 +291,11 @@ export class ArDrive extends ArDriveAnonymous {
 
 		const originalFileMetaData = await this.getPrivateFile(fileId, driveKey);
 
-		if (destFolderDriveId !== originalFileMetaData.driveId) {
+		if (!destFolderDriveId.equals(originalFileMetaData.driveId)) {
 			throw new Error(errorMessage.cannotMoveToDifferentDrive);
 		}
 
-		if (originalFileMetaData.parentFolderId === newParentFolderId) {
+		if (`${originalFileMetaData.parentFolderId}` === `${newParentFolderId}`) {
 			throw new Error(errorMessage.cannotMoveIntoSamePlace('File', newParentFolderId));
 		}
 
@@ -344,7 +345,7 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	async movePublicFolder({ folderId, newParentFolderId }: MovePublicFolderParams): Promise<ArFSResult> {
-		if (folderId === newParentFolderId) {
+		if (`${folderId}` === `${newParentFolderId}`) {
 			throw new Error(errorMessage.folderCannotMoveIntoItself);
 		}
 
@@ -355,11 +356,11 @@ export class ArDrive extends ArDriveAnonymous {
 
 		const originalFolderMetaData = await this.getPublicFolder(folderId);
 
-		if (destFolderDriveId !== originalFolderMetaData.driveId) {
+		if (!destFolderDriveId.equals(originalFolderMetaData.driveId)) {
 			throw new Error(errorMessage.cannotMoveToDifferentDrive);
 		}
 
-		if (originalFolderMetaData.parentFolderId === newParentFolderId) {
+		if (`${originalFolderMetaData.parentFolderId}` === `${newParentFolderId}`) {
 			throw new Error(errorMessage.cannotMoveIntoSamePlace('Folder', newParentFolderId));
 		}
 
@@ -411,7 +412,7 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	async movePrivateFolder({ folderId, newParentFolderId, driveKey }: MovePrivateFolderParams): Promise<ArFSResult> {
-		if (folderId === newParentFolderId) {
+		if (`${folderId}` === `${newParentFolderId}`) {
 			throw new Error(errorMessage.folderCannotMoveIntoItself);
 		}
 
@@ -422,11 +423,11 @@ export class ArDrive extends ArDriveAnonymous {
 
 		const originalFolderMetaData = await this.getPrivateFolder(folderId, driveKey);
 
-		if (destFolderDriveId !== originalFolderMetaData.driveId) {
+		if (!destFolderDriveId.equals(originalFolderMetaData.driveId)) {
 			throw new Error(errorMessage.cannotMoveToDifferentDrive);
 		}
 
-		if (originalFolderMetaData.parentFolderId === newParentFolderId) {
+		if (`${originalFolderMetaData.parentFolderId}` === `${newParentFolderId}`) {
 			throw new Error(errorMessage.cannotMoveIntoSamePlace('Folder', newParentFolderId));
 		}
 
@@ -1563,7 +1564,7 @@ export class ArDrive extends ArDriveAnonymous {
 			stubEntityID,
 			await deriveDriveKey(
 				'stubPassword',
-				stubEntityID,
+				`${stubEntityID}`,
 				JSON.stringify((this.wallet as JWKWallet).getPrivateKey())
 			)
 		);
