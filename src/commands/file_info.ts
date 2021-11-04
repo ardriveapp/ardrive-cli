@@ -3,12 +3,13 @@ import { GetAllRevisionsParameter, FileIdParameter, DrivePrivacyParameters } fro
 import { arDriveAnonymousFactory, arDriveFactory, cliWalletDao } from '..';
 import { FileID, EID } from '../types';
 import { ArFSPrivateFile, ArFSPublicFile } from '../arfs_entities';
-import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
+import { CLIAction } from '../CLICommand/action';
 
 new CLICommand({
 	name: 'file-info',
 	parameters: [FileIdParameter, GetAllRevisionsParameter, ...DrivePrivacyParameters],
-	async action(options) {
+	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options, cliWalletDao);
 		const fileId: FileID = EID(parameters.getRequiredParameterValue(FileIdParameter));
 		// const shouldGetAllRevisions: boolean = options.getAllRevisions;
@@ -33,5 +34,5 @@ new CLICommand({
 
 		console.log(JSON.stringify(result, null, 4));
 		return SUCCESS_EXIT_CODE;
-	}
+	})
 });

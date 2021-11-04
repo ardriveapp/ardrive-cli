@@ -1,0 +1,3 @@
+export const SUCCESS_EXIT_CODE = 0;
+export const ERROR_EXIT_CODE = 1;
+export const ALL_VALID_EXIT_CODES = [SUCCESS_EXIT_CODE, ERROR_EXIT_CODE];

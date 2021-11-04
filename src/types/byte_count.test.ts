@@ -59,7 +59,7 @@ describe('ByteCount class', () => {
 	describe('toJSON function', () => {
 		it('returns the correct JSON value', () => {
 			const byteCount = new ByteCount(12345);
-			expect(byteCount.toJSON()).to.equal(12345);
+			expect(JSON.stringify({ byteCount })).to.equal('{"byteCount":12345}');
 		});
 	});
 });

@@ -7,7 +7,7 @@ import { stubEntityID } from '../stubs';
 
 export const ROOT_FOLDER_ID_PLACEHOLDER = 'root folder';
 
-// A utility type to assist with fail-safe decryption of private entities
+// A utility type to provide a FolderID placeholder for root folders (which never have a parentFolderId)
 export class RootFolderID extends EntityID {
 	constructor() {
 		super(`${stubEntityID}`); // Unused after next line
