@@ -76,7 +76,7 @@ describe('ArDrive class - integrated', () => {
 
 	beforeEach(() => {
 		// Set pricing algo up as x = y (bytes = Winston)
-		stub(arweaveOracle, 'getWinstonPriceForByteCount').callsFake((input) => Promise.resolve(W(input)));
+		stub(arweaveOracle, 'getWinstonPriceForByteCount').callsFake((input) => Promise.resolve(W(+input)));
 
 		// Declare common stubs
 		stub(walletDao, 'walletHasBalance').resolves(true);

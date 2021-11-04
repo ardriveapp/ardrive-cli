@@ -60,4 +60,11 @@ describe('SeedPhrase class', () => {
 			expect(seedPhrase3.equals(seedPhrase2), `${seedPhrase3} and ${seedPhrase2}`).to.be.false;
 		});
 	});
+
+	describe('toJSON function', () => {
+		it('returns the correct JSON value', () => {
+			const seedPhrase = new SeedPhrase('the quick brown fox jumps over the lazy dog every single day');
+			expect(seedPhrase.toJSON()).to.equal('the quick brown fox jumps over the lazy dog every single day');
+		});
+	});
 });

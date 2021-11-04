@@ -18,7 +18,7 @@ import { ArDriveCommunityOracle } from '../../src/community/ardrive_community_or
 import { CommunityOracle } from '../../src/community/community_oracle';
 import { ArFSDAO } from '../arfsdao';
 import { stubEntityID, stubTransactionID } from './stubs';
-import { W, FeeMultiple } from '../types/';
+import { W, FeeMultiple, ByteCount } from '../types/';
 
 describe('ArDrive class', () => {
 	let arDrive: ArDrive;
@@ -35,7 +35,7 @@ describe('ArDrive class', () => {
 	const wallet = readJWKFile('./test_wallet.json');
 	const stubPublicFileTransactionData = new ArFSPublicFileMetadataTransactionData(
 		'stubName',
-		12345,
+		new ByteCount(12345),
 		0,
 		stubTransactionID,
 		'application/json'
@@ -46,7 +46,7 @@ describe('ArDrive class', () => {
 	beforeEach(async () => {
 		// Set pricing algo up as x = y (bytes = Winston)
 		arweaveOracleStub = stub(new GatewayOracle());
-		arweaveOracleStub.getWinstonPriceForByteCount.callsFake((input) => Promise.resolve(W(input)));
+		arweaveOracleStub.getWinstonPriceForByteCount.callsFake((input) => Promise.resolve(W(+input)));
 		communityOracleStub = stub(new ArDriveCommunityOracle(fakeArweave));
 		priceEstimator = new ARDataPriceRegressionEstimator(true, arweaveOracleStub);
 		walletDao = new WalletDAO(fakeArweave, 'Unit Test', '1.0');
@@ -64,16 +64,8 @@ describe('ArDrive class', () => {
 	});
 
 	describe('encryptedDataSize function', () => {
-		it('throws an error when passed a negative value', () => {
-			expect(() => arDrive.encryptedDataSize(-1)).to.throw(Error);
-		});
-
-		it('throws an error when passed a non-integer value', () => {
-			expect(() => arDrive.encryptedDataSize(0.5)).to.throw(Error);
-		});
-
 		it('throws an error when passed a value too large for computation', () => {
-			expect(() => arDrive.encryptedDataSize(Number.MAX_SAFE_INTEGER - 15)).to.throw(Error);
+			expect(() => arDrive.encryptedDataSize(new ByteCount(Number.MAX_SAFE_INTEGER - 15))).to.throw(Error);
 		});
 
 		it('returns the expected values for valid inputs', () => {
@@ -84,9 +76,9 @@ describe('ArDrive class', () => {
 				[16, 32],
 				[17, 32],
 				[Number.MAX_SAFE_INTEGER - 16, Number.MAX_SAFE_INTEGER - 15]
-			];
+			].map((pair) => pair.map((vol) => new ByteCount(vol)));
 			inputsAndExpectedOutputs.forEach(([input, expectedOutput]) => {
-				expect(arDrive.encryptedDataSize(input)).to.equal(expectedOutput);
+				expect(arDrive.encryptedDataSize(input).equals(expectedOutput)).to.be.true;
 			});
 		});
 	});
@@ -108,18 +100,6 @@ describe('ArDrive class', () => {
 	});
 
 	describe('estimateAndAssertCostOfFileUpload function', () => {
-		it('throws an error when decryptedFileSize is negative', async () => {
-			await expectAsyncErrorThrow({
-				promiseToError: arDrive.estimateAndAssertCostOfFileUpload(-1, stubPublicFileTransactionData, 'private')
-			});
-		});
-
-		it('throws an error when decryptedFileSize is not an integer', async () => {
-			await expectAsyncErrorThrow({
-				promiseToError: arDrive.estimateAndAssertCostOfFileUpload(0.1, stubPublicFileTransactionData, 'private')
-			});
-		});
-
 		it('throws an error when there is an insufficient wallet balance', async () => {
 			stub(walletDao, 'walletHasBalance').callsFake(() => {
 				return Promise.resolve(false);
@@ -131,7 +111,11 @@ describe('ArDrive class', () => {
 				return Promise.resolve(W(9876543210));
 			});
 			await expectAsyncErrorThrow({
-				promiseToError: arDrive.estimateAndAssertCostOfFileUpload(1, stubPublicFileTransactionData, 'private')
+				promiseToError: arDrive.estimateAndAssertCostOfFileUpload(
+					new ByteCount(1),
+					stubPublicFileTransactionData,
+					'private'
+				)
 			});
 		});
 
@@ -144,7 +128,7 @@ describe('ArDrive class', () => {
 			});
 
 			const actual = await arDrive.estimateAndAssertCostOfFileUpload(
-				1234567,
+				new ByteCount(1234567),
 				stubPublicFileTransactionData,
 				'private'
 			);

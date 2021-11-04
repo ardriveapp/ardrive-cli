@@ -1,6 +1,6 @@
 import type { ArweaveOracle } from './arweave_oracle';
 import fetch from 'node-fetch';
-import { ByteCount } from '../types';
+import { ByteCount } from '../types/';
 import { W, Winston } from '../types/winston';
 import { BigNumber } from 'bignumber.js';
 

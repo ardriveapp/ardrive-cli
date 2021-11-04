@@ -9,7 +9,7 @@ import {
 import { ArweaveAddress } from '../types/arweave_address';
 import { ArFS_O_11, DriveID, FolderID } from '../types';
 import { EID } from '../types/entity_id';
-import { TxID } from '../types/';
+import { ByteCount, TxID } from '../types/';
 
 export const stubArweaveAddress = (address = 'abcdefghijklmnopqrxtuvwxyz123456789ABCDEFGH'): ArweaveAddress =>
 	new ArweaveAddress(address);
@@ -122,7 +122,7 @@ export const stubPublicFile = ({ driveId = stubEntityID, fileName = 'STUB NAME' 
 		0,
 		stubEntityID,
 		stubEntityID,
-		1234567890,
+		new ByteCount(1234567890),
 		0,
 		stubTransactionID,
 		'application/json'
@@ -141,7 +141,7 @@ export const stubPrivateFile = ({ driveId = stubEntityID, fileName = 'STUB NAME'
 		0,
 		stubEntityID,
 		stubEntityID,
-		1234567890,
+		new ByteCount(1234567890),
 		0,
 		stubTransactionID,
 		'application/json',

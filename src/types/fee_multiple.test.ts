@@ -74,4 +74,11 @@ describe('FeeMultiple class', () => {
 			expect(feeMultiple.boostReward(`${Number.MAX_SAFE_INTEGER}`)).to.equal('18014398509481982');
 		});
 	});
+
+	describe('toJSON function', () => {
+		it('returns the correct JSON value', () => {
+			const feeMultiple = new FeeMultiple(1.5);
+			expect(feeMultiple.toJSON()).to.equal(1.5);
+		});
+	});
 });

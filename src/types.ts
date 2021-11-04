@@ -20,7 +20,6 @@ export type DriveKey = EntityKey;
 export type FileKey = EntityKey;
 
 export type UnixTime = number;
-export type ByteCount = number;
 export type DataContentType = string;
 
 export interface ArDriveCommunityTip {

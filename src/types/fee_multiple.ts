@@ -23,8 +23,8 @@ export class FeeMultiple {
 		return this.feeMultiple;
 	}
 
-	toJSON(): string {
-		return this.toString();
+	toJSON(): number {
+		return this.feeMultiple;
 	}
 
 	wouldBoostReward(): boolean {

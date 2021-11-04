@@ -1,6 +1,5 @@
 import regression, { DataPoint } from 'regression';
-import { ByteCount } from '../types';
-import { W, Winston } from '../types/winston';
+import { W, Winston, ByteCount } from '../types/';
 import { ARDataPrice } from './ar_data_price';
 
 /**
@@ -23,7 +22,7 @@ export class ARDataPriceRegression {
 
 		const dataPoints: DataPoint[] = pricingData.map(
 			// TODO: BigNumber regressions
-			(pricingDatapoint) => [pricingDatapoint.numBytes, +pricingDatapoint.winstonPrice.toString()] as DataPoint
+			(pricingDatapoint) => [+pricingDatapoint.numBytes, +pricingDatapoint.winstonPrice.toString()] as DataPoint
 		);
 
 		this.regression = regression.linear(dataPoints);
@@ -36,13 +35,9 @@ export class ARDataPriceRegression {
 	 * @throws {@link Error} if `numBytes` is negative or not an integer
 	 */
 	predictedPriceForByteCount(numBytes: ByteCount): ARDataPrice {
-		if (numBytes < 0 || !Number.isInteger(numBytes)) {
-			throw new Error(`numBytes (${numBytes}) should be a positive integer`);
-		}
-
-		const regressionResult = this.regression.predict(numBytes);
+		const regressionResult = this.regression.predict(+numBytes);
 		// TODO: BigNumber regressions
-		return new ARDataPrice(regressionResult[0], W(Math.ceil(regressionResult[1])));
+		return { numBytes: new ByteCount(regressionResult[0]), winstonPrice: W(Math.ceil(regressionResult[1])) };
 	}
 
 	/**

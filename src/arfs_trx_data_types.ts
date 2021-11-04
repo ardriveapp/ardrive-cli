@@ -6,19 +6,19 @@ import {
 	driveEncrypt,
 	fileEncrypt
 } from 'ardrive-core-js';
-import { ByteCount, CipherIV, DataContentType, DriveKey, FileID, FileKey, FolderID, UnixTime } from './types';
-import { TransactionID } from './types/';
+import { CipherIV, DataContentType, DriveKey, FileID, FileKey, FolderID, UnixTime } from './types';
+import { ByteCount, TransactionID } from './types/';
 
 export interface ArFSObjectTransactionData {
 	asTransactionData(): string | Buffer;
-	sizeOf(): number;
+	sizeOf(): ByteCount;
 }
 
 export abstract class ArFSDriveTransactionData implements ArFSObjectTransactionData {
 	abstract asTransactionData(): string | Buffer;
 	// TODO: Share repeated sizeOf() function to all classes
-	sizeOf(): number {
-		return this.asTransactionData().length;
+	sizeOf(): ByteCount {
+		return new ByteCount(this.asTransactionData().length);
 	}
 }
 
@@ -29,7 +29,7 @@ export class ArFSPublicDriveTransactionData extends ArFSDriveTransactionData {
 	asTransactionData(): string {
 		return JSON.stringify({
 			name: this.name,
-			rootFolderId: `${this.rootFolderId}`
+			rootFolderId: this.rootFolderId
 		});
 	}
 }
@@ -55,7 +55,7 @@ export class ArFSPrivateDriveTransactionData extends ArFSDriveTransactionData {
 			Buffer.from(
 				JSON.stringify({
 					name: name,
-					rootFolderId: `${rootFolderId}`
+					rootFolderId: rootFolderId
 				})
 			)
 		);
@@ -69,8 +69,8 @@ export class ArFSPrivateDriveTransactionData extends ArFSDriveTransactionData {
 
 export abstract class ArFSFolderTransactionData implements ArFSObjectTransactionData {
 	abstract asTransactionData(): string | Buffer;
-	sizeOf(): number {
-		return this.asTransactionData().length;
+	sizeOf(): ByteCount {
+		return new ByteCount(this.asTransactionData().length);
 	}
 }
 
@@ -115,8 +115,8 @@ export class ArFSPrivateFolderTransactionData extends ArFSFolderTransactionData 
 
 export abstract class ArFSFileMetadataTransactionData implements ArFSObjectTransactionData {
 	abstract asTransactionData(): string | Buffer;
-	sizeOf(): number {
-		return this.asTransactionData().length;
+	sizeOf(): ByteCount {
+		return new ByteCount(this.asTransactionData().length);
 	}
 }
 
@@ -136,7 +136,7 @@ export class ArFSPublicFileMetadataTransactionData extends ArFSFileMetadataTrans
 			name: this.name,
 			size: this.size,
 			lastModifiedDate: this.lastModifiedDate,
-			dataTxId: `${this.dataTxId}`,
+			dataTxId: this.dataTxId,
 			dataContentType: this.dataContentType
 		});
 	}
@@ -170,7 +170,7 @@ export class ArFSPrivateFileMetadataTransactionData extends ArFSFileMetadataTran
 					name: name,
 					size: size,
 					lastModifiedDate: lastModifiedDate,
-					dataTxId: `${dataTxId}`,
+					dataTxId: dataTxId,
 					dataContentType: dataContentType
 				})
 			)
@@ -185,8 +185,8 @@ export class ArFSPrivateFileMetadataTransactionData extends ArFSFileMetadataTran
 
 export abstract class ArFSFileDataTransactionData implements ArFSObjectTransactionData {
 	abstract asTransactionData(): string | Buffer;
-	sizeOf(): number {
-		return this.asTransactionData().length;
+	sizeOf(): ByteCount {
+		return new ByteCount(this.asTransactionData().length);
 	}
 }
 export class ArFSPublicFileDataTransactionData extends ArFSFileDataTransactionData {
