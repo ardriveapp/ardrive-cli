@@ -1,6 +1,5 @@
 import { deriveDriveKey, driveDecrypt, Utf8ArrayToStr } from 'ardrive-core-js';
-import { CipherIV, DriveID, DriveKey } from './types';
-import { EntityID } from './types/';
+import { CipherIV, DriveID, DriveKey, EntityID } from './types';
 import { JWKWallet } from './wallet';
 
 type DriveIdKeyPair = { [key: string /* DriveID */]: DriveKey };

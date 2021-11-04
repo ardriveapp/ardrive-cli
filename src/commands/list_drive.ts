@@ -5,7 +5,7 @@ import { ArFSPrivateFileOrFolderWithPaths, ArFSPublicFileOrFolderWithPaths } fro
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 import { DriveIdParameter, DrivePrivacyParameters, TreeDepthParams } from '../parameter_declarations';
-import { EID } from '../types/entity_id';
+import { EID } from '../types';
 import { alphabeticalOrder } from '../utils/sort_functions';
 
 new CLICommand({

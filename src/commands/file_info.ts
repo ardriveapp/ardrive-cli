@@ -1,10 +1,9 @@
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { GetAllRevisionsParameter, FileIdParameter, DrivePrivacyParameters } from '../parameter_declarations';
 import { arDriveAnonymousFactory, arDriveFactory, cliWalletDao } from '..';
-import { FileID } from '../types';
+import { FileID, EID } from '../types';
 import { ArFSPrivateFile, ArFSPublicFile } from '../arfs_entities';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
-import { EID } from '../types/entity_id';
 
 new CLICommand({
 	name: 'file-info',

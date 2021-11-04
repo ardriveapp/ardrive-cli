@@ -14,12 +14,9 @@ import {
 	BoostParameter
 } from '../parameter_declarations';
 import { cliWalletDao } from '..';
-import { DriveID, DriveKey } from '../types';
+import { DriveID, DriveKey, ArweaveAddress, SeedPhrase, FeeMultiple } from '../types';
 import passwordPrompt from 'prompts';
 import { PrivateKeyData } from '../private_key_data';
-import { ArweaveAddress } from '../types/arweave_address';
-import { SeedPhrase } from '../types/seed_phrase';
-import { FeeMultiple } from '../types/';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ParameterOptions = any;

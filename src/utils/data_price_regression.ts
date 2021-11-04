@@ -1,5 +1,5 @@
 import regression, { DataPoint } from 'regression';
-import { W, Winston, ByteCount } from '../types/';
+import { W, Winston, ByteCount } from '../types';
 import { ARDataPrice } from './ar_data_price';
 
 /**

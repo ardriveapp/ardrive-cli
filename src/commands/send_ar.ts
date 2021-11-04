@@ -1,5 +1,5 @@
 import { cliWalletDao } from '..';
-import { ArweaveAddress } from '../types/arweave_address';
+import { ArweaveAddress, AR, FeeMultiple } from '../types';
 import { CLICommand } from '../CLICommand';
 import { ParametersHelper } from '../CLICommand';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
@@ -10,7 +10,6 @@ import {
 	DryRunParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
-import { AR, FeeMultiple } from '../types/';
 
 new CLICommand({
 	name: 'send-ar',

@@ -1,7 +1,7 @@
 import { arDriveFactory } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { DriveCreationPrivacyParameters, DriveIdParameter, NoVerifyParameter } from '../parameter_declarations';
-import { EID } from '../types/entity_id';
+import { EID } from '../types';
 import { urlEncodeHashKey } from '../utils';
 
 new CLICommand({

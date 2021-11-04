@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { ByteCount, W } from '../types/';
+import { ByteCount, W } from '../types';
 import { ARDataPrice } from './ar_data_price';
 import { ARDataPriceRegression } from './data_price_regression';
 

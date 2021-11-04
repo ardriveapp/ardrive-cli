@@ -9,7 +9,7 @@ import {
 import { arDriveFactory } from '..';
 import { Wallet } from '../wallet';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
-import { EID } from '../types/entity_id';
+import { EID } from '../types';
 
 new CLICommand({
 	name: 'create-folder',

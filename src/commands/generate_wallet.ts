@@ -2,7 +2,7 @@ import { cliWalletDao } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
 import { SeedPhraseParameter } from '../parameter_declarations';
-import { SeedPhrase } from '../types/seed_phrase';
+import { SeedPhrase } from '../types';
 
 new CLICommand({
 	name: 'generate-wallet',

@@ -25,9 +25,8 @@ import { expectAsyncErrorThrow } from '../../src/utils/test_helpers';
 import { ArDriveCommunityOracle } from '../../src/community/ardrive_community_oracle';
 import { ArFSDAO, PrivateDriveKeyData } from '../../src/arfsdao';
 import { deriveDriveKey, DrivePrivacy } from 'ardrive-core-js';
-import { DriveKey, FileID } from '../../src/types';
+import { DriveKey, FileID, W, Winston, FeeMultiple } from '../../src/types';
 import { ArFSFileToUpload, wrapFileOrFolder } from '../../src/arfs_file_wrapper';
-import { W, Winston, FeeMultiple } from '../../src/types/';
 import { RootFolderID } from '../../src/utils/arfs_builders/arfs_folder_builders';
 
 // Don't use the existing constants just to make sure our expectations don't change

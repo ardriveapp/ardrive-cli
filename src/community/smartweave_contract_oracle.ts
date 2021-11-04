@@ -1,6 +1,6 @@
 import Arweave from 'arweave';
 import { readContract } from 'smartweave';
-import { TransactionID } from '../types/';
+import { TransactionID } from '../types';
 import { ContractReader } from './contract_oracle';
 
 /**

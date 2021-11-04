@@ -1,7 +1,22 @@
 import { ArFSDAO, PrivateDriveKeyData } from './arfsdao';
 import { CommunityOracle } from './community/community_oracle';
 import { deriveDriveKey, DrivePrivacy, GQLTagInterface } from 'ardrive-core-js';
-import { DriveID, FolderID, TipType, DriveKey, AnyEntityID, FileID, MakeOptional } from './types';
+import {
+	DriveID,
+	FolderID,
+	TipType,
+	DriveKey,
+	AnyEntityID,
+	FileID,
+	MakeOptional,
+	ArweaveAddress,
+	ByteCount,
+	W,
+	Winston,
+	AR,
+	TransactionID,
+	FeeMultiple
+} from './types';
 import { WalletDAO, Wallet, JWKWallet } from './wallet';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
 import { ArFSFolderToUpload, ArFSFileToUpload } from './arfs_file_wrapper';
@@ -35,7 +50,6 @@ import { stubEntityID, stubTransactionID } from './utils/stubs';
 import { errorMessage } from './error_message';
 import { PrivateKeyData } from './private_key_data';
 import { EntityNamesAndIds } from './utils/mapper_functions';
-import { ArweaveAddress, ByteCount, W, Winston, AR, TransactionID, FeeMultiple } from './types/';
 import { WithDriveKey } from './arfs_entity_result_factory';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';

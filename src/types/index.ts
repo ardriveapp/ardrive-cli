@@ -7,3 +7,4 @@ export * from './seed_phrase';
 export * from './fee_multiple';
 export * from './byte_count';
 export * from './unix_time';
+export * from './types';
