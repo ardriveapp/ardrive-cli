@@ -78,11 +78,11 @@ describe('ArDrive class', () => {
 		it('returns the expected values for valid inputs', () => {
 			const inputsAndExpectedOutputs = [
 				[0, 16],
-				[1, 16],
-				[15, 16],
+				[1, 17],
+				[15, 31],
 				[16, 32],
-				[17, 32],
-				[Number.MAX_SAFE_INTEGER - 16, Number.MAX_SAFE_INTEGER - 15]
+				[17, 33],
+				[Number.MAX_SAFE_INTEGER - 16, Number.MAX_SAFE_INTEGER]
 			];
 			inputsAndExpectedOutputs.forEach(([input, expectedOutput]) => {
 				expect(arDrive.encryptedDataSize(input)).to.equal(expectedOutput);
@@ -146,7 +146,7 @@ describe('ArDrive class', () => {
 			);
 			expect(actual).to.deep.equal({
 				metaDataBaseReward: '147',
-				fileDataBaseReward: '1234576',
+				fileDataBaseReward: '1234583',
 				communityWinstonTip: '9876543210'
 			});
 		});

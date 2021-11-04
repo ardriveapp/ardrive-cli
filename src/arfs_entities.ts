@@ -16,9 +16,11 @@ import {
 	EntityID,
 	FileID,
 	FolderID,
+	JSON_CONTENT_TYPE,
 	TransactionID,
 	UnixTime
 } from './types';
+import { stubTransactionID } from './utils/stubs';
 
 export class ArFSPublicDrive extends ArFSEntity implements ArFSDriveEntity {
 	constructor(
@@ -74,6 +76,8 @@ export class ArFSFileOrFolderEntity extends ArFSEntity implements ArFSFileFolder
 		txId: TransactionID,
 		unixTime: UnixTime,
 		public lastModifiedDate: UnixTime,
+		public dataTxId: TransactionID,
+		public dataContentType: DataContentType,
 		readonly parentFolderId: FolderID,
 		readonly entityId: EntityID
 	) {
@@ -105,6 +109,8 @@ export class ArFSPublicFileOrFolderWithPaths extends ArFSFileOrFolderEntity impl
 			entity.txId,
 			entity.unixTime,
 			entity.lastModifiedDate,
+			entity.dataTxId,
+			entity.dataContentType,
 			entity.parentFolderId,
 			entity.entityId
 		);
@@ -134,6 +140,8 @@ export class ArFSPrivateFileOrFolderWithPaths extends ArFSFileOrFolderEntity imp
 			entity.txId,
 			entity.unixTime,
 			entity.lastModifiedDate,
+			entity.dataTxId,
+			entity.dataContentType,
 			entity.parentFolderId,
 			entity.entityId
 		);
@@ -175,6 +183,8 @@ export class ArFSPublicFile extends ArFSFileOrFolderEntity {
 			txId,
 			unixTime,
 			lastModifiedDate,
+			dataTxId,
+			dataContentType,
 			parentFolderId,
 			fileId
 		);
@@ -213,6 +223,8 @@ export class ArFSPrivateFile extends ArFSFileOrFolderEntity {
 			txId,
 			unixTime,
 			lastModifiedDate,
+			dataTxId,
+			dataContentType,
 			parentFolderId,
 			fileId
 		);
@@ -245,6 +257,8 @@ export class ArFSPublicFolder extends ArFSFileOrFolderEntity {
 			txId,
 			unixTime,
 			0,
+			stubTransactionID,
+			JSON_CONTENT_TYPE,
 			parentFolderId,
 			entityId
 		);
@@ -278,6 +292,8 @@ export class ArFSPrivateFolder extends ArFSFileOrFolderEntity {
 			txId,
 			unixTime,
 			0,
+			stubTransactionID,
+			JSON_CONTENT_TYPE,
 			parentFolderId,
 			entityId
 		);
