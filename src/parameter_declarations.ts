@@ -18,6 +18,7 @@ export const FileIdParameter = 'fileId';
 export const ParentFolderIdParameter = 'parentFolderId';
 export const LocalFilePathParameter = 'localFilePath';
 export const DestinationFileNameParameter = 'destFileName';
+export const DestinationManifestNameParameter = 'destManifestName';
 export const LocalFilesParameter = 'localFiles';
 export const GetAllRevisionsParameter = 'getAllRevisions';
 export const AllParameter = 'all';
@@ -113,8 +114,7 @@ Parameter.declare({
 Parameter.declare({
 	name: DriveIdParameter,
 	aliases: ['-d', '--drive-id'],
-	description: 'the ArFS entity ID associated with the target drive',
-	required: true
+	description: 'the ArFS entity ID associated with the target drive'
 });
 
 Parameter.declare({
@@ -156,8 +156,7 @@ Parameter.declare({
 Parameter.declare({
 	name: FolderIdParameter,
 	aliases: ['-f', '--folder-id'],
-	description: `the ArFS folder ID for the folder to query`,
-	required: true
+	description: `the ArFS folder ID for the folder to query`
 });
 
 Parameter.declare({
@@ -177,6 +176,12 @@ Parameter.declare({
 	name: DestinationFileNameParameter,
 	aliases: ['-d', '--dest-file-name'],
 	description: `(OPTIONAL) a destination file name to use when uploaded to ArDrive`
+});
+
+Parameter.declare({
+	name: DestinationManifestNameParameter,
+	aliases: ['-n', '--dest-manifest-name'],
+	description: `(OPTIONAL) a destination file name for the manifest to use when uploaded to ArDrive`
 });
 
 Parameter.declare({

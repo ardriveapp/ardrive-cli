@@ -13,7 +13,7 @@ new CLICommand({
 		// const shouldGetAllRevisions: boolean = options.getAllRevisions;
 
 		const result: Partial<ArFSPublicFolder | ArFSPrivateFolder> = await (async function () {
-			const folderId: FolderID = options.folderId;
+			const folderId: FolderID = parameters.getRequiredParameterValue(FolderIdParameter);
 
 			if (await parameters.getIsPrivate()) {
 				const wallet = await parameters.getRequiredWallet();

@@ -23,7 +23,9 @@ new CLICommand({
 	async action(options) {
 		const parameters = new ParametersHelper(options);
 
-		const { folderId, parentFolderId: newParentFolderId, boost, dryRun } = options;
+		const { parentFolderId: newParentFolderId, boost, dryRun } = options;
+
+		const folderId = parameters.getRequiredParameterValue(FolderIdParameter);
 
 		const wallet: Wallet = await parameters.getRequiredWallet();
 		const ardrive = arDriveFactory({
