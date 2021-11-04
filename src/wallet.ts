@@ -118,9 +118,8 @@ export class WalletDAO {
 			trxAttributes.last_tx = 'STUB';
 		}
 		const transaction = await this.arweave.createTransaction(trxAttributes, jwkWallet.getPrivateKey());
-		if (rewardSettings.feeMultiple && rewardSettings.feeMultiple > 1.0) {
-			// Round up with ceil because fractional Winston will cause an Arweave API failure
-			transaction.reward = Math.ceil(+transaction.reward * rewardSettings.feeMultiple).toString();
+		if (rewardSettings.feeMultiple?.wouldBoostReward()) {
+			transaction.reward = rewardSettings.feeMultiple.boostReward(transaction.reward);
 		}
 
 		if (assertBalance) {
@@ -145,7 +144,7 @@ export class WalletDAO {
 		transaction.addTag('App-Name', appName);
 		transaction.addTag('App-Version', appVersion);
 		transaction.addTag('Type', trxType);
-		if (rewardSettings.feeMultiple && rewardSettings.feeMultiple > 1.0) {
+		if (rewardSettings.feeMultiple?.wouldBoostReward()) {
 			transaction.addTag('Boost', rewardSettings.feeMultiple.toString());
 		}
 		otherTags?.forEach((tag) => {

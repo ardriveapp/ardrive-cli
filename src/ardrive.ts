@@ -1,17 +1,7 @@
 import { ArFSDAO, PrivateDriveKeyData } from './arfsdao';
 import { CommunityOracle } from './community/community_oracle';
 import { deriveDriveKey, DrivePrivacy, GQLTagInterface } from 'ardrive-core-js';
-import {
-	DriveID,
-	FolderID,
-	TipType,
-	FeeMultiple,
-	DriveKey,
-	AnyEntityID,
-	FileID,
-	ByteCount,
-	MakeOptional
-} from './types';
+import { DriveID, FolderID, TipType, DriveKey, AnyEntityID, FileID, ByteCount, MakeOptional } from './types';
 import { WalletDAO, Wallet, JWKWallet } from './wallet';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
 import { ArFSFolderToUpload, ArFSFileToUpload } from './arfs_file_wrapper';
@@ -45,7 +35,7 @@ import { stubEntityID, stubTransactionID } from './utils/stubs';
 import { errorMessage } from './error_message';
 import { PrivateKeyData } from './private_key_data';
 import { EntityNamesAndIds } from './utils/mapper_functions';
-import { ArweaveAddress, W, Winston, AR, TransactionID } from './types/';
+import { ArweaveAddress, W, Winston, AR, TransactionID, FeeMultiple } from './types/';
 import { WithDriveKey } from './arfs_entity_result_factory';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
@@ -187,7 +177,7 @@ export class ArDrive extends ArDriveAnonymous {
 		private readonly appName: string,
 		private readonly appVersion: string,
 		private readonly priceEstimator: ARDataPriceEstimator = new ARDataPriceRegressionEstimator(true),
-		private readonly feeMultiple: FeeMultiple = 1.0,
+		private readonly feeMultiple: FeeMultiple = new FeeMultiple(1.0),
 		private readonly dryRun: boolean = false
 	) {
 		super(arFsDao);

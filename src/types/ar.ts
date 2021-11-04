@@ -15,7 +15,7 @@ export class AR {
 
 	toString(): string {
 		BigNumber.config({ DECIMAL_PLACES: 12 });
-		const w = new BigNumber(this.winston.toString());
+		const w = new BigNumber(this.winston.toString(), 10);
 		return w.shiftedBy(-12).toFixed();
 	}
 

@@ -10,7 +10,8 @@ import {
 	MaxDepthParameter,
 	SeedPhraseParameter,
 	WalletFileParameter,
-	PrivateParameter
+	PrivateParameter,
+	BoostParameter
 } from '../parameter_declarations';
 import { cliWalletDao } from '..';
 import { DriveID, DriveKey } from '../types';
@@ -18,6 +19,7 @@ import passwordPrompt from 'prompts';
 import { PrivateKeyData } from '../private_key_data';
 import { ArweaveAddress } from '../types/arweave_address';
 import { SeedPhrase } from '../types/seed_phrase';
+import { FeeMultiple } from '../types/';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ParameterOptions = any;
@@ -84,6 +86,11 @@ export class ParametersHelper {
 		}
 
 		return this.getRequiredWallet().then((wallet) => wallet.getAddress());
+	}
+
+	public getOptionalBoostSetting(): FeeMultiple | undefined {
+		const boost = this.getParameterValue(BoostParameter);
+		return boost ? new FeeMultiple(+boost) : undefined;
 	}
 
 	public async getPrivateKeyData(): Promise<PrivateKeyData> {

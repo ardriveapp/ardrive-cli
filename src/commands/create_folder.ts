@@ -8,7 +8,6 @@ import {
 } from '../parameter_declarations';
 import { arDriveFactory } from '..';
 import { Wallet } from '../wallet';
-import { FeeMultiple } from '../types';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { CLIAction } from '../CLICommand/action';
 import { EID } from '../types/entity_id';
@@ -28,7 +27,7 @@ new CLICommand({
 
 		const ardrive = arDriveFactory({
 			wallet: wallet,
-			feeMultiple: options.boost as FeeMultiple,
+			feeMultiple: parameters.getOptionalBoostSetting(),
 			dryRun: options.dryRun
 		});
 

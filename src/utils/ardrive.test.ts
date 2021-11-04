@@ -18,7 +18,7 @@ import { ArDriveCommunityOracle } from '../../src/community/ardrive_community_or
 import { CommunityOracle } from '../../src/community/community_oracle';
 import { ArFSDAO } from '../arfsdao';
 import { stubEntityID, stubTransactionID } from './stubs';
-import { W } from '../types/winston';
+import { W, FeeMultiple } from '../types/';
 
 describe('ArDrive class', () => {
 	let arDrive: ArDrive;
@@ -58,7 +58,7 @@ describe('ArDrive class', () => {
 			'Unit Test',
 			'1.0',
 			priceEstimator,
-			1.0,
+			new FeeMultiple(1.0),
 			true
 		);
 	});
