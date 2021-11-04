@@ -1,14 +1,15 @@
 import { arDriveAnonymousFactory, arDriveFactory } from '..';
 import { ArFSPrivateFileOrFolderWithPaths, ArFSPublicFileOrFolderWithPaths } from '../arfs_entities';
 import { CLICommand, ParametersHelper } from '../CLICommand';
-import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
+import { CLIAction } from '../CLICommand/action';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { DrivePrivacyParameters, ParentFolderIdParameter, TreeDepthParams } from '../parameter_declarations';
 import { alphabeticalOrder } from '../utils/sort_functions';
 
 new CLICommand({
 	name: 'list-folder',
 	parameters: [ParentFolderIdParameter, ...TreeDepthParams, ...DrivePrivacyParameters],
-	async action(options) {
+	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
 		const folderId = parameters.getRequiredParameterValue(ParentFolderIdParameter);
 		let children: (ArFSPrivateFileOrFolderWithPaths | ArFSPublicFileOrFolderWithPaths)[];
@@ -47,5 +48,5 @@ new CLICommand({
 		// Display data
 		console.log(JSON.stringify(sortedChildren, null, 4));
 		return SUCCESS_EXIT_CODE;
-	}
+	})
 });

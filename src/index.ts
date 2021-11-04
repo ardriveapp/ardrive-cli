@@ -10,6 +10,7 @@ import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression
 import { FeeMultiple } from './types';
 import { CommunityOracle } from './community/community_oracle';
 import { ArFSDAOAnonymous } from './arfsdao_anonymous';
+import { CLICommand } from './CLICommand';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: CLI_APP_VERSION } = require('../package.json');
@@ -18,7 +19,13 @@ if (require.main === module) {
 	// declare all parameters
 	import('./parameter_declarations').then(() => {
 		// declares the commands
-		import('./commands');
+		import('./commands').then(() => {
+			try {
+				CLICommand.parse();
+			} catch {
+				// do nothing, commander already logs the error
+			}
+		});
 	});
 }
 

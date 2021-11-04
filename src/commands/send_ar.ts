@@ -2,7 +2,8 @@ import { cliWalletDao } from '..';
 import { ArweaveAddress } from '../types/arweave_address';
 import { CLICommand } from '../CLICommand';
 import { ParametersHelper } from '../CLICommand';
-import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
+import { CLIAction } from '../CLICommand/action';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import {
 	ArAmountParameter,
 	BoostParameter,
@@ -11,11 +12,13 @@ import {
 	WalletFileParameter
 } from '../parameter_declarations';
 import { AR } from '../types/ar';
+import { assertARPrecision } from '../utils/ar_unit';
 
 new CLICommand({
 	name: 'send-ar',
 	parameters: [ArAmountParameter, DestinationAddressParameter, WalletFileParameter, BoostParameter, DryRunParameter],
-	async action(options) {
+	action: new CLIAction(async function action(options) {
+		assertARPrecision(options.arAmount);
 		const parameters = new ParametersHelper(options);
 		const arAmount = AR.from(options.arAmount);
 		const destAddress = new ArweaveAddress(options.destAddress);
@@ -42,5 +45,5 @@ new CLICommand({
 
 		console.log(JSON.stringify(arTransferResult, null, 4));
 		return SUCCESS_EXIT_CODE;
-	}
+	})
 });

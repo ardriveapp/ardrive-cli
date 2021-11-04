@@ -3,12 +3,13 @@ import { FolderID } from '../types';
 import { GetAllRevisionsParameter, FolderIdParameter, DrivePrivacyParameters } from '../parameter_declarations';
 import { arDriveAnonymousFactory, arDriveFactory } from '..';
 import { ArFSPrivateFolder, ArFSPublicFolder } from '../arfs_entities';
-import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
+import { CLIAction } from '../CLICommand/action';
 
 new CLICommand({
 	name: 'folder-info',
 	parameters: [FolderIdParameter, GetAllRevisionsParameter, ...DrivePrivacyParameters],
-	async action(options) {
+	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
 		// const shouldGetAllRevisions: boolean = options.getAllRevisions;
 
@@ -39,5 +40,5 @@ new CLICommand({
 
 		console.log(JSON.stringify(result, null, 4));
 		return SUCCESS_EXIT_CODE;
-	}
+	})
 });
