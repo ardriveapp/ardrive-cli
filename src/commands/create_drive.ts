@@ -8,12 +8,13 @@ import {
 import { arDriveFactory } from '..';
 import { JWKWallet, Wallet } from '../wallet';
 import { PrivateDriveKeyData } from '../arfsdao';
-import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
+import { CLIAction } from '../CLICommand/action';
 
 new CLICommand({
 	name: 'create-drive',
 	parameters: [...DriveCreationPrivacyParameters, DriveNameParameter, BoostParameter, DryRunParameter],
-	async action(options) {
+	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
 		const wallet: Wallet = await parameters.getRequiredWallet();
 
@@ -36,5 +37,5 @@ new CLICommand({
 		console.log(JSON.stringify(createDriveResult, null, 4));
 
 		return SUCCESS_EXIT_CODE;
-	}
+	})
 });

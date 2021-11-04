@@ -12,7 +12,8 @@ import {
 } from '../parameter_declarations';
 import { DriveKey, FolderID } from '../types';
 import { readJWKFile } from '../utils';
-import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/constants';
+import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
+import { CLIAction } from '../CLICommand/action';
 
 interface UploadFileParameter {
 	parentFolderId: FolderID;
@@ -33,7 +34,7 @@ new CLICommand({
 		DryRunParameter,
 		...DrivePrivacyParameters
 	],
-	async action(options) {
+	action: new CLIAction(async function action(options) {
 		const filesToUpload: UploadFileParameter[] = await (async function (): Promise<UploadFileParameter[]> {
 			if (options.localFiles) {
 				const COLUMN_SEPARATOR = ',';
@@ -131,5 +132,5 @@ new CLICommand({
 		}
 		console.log(`No files to upload`);
 		return ERROR_EXIT_CODE;
-	}
+	})
 });
