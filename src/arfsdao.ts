@@ -606,27 +606,6 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		);
 	}
 
-	// /**
-	//  * Uploads a v2 transaction in chunks with progress logging
-	//  *
-	//  * @example await this.sendChunkedUpload(myTransaction);
-	//  */
-	// async sendChunkedUploadWithProgress(trx: Transaction): Promise<void> {
-	// 	const dataUploader = await this.arweave.transactions.getUploader(trx);
-
-	// 	while (!dataUploader.isComplete) {
-	// 		const nextChunk = await uploadDataChunk(dataUploader);
-	// 		if (nextChunk === null) {
-	// 			break;
-	// 		} else {
-	// 			// TODO: Add custom logger function that produces various levels of detail
-	// 			console.log(
-	// 				`${dataUploader.pctComplete}% complete, ${dataUploader.uploadedChunks}/${dataUploader.totalChunks}`
-	// 			);
-	// 		}
-	// 	}
-	// }
-
 	async prepareArFSObjectTransaction(
 		objectMetaData: ArFSObjectMetadataPrototype,
 		rewardSettings: RewardSettings = {},

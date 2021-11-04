@@ -296,7 +296,7 @@ export class ArDrive extends ArDriveAnonymous {
 			throw new Error(errorMessage.cannotMoveToDifferentDrive);
 		}
 
-		if (`${originalFileMetaData.parentFolderId}` === `${newParentFolderId}`) {
+		if (originalFileMetaData.parentFolderId.equals(newParentFolderId)) {
 			throw new Error(errorMessage.cannotMoveIntoSamePlace('File', newParentFolderId));
 		}
 
@@ -346,7 +346,7 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	async movePublicFolder({ folderId, newParentFolderId }: MovePublicFolderParams): Promise<ArFSResult> {
-		if (`${folderId}` === `${newParentFolderId}`) {
+		if (folderId.equals(newParentFolderId)) {
 			throw new Error(errorMessage.folderCannotMoveIntoItself);
 		}
 
@@ -361,7 +361,7 @@ export class ArDrive extends ArDriveAnonymous {
 			throw new Error(errorMessage.cannotMoveToDifferentDrive);
 		}
 
-		if (`${originalFolderMetaData.parentFolderId}` === `${newParentFolderId}`) {
+		if (originalFolderMetaData.parentFolderId.equals(newParentFolderId)) {
 			throw new Error(errorMessage.cannotMoveIntoSamePlace('Folder', newParentFolderId));
 		}
 
@@ -413,7 +413,7 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	async movePrivateFolder({ folderId, newParentFolderId, driveKey }: MovePrivateFolderParams): Promise<ArFSResult> {
-		if (`${folderId}` === `${newParentFolderId}`) {
+		if (folderId.equals(newParentFolderId)) {
 			throw new Error(errorMessage.folderCannotMoveIntoItself);
 		}
 
@@ -428,7 +428,7 @@ export class ArDrive extends ArDriveAnonymous {
 			throw new Error(errorMessage.cannotMoveToDifferentDrive);
 		}
 
-		if (`${originalFolderMetaData.parentFolderId}` === `${newParentFolderId}`) {
+		if (originalFolderMetaData.parentFolderId.equals(newParentFolderId)) {
 			throw new Error(errorMessage.cannotMoveIntoSamePlace('Folder', newParentFolderId));
 		}
 

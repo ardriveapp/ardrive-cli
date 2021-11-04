@@ -135,7 +135,7 @@ export class FolderHierarchy {
 		}
 		let folderNode = this.folderIdToNodeMap[`${folderId}`];
 		const nodesInPathToFolder = [folderNode];
-		while (folderNode.parent && `${folderNode.folderId}` !== `${this.rootNode.folderId}`) {
+		while (folderNode.parent && !folderNode.folderId.equals(this.rootNode.folderId)) {
 			folderNode = folderNode.parent;
 			nodesInPathToFolder.push(folderNode);
 		}
@@ -156,7 +156,7 @@ export class FolderHierarchy {
 		}
 		let folderNode = this.folderIdToNodeMap[`${folderId}`];
 		const nodesInPathToFolder = [folderNode];
-		while (folderNode.parent && `${folderNode.folderId}` !== `${this.rootNode.folderId}`) {
+		while (folderNode.parent && !folderNode.folderId.equals(this.rootNode.folderId)) {
 			folderNode = folderNode.parent;
 			nodesInPathToFolder.push(folderNode);
 		}
@@ -175,7 +175,7 @@ export class FolderHierarchy {
 		}
 		let folderNode = this.folderIdToNodeMap[`${folderId}`];
 		const nodesInPathToFolder = [folderNode];
-		while (folderNode.parent && `${folderNode.folderId}` !== `${this.rootNode.folderId}`) {
+		while (folderNode.parent && !folderNode.folderId.equals(this.rootNode.folderId)) {
 			folderNode = folderNode.parent;
 			nodesInPathToFolder.push(folderNode);
 		}
