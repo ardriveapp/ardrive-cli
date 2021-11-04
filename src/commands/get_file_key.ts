@@ -1,6 +1,7 @@
 import { deriveFileKey } from 'ardrive-core-js';
 import { cliArweave } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
+import { CLIAction } from '../CLICommand/action';
 import {
 	DriveCreationPrivacyParameters,
 	DriveIdParameter,
@@ -22,7 +23,7 @@ new CLICommand({
 		FileIdParameter,
 		NoVerifyParameter
 	],
-	async action(options) {
+	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
 		const fileId = EID(parameters.getRequiredParameterValue(FileIdParameter));
 
@@ -45,5 +46,5 @@ new CLICommand({
 		}
 
 		console.log(urlEncodeHashKey(fileKey));
-	}
+	})
 });
