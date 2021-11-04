@@ -42,6 +42,10 @@ export class Winston {
 		return this.amount.toFixed();
 	}
 
+	toJSON(): string {
+		return this.toString();
+	}
+
 	static max(...winstons: Winston[]): Winston {
 		BigNumber.max();
 		return winstons.reduce((max, next) => (next.amount.isGreaterThan(max.amount) ? next : max));

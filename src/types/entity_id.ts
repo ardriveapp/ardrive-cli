@@ -29,6 +29,10 @@ export class EntityID implements Equatable<EntityID> {
 	equals(entityId: EntityID): boolean {
 		return this.entityId === entityId.entityId;
 	}
+
+	toJSON(): string {
+		return this.toString();
+	}
 }
 
 export function EID(entityId: string): EntityID {

@@ -1,5 +1,4 @@
-import { EntityID } from './types/entity_id';
-import { Winston } from './types/winston';
+import { EntityID, Winston } from './types/';
 
 export const ArFS_O_11 = '0.11';
 export const CURRENT_ARFS_VERSION = ArFS_O_11;
@@ -24,8 +23,6 @@ export type FileKey = EntityKey;
 export type UnixTime = number;
 export type ByteCount = number;
 export type DataContentType = string;
-
-export type TransactionID = string; // TODO: make a type that checks lengths
 
 export interface ArDriveCommunityTip {
 	tipPercentage: number;

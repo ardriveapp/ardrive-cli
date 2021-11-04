@@ -7,7 +7,8 @@ import {
 } from './arfs_prototypes';
 import { ArFSFileMetadataTransactionData } from './arfs_trx_data_types';
 
-import { ByteCount, DataContentType, DriveID, FileID, FolderID, TransactionID, UnixTime } from './types';
+import { ByteCount, DataContentType, DriveID, FileID, FolderID, UnixTime } from './types';
+import { TransactionID } from './types/';
 
 export type MoveEntityMetaDataFactory = () => ArFSEntityMetaDataPrototype;
 

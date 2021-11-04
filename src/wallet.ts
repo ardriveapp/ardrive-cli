@@ -4,19 +4,9 @@ import * as crypto from 'crypto';
 import jwkToPem, { JWK } from 'jwk-to-pem';
 import Arweave from 'arweave';
 import * as mnemonicKeys from 'arweave-mnemonic-keys';
-import {
-	TransactionID,
-	NetworkReward,
-	PublicKey,
-	SeedPhrase,
-	DEFAULT_APP_NAME,
-	DEFAULT_APP_VERSION,
-	RewardSettings
-} from './types';
+import { NetworkReward, PublicKey, SeedPhrase, DEFAULT_APP_NAME, DEFAULT_APP_VERSION, RewardSettings } from './types';
 import { CreateTransactionInterface } from 'arweave/node/common';
-import { ArweaveAddress } from './types/arweave_address';
-import { W, Winston } from './types/winston';
-import { AR } from './types/ar';
+import { W, Winston, ArweaveAddress, AR, TransactionID, TxID } from './types/';
 
 export type ARTransferResult = {
 	trxID: TransactionID;
@@ -176,7 +166,7 @@ export class WalletDAO {
 		})();
 		if (response.status === 200 || response.status === 202) {
 			return Promise.resolve({
-				trxID: transaction.id,
+				trxID: TxID(transaction.id),
 				winston,
 				reward: W(transaction.reward)
 			});

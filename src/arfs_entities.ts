@@ -1,16 +1,7 @@
 import { ContentType, DriveAuthMode, DrivePrivacy, EntityType } from 'ardrive-core-js';
 import { FolderHierarchy } from './folderHierarchy';
-import {
-	ByteCount,
-	CipherIV,
-	DataContentType,
-	DriveID,
-	AnyEntityID,
-	FileID,
-	FolderID,
-	TransactionID,
-	UnixTime
-} from './types';
+import { ByteCount, CipherIV, DataContentType, DriveID, AnyEntityID, FileID, FolderID, UnixTime } from './types';
+import { TransactionID } from './types/';
 
 // The primary ArFS entity that all other entities inherit from.
 export class ArFSEntity {
@@ -21,7 +12,7 @@ export class ArFSEntity {
 	driveId: DriveID; // the unique drive identifier, created with uuidv4 https://www.npmjs.com/package/uuidv4 eg. 41800747-a852-4dc9-9078-6c20f85c0f3a
 	entityType: string; // the type of ArFS entity this is.  this can only be set to "drive", "folder", "file"
 	name: string; // user defined entity name, cannot be longer than 64 characters.  This is stored in the JSON file that is uploaded along with the drive/folder/file metadata transaction
-	txId: string; // the arweave transaction id for this entity. 43 numbers/letters eg. 1xRhN90Mu5mEgyyrmnzKgZP0y3aK8AwSucwlCOAwsaI
+	txId: TransactionID; // the arweave transaction id for this entity. 43 numbers/letters eg. 1xRhN90Mu5mEgyyrmnzKgZP0y3aK8AwSucwlCOAwsaI
 	unixTime: number; // seconds since unix epoch, taken at the time of upload, 10 numbers eg. 1620068042
 
 	constructor(
@@ -32,7 +23,7 @@ export class ArFSEntity {
 		driveId: DriveID,
 		entityType: string,
 		name: string,
-		txId: string,
+		txId: TransactionID,
 		unixTime: number
 	) {
 		this.appName = appName;

@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { EID, EntityID } from './entity_id';
+import { EID, EntityID } from './';
 
 describe('EntityID class', () => {
 	describe('constructor', () => {
@@ -45,7 +45,6 @@ describe('EntityID class', () => {
 		it('returns the correct Entity ID string', () => {
 			const eid = new EntityID('01234567-89ab-cdef-0000-000000000000');
 			expect(eid.toString()).to.equal('01234567-89ab-cdef-0000-000000000000');
-			expect(`${eid}`).to.equal('01234567-89ab-cdef-0000-000000000000');
 		});
 	});
 
@@ -56,7 +55,7 @@ describe('EntityID class', () => {
 		});
 	});
 
-	describe('isEqualTo function', () => {
+	describe('equals function', () => {
 		it('correctly evaluates equality', () => {
 			const eid1 = new EntityID('01234567-89ab-cdef-0000-000000000000');
 			const eid2 = new EntityID('01234567-89ab-cdef-0000-000000000000');

@@ -18,4 +18,8 @@ export class ArweaveAddress {
 	valueOf(): string {
 		return this.address;
 	}
+
+	toJSON(): string {
+		return this.toString();
+	}
 }

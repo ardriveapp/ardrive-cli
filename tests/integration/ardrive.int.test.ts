@@ -702,12 +702,12 @@ function assertCreateDriveExpectations(
 	// Ensure that the fees look healthy
 	const feeKeys = Object.keys(result.fees);
 	expect(feeKeys.length).to.equal(2);
-	expect(feeKeys[0]).to.equal(driveEntity.metadataTxId);
+	expect(feeKeys[0]).to.equal(driveEntity.metadataTxId.toString());
 	expect(feeKeys[0]).to.match(trxIdRegex);
-	expect(`${result.fees[driveEntity.metadataTxId]}`).to.equal(`${driveFee}`);
-	expect(feeKeys[1]).to.equal(rootFolderEntity.metadataTxId);
+	expect(`${result.fees[driveEntity.metadataTxId.toString()]}`).to.equal(`${driveFee}`);
+	expect(feeKeys[1]).to.equal(rootFolderEntity.metadataTxId.toString());
 	expect(feeKeys[1]).to.match(trxIdRegex);
-	expect(`${result.fees[rootFolderEntity.metadataTxId]}`).to.equal(`${folderFee}`);
+	expect(`${result.fees[rootFolderEntity.metadataTxId.toString()]}`).to.equal(`${folderFee}`);
 }
 
 function assertCreateFolderExpectations(result: ArFSResult, folderFee: Winston, expectedDriveKey?: string) {
@@ -729,8 +729,8 @@ function assertCreateFolderExpectations(result: ArFSResult, folderFee: Winston, 
 	const feeKeys = Object.keys(result.fees);
 	expect(feeKeys.length).to.equal(1);
 	expect(feeKeys[0]).to.match(trxIdRegex);
-	expect(feeKeys[0]).to.equal(folderEntity.metadataTxId);
-	expect(`${result.fees[folderEntity.metadataTxId]}`).to.equal(`${folderFee}`);
+	expect(feeKeys[0]).to.equal(folderEntity.metadataTxId.toString());
+	expect(`${result.fees[folderEntity.metadataTxId.toString()]}`).to.equal(`${folderFee}`);
 }
 
 function assertUploadFileExpectations(
@@ -776,17 +776,18 @@ function assertUploadFileExpectations(
 
 	const feeKeys = Object.keys(result.fees);
 	expect(feeKeys[0]).to.match(trxIdRegex);
-	expect(feeKeys[0]).to.equal(fileEntity.dataTxId);
 	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-	expect(`${result.fees[fileEntity.dataTxId!]}`).to.equal(`${fileFee}`);
+	expect(feeKeys[0]).to.equal(fileEntity.dataTxId!.toString());
+	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+	expect(`${result.fees[fileEntity.dataTxId!.toString()]}`).to.equal(`${fileFee}`);
 
 	expect(feeKeys[1]).to.match(trxIdRegex);
-	expect(feeKeys[1]).to.equal(fileEntity.metadataTxId);
-	expect(`${result.fees[fileEntity.metadataTxId]}`).to.equal(`${metadataFee}`);
+	expect(feeKeys[1]).to.equal(fileEntity.metadataTxId.toString());
+	expect(`${result.fees[fileEntity.metadataTxId.toString()]}`).to.equal(`${metadataFee}`);
 
 	expect(feeKeys[2]).to.match(trxIdRegex);
-	expect(feeKeys[2]).to.equal(uploadTip.txId);
-	expect(`${result.fees[uploadTip.txId]}`).to.equal(`${tipFee}`);
+	expect(feeKeys[2]).to.equal(uploadTip.txId.toString());
+	expect(`${result.fees[uploadTip.txId.toString()]}`).to.equal(`${tipFee}`);
 }
 
 function assertMoveFileExpectations(result: ArFSResult, fileFee: Winston, drivePrivacy: DrivePrivacy) {
@@ -814,6 +815,6 @@ function assertMoveFileExpectations(result: ArFSResult, fileFee: Winston, driveP
 	const feeKeys = Object.keys(result.fees);
 	expect(feeKeys.length).to.equal(1);
 	expect(feeKeys[0]).to.match(trxIdRegex);
-	expect(feeKeys[0]).to.equal(fileEntity.metadataTxId);
-	expect(`${result.fees[fileEntity.metadataTxId]}`).to.equal(`${fileFee}`);
+	expect(feeKeys[0]).to.equal(fileEntity.metadataTxId.toString());
+	expect(`${result.fees[fileEntity.metadataTxId.toString()]}`).to.equal(`${fileFee}`);
 }

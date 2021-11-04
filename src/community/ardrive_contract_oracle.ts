@@ -1,6 +1,6 @@
 import { CommunityContractData, CommunityTipPercentage } from './contract_types';
 import { ContractOracle, ContractReader } from './contract_oracle';
-import { TransactionID } from '../types';
+import { TransactionID, TxID } from '../types/';
 
 // ArDrive Profit Sharing Community Smart Contract
 export const communityTxId = '-8A6RexFkpfWwuyVO98wzSFZh0d6VJuI-buTJvlwOJQ';
@@ -92,7 +92,7 @@ export class ArDriveContractOracle implements ContractOracle {
 		}
 
 		// Begin new contract read; cast result to known ArDrive Community Contract type
-		this.contractPromise = this.readContract(communityTxId) as Promise<CommunityContractData>;
+		this.contractPromise = this.readContract(TxID(communityTxId)) as Promise<CommunityContractData>;
 
 		this.communityContract = await this.contractPromise;
 

@@ -1,5 +1,5 @@
 import type { ArDriveCommunityTip, ByteCount } from '../types';
-import { AR } from '../types/ar';
+import { AR } from '../types/';
 import { Winston } from '../types/winston';
 
 export const arPerWinston = 0.000_000_000_001;

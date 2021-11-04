@@ -83,11 +83,9 @@ import {
 import { ArFSAllPublicFoldersOfDriveParams, ArFSDAOAnonymous } from './arfsdao_anonymous';
 import { ArFSFileOrFolderBuilder } from './utils/arfs_builders/arfs_builders';
 import { PrivateKeyData } from './private_key_data';
-import { ArweaveAddress } from './types/arweave_address';
+import { ArweaveAddress, W, TxID, EID } from './types/';
 import { EntityNamesAndIds, entityToNameMap, fileToNameAndIdMap, folderToNameAndIdMap } from './utils/mapper_functions';
 import { ListPrivateFolderParams } from './ardrive';
-import { W } from './types/winston';
-import { EID } from './types/entity_id';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 
@@ -211,7 +209,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			}
 		}
 
-		return { metaDataTrxId: folderTrx.id, metaDataTrxReward: W(folderTrx.reward), folderId };
+		return { metaDataTrxId: TxID(folderTrx.id), metaDataTrxReward: W(folderTrx.reward), folderId };
 	}
 
 	// Convenience wrapper for folder creation in a known-public use case
@@ -279,7 +277,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		}
 
 		return resultFactory({
-			metaDataTrxId: driveTrx.id,
+			metaDataTrxId: TxID(driveTrx.id),
 			metaDataTrxReward: W(driveTrx.reward),
 			rootFolderTrxId: rootFolderTrxId,
 			rootFolderTrxReward: rootFolderTrxReward,
@@ -372,7 +370,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			}
 		}
 
-		return resultFactory({ metaDataTrxId: metaDataTrx.id, metaDataTrxReward: W(metaDataTrx.reward) });
+		return resultFactory({ metaDataTrxId: TxID(metaDataTrx.id), metaDataTrxReward: W(metaDataTrx.reward) });
 	}
 
 	async movePublicFile({
@@ -501,7 +499,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			destinationFileName,
 			fileSize,
 			lastModifiedDateMS,
-			dataTrx.id,
+			TxID(dataTrx.id),
 			dataContentType,
 			fileId
 		);
@@ -518,9 +516,9 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		return resultFactoryFn(
 			{
-				dataTrxId: dataTrx.id,
+				dataTrxId: TxID(dataTrx.id),
 				dataTrxReward: W(dataTrx.reward),
-				metaDataTrxId: metaDataTrx.id,
+				metaDataTrxId: TxID(metaDataTrx.id),
 				metaDataTrxReward: W(metaDataTrx.reward),
 				fileId
 			},

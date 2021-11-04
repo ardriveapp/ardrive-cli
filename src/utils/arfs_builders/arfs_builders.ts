@@ -10,7 +10,8 @@ import { graphQLURL } from '../../arfsdao';
 import { ArFSEntity, ArFSFileOrFolderEntity } from '../../arfs_entities';
 import { ArweaveAddress } from '../../types/arweave_address';
 import { buildQuery } from '../../query';
-import { DriveID, AnyEntityID, EntityKey, FolderID, TransactionID, UnixTime } from '../../types';
+import { DriveID, AnyEntityID, EntityKey, FolderID, UnixTime } from '../../types';
+import { TransactionID, TxID } from '../../types/';
 import { EID } from '../../types/entity_id';
 
 export interface ArFSMetadataEntityBuilderParams {
@@ -78,7 +79,7 @@ export abstract class ArFSMetadataEntityBuilder<T extends ArFSEntity> {
 
 			node = edges[0].node;
 		}
-		this.txId = node.id;
+		this.txId = TxID(node.id);
 		const { tags } = node;
 		tags.forEach((tag: GQLTagInterface) => {
 			const key = tag.name;

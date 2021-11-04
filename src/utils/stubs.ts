@@ -9,11 +9,12 @@ import {
 import { ArweaveAddress } from '../types/arweave_address';
 import { ArFS_O_11, DriveID, FolderID } from '../types';
 import { EID } from '../types/entity_id';
+import { TxID } from '../types/';
 
 export const stubArweaveAddress = (address = 'abcdefghijklmnopqrxtuvwxyz123456789ABCDEFGH'): ArweaveAddress =>
 	new ArweaveAddress(address);
 
-export const stubTransactionID = '0000000000000000000000000000000000000000000';
+export const stubTransactionID = TxID('0000000000000000000000000000000000000000000');
 
 export const stubEntityID = EID('00000000-0000-0000-0000-000000000000');
 export const stubEntityIDAlt = EID('caa8b54a-eb5e-4134-8ae2-a3946a428ec7');
