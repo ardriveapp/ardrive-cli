@@ -190,7 +190,7 @@ export class ParametersHelper {
 		return unsafePassword;
 	}
 
-	public async getMaxDepth(defaultDepth: number): Promise<number> {
+	public async getMaxDepth(defaultDepth = 0): Promise<number> {
 		if (this.getParameterValue(AllParameter)) {
 			return Number.MAX_SAFE_INTEGER;
 		}

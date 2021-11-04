@@ -1,20 +1,18 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-import { Command } from 'commander';
-import { CliApiObject, ParsedArguments } from './cli';
-import { ERROR_EXIT_CODE } from './constants';
+import { program } from 'commander';
+import { CLIAction } from './action';
+import { CliApiObject, ExitCode, ParsedParameters } from './cli';
 import { Parameter, ParameterName, ParameterOverridenConfig } from './parameter';
 
 export type CommandName = string;
 export interface CommandDescriptor {
 	name: CommandName;
 	parameters: (ParameterName | ParameterOverridenConfig)[];
-	action(options: ParsedArguments): Promise<number | void>;
+	action: CLIAction;
 }
 
-const program: CliApiObject = new Command() as CliApiObject;
-program.name('ardrive');
-program.addHelpCommand(true);
-program.usage('[command] [command-specific options]');
+const programAsUnknown: unknown = program;
+const programApi: CliApiObject = programAsUnknown as CliApiObject;
 
 /**
  * @name setCommanderCommand
@@ -46,14 +44,10 @@ function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliA
 			command.option(...optionArguments);
 		}
 	});
-	command = command.action(async (options) => {
-		await (async function () {
-			assertConjunctionParameters(commandDescriptor, options);
-			const exitCode = await commandDescriptor.action(options);
+	command = command.action((options) => {
+		assertConjunctionParameters(commandDescriptor, options);
+		commandDescriptor.action.trigger(options).then((exitCode) => {
 			exitProgram(exitCode || 0);
-		})().catch((err) => {
-			console.log(err.message);
-			exitProgram(ERROR_EXIT_CODE);
 		});
 	});
 }
@@ -97,44 +91,45 @@ export function assertForbidden(parameter: Parameter, options: any): void {
 }
 
 export class CLICommand {
-	private static allCommandDescriptors: CommandDescriptor[] = [];
+	private static allCommandInstances: CLICommand[] = [];
 
 	/**
 	 * @param {CommandDescriptor} commandDescription an immutable representation of a command
 	 * @param {string[]} argv a custom argv for testing purposes
 	 */
-	constructor(private readonly commandDescription: CommandDescriptor, private readonly _program?: CliApiObject) {
-		CLICommand.allCommandDescriptors.push(commandDescription);
-		this.setCommand();
+	constructor(readonly commandDescription: CommandDescriptor, program: CliApiObject = programApi) {
+		program.name('ardrive');
+		program.addHelpCommand(true);
+		program.usage('[command] [command-specific options]');
+		// Override the commander's default exit (process.exit()) to avoid abruptly interrupting the script execution
+		program.exitOverride();
+		setCommanderCommand(this.commandDescription, program);
+		CLICommand.allCommandInstances.push(this);
 	}
 
-	// A singleton instance of the commander's program object
-	public static get program(): CliApiObject {
-		// TODO: make me private when index.ts is fully de-coupled from commander library
-		return program;
+	public get action(): Promise<ParsedParameters> {
+		return this.commandDescription.action.actionAwaiter();
 	}
 
-	private get program(): CliApiObject {
-		return this._program || CLICommand.program;
-	}
-
-	private setCommand(): void {
-		setCommanderCommand(this.commandDescription, this.program);
-	}
-
-	public static parse(program: CliApiObject = this.program, argv: string[] = process.argv): void {
+	public static parse(program: CliApiObject = programApi, argv: string[] = process.argv): void {
 		program.parse(argv);
+		this.rejectNonTriggeredAwaiters();
+	}
+
+	private static rejectNonTriggeredAwaiters(): void {
+		// reject all action awaiters that haven't run
+		const theOtherCommandActions = CLICommand.getAllCommandDescriptors().map((descriptor) => descriptor.action);
+		theOtherCommandActions.forEach((action) => action.wasNotTriggered());
 	}
 
 	/**
-	 * For test purposes only
 	 * @returns {CommandDescriptor[]} all declared command descriptors
 	 */
-	public static _getAllCommandDescriptors(): CommandDescriptor[] {
-		return this.allCommandDescriptors;
+	public static getAllCommandDescriptors(): CommandDescriptor[] {
+		return this.allCommandInstances.map((cmd) => cmd.commandDescription);
 	}
 }
 
-function exitProgram(exitCode: number): void {
+function exitProgram(exitCode: ExitCode): void {
 	process.exitCode = exitCode;
 }

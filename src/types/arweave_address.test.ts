@@ -38,5 +38,25 @@ describe('The ArweaveAddress class', () => {
 			const address = new ArweaveAddress('g1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
 			expect(`${address}`).to.equal('g1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
 		});
+
+		it('throws if casted to a number');
+		// it('throws if casted to a number', () => {
+		// 	const address = new ArweaveAddress('g1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
+		// 	expect(() => +address).to.throw();
+		// });
+	});
+
+	describe('equalsAddress function', () => {
+		it('returns true for mathing addresses', () => {
+			const address = new ArweaveAddress('g1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
+			const addressOther = new ArweaveAddress('g1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
+			expect(address.equalsAddress(addressOther)).to.be.true;
+		});
+
+		it('returns false for different addresses', () => {
+			const address = new ArweaveAddress('g1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
+			const addressOther = new ArweaveAddress('a1hzNXVbh2M6LMQSUYp7HgkgxdadYqYEfw-HAajlms0');
+			expect(address.equalsAddress(addressOther)).to.be.false;
+		});
 	});
 });
