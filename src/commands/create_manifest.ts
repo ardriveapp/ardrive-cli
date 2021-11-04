@@ -54,7 +54,7 @@ new CLICommand({
 		// TODO: Private manifests 🤔
 		const result = await arDrive.uploadPublicManifest({
 			driveId,
-			parentFolderId: folderId,
+			folderId,
 			maxDepth,
 			destManifestName
 		});

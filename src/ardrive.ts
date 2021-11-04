@@ -106,7 +106,7 @@ export interface DriveUploadBaseCosts {
 
 export interface UploadPublicManifestParams {
 	driveId?: DriveID;
-	parentFolderId?: FolderID;
+	folderId?: FolderID;
 	maxDepth?: number;
 	destManifestName?: string;
 }
@@ -560,17 +560,17 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	async uploadPublicManifest({
-		parentFolderId,
+		folderId,
 		driveId,
-		destManifestName,
+		destManifestName = 'DriveManifest.json',
 		maxDepth = Number.MAX_SAFE_INTEGER
 	}: UploadPublicManifestParams): Promise<ArFSManifestResult> {
 		if (!driveId) {
-			if (!parentFolderId) {
+			if (!folderId) {
 				throw new Error('Must provide either a drive ID or a folder ID to!');
 			}
 
-			driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
+			driveId = await this.arFsDao.getDriveIdForFolderId(folderId);
 		}
 
 		const owner = await this.getOwnerForDriveId(driveId);
@@ -580,19 +580,18 @@ export class ArDrive extends ArDriveAnonymous {
 
 		const driveName = drive.name;
 
-		parentFolderId ??= drive.rootFolderId;
-		destManifestName ??= 'DriveManifest.json';
+		folderId ??= drive.rootFolderId;
 
 		// TODO: Handle collision with existing manifest. New manifest will always be a new file, with
 		// upsert by default this means it will only skip here on --skip conflict
-		const filesAndFolderNames = await this.arFsDao.getPublicEntityNamesAndIdsInFolder(parentFolderId);
+		const filesAndFolderNames = await this.arFsDao.getPublicEntityNamesAndIdsInFolder(folderId);
 
 		// Manifest becomes a new revision if the destination name
 		// conflicts with an existing file in the destination folder
 		const existingFileId = filesAndFolderNames.files.find((f) => f.fileName === destManifestName)?.fileId;
 
 		const children = await this.arFsDao.listPublicFolder({
-			folderId: parentFolderId,
+			folderId,
 			maxDepth,
 			includeRoot: true,
 			owner
@@ -618,7 +617,13 @@ export class ArDrive extends ArDriveAnonymous {
 		const pathMap: ManifestPathMap = {};
 		sortedChildren.forEach((child) => {
 			if (child.dataTxId && child.path && child.dataContentType !== MANIFEST_CONTENT_TYPE) {
-				pathMap[child.path.slice(1)] = { id: child.dataTxId };
+				const path = child.path
+					// Slice off the leading "/" so manifest URLs path correctly
+					.slice(1)
+					// Replace spaces with underscores for sharing links
+					.replace(/ /g, '_');
+
+				pathMap[path] = { id: child.dataTxId };
 			}
 		});
 
@@ -645,7 +650,7 @@ export class ArDrive extends ArDriveAnonymous {
 		const metadataRewardSettings = { reward: uploadBaseCosts.metaDataBaseReward, feeMultiple: this.feeMultiple };
 
 		const uploadFileResult = await this.arFsDao.uploadPublicFile({
-			parentFolderId,
+			parentFolderId: folderId,
 			wrappedFile: arweaveManifest,
 			driveId,
 			fileDataRewardSettings,
@@ -658,7 +663,7 @@ export class ArDrive extends ArDriveAnonymous {
 			uploadBaseCosts.communityWinstonTip
 		);
 
-		const allLinks = Object.keys(arweaveManifest.manifest.paths).map(
+		const fileLinks = Object.keys(arweaveManifest.manifest.paths).map(
 			(path) => `arweave.net/${uploadFileResult.dataTrxId}/${path}`
 		);
 
@@ -677,7 +682,7 @@ export class ArDrive extends ArDriveAnonymous {
 				[uploadFileResult.metaDataTrxId]: +uploadFileResult.metaDataTrxReward,
 				[tipData.txId]: +communityTipTrxReward
 			},
-			links: [`arweave.net/${uploadFileResult.dataTrxId}`, ...allLinks]
+			links: [`arweave.net/${uploadFileResult.dataTrxId}`, ...fileLinks]
 		});
 	}
 
