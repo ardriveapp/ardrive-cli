@@ -73,7 +73,7 @@ describe('TransactionID class', () => {
 	describe('toJSON function', () => {
 		it('returns the correct JSON value', () => {
 			const txId = new TransactionID('XHGs4-ibl7Bct2Vqt4LDq9FxzjxU7CqqETg9oFz83vP');
-			expect(txId.toJSON()).to.equal('XHGs4-ibl7Bct2Vqt4LDq9FxzjxU7CqqETg9oFz83vP');
+			expect(JSON.stringify({ txId })).to.equal('{"txId":"XHGs4-ibl7Bct2Vqt4LDq9FxzjxU7CqqETg9oFz83vP"}');
 		});
 	});
 });

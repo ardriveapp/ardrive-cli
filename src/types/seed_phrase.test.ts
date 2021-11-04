@@ -64,7 +64,9 @@ describe('SeedPhrase class', () => {
 	describe('toJSON function', () => {
 		it('returns the correct JSON value', () => {
 			const seedPhrase = new SeedPhrase('the quick brown fox jumps over the lazy dog every single day');
-			expect(seedPhrase.toJSON()).to.equal('the quick brown fox jumps over the lazy dog every single day');
+			expect(JSON.stringify({ seedPhrase })).to.equal(
+				'{"seedPhrase":"the quick brown fox jumps over the lazy dog every single day"}'
+			);
 		});
 	});
 });

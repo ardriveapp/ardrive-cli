@@ -78,7 +78,7 @@ describe('FeeMultiple class', () => {
 	describe('toJSON function', () => {
 		it('returns the correct JSON value', () => {
 			const feeMultiple = new FeeMultiple(1.5);
-			expect(feeMultiple.toJSON()).to.equal(1.5);
+			expect(JSON.stringify({ feeMultiple })).to.equal('{"feeMultiple":1.5}');
 		});
 	});
 });
