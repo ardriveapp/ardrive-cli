@@ -50,6 +50,8 @@ new CLICommand({
 			if (fileOrFolderMetaData.entityType === 'folder') {
 				delete fileOrFolderMetaData.lastModifiedDate;
 				delete fileOrFolderMetaData.size;
+				delete fileOrFolderMetaData.dataTxId;
+				delete fileOrFolderMetaData.dataContentType;
 			}
 			delete fileOrFolderMetaData.syncStatus;
 		});
