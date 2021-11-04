@@ -10,8 +10,8 @@ import { graphQLURL } from '../../arfsdao';
 import { ArFSEntity, ArFSFileOrFolderEntity } from '../../arfs_entities';
 import { ArweaveAddress } from '../../types/arweave_address';
 import { buildQuery } from '../../query';
-import { DriveID, AnyEntityID, EntityKey, FolderID, UnixTime } from '../../types';
-import { TransactionID, TxID } from '../../types/';
+import { DriveID, AnyEntityID, EntityKey, FolderID } from '../../types';
+import { TransactionID, TxID, UnixTime } from '../../types/';
 import { EID } from '../../types/entity_id';
 
 export interface ArFSMetadataEntityBuilderParams {
@@ -104,7 +104,7 @@ export abstract class ArFSMetadataEntityBuilder<T extends ArFSEntity> {
 					this.entityType = value as EntityType;
 					break;
 				case 'Unix-Time':
-					this.unixTime = +value;
+					this.unixTime = new UnixTime(+value);
 					break;
 				default:
 					unparsedTags.push(tag);
