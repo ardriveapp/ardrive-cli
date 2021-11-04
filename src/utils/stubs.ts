@@ -9,7 +9,7 @@ import {
 import { ArweaveAddress } from '../types/arweave_address';
 import { ArFS_O_11, DriveID, FolderID } from '../types';
 import { EID } from '../types/entity_id';
-import { ByteCount, TxID } from '../types/';
+import { ByteCount, TxID, UnixTime } from '../types/';
 
 export const stubArweaveAddress = (address = 'abcdefghijklmnopqrxtuvwxyz123456789ABCDEFGH'): ArweaveAddress =>
 	new ArweaveAddress(address);
@@ -33,7 +33,7 @@ export const stubPublicDrive = new ArFSPublicDrive(
 	'drive',
 	'STUB DRIVE',
 	stubTransactionID,
-	0,
+	new UnixTime(0),
 	'public',
 	stubEntityID
 );
@@ -47,7 +47,7 @@ export const stubPrivateDrive = new ArFSPrivateDrive(
 	'drive',
 	'STUB DRIVE',
 	stubTransactionID,
-	0,
+	new UnixTime(0),
 	'private',
 	stubEntityID,
 	'password',
@@ -77,7 +77,7 @@ export const stubPublicFolder = ({
 		'folder',
 		folderName,
 		stubTransactionID,
-		0,
+		new UnixTime(0),
 		parentFolderId,
 		folderId
 	);
@@ -97,7 +97,7 @@ export const stubPrivateFolder = ({
 		'folder',
 		folderName,
 		stubTransactionID,
-		0,
+		new UnixTime(0),
 		parentFolderId,
 		folderId,
 		'stubCipher',
@@ -119,11 +119,11 @@ export const stubPublicFile = ({ driveId = stubEntityID, fileName = 'STUB NAME' 
 		'file',
 		fileName,
 		stubTransactionID,
-		0,
+		new UnixTime(0),
 		stubEntityID,
 		stubEntityID,
 		new ByteCount(1234567890),
-		0,
+		new UnixTime(0),
 		stubTransactionID,
 		'application/json'
 	);
@@ -138,11 +138,11 @@ export const stubPrivateFile = ({ driveId = stubEntityID, fileName = 'STUB NAME'
 		'file',
 		fileName,
 		stubTransactionID,
-		0,
+		new UnixTime(0),
 		stubEntityID,
 		stubEntityID,
 		new ByteCount(1234567890),
-		0,
+		new UnixTime(0),
 		stubTransactionID,
 		'application/json',
 		'stubCipher',

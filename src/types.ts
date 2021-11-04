@@ -19,7 +19,6 @@ export type EntityKey = Buffer;
 export type DriveKey = EntityKey;
 export type FileKey = EntityKey;
 
-export type UnixTime = number;
 export type DataContentType = string;
 
 export interface ArDriveCommunityTip {

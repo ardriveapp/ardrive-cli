@@ -15,7 +15,8 @@ import {
 } from './arfs_trx_data_types';
 import Transaction from 'arweave/node/lib/transaction';
 import { ContentType, DrivePrivacy, GQLTagInterface } from 'ardrive-core-js';
-import { DataContentType, DriveID, FileID, FolderID, UnixTime } from './types';
+import { DataContentType, DriveID, FileID, FolderID } from './types';
+import { UnixTime } from './types/';
 
 export abstract class ArFSObjectMetadataPrototype {
 	abstract protectedTags: string[];
@@ -39,7 +40,7 @@ export abstract class ArFSEntityMetaDataPrototype extends ArFSObjectMetadataProt
 		super();
 
 		// Get the current time so the app can display the "created" data later on
-		this.unixTime = Math.round(Date.now() / 1000);
+		this.unixTime = new UnixTime(Math.round(Date.now() / 1000));
 	}
 }
 

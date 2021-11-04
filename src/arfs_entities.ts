@@ -1,7 +1,7 @@
 import { ContentType, DriveAuthMode, DrivePrivacy, EntityType } from 'ardrive-core-js';
 import { FolderHierarchy } from './folderHierarchy';
-import { CipherIV, DataContentType, DriveID, AnyEntityID, FileID, FolderID, UnixTime } from './types';
-import { ByteCount, TransactionID } from './types/';
+import { CipherIV, DataContentType, DriveID, AnyEntityID, FileID, FolderID } from './types';
+import { ByteCount, TransactionID, UnixTime } from './types/';
 
 // The primary ArFS entity that all other entities inherit from.
 export class ArFSEntity {
@@ -13,7 +13,7 @@ export class ArFSEntity {
 	entityType: string; // the type of ArFS entity this is.  this can only be set to "drive", "folder", "file"
 	name: string; // user defined entity name, cannot be longer than 64 characters.  This is stored in the JSON file that is uploaded along with the drive/folder/file metadata transaction
 	txId: TransactionID; // the arweave transaction id for this entity. 43 numbers/letters eg. 1xRhN90Mu5mEgyyrmnzKgZP0y3aK8AwSucwlCOAwsaI
-	unixTime: number; // seconds since unix epoch, taken at the time of upload, 10 numbers eg. 1620068042
+	unixTime: UnixTime; // seconds since unix epoch, taken at the time of upload, 10 numbers eg. 1620068042
 
 	constructor(
 		appName: string,
@@ -24,7 +24,7 @@ export class ArFSEntity {
 		entityType: string,
 		name: string,
 		txId: TransactionID,
-		unixTime: number
+		unixTime: UnixTime
 	) {
 		this.appName = appName;
 		this.appVersion = appVersion;
@@ -97,7 +97,7 @@ export class ArFSPrivateDrive extends ArFSEntity implements ArFSDriveEntity {
 export interface ArFSFileFolderEntity extends ArFSEntity {
 	parentFolderId: FolderID; // the uuid of the parent folder that this entity sits within.  Folder Entities used for the drive root must not have a parent folder ID, eg. 41800747-a852-4dc9-9078-6c20f85c0f3a
 	entityId: FileID | FolderID; // the unique file or folder identifier, created with uuidv4 https://www.npmjs.com/package/uuidv4 eg. 41800747-a852-4dc9-9078-6c20f85c0f3a
-	lastModifiedDate: number; // the last modified date of the file or folder as seconds since unix epoch
+	lastModifiedDate: UnixTime; // the last modified date of the file or folder as seconds since unix epoch
 }
 
 export class ArFSFileOrFolderEntity extends ArFSEntity implements ArFSFileFolderEntity {
@@ -285,7 +285,7 @@ export class ArFSPublicFolder extends ArFSFileOrFolderEntity {
 			new ByteCount(0),
 			txId,
 			unixTime,
-			0,
+			new UnixTime(0),
 			parentFolderId,
 			entityId
 		);
@@ -318,7 +318,7 @@ export class ArFSPrivateFolder extends ArFSFileOrFolderEntity {
 			new ByteCount(0),
 			txId,
 			unixTime,
-			0,
+			new UnixTime(0),
 			parentFolderId,
 			entityId
 		);

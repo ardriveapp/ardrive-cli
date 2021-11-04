@@ -18,7 +18,7 @@ import { ArDriveCommunityOracle } from '../../src/community/ardrive_community_or
 import { CommunityOracle } from '../../src/community/community_oracle';
 import { ArFSDAO } from '../arfsdao';
 import { stubEntityID, stubTransactionID } from './stubs';
-import { W, FeeMultiple, ByteCount } from '../types/';
+import { W, FeeMultiple, ByteCount, UnixTime } from '../types/';
 
 describe('ArDrive class', () => {
 	let arDrive: ArDrive;
@@ -36,7 +36,7 @@ describe('ArDrive class', () => {
 	const stubPublicFileTransactionData = new ArFSPublicFileMetadataTransactionData(
 		'stubName',
 		new ByteCount(12345),
-		0,
+		new UnixTime(0),
 		stubTransactionID,
 		'application/json'
 	);
