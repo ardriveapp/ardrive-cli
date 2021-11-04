@@ -578,8 +578,6 @@ export class ArDrive extends ArDriveAnonymous {
 
 		const drive = await this.arFsDao.getPublicDrive(driveId, owner);
 
-		const driveName = drive.name;
-
 		folderId ??= drive.rootFolderId;
 
 		// TODO: Handle collision with existing manifest. New manifest will always be a new file, with
@@ -627,9 +625,12 @@ export class ArDrive extends ArDriveAnonymous {
 			}
 		});
 
-		// Use index.html in root folder if it exists, otherwise show first file found
-		const indexPath = Object.keys(pathMap).includes(`${driveName}/index.html`)
-			? `${driveName}/index.html`
+		// Slice and replace path to compare above pattern
+		const baseFolderPath = sortedChildren[0]?.path?.slice(1).replace(/ /g, '_');
+
+		// Use index.html in the specified folder if it exists, otherwise show first file found
+		const indexPath = Object.keys(pathMap).includes(`${baseFolderPath}/index.html`)
+			? `${baseFolderPath}/index.html`
 			: Object.keys(pathMap)[0];
 
 		const arweaveManifest = new ArFSManifestToUpload({
