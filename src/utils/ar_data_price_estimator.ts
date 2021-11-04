@@ -1,5 +1,5 @@
-import type { ArDriveCommunityTip, ByteCount } from '../types';
-import { AR } from '../types/';
+import type { ArDriveCommunityTip } from '../types';
+import { AR, ByteCount } from '../types/';
 import { Winston } from '../types/winston';
 
 export const arPerWinston = 0.000_000_000_001;
@@ -54,6 +54,6 @@ export abstract class AbstractARDataPriceAndCapacityEstimator extends AbstractAR
 		}
 
 		// Specified `arPrice` does not cover provided `minimumWinstonFee`
-		return 0;
+		return new ByteCount(0);
 	}
 }

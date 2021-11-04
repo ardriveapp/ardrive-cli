@@ -1,11 +1,9 @@
 import { GatewayOracle } from './gateway_oracle';
 import type { ArweaveOracle } from './arweave_oracle';
 import { ARDataPriceRegression } from './data_price_regression';
-import { ARDataPrice } from './ar_data_price';
 import { AbstractARDataPriceAndCapacityEstimator } from './ar_data_price_estimator';
-import type { ArDriveCommunityTip, ByteCount } from '../types';
-import { Winston } from '../types/winston';
-import { AR } from '../types/';
+import type { ArDriveCommunityTip } from '../types';
+import { AR, ByteCount, Winston } from '../types/';
 
 /**
  * A utility class for Arweave data pricing estimation.
@@ -16,7 +14,7 @@ export class ARDataPriceRegressionEstimator extends AbstractARDataPriceAndCapaci
 		Math.pow(2, 10) * 100, // 100 KiB
 		Math.pow(2, 20) * 100, // 100 MiB
 		Math.pow(2, 30) * 10 // 10 GiB
-	];
+	].map((volume) => new ByteCount(volume));
 	private predictor?: ARDataPriceRegression;
 	private setupPromise?: Promise<ARDataPriceRegression>;
 
@@ -42,12 +40,6 @@ export class ARDataPriceRegressionEstimator extends AbstractARDataPriceAndCapaci
 			throw new Error('Byte volume array must contain at least 2 values to calculate regression');
 		}
 
-		for (const volume of byteVolumes) {
-			if (!Number.isInteger(volume) || volume < 0) {
-				throw new Error(`Byte volume (${volume}) on byte volume array should be a positive integer!`);
-			}
-		}
-
 		if (!skipSetup) {
 			this.refreshPriceData();
 		}
@@ -67,10 +59,10 @@ export class ARDataPriceRegressionEstimator extends AbstractARDataPriceAndCapaci
 		// Fetch the price for all values in byteVolume array and feed them into a linear regression
 		this.setupPromise = Promise.all(
 			// TODO: What to do if one fails?
-			this.byteVolumes.map(
-				async (sampleByteCount) =>
-					new ARDataPrice(sampleByteCount, await this.oracle.getWinstonPriceForByteCount(sampleByteCount))
-			)
+			this.byteVolumes.map(async (sampleByteCount) => {
+				const winstonPrice = await this.oracle.getWinstonPriceForByteCount(sampleByteCount);
+				return { numBytes: sampleByteCount, winstonPrice };
+			})
 		).then((pricingData) => new ARDataPriceRegression(pricingData));
 
 		this.predictor = await this.setupPromise;
@@ -121,10 +113,10 @@ export class ARDataPriceRegressionEstimator extends AbstractARDataPriceAndCapaci
 		const baseWinstonPrice = this.predictor.baseWinstonPrice();
 		const marginalWinstonPrice = this.predictor.marginalWinstonPrice();
 		if (winston.isGreaterThan(baseWinstonPrice)) {
-			return +winston.minus(baseWinstonPrice).dividedBy(marginalWinstonPrice).toString();
+			return new ByteCount(+winston.minus(baseWinstonPrice).dividedBy(marginalWinstonPrice).toString());
 		}
 
-		return 0;
+		return new ByteCount(0);
 	}
 
 	/**

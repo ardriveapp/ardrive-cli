@@ -1,7 +1,7 @@
 import { ContentType, DriveAuthMode, DrivePrivacy, EntityType } from 'ardrive-core-js';
 import { FolderHierarchy } from './folderHierarchy';
-import { ByteCount, CipherIV, DataContentType, DriveID, AnyEntityID, FileID, FolderID, UnixTime } from './types';
-import { TransactionID } from './types/';
+import { CipherIV, DataContentType, DriveID, AnyEntityID, FileID, FolderID, UnixTime } from './types';
+import { ByteCount, TransactionID } from './types/';
 
 // The primary ArFS entity that all other entities inherit from.
 export class ArFSEntity {
@@ -282,7 +282,7 @@ export class ArFSPublicFolder extends ArFSFileOrFolderEntity {
 			driveId,
 			entityType,
 			name,
-			0,
+			new ByteCount(0),
 			txId,
 			unixTime,
 			0,
@@ -315,7 +315,7 @@ export class ArFSPrivateFolder extends ArFSFileOrFolderEntity {
 			driveId,
 			entityType,
 			name,
-			0,
+			new ByteCount(0),
 			txId,
 			unixTime,
 			0,

@@ -1,7 +1,7 @@
 import { ArFSDAO, PrivateDriveKeyData } from './arfsdao';
 import { CommunityOracle } from './community/community_oracle';
 import { deriveDriveKey, DrivePrivacy, GQLTagInterface } from 'ardrive-core-js';
-import { DriveID, FolderID, TipType, DriveKey, AnyEntityID, FileID, ByteCount, MakeOptional } from './types';
+import { DriveID, FolderID, TipType, DriveKey, AnyEntityID, FileID, MakeOptional } from './types';
 import { WalletDAO, Wallet, JWKWallet } from './wallet';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
 import { ArFSFolderToUpload, ArFSFileToUpload } from './arfs_file_wrapper';
@@ -35,7 +35,7 @@ import { stubEntityID, stubTransactionID } from './utils/stubs';
 import { errorMessage } from './error_message';
 import { PrivateKeyData } from './private_key_data';
 import { EntityNamesAndIds } from './utils/mapper_functions';
-import { ArweaveAddress, W, Winston, AR, TransactionID, FeeMultiple } from './types/';
+import { ArweaveAddress, ByteCount, W, Winston, AR, TransactionID, FeeMultiple } from './types/';
 import { WithDriveKey } from './arfs_entity_result_factory';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
@@ -186,7 +186,7 @@ export class ArDrive extends ArDriveAnonymous {
 	// NOTE: Presumes that there's a sufficient wallet balance
 	async sendCommunityTip(communityWinstonTip: Winston, assertBalance = false): Promise<TipResult> {
 		const tokenHolder: ArweaveAddress = await this.communityOracle.selectTokenHolder();
-		const arTransferBaseFee = await this.priceEstimator.getBaseWinstonPriceForByteCount(0);
+		const arTransferBaseFee = await this.priceEstimator.getBaseWinstonPriceForByteCount(new ByteCount(0));
 
 		const transferResult = await this.walletDao.sendARToAddress(
 			new AR(communityWinstonTip),
@@ -495,7 +495,7 @@ export class ArDrive extends ArDriveAnonymous {
 		const existingFileId = filesAndFolderNames.files.find((f) => f.fileName === destFileName)?.fileId;
 
 		const uploadBaseCosts = await this.estimateAndAssertCostOfFileUpload(
-			wrappedFile.fileStats.size,
+			new ByteCount(wrappedFile.fileStats.size),
 			this.stubPublicFileMetadata(wrappedFile, destinationFileName),
 			'public'
 		);
@@ -710,14 +710,11 @@ export class ArDrive extends ArDriveAnonymous {
 
 	/** Computes the size of a private file encrypted with AES256-GCM */
 	encryptedDataSize(dataSize: ByteCount): ByteCount {
-		if (dataSize < 0 || !Number.isInteger(dataSize)) {
-			throw new Error(`dataSize must be non-negative, integer value! ${dataSize} is invalid!`);
-		}
-		if (dataSize > Number.MAX_SAFE_INTEGER - 16) {
+		if (+dataSize > Number.MAX_SAFE_INTEGER - 16) {
 			throw new Error(`Max un-encrypted dataSize allowed is ${Number.MAX_SAFE_INTEGER - 16}!`);
 		}
-		const modulo16 = dataSize % 16;
-		return dataSize - modulo16 + 16;
+		const modulo16 = +dataSize % 16;
+		return new ByteCount(+dataSize - modulo16 + 16);
 	}
 
 	async uploadPrivateFile(
@@ -746,7 +743,7 @@ export class ArDrive extends ArDriveAnonymous {
 		const existingFileId = filesAndFolderNames.files.find((f) => f.fileName === destFileName)?.fileId;
 
 		const uploadBaseCosts = await this.estimateAndAssertCostOfFileUpload(
-			wrappedFile.fileStats.size,
+			new ByteCount(wrappedFile.fileStats.size),
 			await this.stubPrivateFileMetadata(wrappedFile, destinationFileName),
 			'private'
 		);
@@ -1278,7 +1275,7 @@ export class ArDrive extends ArDriveAnonymous {
 		}
 
 		for await (const file of folderToUpload.files) {
-			const fileSize = driveKey ? file.encryptedDataSize() : file.fileStats.size;
+			const fileSize = driveKey ? file.encryptedDataSize() : new ByteCount(file.fileStats.size);
 
 			const fileDataBaseReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(fileSize);
 
@@ -1418,10 +1415,6 @@ export class ArDrive extends ArDriveAnonymous {
 		metaData: ArFSObjectTransactionData,
 		drivePrivacy: DrivePrivacy
 	): Promise<FileUploadBaseCosts> {
-		if (decryptedFileSize < 0 || !Number.isInteger(decryptedFileSize)) {
-			throw new Error('File size should be non-negative integer number!');
-		}
-
 		let fileSize = decryptedFileSize;
 		if (drivePrivacy === 'private') {
 			fileSize = this.encryptedDataSize(fileSize);
@@ -1433,7 +1426,7 @@ export class ArDrive extends ArDriveAnonymous {
 		if (fileSize) {
 			fileDataBaseReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(fileSize);
 			communityWinstonTip = await this.communityOracle.getCommunityWinstonTip(fileDataBaseReward);
-			const tipReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(0);
+			const tipReward = await this.priceEstimator.getBaseWinstonPriceForByteCount(new ByteCount(0));
 			totalPrice = totalPrice.plus(fileDataBaseReward);
 			totalPrice = totalPrice.plus(communityWinstonTip);
 			totalPrice = totalPrice.plus(tipReward);

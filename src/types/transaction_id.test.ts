@@ -69,6 +69,13 @@ describe('TransactionID class', () => {
 			expect(txid3.equals(txid2), `${txid3} and ${txid2}`).to.be.false;
 		});
 	});
+
+	describe('toJSON function', () => {
+		it('returns the correct JSON value', () => {
+			const txId = new TransactionID('XHGs4-ibl7Bct2Vqt4LDq9FxzjxU7CqqETg9oFz83vP');
+			expect(txId.toJSON()).to.equal('XHGs4-ibl7Bct2Vqt4LDq9FxzjxU7CqqETg9oFz83vP');
+		});
+	});
 });
 
 describe('TxID function', () => {

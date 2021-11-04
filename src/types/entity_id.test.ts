@@ -68,6 +68,13 @@ describe('EntityID class', () => {
 			expect(eid3.equals(eid2), `${eid3} and ${eid2}`).to.be.false;
 		});
 	});
+
+	describe('toJSON function', () => {
+		it('returns the correct JSON value', () => {
+			const entityId = new EntityID('01234567-89ab-cdef-0000-000000000000');
+			expect(entityId.toJSON()).to.equal('01234567-89ab-cdef-0000-000000000000');
+		});
+	});
 });
 
 describe('EID function', () => {
