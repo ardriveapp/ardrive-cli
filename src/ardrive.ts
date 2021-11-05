@@ -12,7 +12,12 @@ import {
 	EntityID,
 	FileID,
 	ByteCount,
-	MakeOptional
+	MakeOptional,
+	askOnConflicts,
+	renameOnConflicts,
+	replaceOnConflicts,
+	skipOnConflicts,
+	upsertOnConflicts
 } from './types';
 import { WalletDAO, Wallet, JWKWallet } from './wallet';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
@@ -138,12 +143,6 @@ export type FileNameConflictAskPrompt = ({
 	| { resolution: typeof skipOnConflicts | typeof replaceOnConflicts }
 	| { resolution: typeof renameOnConflicts; newFileName: string }
 >;
-
-export const skipOnConflicts = 'skip';
-export const replaceOnConflicts = 'replace';
-export const upsertOnConflicts = 'upsert';
-export const askOnConflicts = 'ask';
-export const renameOnConflicts = 'rename';
 
 export type FileNameConflictResolution =
 	| typeof skipOnConflicts
