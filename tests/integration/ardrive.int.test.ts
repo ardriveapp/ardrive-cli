@@ -27,6 +27,7 @@ import { ArFSDAO, PrivateDriveKeyData } from '../../src/arfsdao';
 import { deriveDriveKey, DrivePrivacy } from 'ardrive-core-js';
 import { DriveKey, FileID, Winston } from '../../src/types';
 import { ArFSFileToUpload, wrapFileOrFolder } from '../../src/arfs_file_wrapper';
+import { fileNameConflictAskPrompt } from '../../src/prompts';
 
 const entityIdRegex = /^([a-f]|[0-9]){8}-([a-f]|[0-9]){4}-([a-f]|[0-9]){4}-([a-f]|[0-9]){4}-([a-f]|[0-9]){12}$/;
 const trxIdRegex = /^([a-zA-Z]|[0-9]|-|_){43}$/;
@@ -679,6 +680,70 @@ describe('ArDrive class - integrated', () => {
 
 					// Pass expected existing file id, so that the file would be considered a revision
 					assertUploadFileExpectations(result, 3220, 178, 0, '1', 'private', existingFileId);
+				});
+
+				const askPrompt = { fileNameConflictAskPrompt };
+
+				it('returns the correct ArFSResult if destination folder has a conflicting FILE name and the conflict resolution is set to ask and the user supplies a new file name', async () => {
+					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
+
+					stub(askPrompt, 'fileNameConflictAskPrompt').resolves({
+						resolution: 'rename',
+						newFileName: 'New File!'
+					});
+
+					const result = await arDrive.uploadPrivateFile({
+						parentFolderId: stubEntityID,
+						wrappedFile,
+						destinationFileName: 'CONFLICTING_FILE_NAME',
+						conflictResolution: 'ask',
+						driveKey: await getStubDriveKey(),
+						fileNameConflictAskPrompt: askPrompt.fileNameConflictAskPrompt
+					});
+
+					assertUploadFileExpectations(result, 3220, 175, 0, '1', 'private');
+				});
+
+				it('returns the correct revision ArFSResult if destination folder has a conflicting FILE name and the conflict resolution is set to ask and the user chooses to replace', async () => {
+					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
+
+					stub(askPrompt, 'fileNameConflictAskPrompt').resolves({
+						resolution: 'replace'
+					});
+
+					const result = await arDrive.uploadPrivateFile({
+						parentFolderId: stubEntityID,
+						wrappedFile,
+						destinationFileName: 'CONFLICTING_FILE_NAME',
+						conflictResolution: 'ask',
+						driveKey: await getStubDriveKey(),
+						fileNameConflictAskPrompt: askPrompt.fileNameConflictAskPrompt
+					});
+
+					assertUploadFileExpectations(result, 3220, 187, 0, '1', 'private', existingFileId);
+				});
+
+				it('returns the correct empty ArFSResult if destination folder has a conflicting FILE name and the conflict resolution is set to ask and the user chooses to skip', async () => {
+					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
+
+					stub(askPrompt, 'fileNameConflictAskPrompt').resolves({
+						resolution: 'skip'
+					});
+
+					const result = await arDrive.uploadPrivateFile({
+						parentFolderId: stubEntityID,
+						wrappedFile,
+						destinationFileName: 'CONFLICTING_FILE_NAME',
+						conflictResolution: 'ask',
+						driveKey: await getStubDriveKey(),
+						fileNameConflictAskPrompt: askPrompt.fileNameConflictAskPrompt
+					});
+
+					expect(result).to.deep.equal({
+						created: [],
+						tips: [],
+						fees: {}
+					});
 				});
 
 				it('returns the correct ArFSResult', async () => {

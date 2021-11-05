@@ -860,6 +860,8 @@ export class ArDrive extends ArDriveAnonymous {
 			}
 		}
 
+		console.log('destinationFileName', destinationFileName);
+
 		const uploadBaseCosts = await this.estimateAndAssertCostOfFileUpload(
 			wrappedFile.fileStats.size,
 			await this.stubPrivateFileMetadata(wrappedFile, destinationFileName),
