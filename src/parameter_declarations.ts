@@ -10,6 +10,9 @@ export const DriveKeyParameter = 'driveKey';
 export const AddressParameter = 'address';
 export const DriveIdParameter = 'driveId';
 export const ArAmountParameter = 'arAmount';
+export const RewardParameter = 'reward';
+export const LastTxParameter = 'lastTx';
+export const TxFilePathParameter = 'txFilePath';
 export const DestinationAddressParameter = 'destAddress';
 export const TransactionIdParameter = 'txId';
 export const ConfirmationsParameter = 'confirmations';
@@ -122,6 +125,27 @@ Parameter.declare({
 	aliases: ['-a', '--ar-amount'],
 	description: `amount of AR to send to the --dest-address
 \t\t\t\t\t\t\t• does NOT include transaction mining base rewards`,
+	required: true
+});
+
+Parameter.declare({
+	name: RewardParameter,
+	aliases: ['-r', '--reward'],
+	description: `amount of Winston to set as the transaction reward`,
+	required: true
+});
+
+Parameter.declare({
+	name: LastTxParameter,
+	aliases: ['-l', '--last-tx'],
+	description: `the transaction ID of the last transaction sent by this wallet`,
+	required: true
+});
+
+Parameter.declare({
+	name: TxFilePathParameter,
+	aliases: ['-x', '--tx-file-path'],
+	description: `path on the filesystem from which to load the signed transaction data`,
 	required: true
 });
 
