@@ -823,11 +823,11 @@ export class ArDrive extends ArDriveAnonymous {
 		await this.assertOwnerAddress(owner);
 
 		// Derive destination name and names already within provided destination folder
-		const destFileName = destinationFileName ?? wrappedFile.getBaseFileName();
+		destinationFileName ??= wrappedFile.getBaseFileName();
 		const filesAndFolderNames = await this.arFsDao.getPrivateNameConflictInfoInFolder(parentFolderId, driveKey);
 
 		// Files cannot overwrite folder names
-		if (filesAndFolderNames.folders.find((f) => f.folderName === destFileName)) {
+		if (filesAndFolderNames.folders.find((f) => f.folderName === destinationFileName)) {
 			if (conflictResolution === skipOnConflicts) {
 				// Return empty result if resolution set to skip on FILE to FOLDER name conflicts
 				return emptyArFSResult;
@@ -837,7 +837,7 @@ export class ArDrive extends ArDriveAnonymous {
 			throw new Error(errorMessage.entityNameExists);
 		}
 
-		const conflictingFileName = filesAndFolderNames.files.find((f) => f.fileName === destFileName);
+		const conflictingFileName = filesAndFolderNames.files.find((f) => f.fileName === destinationFileName);
 
 		let existingFileId: FileID | undefined;
 
@@ -854,7 +854,10 @@ export class ArDrive extends ArDriveAnonymous {
 			}
 
 			existingFileId = conflictResult.existingFileId;
-			destinationFileName = conflictResult.newFileName;
+
+			if (conflictResult.newFileName) {
+				destinationFileName = conflictResult.newFileName;
+			}
 		}
 
 		const uploadBaseCosts = await this.estimateAndAssertCostOfFileUpload(
