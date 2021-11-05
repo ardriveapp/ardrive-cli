@@ -548,7 +548,7 @@ describe('ArDrive class - integrated', () => {
 					);
 
 					// Pass expected existing file id, so that the file would be considered a revision
-					assertUploadFileExpectations(result, W(3216), W(187), W(0), W(1), 'private', existingFileId);
+					assertUploadFileExpectations(result, W(3220), W(187), W(0), W(1), 'private', existingFileId);
 				});
 
 				it('returns the correct ArFSResult', async () => {
@@ -556,7 +556,7 @@ describe('ArDrive class - integrated', () => {
 					const stubDriveKey = await getStubDriveKey();
 
 					const result = await arDrive.uploadPrivateFile(stubEntityID, wrappedFile, stubDriveKey);
-					assertUploadFileExpectations(result, W(3216), W(182), W(0), W(1), 'private');
+					assertUploadFileExpectations(result, W(3220), W(182), W(0), W(1), 'private');
 				});
 			});
 

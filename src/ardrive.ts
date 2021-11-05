@@ -727,8 +727,7 @@ export class ArDrive extends ArDriveAnonymous {
 		if (+dataSize > Number.MAX_SAFE_INTEGER - 16) {
 			throw new Error(`Max un-encrypted dataSize allowed is ${Number.MAX_SAFE_INTEGER - 16}!`);
 		}
-		const modulo16 = +dataSize % 16;
-		return new ByteCount(+dataSize - modulo16 + 16);
+		return new ByteCount((+dataSize / 16 + 1) * 16);
 	}
 
 	async uploadPrivateFile(

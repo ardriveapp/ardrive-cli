@@ -15,7 +15,7 @@ import {
 } from './arfs_trx_data_types';
 import Transaction from 'arweave/node/lib/transaction';
 import { ContentType, DrivePrivacy, GQLTagInterface } from 'ardrive-core-js';
-import { DataContentType, DriveID, FileID, FolderID, UnixTime } from './types';
+import { DataContentType, DriveID, FileID, FolderID, JSON_CONTENT_TYPE, PRIVATE_CONTENT_TYPE, UnixTime } from './types';
 
 export abstract class ArFSObjectMetadataPrototype {
 	abstract protectedTags: string[];
@@ -64,7 +64,7 @@ export abstract class ArFSDriveMetaDataPrototype extends ArFSEntityMetaDataProto
 
 export class ArFSPublicDriveMetaDataPrototype extends ArFSDriveMetaDataPrototype {
 	readonly privacy: DrivePrivacy = 'public';
-	readonly contentType: ContentType = 'application/json';
+	readonly contentType: ContentType = JSON_CONTENT_TYPE;
 
 	constructor(readonly objectData: ArFSPublicDriveTransactionData, readonly driveId: DriveID) {
 		super();
@@ -73,7 +73,7 @@ export class ArFSPublicDriveMetaDataPrototype extends ArFSDriveMetaDataPrototype
 
 export class ArFSPrivateDriveMetaDataPrototype extends ArFSDriveMetaDataPrototype {
 	readonly privacy: DrivePrivacy = 'private';
-	readonly contentType: ContentType = 'application/octet-stream';
+	readonly contentType: ContentType = PRIVATE_CONTENT_TYPE;
 
 	constructor(readonly driveId: DriveID, readonly objectData: ArFSPrivateDriveTransactionData) {
 		super();
@@ -116,7 +116,7 @@ export abstract class ArFSFolderMetaDataPrototype extends ArFSEntityMetaDataProt
 }
 
 export class ArFSPublicFolderMetaDataPrototype extends ArFSFolderMetaDataPrototype {
-	readonly contentType: ContentType = 'application/json';
+	readonly contentType: ContentType = JSON_CONTENT_TYPE;
 
 	constructor(
 		readonly objectData: ArFSPublicFolderTransactionData,
@@ -130,7 +130,7 @@ export class ArFSPublicFolderMetaDataPrototype extends ArFSFolderMetaDataPrototy
 
 export class ArFSPrivateFolderMetaDataPrototype extends ArFSFolderMetaDataPrototype {
 	readonly privacy: DrivePrivacy = 'private';
-	readonly contentType: ContentType = 'application/octet-stream';
+	readonly contentType: ContentType = PRIVATE_CONTENT_TYPE;
 
 	constructor(
 		readonly driveId: DriveID,
@@ -173,7 +173,7 @@ export abstract class ArFSFileMetaDataPrototype extends ArFSEntityMetaDataProtot
 	}
 }
 export class ArFSPublicFileMetaDataPrototype extends ArFSFileMetaDataPrototype {
-	readonly contentType: ContentType = 'application/json';
+	readonly contentType: ContentType = JSON_CONTENT_TYPE;
 
 	constructor(
 		readonly objectData: ArFSPublicFileMetadataTransactionData,
@@ -186,7 +186,7 @@ export class ArFSPublicFileMetaDataPrototype extends ArFSFileMetaDataPrototype {
 }
 
 export class ArFSPrivateFileMetaDataPrototype extends ArFSFileMetaDataPrototype {
-	readonly contentType: ContentType = 'application/octet-stream';
+	readonly contentType: ContentType = PRIVATE_CONTENT_TYPE;
 
 	constructor(
 		readonly objectData: ArFSPrivateFileMetadataTransactionData,
@@ -210,7 +210,7 @@ export class ArFSPrivateFileMetaDataPrototype extends ArFSFileMetaDataPrototype 
 
 export abstract class ArFSFileDataPrototype extends ArFSObjectMetadataPrototype {
 	abstract readonly objectData: ArFSFileDataTransactionData;
-	abstract readonly contentType: DataContentType | 'application/octet-stream';
+	abstract readonly contentType: DataContentType | typeof PRIVATE_CONTENT_TYPE;
 
 	get protectedTags(): string[] {
 		return ['Content-Type'];
@@ -228,7 +228,7 @@ export class ArFSPublicFileDataPrototype extends ArFSFileDataPrototype {
 }
 
 export class ArFSPrivateFileDataPrototype extends ArFSFileDataPrototype {
-	readonly contentType = 'application/octet-stream';
+	readonly contentType = PRIVATE_CONTENT_TYPE;
 	constructor(readonly objectData: ArFSPrivateFileDataTransactionData) {
 		super();
 	}

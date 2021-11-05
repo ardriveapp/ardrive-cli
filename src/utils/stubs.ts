@@ -6,7 +6,18 @@ import {
 	ArFSPublicFile,
 	ArFSPrivateFile
 } from '../arfs_entities';
-import { ArweaveAddress, ArFS_O_11, DriveID, FolderID, EID, ByteCount, TxID, UnixTime } from '../types';
+import {
+	ArFS_O_11,
+	ArweaveAddress,
+	ByteCount,
+	DriveID,
+	EID,
+	FolderID,
+	JSON_CONTENT_TYPE,
+	PRIVATE_CONTENT_TYPE,
+	TxID,
+	UnixTime
+} from '../types';
 
 export const stubArweaveAddress = (address = 'abcdefghijklmnopqrxtuvwxyz123456789ABCDEFGH'): ArweaveAddress =>
 	new ArweaveAddress(address);
@@ -25,7 +36,7 @@ export const stubPublicDrive = new ArFSPublicDrive(
 	'Integration Test',
 	'1.0',
 	ArFS_O_11,
-	'application/json',
+	JSON_CONTENT_TYPE,
 	stubEntityID,
 	'drive',
 	'STUB DRIVE',
@@ -39,7 +50,7 @@ export const stubPrivateDrive = new ArFSPrivateDrive(
 	'Integration Test',
 	'1.0',
 	ArFS_O_11,
-	'application/octet-stream',
+	PRIVATE_CONTENT_TYPE,
 	stubEntityID,
 	'drive',
 	'STUB DRIVE',
@@ -69,7 +80,7 @@ export const stubPublicFolder = ({
 		'Integration Test',
 		'1.0',
 		ArFS_O_11,
-		'application/json',
+		JSON_CONTENT_TYPE,
 		driveId,
 		'folder',
 		folderName,
@@ -89,7 +100,7 @@ export const stubPrivateFolder = ({
 		'Integration Test',
 		'1.0',
 		ArFS_O_11,
-		'application/json',
+		JSON_CONTENT_TYPE,
 		driveId,
 		'folder',
 		folderName,
@@ -111,7 +122,7 @@ export const stubPublicFile = ({ driveId = stubEntityID, fileName = 'STUB NAME' 
 		'Integration Test',
 		'1.0',
 		ArFS_O_11,
-		'application/json',
+		JSON_CONTENT_TYPE,
 		driveId,
 		'file',
 		fileName,
@@ -122,7 +133,7 @@ export const stubPublicFile = ({ driveId = stubEntityID, fileName = 'STUB NAME' 
 		new ByteCount(1234567890),
 		new UnixTime(0),
 		stubTransactionID,
-		'application/json'
+		JSON_CONTENT_TYPE
 	);
 
 export const stubPrivateFile = ({ driveId = stubEntityID, fileName = 'STUB NAME' }: StubFileParams): ArFSPrivateFile =>
@@ -130,7 +141,7 @@ export const stubPrivateFile = ({ driveId = stubEntityID, fileName = 'STUB NAME'
 		'Integration Test',
 		'1.0',
 		ArFS_O_11,
-		'application/json',
+		JSON_CONTENT_TYPE,
 		driveId,
 		'file',
 		fileName,
@@ -141,7 +152,7 @@ export const stubPrivateFile = ({ driveId = stubEntityID, fileName = 'STUB NAME'
 		new ByteCount(1234567890),
 		new UnixTime(0),
 		stubTransactionID,
-		'application/json',
+		JSON_CONTENT_TYPE,
 		'stubCipher',
 		'stubIV'
 	);

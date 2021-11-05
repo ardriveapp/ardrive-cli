@@ -71,14 +71,15 @@ describe('ArDrive class', () => {
 		it('returns the expected values for valid inputs', () => {
 			const inputsAndExpectedOutputs = [
 				[0, 16],
-				[1, 16],
-				[15, 16],
+				[1, 17],
+				[15, 31],
 				[16, 32],
-				[17, 32],
-				[Number.MAX_SAFE_INTEGER - 16, Number.MAX_SAFE_INTEGER - 15]
+				[17, 33],
+				[Number.MAX_SAFE_INTEGER - 16, Number.MAX_SAFE_INTEGER]
 			].map((pair) => pair.map((vol) => new ByteCount(vol)));
 			inputsAndExpectedOutputs.forEach(([input, expectedOutput]) => {
-				expect(arDrive.encryptedDataSize(input).equals(expectedOutput)).to.be.true;
+				const actualSize = arDrive.encryptedDataSize(input);
+				expect(actualSize.equals(expectedOutput), `${actualSize} === ${expectedOutput}`).to.be.true;
 			});
 		});
 	});
@@ -133,7 +134,7 @@ describe('ArDrive class', () => {
 				'private'
 			);
 			expect(`${actual.metaDataBaseReward}`).to.equal('147');
-			expect(`${actual.fileDataBaseReward}`).to.equal('1234576');
+			expect(`${actual.fileDataBaseReward}`).to.equal('1234583');
 			expect(`${actual.communityWinstonTip}`).to.equal('9876543210');
 		});
 	});

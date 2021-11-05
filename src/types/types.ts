@@ -5,6 +5,9 @@ export const CURRENT_ARFS_VERSION = ArFS_O_11;
 export const DEFAULT_APP_NAME = 'ArDrive-Core';
 export const DEFAULT_APP_VERSION = '1.0.0';
 
+export const JSON_CONTENT_TYPE = 'application/json';
+export const PRIVATE_CONTENT_TYPE = 'application/octet-stream';
+
 export type PublicKey = string;
 
 export type NetworkReward = Winston;
