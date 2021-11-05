@@ -59,6 +59,7 @@ export class CLIAction {
 				return exitCode;
 			})
 			.catch((err: Error) => {
+				console.log(`Error: ${err.message}`);
 				this.rejectAwaiter(err);
 				return ERROR_EXIT_CODE;
 			});
