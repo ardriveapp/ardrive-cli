@@ -52,6 +52,7 @@ import { errorMessage } from './error_message';
 import { PrivateKeyData } from './private_key_data';
 import { ArweaveAddress } from './arweave_address';
 import { WithDriveKey } from './arfs_entity_result_factory';
+import { fileConflictResolution } from './utils/file_conflict_resolution';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 
@@ -864,57 +865,19 @@ export class ArDrive extends ArDriveAnonymous {
 		let existingFileId: FileID | undefined;
 
 		if (conflictingFileName) {
-			if (conflictResolution === skipOnConflicts) {
-				// File has the same name, skip the upload
+			const conflictResult = await fileConflictResolution({
+				conflictResolution,
+				conflictingFileInfo: conflictingFileName,
+				hasSameLastModifiedDate: conflictingFileName.lastModifiedDate === wrappedFile.lastModifiedDate,
+				fileNameConflictAskPrompt
+			});
+
+			if (conflictResult === skipOnConflicts) {
 				return emptyArFSResult;
 			}
 
-			if (conflictResolution === upsertOnConflicts) {
-				if (conflictingFileName.lastModifiedDate === wrappedFile.lastModifiedDate) {
-					// These files have the same name and last modified date, skip the upload
-					return emptyArFSResult;
-				}
-
-				// Otherwise, proceed with creating a new revision
-				existingFileId = conflictingFileName.fileId;
-			}
-
-			if (conflictResolution === replaceOnConflicts) {
-				// Proceed with new revision
-				existingFileId = conflictingFileName.fileId;
-			}
-
-			if (conflictResolution === 'ask') {
-				if (!fileNameConflictAskPrompt) {
-					throw new Error(
-						'App must provide a file name conflict resolution prompt to use the `ask` conflict resolution!'
-					);
-				}
-
-				const userInput = await fileNameConflictAskPrompt({
-					fileName: conflictingFileName.fileName,
-					fileId: conflictingFileName.fileId,
-					hasSameLastModifiedDate: conflictingFileName.lastModifiedDate === wrappedFile.lastModifiedDate
-				});
-
-				switch (userInput.resolution) {
-					case skipOnConflicts:
-						return emptyArFSResult;
-
-					case renameOnConflicts:
-						if (destinationFileName === userInput.newFileName) {
-							throw new Error('You must provide a different name!');
-						}
-						// Use specified new file name
-						destinationFileName = userInput.newFileName;
-						break;
-
-					case replaceOnConflicts:
-						// Proceed with new revision
-						existingFileId = conflictingFileName.fileId;
-						break;
-				}
-			}
+			existingFileId = conflictResult.existingFileId;
+			destinationFileName = conflictResult.newFileName;
 		}
 
 		const uploadBaseCosts = await this.estimateAndAssertCostOfFileUpload(

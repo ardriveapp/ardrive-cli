@@ -11,7 +11,7 @@ interface FolderNameAndId {
 	folderId: FolderID;
 }
 
-interface FileConflictInfo {
+export interface FileConflictInfo {
 	fileName: string;
 	fileId: FileID;
 	lastModifiedDate: UnixTime;
