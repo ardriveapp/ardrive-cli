@@ -1,13 +1,22 @@
-import { FileNameConflictAskPrompt, FileNameConflictResolution } from '../ardrive';
 import {
 	skipOnConflicts,
 	replaceOnConflicts,
 	upsertOnConflicts,
 	askOnConflicts,
 	renameOnConflicts,
-	FileID
+	FileID,
+	FileNameConflictResolution
 } from '../types';
 import { FileConflictInfo } from './mapper_functions';
+
+export type FileNameConflictAskPrompt = (params: {
+	fileName: string;
+	fileId: FileID;
+	hasSameLastModifiedDate: boolean;
+}) => Promise<
+	| { resolution: typeof skipOnConflicts | typeof replaceOnConflicts }
+	| { resolution: typeof renameOnConflicts; newFileName: string }
+>;
 
 type FileConflictResolution = (params: {
 	conflictResolution: FileNameConflictResolution;

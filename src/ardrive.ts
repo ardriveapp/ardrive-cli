@@ -13,11 +13,9 @@ import {
 	FileID,
 	ByteCount,
 	MakeOptional,
-	askOnConflicts,
-	renameOnConflicts,
-	replaceOnConflicts,
 	skipOnConflicts,
-	upsertOnConflicts
+	upsertOnConflicts,
+	FileNameConflictResolution
 } from './types';
 import { WalletDAO, Wallet, JWKWallet } from './wallet';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
@@ -52,7 +50,7 @@ import { errorMessage } from './error_message';
 import { PrivateKeyData } from './private_key_data';
 import { ArweaveAddress } from './arweave_address';
 import { WithDriveKey } from './arfs_entity_result_factory';
-import { fileConflictResolution } from './utils/file_conflict_resolution';
+import { fileConflictResolution, FileNameConflictAskPrompt } from './utils/file_conflict_resolution';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 
@@ -129,27 +127,6 @@ interface MovePublicFolderParams {
 	newParentFolderId: FolderID;
 }
 type MovePrivateFolderParams = MovePublicFolderParams & WithDriveKey;
-
-export interface FileNameConflictAskPromptParams {
-	fileName: string;
-	fileId: FileID;
-	hasSameLastModifiedDate: boolean;
-}
-
-export type FileNameConflictAskPrompt = ({
-	fileName,
-	fileId,
-	hasSameLastModifiedDate
-}: FileNameConflictAskPromptParams) => Promise<
-	| { resolution: typeof skipOnConflicts | typeof replaceOnConflicts }
-	| { resolution: typeof renameOnConflicts; newFileName: string }
->;
-
-export type FileNameConflictResolution =
-	| typeof skipOnConflicts
-	| typeof replaceOnConflicts
-	| typeof upsertOnConflicts
-	| typeof askOnConflicts;
 
 export interface UploadParams {
 	parentFolderId: FolderID;

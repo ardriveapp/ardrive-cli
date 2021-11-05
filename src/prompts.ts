@@ -1,6 +1,6 @@
 import prompts from 'prompts';
-import { FileNameConflictAskPrompt } from './ardrive';
 import { renameOnConflicts, replaceOnConflicts, skipOnConflicts } from './types';
+import { FileNameConflictAskPrompt } from './utils/file_conflict_resolution';
 
 export const fileNameConflictAskPrompt: FileNameConflictAskPrompt = async ({
 	fileId,
