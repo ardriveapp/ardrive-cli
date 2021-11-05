@@ -108,7 +108,8 @@ new CLICommand({
 									wrappedFolder: wrappedEntity,
 									driveKey,
 									destParentFolderName: destinationFileName,
-									conflictResolution
+									conflictResolution,
+									fileNameConflictAskPrompt
 								});
 							} else {
 								return arDrive.uploadPrivateFile({
@@ -126,14 +127,16 @@ new CLICommand({
 									parentFolderId,
 									wrappedFolder: wrappedEntity,
 									destParentFolderName: destinationFileName,
-									conflictResolution
+									conflictResolution,
+									fileNameConflictAskPrompt
 								});
 							} else {
 								return arDrive.uploadPublicFile({
 									parentFolderId,
 									wrappedFile: wrappedEntity,
 									destinationFileName,
-									conflictResolution
+									conflictResolution,
+									fileNameConflictAskPrompt
 								});
 							}
 						}

@@ -513,7 +513,8 @@ export class ArDrive extends ArDriveAnonymous {
 		parentFolderId,
 		wrappedFile,
 		destinationFileName,
-		conflictResolution = upsertOnConflicts
+		conflictResolution = upsertOnConflicts,
+		fileNameConflictAskPrompt
 	}: UploadPublicFileParams): Promise<ArFSResult> {
 		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
 
@@ -530,33 +531,30 @@ export class ArDrive extends ArDriveAnonymous {
 				// Return empty result if resolution set to skip on FILE to FOLDER name conflicts
 				return emptyArFSResult;
 			}
-
-			// TODO: Add optional interactive prompt to resolve name conflicts in ticket PE-599
 			throw new Error(errorMessage.entityNameExists);
 		}
 
 		const conflictingFileName = filesAndFolderNames.files.find((f) => f.fileName === destFileName);
 
+		let existingFileId: FileID | undefined;
 		if (conflictingFileName) {
-			if (conflictResolution === skipOnConflicts) {
-				// File has the same name, skip the upload
+			const conflictResult = await fileConflictResolution({
+				conflictResolution,
+				conflictingFileInfo: conflictingFileName,
+				hasSameLastModifiedDate: conflictingFileName.lastModifiedDate === wrappedFile.lastModifiedDate,
+				fileNameConflictAskPrompt
+			});
+
+			if (conflictResult === skipOnConflicts) {
 				return emptyArFSResult;
 			}
 
-			if (
-				conflictResolution === upsertOnConflicts &&
-				conflictingFileName.lastModifiedDate === wrappedFile.lastModifiedDate
-			) {
-				// These files have the same name and last modified date, skip the upload
-				return emptyArFSResult;
-			}
+			existingFileId = conflictResult.existingFileId;
 
-			// TODO: Handle this.conflictResolution === 'ask' PE-639
+			if (conflictResult.newFileName) {
+				destinationFileName = conflictResult.newFileName;
+			}
 		}
-
-		// File is a new revision if destination name conflicts
-		// with an existing file in the destination folder
-		const existingFileId = conflictingFileName?.fileId;
 
 		const uploadBaseCosts = await this.estimateAndAssertCostOfFileUpload(
 			wrappedFile.fileStats.size,
@@ -832,15 +830,12 @@ export class ArDrive extends ArDriveAnonymous {
 				// Return empty result if resolution set to skip on FILE to FOLDER name conflicts
 				return emptyArFSResult;
 			}
-
-			// TODO: Add optional interactive prompt to resolve name conflicts in ticket PE-599
 			throw new Error(errorMessage.entityNameExists);
 		}
 
 		const conflictingFileName = filesAndFolderNames.files.find((f) => f.fileName === destinationFileName);
 
 		let existingFileId: FileID | undefined;
-
 		if (conflictingFileName) {
 			const conflictResult = await fileConflictResolution({
 				conflictResolution,
@@ -859,8 +854,6 @@ export class ArDrive extends ArDriveAnonymous {
 				destinationFileName = conflictResult.newFileName;
 			}
 		}
-
-		console.log('destinationFileName', destinationFileName);
 
 		const uploadBaseCosts = await this.estimateAndAssertCostOfFileUpload(
 			wrappedFile.fileStats.size,
