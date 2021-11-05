@@ -421,7 +421,8 @@ export class ArDrive extends ArDriveAnonymous {
 
 		const childrenFolderIds = await this.arFsDao.getPublicChildrenFolderIds({
 			folderId,
-			driveId: destFolderDriveId
+			driveId: destFolderDriveId,
+			owner
 		});
 
 		if (childrenFolderIds.includes(newParentFolderId)) {
@@ -488,7 +489,8 @@ export class ArDrive extends ArDriveAnonymous {
 		const childrenFolderIds = await this.arFsDao.getPrivateChildrenFolderIds({
 			folderId,
 			driveId: destFolderDriveId,
-			driveKey
+			driveKey,
+			owner
 		});
 
 		if (childrenFolderIds.includes(newParentFolderId)) {
@@ -825,8 +827,8 @@ export class ArDrive extends ArDriveAnonymous {
 		if (dataSize > Number.MAX_SAFE_INTEGER - 16) {
 			throw new Error(`Max un-encrypted dataSize allowed is ${Number.MAX_SAFE_INTEGER - 16}!`);
 		}
-		const modulo16 = dataSize % 16;
-		return dataSize - modulo16 + 16;
+
+		return (dataSize / 16 + 1) * 16;
 	}
 
 	async uploadPrivateFile({

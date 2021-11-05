@@ -643,7 +643,7 @@ describe('ArDrive class - integrated', () => {
 					});
 
 					// Pass expected existing file id, so that the file would be considered a revision
-					assertUploadFileExpectations(result, 3216, 187, 0, '1', 'private', existingFileId);
+					assertUploadFileExpectations(result, 3220, 187, 0, '1', 'private', existingFileId);
 				});
 
 				it('returns an empty ArFSResult if destination folder has a conflicting FILE name and a matching last modified date and the conflict resolution is set to upsert', async () => {
@@ -678,7 +678,7 @@ describe('ArDrive class - integrated', () => {
 					});
 
 					// Pass expected existing file id, so that the file would be considered a revision
-					assertUploadFileExpectations(result, 3216, 178, 0, '1', 'private', existingFileId);
+					assertUploadFileExpectations(result, 3220, 178, 0, '1', 'private', existingFileId);
 				});
 
 				it('returns the correct ArFSResult', async () => {
@@ -690,7 +690,7 @@ describe('ArDrive class - integrated', () => {
 						wrappedFile,
 						driveKey: stubDriveKey
 					});
-					assertUploadFileExpectations(result, 3216, 182, 0, '1', 'private');
+					assertUploadFileExpectations(result, 3220, 182, 0, '1', 'private');
 				});
 			});
 

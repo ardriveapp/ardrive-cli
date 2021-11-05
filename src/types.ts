@@ -9,6 +9,9 @@ export const upsertOnConflicts = 'upsert';
 export const askOnConflicts = 'ask';
 export const renameOnConflicts = 'rename';
 
+export const JSON_CONTENT_TYPE = 'application/json';
+export const PRIVATE_CONTENT_TYPE = 'application/octet-stream';
+
 export type PublicKey = string;
 export type SeedPhrase = string;
 
