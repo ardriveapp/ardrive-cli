@@ -880,7 +880,7 @@ ardrive <command> --help
 [ardrive]: https://ardrive.io
 [arweave]: https://ardrive.io/what-is-arweave/
 [ardrive-github]: https://github.com/ardriveapp/
-[arfs]: https://ardrive.atlassian.net/l/c/yDcGDbUm
+[arfs]: https://ardrive.atlassian.net/wiki/spaces/help/pages/278495281/Arweave+File+System
 [ardrive-web-app]: https://app.ardrive.io
 [ardrive-core]: https://github.com/ardriveapp/ardrive-core-js
 [yarn-install]: https://yarnpkg.com/getting-started/install
