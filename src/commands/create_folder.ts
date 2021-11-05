@@ -32,7 +32,7 @@ new CLICommand({
 		});
 
 		const parentFolderId = EID(parameters.getRequiredParameterValue(ParentFolderIdParameter));
-		const driveId = await ardrive.getDriveIdForFolderId(options.parentFolderId);
+		const driveId = await ardrive.getDriveIdForFolderId(parentFolderId);
 		const folderName = options.folderName;
 
 		const createFolderResult = await (async function () {

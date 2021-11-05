@@ -10,7 +10,7 @@ import {
 	LocalFilesParameter,
 	ParentFolderIdParameter
 } from '../parameter_declarations';
-import { DriveKey, FolderID } from '../types';
+import { DriveKey, EID, FolderID } from '../types';
 import { readJWKFile } from '../utils';
 import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { CLIAction } from '../CLICommand/action';
@@ -63,9 +63,9 @@ new CLICommand({
 			}
 
 			const singleParameter = {
-				parentFolderId: options.parentFolderId,
+				parentFolderId: EID(options.parentFolderId),
 				wrappedEntity: wrapFileOrFolder(options.localFilePath),
-				destinationFileName: options.destFileName
+				destinationFileName: options.destFileName as string
 			};
 
 			return [singleParameter];

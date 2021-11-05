@@ -1,5 +1,5 @@
 import { CLICommand, ParametersHelper } from '../CLICommand';
-import { DriveID } from '../types';
+import { EID } from '../types';
 import { DriveIdParameter, GetAllRevisionsParameter, DrivePrivacyParameters } from '../parameter_declarations';
 import { arDriveAnonymousFactory, arDriveFactory } from '..';
 import { ArFSPrivateDrive, ArFSPublicDrive } from '../arfs_entities';
@@ -12,7 +12,8 @@ new CLICommand({
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
 
-		const driveId: DriveID = options.driveId;
+		const driveId = EID(parameters.getRequiredParameterValue(DriveIdParameter));
+
 		// const shouldGetAllRevisions: boolean = options.getAllRevisions;
 
 		const result: Partial<ArFSPublicDrive | ArFSPrivateDrive> = await (async function () {

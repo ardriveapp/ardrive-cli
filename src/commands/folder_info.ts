@@ -1,5 +1,5 @@
 import { CLICommand, ParametersHelper } from '../CLICommand';
-import { FolderID, EID } from '../types';
+import { EID } from '../types';
 import { GetAllRevisionsParameter, FolderIdParameter, DrivePrivacyParameters } from '../parameter_declarations';
 import { arDriveAnonymousFactory, arDriveFactory } from '..';
 import { ArFSPrivateFolder, ArFSPublicFolder } from '../arfs_entities';
@@ -14,7 +14,7 @@ new CLICommand({
 		// const shouldGetAllRevisions: boolean = options.getAllRevisions;
 
 		const result: Partial<ArFSPublicFolder | ArFSPrivateFolder> = await (async function () {
-			const folderId: FolderID = options.folderId;
+			const folderId = EID(parameters.getRequiredParameterValue(FolderIdParameter));
 
 			if (await parameters.getIsPrivate()) {
 				const wallet = await parameters.getRequiredWallet();
@@ -29,7 +29,6 @@ new CLICommand({
 				return arDrive.getPrivateFolder(folderId, driveKey, driveOwner /*, shouldGetAllRevisions*/);
 			} else {
 				const arDrive = arDriveAnonymousFactory();
-				const folderId = EID(options.folderId);
 				return arDrive.getPublicFolder(folderId /*, shouldGetAllRevisions*/);
 			}
 		})();
