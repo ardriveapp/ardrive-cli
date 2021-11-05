@@ -454,6 +454,7 @@ describe('ArDrive class - integrated', () => {
 		describe('file function', () => {
 			const matchingLastModifiedDate = 420;
 			const differentLastModifiedDate = 1337;
+			const askPrompt = { fileNameConflictAskPrompt };
 
 			describe('uploadPublicFile', () => {
 				const wrappedFile = wrapFileOrFolder('test_wallet.json') as ArFSFileToUpload;
@@ -558,6 +559,65 @@ describe('ArDrive class - integrated', () => {
 
 					// Pass expected existing file id, so that the file would be considered a revision
 					assertUploadFileExpectations(result, 3204, 162, 0, '1', 'public', existingFileId);
+				});
+
+				it('returns the correct ArFSResult if destination folder has a conflicting FILE name and the conflict resolution is set to ask and the user supplies a new file name', async () => {
+					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
+
+					stub(askPrompt, 'fileNameConflictAskPrompt').resolves({
+						resolution: 'rename',
+						newFileName: 'New File!'
+					});
+
+					const result = await arDrive.uploadPublicFile({
+						parentFolderId: stubEntityID,
+						wrappedFile,
+						destinationFileName: 'CONFLICTING_FILE_NAME',
+						conflictResolution: 'ask',
+						fileNameConflictAskPrompt: askPrompt.fileNameConflictAskPrompt
+					});
+
+					assertUploadFileExpectations(result, 3204, 159, 0, '1', 'public');
+				});
+
+				it('returns the correct revision ArFSResult if destination folder has a conflicting FILE name and the conflict resolution is set to ask and the user chooses to replace', async () => {
+					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
+
+					stub(askPrompt, 'fileNameConflictAskPrompt').resolves({
+						resolution: 'replace'
+					});
+
+					const result = await arDrive.uploadPublicFile({
+						parentFolderId: stubEntityID,
+						wrappedFile,
+						destinationFileName: 'CONFLICTING_FILE_NAME',
+						conflictResolution: 'ask',
+						fileNameConflictAskPrompt: askPrompt.fileNameConflictAskPrompt
+					});
+
+					assertUploadFileExpectations(result, 3204, 171, 0, '1', 'public', existingFileId);
+				});
+
+				it('returns the correct empty ArFSResult if destination folder has a conflicting FILE name and the conflict resolution is set to ask and the user chooses to skip', async () => {
+					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
+
+					stub(askPrompt, 'fileNameConflictAskPrompt').resolves({
+						resolution: 'skip'
+					});
+
+					const result = await arDrive.uploadPublicFile({
+						parentFolderId: stubEntityID,
+						wrappedFile,
+						destinationFileName: 'CONFLICTING_FILE_NAME',
+						conflictResolution: 'ask',
+						fileNameConflictAskPrompt: askPrompt.fileNameConflictAskPrompt
+					});
+
+					expect(result).to.deep.equal({
+						created: [],
+						tips: [],
+						fees: {}
+					});
 				});
 
 				it('returns the correct ArFSResult', async () => {
@@ -681,8 +741,6 @@ describe('ArDrive class - integrated', () => {
 					// Pass expected existing file id, so that the file would be considered a revision
 					assertUploadFileExpectations(result, 3220, 178, 0, '1', 'private', existingFileId);
 				});
-
-				const askPrompt = { fileNameConflictAskPrompt };
 
 				it('returns the correct ArFSResult if destination folder has a conflicting FILE name and the conflict resolution is set to ask and the user supplies a new file name', async () => {
 					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
