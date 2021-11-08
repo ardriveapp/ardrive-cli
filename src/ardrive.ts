@@ -51,6 +51,8 @@ import { errorMessage } from './error_message';
 import { PrivateKeyData } from './private_key_data';
 import { EntityNamesAndIds } from './utils/mapper_functions';
 import { WithDriveKey } from './arfs_entity_result_factory';
+import { createWriteStream } from 'fs';
+import { Stream } from 'stream';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 
@@ -179,6 +181,14 @@ export class ArDriveAnonymous extends ArDriveType {
 
 		const children = await this.arFsDao.listPublicFolder({ folderId, maxDepth, includeRoot, owner });
 		return children;
+	}
+
+	async downloadPublicFile(publicFile: ArFSPublicFile, path: string): Promise<Stream> {
+		const fileTxId = publicFile.dataTxId;
+		const downloadStream = await this.arFsDao.downloadPublicFile(fileTxId);
+		const writeStream = createWriteStream(path);
+		downloadStream.pipe(writeStream);
+		return downloadStream;
 	}
 }
 

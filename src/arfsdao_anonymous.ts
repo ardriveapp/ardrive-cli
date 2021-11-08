@@ -1,7 +1,5 @@
 /* eslint-disable no-console */
 import Arweave from 'arweave';
-import { GQLEdgeInterface } from 'ardrive-core-js';
-import { ASCENDING_ORDER, buildQuery } from './query';
 import {
 	DriveID,
 	FolderID,
@@ -10,8 +8,11 @@ import {
 	DEFAULT_APP_VERSION,
 	AnyEntityID,
 	ArweaveAddress,
-	EID
+	EID,
+	TransactionID
 } from './types';
+import { gatewayURL, GQLEdgeInterface } from 'ardrive-core-js';
+import { ASCENDING_ORDER, buildQuery } from './query';
 import { latestRevisionFilter, latestRevisionFilterForDrives } from './utils/filter_methods';
 import { FolderHierarchy } from './folderHierarchy';
 import { ArFSPublicDriveBuilder, SafeArFSDriveBuilder } from './utils/arfs_builders/arfs_drive_builders';
@@ -25,6 +26,8 @@ import {
 	ArFSPublicFolder
 } from './arfs_entities';
 import { PrivateKeyData } from './private_key_data';
+import axios from 'axios';
+import { Stream } from 'stream';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 
@@ -276,5 +279,15 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 
 		const entitiesWithPath = children.map((entity) => new ArFSPublicFileOrFolderWithPaths(entity, hierarchy));
 		return entitiesWithPath;
+	}
+
+	async downloadPublicFile(fileTxId: TransactionID): Promise<Stream> {
+		const dataTxUrl = `${gatewayURL}${fileTxId}`;
+		const response = await axios({
+			method: 'get',
+			url: dataTxUrl,
+			responseType: 'stream'
+		});
+		return response.data;
 	}
 }

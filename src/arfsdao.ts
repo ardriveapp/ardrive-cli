@@ -970,4 +970,16 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			throw new Error(`Invalid password! Please type the same as your other private drives!`);
 		}
 	}
+
+	// async downloadPrivateFile(fileTxId: TransactionID, driveKey: DriveKey): Promise<Stream> {
+	// 	const dataTxUrl = `${gatewayURL}${fileTxId}`;
+	// 	const fileDataStream = new Stream();
+	// 	const response = await axios({
+	// 		method: 'get',
+	// 		url: dataTxUrl,
+	// 		responseType: 'stream'
+	// 	});
+	// 	response.data.pipe(fileDataStream);
+	// 	return fileDataStream;
+	// }
 }
