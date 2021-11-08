@@ -17,11 +17,13 @@ new CLICommand({
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
 		const wallet: Wallet = await parameters.getRequiredWallet();
+		const dryRun = !!parameters.getParameterValue(DryRunParameter);
+		const driveName = parameters.getRequiredParameterValue(DriveNameParameter);
 
 		const ardrive = arDriveFactory({
 			wallet: wallet,
 			feeMultiple: parameters.getOptionalBoostSetting(),
-			dryRun: options.dryRun
+			dryRun
 		});
 		const createDriveResult = await (async function () {
 			if (await parameters.getIsPrivate()) {
@@ -29,9 +31,9 @@ new CLICommand({
 				const walletPrivateKey = (wallet as JWKWallet).getPrivateKey();
 				const newDriveData = await PrivateDriveKeyData.from(drivePassword, walletPrivateKey);
 				await ardrive.assertValidPassword(drivePassword);
-				return ardrive.createPrivateDrive(options.driveName, newDriveData);
+				return ardrive.createPrivateDrive(driveName, newDriveData);
 			} else {
-				return ardrive.createPublicDrive(options.driveName);
+				return ardrive.createPublicDrive(driveName);
 			}
 		})();
 		console.log(JSON.stringify(createDriveResult, null, 4));

@@ -1,5 +1,5 @@
 import { cliWalletDao } from '..';
-import { ArweaveAddress, AR, FeeMultiple } from '../types';
+import { ArweaveAddress, AR } from '../types';
 import { CLICommand } from '../CLICommand';
 import { ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
@@ -17,23 +17,28 @@ new CLICommand({
 	name: 'send-ar',
 	parameters: [ArAmountParameter, DestinationAddressParameter, WalletFileParameter, BoostParameter, DryRunParameter],
 	action: new CLIAction(async function action(options) {
-		assertARPrecision(options.arAmount);
 		const parameters = new ParametersHelper(options);
-		const arAmount = AR.from(options.arAmount);
-		const destAddress = new ArweaveAddress(options.destAddress);
+		const arAmount = parameters.getRequiredParameterValueTyped(ArAmountParameter, AR.from);
+		assertARPrecision(`${arAmount}`);
+		const destAddress = parameters.getRequiredParameterValueTyped(
+			DestinationAddressParameter,
+			(addr) => new ArweaveAddress(addr)
+		);
 		const wallet = await parameters.getRequiredWallet();
 		const walletAddress = await wallet.getAddress();
+		const boost = parameters.getOptionalBoostSetting();
 		console.log(`Source address: ${walletAddress}`);
 		console.log(`AR amount sent: ${arAmount.toString()}`);
 		console.log(`Destination address: ${destAddress}`);
-		const rewardSetting = options.boost ? { feeMultiple: new FeeMultiple(+options.boost) } : undefined;
+		const rewardSetting = boost ? { feeMultiple: boost } : undefined;
+		const dryRun = !!parameters.getParameterValue(DryRunParameter);
 
 		const arTransferResult = await cliWalletDao.sendARToAddress(
 			arAmount,
 			wallet,
 			destAddress,
 			rewardSetting,
-			options.dryRun,
+			dryRun,
 			[
 				{ name: 'App-Name', value: 'ArDrive-CLI' },
 				{ name: 'App-Version', value: '2.0' },

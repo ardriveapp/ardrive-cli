@@ -1,10 +1,7 @@
 import { CommanderError } from 'commander';
+import { ParameterName } from './parameter';
 
-export interface ParsedParameters {
-	// TODO: make parameterName to have type ParameterName
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	[parameterName: string /** ParameterName */]: any;
-}
+export type ParsedParameters = Record<ParameterName, unknown>;
 
 /**
  * @name CliApiObject

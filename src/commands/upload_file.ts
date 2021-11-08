@@ -8,7 +8,8 @@ import {
 	DryRunParameter,
 	LocalFilePathParameter,
 	LocalFilesParameter,
-	ParentFolderIdParameter
+	ParentFolderIdParameter,
+	WalletFileParameter
 } from '../parameter_declarations';
 import { DriveKey, EID, FolderID } from '../types';
 import { readJWKFile } from '../utils';
@@ -35,17 +36,21 @@ new CLICommand({
 		...DrivePrivacyParameters
 	],
 	action: new CLIAction(async function action(options) {
+		const parameters = new ParametersHelper(options);
 		const filesToUpload: UploadFileParameter[] = await (async function (): Promise<UploadFileParameter[]> {
-			if (options.localFiles) {
+			const localFiles = parameters.getParameterValue(LocalFilesParameter);
+			if (localFiles) {
 				const COLUMN_SEPARATOR = ',';
 				const ROW_SEPARATOR = '.';
-				const csvRows = options.localFiles.split(ROW_SEPARATOR);
+				const csvRows = localFiles.split(ROW_SEPARATOR);
 				const fileParameters: UploadFileParameter[] = csvRows.map((row: string) => {
 					const csvFields = row.split(COLUMN_SEPARATOR).map((f: string) => f.trim());
-					const [parentFolderId, localFilePath, destinationFileName, drivePassword, driveKey] = csvFields;
+					const [_parentFolderId, localFilePath, destinationFileName, drivePassword, _driveKey] = csvFields;
 
 					// TODO: Make CSV uploads more bulk performant
 					const wrappedEntity = wrapFileOrFolder(localFilePath);
+					const parentFolderId = EID(_parentFolderId);
+					const driveKey = Buffer.from(_driveKey);
 
 					return {
 						parentFolderId,
@@ -62,23 +67,24 @@ new CLICommand({
 				throw new Error('Must provide a local file path!');
 			}
 
+			const parentFolderId: FolderID = parameters.getRequiredParameterValueTyped(ParentFolderIdParameter, EID);
+			const localFilePath = parameters.getRequiredParameterValueTyped(LocalFilePathParameter, wrapFileOrFolder);
 			const singleParameter = {
-				parentFolderId: EID(options.parentFolderId),
-				wrappedEntity: wrapFileOrFolder(options.localFilePath),
+				parentFolderId: parentFolderId,
+				wrappedEntity: localFilePath,
 				destinationFileName: options.destFileName as string
 			};
 
 			return [singleParameter];
 		})();
 		if (filesToUpload.length) {
-			const parameters = new ParametersHelper(options);
-
-			const wallet = readJWKFile(options.walletFile);
+			const walletFile = parameters.getRequiredParameterValue(WalletFileParameter);
+			const wallet = readJWKFile(walletFile);
 
 			const arDrive = arDriveFactory({
 				wallet: wallet,
 				feeMultiple: parameters.getOptionalBoostSetting(),
-				dryRun: options.dryRun
+				dryRun: !!options.dryRun
 			});
 
 			await Promise.all(
