@@ -222,7 +222,9 @@ export class ParametersHelper {
 	/**
 	 * @param {ParameterName} parameterName
 	 * @returns {string | undefined}
-	 * Returns the string value for the specific parameter; throws an error if not set
+	 * @param {(input: any) => T} - A closure that casts the primitive value into a safe type
+	 * @throws - When the required parameter value has a falsy value
+	 * Returns the string value for the specific parameter
 	 */
 	public getRequiredParameterValue<T = string>(
 		parameterName: ParameterName,
