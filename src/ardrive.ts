@@ -53,7 +53,6 @@ import { EntityNamesAndIds } from './utils/mapper_functions';
 import { WithDriveKey } from './arfs_entity_result_factory';
 import { createWriteStream } from 'fs';
 import { Stream } from 'stream';
-
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 
 export interface ArFSEntityData {

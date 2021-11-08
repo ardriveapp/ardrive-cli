@@ -973,7 +973,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 	// async downloadPrivateFile(fileTxId: TransactionID, driveKey: DriveKey): Promise<Stream> {
 	// 	const dataTxUrl = `${gatewayURL}${fileTxId}`;
-	// 	const fileDataStream = new Stream();
+	// 	const fileDataStream = new Stream({});
 	// 	const response = await axios({
 	// 		method: 'get',
 	// 		url: dataTxUrl,
