@@ -13,7 +13,7 @@ new CLICommand({
 		const parameters = new ParametersHelper(options);
 		// const { confirmations } = options;
 		const confirmations = parameters.getParameterValue(ConfirmationsParameter);
-		const txId = parameters.getRequiredParameterValueTyped(TransactionIdParameter, TxID);
+		const txId = parameters.getRequiredParameterValue(TransactionIdParameter, TxID);
 		const transactionsInMempool = (await fetchMempool()).map((id) => new TransactionID(id));
 		const pending = transactionsInMempool.some((tx) => tx.equals(txId));
 		const confirmationAmount = confirmations ?? 15;

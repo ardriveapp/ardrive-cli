@@ -32,7 +32,7 @@ new CLICommand({
 			dryRun
 		});
 
-		const parentFolderId = parameters.getRequiredParameterValueTyped(ParentFolderIdParameter, EID);
+		const parentFolderId = parameters.getRequiredParameterValue(ParentFolderIdParameter, EID);
 		const driveId = await ardrive.getDriveIdForFolderId(parentFolderId);
 		const folderName = parameters.getRequiredParameterValue(FolderNameParameter);
 

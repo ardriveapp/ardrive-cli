@@ -224,17 +224,11 @@ export class ParametersHelper {
 	 * @returns {string | undefined}
 	 * Returns the string value for the specific parameter; throws an error if not set
 	 */
-	public getRequiredParameterValue(parameterName: ParameterName): string {
-		// FIXME: it could also return an array or a boolean!
-		const value = this.options[parameterName];
-		if (!value) {
-			throw new Error(`Required parameter ${parameterName} wasn't provided!`);
-		}
-		return value;
-	}
-
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	public getRequiredParameterValueTyped<T>(parameterName: ParameterName, closure: (a: any) => T): T {
+	public getRequiredParameterValue<T = string>(
+		parameterName: ParameterName,
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		closure: (input: any) => T = (input: any) => input as T
+	): T {
 		// FIXME: it could also return an array or a boolean!
 		const value = this.options[parameterName];
 		if (!value) {

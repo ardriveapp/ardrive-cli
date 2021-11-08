@@ -19,8 +19,8 @@ new CLICommand({
 		const parameters = new ParametersHelper(options);
 
 		const dryRun = !!parameters.getParameterValue(DryRunParameter);
-		const fileId = parameters.getRequiredParameterValueTyped(FileIdParameter, EID);
-		const parentFolderId = parameters.getRequiredParameterValueTyped(ParentFolderIdParameter, EID);
+		const fileId = parameters.getRequiredParameterValue(FileIdParameter, EID);
+		const parentFolderId = parameters.getRequiredParameterValue(ParentFolderIdParameter, EID);
 
 		const wallet: Wallet = await parameters.getRequiredWallet();
 		const ardrive = arDriveFactory({

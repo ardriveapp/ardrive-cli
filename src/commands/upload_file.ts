@@ -67,8 +67,8 @@ new CLICommand({
 				throw new Error('Must provide a local file path!');
 			}
 
-			const parentFolderId: FolderID = parameters.getRequiredParameterValueTyped(ParentFolderIdParameter, EID);
-			const localFilePath = parameters.getRequiredParameterValueTyped(LocalFilePathParameter, wrapFileOrFolder);
+			const parentFolderId: FolderID = parameters.getRequiredParameterValue(ParentFolderIdParameter, EID);
+			const localFilePath = parameters.getRequiredParameterValue(LocalFilePathParameter, wrapFileOrFolder);
 			const singleParameter = {
 				parentFolderId: parentFolderId,
 				wrappedEntity: localFilePath,

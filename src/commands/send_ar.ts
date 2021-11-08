@@ -18,9 +18,9 @@ new CLICommand({
 	parameters: [ArAmountParameter, DestinationAddressParameter, WalletFileParameter, BoostParameter, DryRunParameter],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
-		const arAmount = parameters.getRequiredParameterValueTyped(ArAmountParameter, AR.from);
+		const arAmount = parameters.getRequiredParameterValue(ArAmountParameter, AR.from);
 		assertARPrecision(`${arAmount}`);
-		const destAddress = parameters.getRequiredParameterValueTyped(
+		const destAddress = parameters.getRequiredParameterValue(
 			DestinationAddressParameter,
 			(addr) => new ArweaveAddress(addr)
 		);
