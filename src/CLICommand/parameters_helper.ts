@@ -221,21 +221,21 @@ export class ParametersHelper {
 
 	/**
 	 * @param {ParameterName} parameterName
+	 * @param {(input: any) => T} mapFunc A function that maps the parameter value into a T instance
 	 * @returns {string | undefined}
-	 * @param {(input: any) => T} - A closure that casts the primitive value into a safe type
 	 * @throws - When the required parameter value has a falsy value
 	 * Returns the string value for the specific parameter
 	 */
 	public getRequiredParameterValue<T = string>(
 		parameterName: ParameterName,
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		closure: (input: any) => T = (input: any) => input as T
+		mapFunc: (input: any) => T = (input: any) => input as T
 	): T {
 		// FIXME: it could also return an array or a boolean!
 		const value = this.options[parameterName];
 		if (!value) {
 			throw new Error(`Required parameter ${parameterName} wasn't provided!`);
 		}
-		return closure(value);
+		return mapFunc(value);
 	}
 }
