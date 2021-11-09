@@ -5,7 +5,7 @@ import { ArDriveContractOracle } from './ardrive_contract_oracle';
 import Arweave from 'arweave';
 import { SmartweaveContractReader } from './smartweave_contract_oracle';
 import { VertoContractReader } from './verto_contract_oracle';
-import { ArweaveAddress, W, Winston } from '../types';
+import { ADDR, ArweaveAddress, W, Winston } from '../types';
 
 /**
  * Minimum ArDrive community tip from the Community Improvement Proposal Doc:
@@ -91,6 +91,6 @@ export class ArDriveCommunityOracle implements CommunityOracle {
 			throw new Error('Token holder target could not be determined for community tip distribution..');
 		}
 
-		return new ArweaveAddress(randomHolder);
+		return ADDR(randomHolder);
 	}
 }

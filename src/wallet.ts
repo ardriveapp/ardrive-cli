@@ -16,7 +16,8 @@ import {
 	AR,
 	TransactionID,
 	TxID,
-	SeedPhrase
+	SeedPhrase,
+	ADDR
 } from './types';
 import { CreateTransactionInterface } from 'arweave/node/common';
 
@@ -48,7 +49,7 @@ export class JWKWallet implements Wallet {
 			.createHash('sha256')
 			.update(b64UrlToBuffer(await this.getPublicKey()))
 			.digest();
-		return Promise.resolve(new ArweaveAddress(bufferTob64Url(result)));
+		return Promise.resolve(ADDR(bufferTob64Url(result)));
 	}
 
 	// Use cases: generating drive keys, file keys, etc.

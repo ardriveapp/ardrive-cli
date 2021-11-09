@@ -9,7 +9,8 @@ import {
 	AnyEntityID,
 	ArweaveAddress,
 	EID,
-	TransactionID
+	TransactionID,
+	ADDR
 } from './types';
 import { gatewayURL, GQLEdgeInterface } from 'ardrive-core-js';
 import { ASCENDING_ORDER, buildQuery } from './query';
@@ -74,7 +75,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		const edgeOfFirstDrive = edges[0];
 		const driveOwnerAddress = edgeOfFirstDrive.node.owner.address;
 
-		return new ArweaveAddress(driveOwnerAddress);
+		return ADDR(driveOwnerAddress);
 	}
 
 	async getDriveIDForEntityId(entityId: AnyEntityID, gqlTypeTag: 'File-Id' | 'Folder-Id'): Promise<DriveID> {
@@ -265,7 +266,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		const [, ...subFolderIDs]: FolderID[] = hierarchy.folderIdSubtreeFromFolderId(folderId, maxDepth);
 
 		const childrenFolderEntities = allFolderEntitiesOfDrive.filter((folder) =>
-			subFolderIDs.includes(folder.entityId)
+			subFolderIDs.some((fid) => fid.equals(folder.entityId))
 		);
 
 		if (includeRoot) {

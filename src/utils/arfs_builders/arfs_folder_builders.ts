@@ -62,7 +62,7 @@ export class ArFSPublicFolderBuilder extends ArFSFolderBuilder<ArFSPublicFolder>
 			// Get the folder name
 			this.name = dataJSON.name;
 			if (!this.name) {
-				throw new Error('Invalid folder state');
+				throw new Error('Invalid public folder state: name not found!');
 			}
 
 			return Promise.resolve(
@@ -81,7 +81,7 @@ export class ArFSPublicFolderBuilder extends ArFSFolderBuilder<ArFSPublicFolder>
 				)
 			);
 		}
-		throw new Error('Invalid folder state');
+		throw new Error('Invalid public folder state');
 	}
 }
 
@@ -159,7 +159,7 @@ export class ArFSPrivateFolderBuilder extends ArFSFolderBuilder<ArFSPrivateFolde
 			// Get the folder name
 			this.name = decryptedFolderJSON.name;
 			if (!this.name) {
-				throw new Error('Invalid folder state');
+				throw new Error('Invalid private folder state: name not found!');
 			}
 
 			return new ArFSPrivateFolder(
@@ -178,6 +178,6 @@ export class ArFSPrivateFolderBuilder extends ArFSFolderBuilder<ArFSPrivateFolde
 				this.cipherIV
 			);
 		}
-		throw new Error('Invalid folder state');
+		throw new Error('Invalid private folder state');
 	}
 }

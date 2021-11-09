@@ -10,6 +10,7 @@ import { Wallet } from '../wallet';
 import { arDriveFactory } from '..';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { CLIAction } from '../CLICommand/action';
+import { EID } from '../types';
 
 new CLICommand({
 	name: 'move-file',
@@ -17,13 +18,15 @@ new CLICommand({
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
 
-		const { fileId, parentFolderId, dryRun } = options;
+		const dryRun = !!parameters.getParameterValue(DryRunParameter);
+		const fileId = parameters.getRequiredParameterValue(FileIdParameter, EID);
+		const parentFolderId = parameters.getRequiredParameterValue(ParentFolderIdParameter, EID);
 
 		const wallet: Wallet = await parameters.getRequiredWallet();
 		const ardrive = arDriveFactory({
 			wallet: wallet,
 			feeMultiple: parameters.getOptionalBoostSetting(),
-			dryRun: dryRun
+			dryRun
 		});
 
 		const createDriveResult = await (async function () {

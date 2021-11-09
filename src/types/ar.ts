@@ -6,9 +6,11 @@ export class AR {
 
 	static from(arValue: BigNumber.Value): AR {
 		const bigWinston = new BigNumber(arValue).shiftedBy(12);
-		const numDecimalPlace = bigWinston.decimalPlaces();
-		if (numDecimalPlace > 12) {
-			throw new Error(`The AR amount must have a maximum of 12 digits of precision, but got ${numDecimalPlace}`);
+		const numDecimalPlaces = bigWinston.decimalPlaces();
+		if (numDecimalPlaces > 0) {
+			throw new Error(
+				`The AR amount must have a maximum of 12 digits of precision, but got ${numDecimalPlaces + 12}`
+			);
 		}
 		return new AR(W(bigWinston));
 	}
