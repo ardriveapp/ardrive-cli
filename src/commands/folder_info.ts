@@ -20,16 +20,16 @@ new CLICommand({
 				const wallet = await parameters.getRequiredWallet();
 				const arDrive = arDriveFactory({ wallet: wallet });
 
-				const driveId = await arDrive.getDriveIdForFolderId(folderId);
+				const driveId = await arDrive.getDriveIdForFolderId({ folderId });
 				const driveKey = await parameters.getDriveKey({ driveId });
 
 				// We have the drive id from deriving a key, we can derive the owner
-				const driveOwner = await arDrive.getOwnerForDriveId(driveId);
+				const driveOwner = await arDrive.getOwnerForDriveId({ driveId });
 
-				return arDrive.getPrivateFolder(folderId, driveKey, driveOwner /*, shouldGetAllRevisions*/);
+				return arDrive.getPrivateFolder({ folderId, driveKey, owner: driveOwner } /*, shouldGetAllRevisions*/);
 			} else {
 				const arDrive = arDriveAnonymousFactory();
-				return arDrive.getPublicFolder(folderId /*, shouldGetAllRevisions*/);
+				return arDrive.getPublicFolder({ folderId } /*, shouldGetAllRevisions*/);
 			}
 		})();
 

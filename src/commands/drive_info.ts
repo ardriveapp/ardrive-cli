@@ -22,10 +22,10 @@ new CLICommand({
 				const arDrive = arDriveFactory({ wallet: wallet });
 				const driveKey = await parameters.getDriveKey({ driveId });
 
-				return arDrive.getPrivateDrive(driveId, driveKey /*, shouldGetAllRevisions*/);
+				return arDrive.getPrivateDrive({ driveId, driveKey } /*, shouldGetAllRevisions*/);
 			} else {
 				const arDrive = arDriveAnonymousFactory();
-				return arDrive.getPublicDrive(driveId /*, shouldGetAllRevisions*/);
+				return arDrive.getPublicDrive({ driveId } /*, shouldGetAllRevisions*/);
 			}
 		})();
 

@@ -19,7 +19,7 @@ import { cliWalletDao } from '..';
 import { DriveID, DriveKey, ArweaveAddress, SeedPhrase, FeeMultiple, ADDR } from '../types';
 import passwordPrompt from 'prompts';
 import { PrivateKeyData } from '../private_key_data';
-import { FileNameConflictResolution, replaceOnConflicts, skipOnConflicts, upsertOnConflicts } from '../ardrive';
+import { FileNameConflictResolution, replaceOnConflicts, skipOnConflicts, upsertOnConflicts } from '../ardrive.types';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ParameterOptions = any;
