@@ -33,3 +33,7 @@ export class ArweaveAddress implements Equatable<ArweaveAddress> {
 		return this.toString();
 	}
 }
+
+export function ADDR(arAddress: string): ArweaveAddress {
+	return new ArweaveAddress(arAddress);
+}

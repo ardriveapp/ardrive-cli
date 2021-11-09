@@ -1,5 +1,5 @@
 import { cliWalletDao } from '..';
-import { ArweaveAddress, AR } from '../types';
+import { AR, ADDR } from '../types';
 import { CLICommand } from '../CLICommand';
 import { ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
@@ -11,7 +11,6 @@ import {
 	DryRunParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
-import { assertARPrecision } from '../utils/ar_unit';
 
 new CLICommand({
 	name: 'send-ar',
@@ -19,11 +18,7 @@ new CLICommand({
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
 		const arAmount = parameters.getRequiredParameterValue(ArAmountParameter, AR.from);
-		assertARPrecision(`${arAmount}`);
-		const destAddress = parameters.getRequiredParameterValue(
-			DestinationAddressParameter,
-			(addr) => new ArweaveAddress(addr)
-		);
+		const destAddress = parameters.getRequiredParameterValue(DestinationAddressParameter, (addr) => ADDR(addr));
 		const wallet = await parameters.getRequiredWallet();
 		const walletAddress = await wallet.getAddress();
 		const boost = parameters.getOptionalBoostSetting();

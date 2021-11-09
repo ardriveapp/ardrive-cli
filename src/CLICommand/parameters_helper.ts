@@ -14,7 +14,7 @@ import {
 	BoostParameter
 } from '../parameter_declarations';
 import { cliWalletDao } from '..';
-import { DriveID, DriveKey, ArweaveAddress, SeedPhrase, FeeMultiple } from '../types';
+import { DriveID, DriveKey, ArweaveAddress, SeedPhrase, FeeMultiple, ADDR } from '../types';
 import passwordPrompt from 'prompts';
 import { PrivateKeyData } from '../private_key_data';
 
@@ -79,7 +79,7 @@ export class ParametersHelper {
 	public async getWalletAddress(): Promise<ArweaveAddress> {
 		const address = this.getParameterValue(AddressParameter);
 		if (address) {
-			return new ArweaveAddress(address);
+			return ADDR(address);
 		}
 
 		return this.getRequiredWallet().then((wallet) => wallet.getAddress());

@@ -10,7 +10,8 @@ import {
 	DEFAULT_APP_VERSION,
 	AnyEntityID,
 	ArweaveAddress,
-	EID
+	EID,
+	ADDR
 } from './types';
 import { latestRevisionFilter, latestRevisionFilterForDrives } from './utils/filter_methods';
 import { FolderHierarchy } from './folderHierarchy';
@@ -71,7 +72,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		const edgeOfFirstDrive = edges[0];
 		const driveOwnerAddress = edgeOfFirstDrive.node.owner.address;
 
-		return new ArweaveAddress(driveOwnerAddress);
+		return ADDR(driveOwnerAddress);
 	}
 
 	async getDriveIDForEntityId(entityId: AnyEntityID, gqlTypeTag: 'File-Id' | 'Folder-Id'): Promise<DriveID> {
