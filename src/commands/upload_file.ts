@@ -78,8 +78,7 @@ new CLICommand({
 			return [singleParameter];
 		})();
 		if (filesToUpload.length) {
-			const walletFile = parameters.getRequiredParameterValue(WalletFileParameter);
-			const wallet = readJWKFile(walletFile);
+			const wallet = parameters.getRequiredParameterValue(WalletFileParameter, readJWKFile);
 
 			const arDrive = arDriveFactory({
 				wallet: wallet,

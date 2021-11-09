@@ -27,7 +27,7 @@ new CLICommand({
 		const dryRun = !!parameters.getParameterValue(DryRunParameter);
 
 		const ardrive = arDriveFactory({
-			wallet: wallet,
+			wallet,
 			feeMultiple: parameters.getOptionalBoostSetting(),
 			dryRun
 		});
