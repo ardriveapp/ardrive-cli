@@ -1,16 +1,26 @@
 import { fileDecrypt, GQLNodeInterface, GQLTagInterface, Utf8ArrayToStr } from 'ardrive-core-js';
 import Arweave from 'arweave';
 import { ArFSPrivateFolder, ArFSPublicFolder } from '../../arfs_entities';
-import { ArweaveAddress } from '../../arweave_address';
-import { CipherIV, DriveKey, FolderID } from '../../types';
 import { ArFSFileOrFolderBuilder } from './arfs_builders';
+import { ArweaveAddress, CipherIV, DriveKey, FolderID, EID, EntityID } from '../../types';
+import { stubEntityID } from '../stubs';
+
+export const ROOT_FOLDER_ID_PLACEHOLDER = 'root folder';
+
+// A utility type to provide a FolderID placeholder for root folders (which never have a parentFolderId)
+export class RootFolderID extends EntityID {
+	constructor() {
+		super(`${stubEntityID}`); // Unused after next line
+		this.entityId = ROOT_FOLDER_ID_PLACEHOLDER;
+	}
+}
 
 export abstract class ArFSFolderBuilder<
 	T extends ArFSPublicFolder | ArFSPrivateFolder
 > extends ArFSFileOrFolderBuilder<T> {
 	getGqlQueryParameters(): GQLTagInterface[] {
 		return [
-			{ name: 'Folder-Id', value: this.entityId },
+			{ name: 'Folder-Id', value: `${this.entityId}` },
 			{ name: 'Entity-Type', value: 'folder' }
 		];
 	}
@@ -23,14 +33,14 @@ export class ArFSPublicFolderBuilder extends ArFSFolderBuilder<ArFSPublicFolder>
 		if (!folderId) {
 			throw new Error('Folder-ID tag missing!');
 		}
-		const folderBuilder = new ArFSPublicFolderBuilder({ entityId: folderId, arweave });
+		const folderBuilder = new ArFSPublicFolderBuilder({ entityId: EID(folderId), arweave });
 		return folderBuilder;
 	}
 
 	protected async buildEntity(): Promise<ArFSPublicFolder> {
 		if (!this.parentFolderId) {
 			// Root folders do not have a Parent-Folder-Id tag
-			this.parentFolderId = 'root folder';
+			this.parentFolderId = new RootFolderID();
 		}
 
 		if (
@@ -38,21 +48,21 @@ export class ArFSPublicFolderBuilder extends ArFSFolderBuilder<ArFSPublicFolder>
 			this.appVersion?.length &&
 			this.arFS?.length &&
 			this.contentType?.length &&
-			this.driveId?.length &&
+			this.driveId &&
 			this.entityType?.length &&
-			this.txId?.length &&
+			this.txId &&
 			this.unixTime &&
-			this.parentFolderId?.length &&
-			this.entityId?.length
+			this.parentFolderId &&
+			this.entityId
 		) {
-			const txData = await this.arweave.transactions.getData(this.txId, { decode: true });
+			const txData = await this.arweave.transactions.getData(`${this.txId}`, { decode: true });
 			const dataString = await Utf8ArrayToStr(txData);
 			const dataJSON = await JSON.parse(dataString);
 
 			// Get the folder name
 			this.name = dataJSON.name;
 			if (!this.name) {
-				throw new Error('Invalid folder state');
+				throw new Error('Invalid public folder state: name not found!');
 			}
 
 			return Promise.resolve(
@@ -71,7 +81,7 @@ export class ArFSPublicFolderBuilder extends ArFSFolderBuilder<ArFSPublicFolder>
 				)
 			);
 		}
-		throw new Error('Invalid folder state');
+		throw new Error('Invalid public folder state');
 	}
 }
 
@@ -94,7 +104,7 @@ export class ArFSPrivateFolderBuilder extends ArFSFolderBuilder<ArFSPrivateFolde
 		if (!folderId) {
 			throw new Error('Folder-ID tag missing!');
 		}
-		const folderBuilder = new ArFSPrivateFolderBuilder(folderId, arweave, driveKey);
+		const folderBuilder = new ArFSPrivateFolderBuilder(EID(folderId), arweave, driveKey);
 		return folderBuilder;
 	}
 
@@ -122,7 +132,7 @@ export class ArFSPrivateFolderBuilder extends ArFSFolderBuilder<ArFSPrivateFolde
 	protected async buildEntity(): Promise<ArFSPrivateFolder> {
 		if (!this.parentFolderId) {
 			// Root folders do not have a Parent-Folder-Id tag
-			this.parentFolderId = 'root folder';
+			this.parentFolderId = new RootFolderID();
 		}
 
 		if (
@@ -130,16 +140,16 @@ export class ArFSPrivateFolderBuilder extends ArFSFolderBuilder<ArFSPrivateFolde
 			this.appVersion?.length &&
 			this.arFS?.length &&
 			this.contentType?.length &&
-			this.driveId?.length &&
+			this.driveId &&
 			this.entityType?.length &&
-			this.txId?.length &&
+			this.txId &&
 			this.unixTime &&
-			this.parentFolderId?.length &&
-			this.entityId?.length &&
+			this.parentFolderId &&
+			this.entityId &&
 			this.cipher?.length &&
 			this.cipherIV?.length
 		) {
-			const txData = await this.arweave.transactions.getData(this.txId, { decode: true });
+			const txData = await this.arweave.transactions.getData(`${this.txId}`, { decode: true });
 			const dataBuffer = Buffer.from(txData);
 
 			const decryptedFolderBuffer: Buffer = await fileDecrypt(this.cipherIV, this.driveKey, dataBuffer);
@@ -149,7 +159,7 @@ export class ArFSPrivateFolderBuilder extends ArFSFolderBuilder<ArFSPrivateFolde
 			// Get the folder name
 			this.name = decryptedFolderJSON.name;
 			if (!this.name) {
-				throw new Error('Invalid folder state');
+				throw new Error('Invalid private folder state: name not found!');
 			}
 
 			return new ArFSPrivateFolder(
@@ -168,6 +178,6 @@ export class ArFSPrivateFolderBuilder extends ArFSFolderBuilder<ArFSPrivateFolde
 				this.cipherIV
 			);
 		}
-		throw new Error('Invalid folder state');
+		throw new Error('Invalid private folder state');
 	}
 }

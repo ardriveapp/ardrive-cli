@@ -1,10 +1,10 @@
 import { deriveDriveKey, driveDecrypt, Utf8ArrayToStr } from 'ardrive-core-js';
-import { CipherIV, DriveID, DriveKey } from './types';
+import { CipherIV, DriveID, DriveKey, EntityID } from './types';
 import { JWKWallet } from './wallet';
 
 type DriveIdKeyPair = { [key: string /* DriveID */]: DriveKey };
 
-export type EntityMetaDataTransactionData = { [key: string]: string | number };
+export type EntityMetaDataTransactionData = { [key: string]: string | number | EntityID };
 
 // Users may optionally supply any drive keys, a password, or a wallet
 interface PrivateKeyDataParams {
@@ -63,7 +63,7 @@ export class PrivateKeyData {
 				const decryptedDriveJSON = await this.decryptToJson<T>(cipherIV, dataBuffer, driveKey);
 
 				// Correct key, add this pair to the cache
-				this.driveKeyCache[driveId] = driveKey;
+				this.driveKeyCache[`${driveId}`] = driveKey;
 				this.unverifiedDriveKeys = this.unverifiedDriveKeys.filter((k) => k !== driveKey);
 
 				return decryptedDriveJSON;
@@ -76,7 +76,7 @@ export class PrivateKeyData {
 		if (this.password && this.wallet) {
 			const derivedDriveKey: DriveKey = await deriveDriveKey(
 				this.password,
-				driveId,
+				`${driveId}`,
 				JSON.stringify(this.wallet.getPrivateKey())
 			);
 
@@ -84,7 +84,7 @@ export class PrivateKeyData {
 				const decryptedDriveJSON = await this.decryptToJson<T>(cipherIV, dataBuffer, derivedDriveKey);
 
 				// Correct key, add this pair to the cache
-				this.driveKeyCache[driveId] = derivedDriveKey;
+				this.driveKeyCache[`${driveId}`] = derivedDriveKey;
 
 				return decryptedDriveJSON;
 			} catch (error) {
@@ -113,6 +113,6 @@ export class PrivateKeyData {
 
 	/** Synchronously returns a driveKey from the cache by its driveId */
 	public driveKeyForDriveId(driveId: DriveID): DriveKey | false {
-		return this.driveKeyCache[driveId] ?? false;
+		return this.driveKeyCache[`${driveId}`] ?? false;
 	}
 }

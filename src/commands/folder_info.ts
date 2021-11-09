@@ -1,19 +1,20 @@
 import { CLICommand, ParametersHelper } from '../CLICommand';
-import { FolderID } from '../types';
+import { EID } from '../types';
 import { GetAllRevisionsParameter, FolderIdParameter, DrivePrivacyParameters } from '../parameter_declarations';
 import { arDriveAnonymousFactory, arDriveFactory } from '..';
 import { ArFSPrivateFolder, ArFSPublicFolder } from '../arfs_entities';
-import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
+import { CLIAction } from '../CLICommand/action';
 
 new CLICommand({
 	name: 'folder-info',
 	parameters: [FolderIdParameter, GetAllRevisionsParameter, ...DrivePrivacyParameters],
-	async action(options) {
+	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
 		// const shouldGetAllRevisions: boolean = options.getAllRevisions;
 
 		const result: Partial<ArFSPublicFolder | ArFSPrivateFolder> = await (async function () {
-			const folderId: FolderID = options.folderId;
+			const folderId = EID(parameters.getRequiredParameterValue(FolderIdParameter));
 
 			if (await parameters.getIsPrivate()) {
 				const wallet = await parameters.getRequiredWallet();
@@ -28,7 +29,6 @@ new CLICommand({
 				return arDrive.getPrivateFolder(folderId, driveKey, driveOwner /*, shouldGetAllRevisions*/);
 			} else {
 				const arDrive = arDriveAnonymousFactory();
-				const folderId: string = options.folderId;
 				return arDrive.getPublicFolder(folderId /*, shouldGetAllRevisions*/);
 			}
 		})();
@@ -38,9 +38,8 @@ new CLICommand({
 		delete result.dataTxId;
 		delete result.dataContentType;
 		delete result.lastModifiedDate;
-		delete result.syncStatus;
 
 		console.log(JSON.stringify(result, null, 4));
 		return SUCCESS_EXIT_CODE;
-	}
+	})
 });

@@ -12,6 +12,6 @@ export class SmartweaveContractReader implements ContractReader {
 
 	/** Fetches smartweave contracts from Arweave with smartweave-js */
 	async readContract(txId: TransactionID): Promise<unknown> {
-		return readContract(this.arweave, txId);
+		return readContract(this.arweave, `${txId}`);
 	}
 }

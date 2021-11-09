@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import { extToMime } from 'ardrive-core-js';
 import { basename, join } from 'path';
-import { ByteCount, DataContentType, FileID, FolderID, UnixTime } from './types';
+import { DataContentType, FileID, FolderID, ByteCount, UnixTime } from './types';
 import { BulkFileBaseCosts, MetaDataBaseCosts } from './ardrive';
 import { EntityNamesAndIds } from './utils/mapper_functions';
 
@@ -14,7 +14,7 @@ type FilePath = string;
  *  Public : 2147483647 bytes
  *  Private: 2147483646 bytes
  */
-const maxFileSize: ByteCount = 2147483646;
+const maxFileSize = new ByteCount(2147483646);
 
 export interface FileInfo {
 	dataContentType: DataContentType;
@@ -55,7 +55,7 @@ export function isFolder(fileOrFolder: ArFSFileToUpload | ArFSFolderToUpload): f
 
 export class ArFSFileToUpload {
 	constructor(public readonly filePath: FilePath, public readonly fileStats: fs.Stats) {
-		if (this.fileStats.size >= maxFileSize) {
+		if (+this.fileStats.size >= +maxFileSize) {
 			throw new Error(`Files greater than "${maxFileSize}" bytes are not yet supported!`);
 		}
 	}
@@ -66,15 +66,19 @@ export class ArFSFileToUpload {
 	hasSameLastModifiedDate = false;
 
 	public gatherFileInfo(): FileInfo {
-		const dataContentType = this.getContentType();
+		const dataContentType = this.contentType;
 		const lastModifiedDateMS = this.lastModifiedDate;
-		const fileSize = this.fileStats.size;
+		const fileSize = this.size;
 
 		return { dataContentType, lastModifiedDateMS, fileSize };
 	}
 
+	public get size(): ByteCount {
+		return new ByteCount(this.fileStats.size);
+	}
+
 	public get lastModifiedDate(): UnixTime {
-		return Math.floor(this.fileStats.mtimeMs);
+		return new UnixTime(Math.floor(this.fileStats.mtimeMs));
 	}
 
 	public getBaseCosts(): BulkFileBaseCosts {
@@ -88,7 +92,7 @@ export class ArFSFileToUpload {
 		return fs.readFileSync(this.filePath);
 	}
 
-	public getContentType(): DataContentType {
+	public get contentType(): DataContentType {
 		return extToMime(this.filePath);
 	}
 
@@ -98,7 +102,7 @@ export class ArFSFileToUpload {
 
 	/** Computes the size of a private file encrypted with AES256-GCM */
 	public encryptedDataSize(): ByteCount {
-		return (this.fileStats.size / 16 + 1) * 16;
+		return new ByteCount((this.fileStats.size / 16 + 1) * 16);
 	}
 }
 
@@ -213,12 +217,12 @@ export class ArFSFolderToUpload {
 		let totalByteCount = 0;
 
 		for (const file of this.files) {
-			totalByteCount += encrypted ? file.encryptedDataSize() : file.fileStats.size;
+			totalByteCount += encrypted ? +file.encryptedDataSize() : file.fileStats.size;
 		}
 		for (const folder of this.folders) {
-			totalByteCount += folder.getTotalByteCount(encrypted);
+			totalByteCount += +folder.getTotalByteCount(encrypted);
 		}
 
-		return totalByteCount;
+		return new ByteCount(totalByteCount);
 	}
 }

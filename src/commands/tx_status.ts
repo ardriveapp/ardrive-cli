@@ -1,16 +1,20 @@
 import { cliArweave } from '..';
-import { CLICommand } from '../CLICommand';
-import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/constants';
+import { CLICommand, ParametersHelper } from '../CLICommand';
+import { CLIAction } from '../CLICommand/action';
+import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { ConfirmationsParameter, TransactionIdParameter } from '../parameter_declarations';
+import { TransactionID, TxID } from '../types';
 import { fetchMempool } from '../utils';
 
 new CLICommand({
 	name: 'tx-status',
 	parameters: [TransactionIdParameter, ConfirmationsParameter],
-	async action(options) {
-		const { txId, confirmations } = options;
-		const transactionsInMempool = await fetchMempool();
-		const pending = transactionsInMempool.includes(txId);
+	action: new CLIAction(async function action(options) {
+		const parameters = new ParametersHelper(options);
+		const confirmations = parameters.getParameterValue(ConfirmationsParameter);
+		const txId = parameters.getRequiredParameterValue(TransactionIdParameter, TxID);
+		const transactionsInMempool = (await fetchMempool()).map((id) => new TransactionID(id));
+		const pending = transactionsInMempool.some((tx) => tx.equals(txId));
 		const confirmationAmount = confirmations ?? 15;
 
 		if (pending) {
@@ -18,7 +22,7 @@ new CLICommand({
 			return SUCCESS_EXIT_CODE;
 		}
 
-		const confStatus = (await cliArweave.transactions.getStatus(txId)).confirmed;
+		const confStatus = (await cliArweave.transactions.getStatus(`${txId}`)).confirmed;
 
 		if (!confStatus?.block_height) {
 			console.log(`${txId}: Not found`);
@@ -36,5 +40,5 @@ new CLICommand({
 		}
 
 		return SUCCESS_EXIT_CODE;
-	}
+	})
 });

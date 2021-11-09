@@ -7,27 +7,27 @@ import {
 	fileEncrypt
 } from 'ardrive-core-js';
 import {
-	ByteCount,
 	CipherIV,
 	DataContentType,
 	DriveKey,
 	FileID,
 	FileKey,
 	FolderID,
+	ByteCount,
 	TransactionID,
 	UnixTime
 } from './types';
 
 export interface ArFSObjectTransactionData {
 	asTransactionData(): string | Buffer;
-	sizeOf(): number;
+	sizeOf(): ByteCount;
 }
 
 export abstract class ArFSDriveTransactionData implements ArFSObjectTransactionData {
 	abstract asTransactionData(): string | Buffer;
 	// TODO: Share repeated sizeOf() function to all classes
-	sizeOf(): number {
-		return this.asTransactionData().length;
+	sizeOf(): ByteCount {
+		return new ByteCount(this.asTransactionData().length);
 	}
 }
 
@@ -78,8 +78,8 @@ export class ArFSPrivateDriveTransactionData extends ArFSDriveTransactionData {
 
 export abstract class ArFSFolderTransactionData implements ArFSObjectTransactionData {
 	abstract asTransactionData(): string | Buffer;
-	sizeOf(): number {
-		return this.asTransactionData().length;
+	sizeOf(): ByteCount {
+		return new ByteCount(this.asTransactionData().length);
 	}
 }
 
@@ -124,8 +124,8 @@ export class ArFSPrivateFolderTransactionData extends ArFSFolderTransactionData 
 
 export abstract class ArFSFileMetadataTransactionData implements ArFSObjectTransactionData {
 	abstract asTransactionData(): string | Buffer;
-	sizeOf(): number {
-		return this.asTransactionData().length;
+	sizeOf(): ByteCount {
+		return new ByteCount(this.asTransactionData().length);
 	}
 }
 
@@ -171,7 +171,7 @@ export class ArFSPrivateFileMetadataTransactionData extends ArFSFileMetadataTran
 		fileId: FileID,
 		driveKey: DriveKey
 	): Promise<ArFSPrivateFileMetadataTransactionData> {
-		const fileKey: FileKey = await deriveFileKey(fileId, driveKey);
+		const fileKey: FileKey = await deriveFileKey(`${fileId}`, driveKey);
 		const { cipher, cipherIV, data }: ArFSEncryptedData = await fileEncrypt(
 			fileKey,
 			Buffer.from(
@@ -194,8 +194,8 @@ export class ArFSPrivateFileMetadataTransactionData extends ArFSFileMetadataTran
 
 export abstract class ArFSFileDataTransactionData implements ArFSObjectTransactionData {
 	abstract asTransactionData(): string | Buffer;
-	sizeOf(): number {
-		return this.asTransactionData().length;
+	sizeOf(): ByteCount {
+		return new ByteCount(this.asTransactionData().length);
 	}
 }
 export class ArFSPublicFileDataTransactionData extends ArFSFileDataTransactionData {
@@ -223,7 +223,7 @@ export class ArFSPrivateFileDataTransactionData extends ArFSFileDataTransactionD
 		fileId: FileID,
 		driveKey: DriveKey
 	): Promise<ArFSPrivateFileDataTransactionData> {
-		const fileKey: FileKey = await deriveFileKey(fileId, driveKey);
+		const fileKey: FileKey = await deriveFileKey(`${fileId}`, driveKey);
 		const { cipher, cipherIV, data }: ArFSEncryptedData = await fileEncrypt(fileKey, fileData);
 		return new ArFSPrivateFileDataTransactionData(cipher, cipherIV, data);
 	}

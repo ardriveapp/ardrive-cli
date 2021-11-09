@@ -37,17 +37,17 @@ import {
 	DEFAULT_APP_NAME,
 	DEFAULT_APP_VERSION,
 	CURRENT_ARFS_VERSION,
-	RewardSettings
+	RewardSettings,
+	ArweaveAddress,
+	W,
+	TxID,
+	EID
 } from './types';
 import { CreateTransactionInterface } from 'arweave/node/common';
 import { ArFSPrivateFileBuilder, ArFSPublicFileBuilder } from './utils/arfs_builders/arfs_file_builders';
 import { ArFSPrivateFolderBuilder, ArFSPublicFolderBuilder } from './utils/arfs_builders/arfs_folder_builders';
 import { latestRevisionFilter, fileFilter, folderFilter } from './utils/filter_methods';
-import {
-	ArFSPrivateDriveBuilder,
-	ENCRYPTED_DATA_PLACEHOLDER,
-	SafeArFSDriveBuilder
-} from './utils/arfs_builders/arfs_drive_builders';
+import { ArFSPrivateDriveBuilder, SafeArFSDriveBuilder } from './utils/arfs_builders/arfs_drive_builders';
 import { FolderHierarchy } from './folderHierarchy';
 import {
 	CreateDriveMetaDataFactory,
@@ -81,12 +81,12 @@ import {
 	ArFSPrivateFolder,
 	ArFSPublicDrive,
 	ArFSPublicFile,
-	ArFSPublicFolder
+	ArFSPublicFolder,
+	ENCRYPTED_DATA_PLACEHOLDER
 } from './arfs_entities';
 import { ArFSAllPublicFoldersOfDriveParams, ArFSDAOAnonymous } from './arfsdao_anonymous';
 import { ArFSFileOrFolderBuilder } from './utils/arfs_builders/arfs_builders';
 import { PrivateKeyData } from './private_key_data';
-import { ArweaveAddress } from './arweave_address';
 import {
 	EntityNamesAndIds,
 	entityToNameMap,
@@ -103,7 +103,7 @@ export class PrivateDriveKeyData {
 	static async from(drivePassword: string, privateKey: JWKInterface): Promise<PrivateDriveKeyData> {
 		const driveId = uuidv4();
 		const driveKey = await deriveDriveKey(drivePassword, driveId, JSON.stringify(privateKey));
-		return new PrivateDriveKeyData(driveId, driveKey);
+		return new PrivateDriveKeyData(EID(driveId), driveKey);
 	}
 }
 
@@ -184,7 +184,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			// Assert that drive ID is consistent with parent folder ID
 			const actualDriveId = await this.getDriveIdForFolderId(parentFolderId);
 
-			if (actualDriveId !== driveId) {
+			if (!actualDriveId.equals(driveId)) {
 				throw new Error(
 					`Drive id: ${driveId} does not match actual drive id: ${actualDriveId} for parent folder id`
 				);
@@ -203,7 +203,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		}
 
 		// Generate a new folder ID
-		const folderId = uuidv4();
+		const folderId = EID(uuidv4());
 
 		// Create a root folder metadata transaction
 		const folderMetadata = folderPrototypeFactory(folderId, parentFolderId);
@@ -217,7 +217,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			}
 		}
 
-		return { metaDataTrxId: folderTrx.id, metaDataTrxReward: folderTrx.reward, folderId };
+		return { metaDataTrxId: TxID(folderTrx.id), metaDataTrxReward: W(folderTrx.reward), folderId };
 	}
 
 	// Convenience wrapper for folder creation in a known-public use case
@@ -285,8 +285,8 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		}
 
 		return resultFactory({
-			metaDataTrxId: driveTrx.id,
-			metaDataTrxReward: driveTrx.reward,
+			metaDataTrxId: TxID(driveTrx.id),
+			metaDataTrxReward: W(driveTrx.reward),
 			rootFolderTrxId: rootFolderTrxId,
 			rootFolderTrxReward: rootFolderTrxReward,
 			driveId: driveId,
@@ -302,7 +302,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	): Promise<ArFSCreateDriveResult> {
 		return this.createDrive<ArFSCreateDriveResult>(
 			driveRewardSettings,
-			() => uuidv4(),
+			() => EID(uuidv4()),
 			async (driveId) => {
 				const folderData = new ArFSPublicFolderTransactionData(driveName);
 				return this.createPublicFolder({
@@ -378,7 +378,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			}
 		}
 
-		return resultFactory({ metaDataTrxId: metaDataTrx.id, metaDataTrxReward: metaDataTrx.reward });
+		return resultFactory({ metaDataTrxId: TxID(metaDataTrx.id), metaDataTrxReward: W(metaDataTrx.reward) });
 	}
 
 	async movePublicFile({
@@ -482,7 +482,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const destinationFileName = destFileName ?? wrappedFile.getBaseFileName();
 
 		// Use existing file ID (create a revision) or generate new file ID
-		const fileId = existingFileId ?? uuidv4();
+		const fileId = existingFileId ?? EID(uuidv4());
 
 		// Gather file information
 		const { fileSize, dataContentType, lastModifiedDateMS } = wrappedFile.gatherFileInfo();
@@ -507,7 +507,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			destinationFileName,
 			fileSize,
 			lastModifiedDateMS,
-			dataTrx.id,
+			TxID(dataTrx.id),
 			dataContentType,
 			fileId
 		);
@@ -524,10 +524,10 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		return resultFactoryFn(
 			{
-				dataTrxId: dataTrx.id,
-				dataTrxReward: dataTrx.reward,
-				metaDataTrxId: metaDataTrx.id,
-				metaDataTrxReward: metaDataTrx.reward,
+				dataTrxId: TxID(dataTrx.id),
+				dataTrxReward: W(dataTrx.reward),
+				metaDataTrxId: TxID(metaDataTrx.id),
+				metaDataTrxReward: W(metaDataTrx.reward),
 				fileId
 			},
 			metadataTrxData
@@ -611,27 +611,6 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		);
 	}
 
-	// /**
-	//  * Uploads a v2 transaction in chunks with progress logging
-	//  *
-	//  * @example await this.sendChunkedUpload(myTransaction);
-	//  */
-	// async sendChunkedUploadWithProgress(trx: Transaction): Promise<void> {
-	// 	const dataUploader = await this.arweave.transactions.getUploader(trx);
-
-	// 	while (!dataUploader.isComplete) {
-	// 		const nextChunk = await uploadDataChunk(dataUploader);
-	// 		if (nextChunk === null) {
-	// 			break;
-	// 		} else {
-	// 			// TODO: Add custom logger function that produces various levels of detail
-	// 			console.log(
-	// 				`${dataUploader.pctComplete}% complete, ${dataUploader.uploadedChunks}/${dataUploader.totalChunks}`
-	// 			);
-	// 		}
-	// 	}
-	// }
-
 	async prepareArFSObjectTransaction(
 		objectMetaData: ArFSObjectMetadataPrototype,
 		rewardSettings: RewardSettings = {},
@@ -646,7 +625,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 		// If we provided our own reward setting, use it now
 		if (rewardSettings.reward) {
-			trxAttributes.reward = rewardSettings.reward;
+			trxAttributes.reward = rewardSettings.reward.toString();
 		}
 
 		// TODO: Use a mock arweave server instead
@@ -657,16 +636,15 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const transaction = await this.arweave.createTransaction(trxAttributes, wallet.getPrivateKey());
 
 		// If we've opted to boost the transaction, do so now
-		if (rewardSettings.feeMultiple && rewardSettings.feeMultiple > 1.0) {
-			// Round up with ceil because fractional Winston will cause an Arweave API failure
-			transaction.reward = Math.ceil(+transaction.reward * rewardSettings.feeMultiple).toString();
+		if (rewardSettings.feeMultiple?.wouldBoostReward()) {
+			transaction.reward = rewardSettings.feeMultiple.boostReward(transaction.reward);
 		}
 
 		// Add baseline ArFS Tags
 		transaction.addTag('App-Name', this.appName);
 		transaction.addTag('App-Version', this.appVersion);
 		transaction.addTag('ArFS', CURRENT_ARFS_VERSION);
-		if (rewardSettings.feeMultiple && rewardSettings.feeMultiple > 1.0) {
+		if (rewardSettings.feeMultiple?.wouldBoostReward()) {
 			transaction.addTag('Boost', rewardSettings.feeMultiple.toString());
 		}
 
@@ -711,7 +689,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		while (hasNextPage) {
 			const gqlQuery = buildQuery({
 				tags: [
-					{ name: 'Drive-Id', value: driveId },
+					{ name: 'Drive-Id', value: `${driveId}` },
 					{ name: 'Entity-Type', value: 'folder' }
 				],
 				cursor,
@@ -748,7 +726,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		while (hasNextPage) {
 			const gqlQuery = buildQuery({
 				tags: [
-					{ name: 'Parent-Folder-Id', value: folderIDs },
+					{ name: 'Parent-Folder-Id', value: folderIDs.map((fid) => fid.toString()) },
 					{ name: 'Entity-Type', value: 'file' }
 				],
 				cursor,
@@ -790,7 +768,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		while (hasNextPage) {
 			const gqlQuery = buildQuery({
 				tags: [
-					{ name: 'Parent-Folder-Id', value: parentFolderId },
+					{ name: 'Parent-Folder-Id', value: `${parentFolderId}` },
 					{ name: 'Entity-Type', value: ['file', 'folder'] }
 				],
 				cursor,
@@ -992,7 +970,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		const safelyBuiltDrive = await safeDriveBuilder.build();
 		if (
 			safelyBuiltDrive.name === ENCRYPTED_DATA_PLACEHOLDER ||
-			safelyBuiltDrive.rootFolderId === ENCRYPTED_DATA_PLACEHOLDER
+			`${safelyBuiltDrive.rootFolderId}` === ENCRYPTED_DATA_PLACEHOLDER
 		) {
 			throw new Error(`Invalid password! Please type the same as your other private drives!`);
 		}

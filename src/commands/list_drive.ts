@@ -1,18 +1,20 @@
 import { arDriveFactory, cliArweave, cliWalletDao } from '..';
-import { ArDriveAnonymous } from '../ardrive';
+import { ArDriveAnonymous } from '../ardrive_anonymous';
 import { ArFSDAOAnonymous } from '../arfsdao_anonymous';
 import { ArFSPrivateFileOrFolderWithPaths, ArFSPublicFileOrFolderWithPaths } from '../arfs_entities';
 import { CLICommand, ParametersHelper } from '../CLICommand';
-import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
+import { CLIAction } from '../CLICommand/action';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { DriveIdParameter, DrivePrivacyParameters, TreeDepthParams } from '../parameter_declarations';
+import { EID } from '../types';
 import { alphabeticalOrder } from '../utils/sort_functions';
 
 new CLICommand({
 	name: 'list-drive',
 	parameters: [DriveIdParameter, ...TreeDepthParams, ...DrivePrivacyParameters],
-	async action(options) {
+	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options, cliWalletDao);
-		const driveId = parameters.getRequiredParameterValue(DriveIdParameter);
+		const driveId = EID(parameters.getRequiredParameterValue(DriveIdParameter));
 		let children: (ArFSPrivateFileOrFolderWithPaths | ArFSPublicFileOrFolderWithPaths)[];
 		const maxDepth = await parameters.getMaxDepth(Number.MAX_SAFE_INTEGER);
 
@@ -53,11 +55,10 @@ new CLICommand({
 				delete fileOrFolderMetaData.dataTxId;
 				delete fileOrFolderMetaData.dataContentType;
 			}
-			delete fileOrFolderMetaData.syncStatus;
 		});
 
 		// Display data
 		console.log(JSON.stringify(sortedChildren, null, 4));
 		return SUCCESS_EXIT_CODE;
-	}
+	})
 });
