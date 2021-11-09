@@ -10,6 +10,7 @@ import { Wallet } from '../wallet';
 import { arDriveFactory } from '..';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { CLIAction } from '../CLICommand/action';
+import { EID } from '../types';
 
 new CLICommand({
 	name: 'move-folder',
@@ -23,7 +24,9 @@ new CLICommand({
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
 
-		const { folderId, parentFolderId: newParentFolderId, dryRun } = options;
+		const { dryRun } = options;
+		const folderId = EID(options.folderId);
+		const newParentFolderId = EID(options.parentFolderId);
 
 		const wallet: Wallet = await parameters.getRequiredWallet();
 		const ardrive = arDriveFactory({

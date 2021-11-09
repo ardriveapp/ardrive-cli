@@ -262,7 +262,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		const [, ...subFolderIDs]: FolderID[] = hierarchy.folderIdSubtreeFromFolderId(folderId, maxDepth);
 
 		const childrenFolderEntities = allFolderEntitiesOfDrive.filter((folder) =>
-			subFolderIDs.includes(folder.entityId)
+			subFolderIDs.some((fid) => fid.equals(folder.entityId))
 		);
 
 		if (includeRoot) {

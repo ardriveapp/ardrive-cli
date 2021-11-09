@@ -378,7 +378,7 @@ export class ArDrive extends ArDriveAnonymous {
 			owner
 		});
 
-		if (childrenFolderIds.includes(newParentFolderId)) {
+		if (childrenFolderIds.some((fid) => fid.equals(newParentFolderId))) {
 			throw new Error(errorMessage.cannotMoveParentIntoChildFolder);
 		}
 
@@ -446,7 +446,7 @@ export class ArDrive extends ArDriveAnonymous {
 			owner
 		});
 
-		if (childrenFolderIds.includes(newParentFolderId)) {
+		if (childrenFolderIds.some((fid) => fid.equals(newParentFolderId))) {
 			throw new Error(errorMessage.cannotMoveParentIntoChildFolder);
 		}
 
