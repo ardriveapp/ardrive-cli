@@ -1,5 +1,5 @@
-import { ArDriveType, ListPublicFolderParams } from './ardrive';
-import { ArFSDAOAnonymous } from './arfsdao_anonymous';
+import { ListPublicFolderParams } from './ardrive';
+import { ArFSDAOAnonymous, ArFSDAOType } from './arfsdao_anonymous';
 import {
 	ArFSDriveEntity,
 	ArFSPublicDrive,
@@ -9,6 +9,10 @@ import {
 } from './arfs_entities';
 import { PrivateKeyData } from './private_key_data';
 import { ArweaveAddress, DriveID, FileID, FolderID } from './types';
+
+export abstract class ArDriveType {
+	protected abstract readonly arFsDao: ArFSDAOType;
+}
 
 export class ArDriveAnonymous extends ArDriveType {
 	constructor(protected readonly arFsDao: ArFSDAOAnonymous) {

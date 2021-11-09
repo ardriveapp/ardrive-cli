@@ -34,7 +34,7 @@ import {
 	ArFSPublicFolderTransactionData
 } from './arfs_trx_data_types';
 import { urlEncodeHashKey } from './utils';
-import { ArFSDAOType, ArFSListPublicFolderParams } from './arfsdao_anonymous';
+import { ArFSListPublicFolderParams } from './arfsdao_anonymous';
 import {
 	ArFSPrivateDrive,
 	ArFSPrivateFile,
@@ -115,10 +115,6 @@ interface MovePublicFolderParams {
 	newParentFolderId: FolderID;
 }
 type MovePrivateFolderParams = MovePublicFolderParams & WithDriveKey;
-
-export abstract class ArDriveType {
-	protected abstract readonly arFsDao: ArFSDAOType;
-}
 
 export class ArDrive extends ArDriveAnonymous {
 	constructor(
