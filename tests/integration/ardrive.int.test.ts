@@ -32,7 +32,7 @@ import { ArFSResult } from '../../src/ardrive.types';
 
 // Don't use the existing constants just to make sure our expectations don't change
 const entityIdRegex = /^[a-f\d]{8}-([a-f\d]{4}-){3}[a-f\d]{12}$/i;
-const trxIdRegex = /^([a-zA-Z]|[0-9]|-|_){43}$/;
+const trxIdRegex = /^(\w|-){43}$/;
 const fileKeyRegex = /^([a-zA-Z]|[0-9]|-|_|\/|\+){43}$/;
 
 describe('ArDrive class - integrated', () => {
