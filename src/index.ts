@@ -3,7 +3,7 @@
 import { Wallet, WalletDAO } from './wallet';
 import Arweave from 'arweave';
 import { ArDriveCommunityOracle } from './community/ardrive_community_oracle';
-import { ArDrive, ArDriveAnonymous } from './ardrive';
+import { ArDrive } from './ardrive';
 import { ArFSDAO } from './arfsdao';
 import { ARDataPriceEstimator } from './utils/ar_data_price_estimator';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
@@ -11,6 +11,7 @@ import { FeeMultiple } from './types';
 import { CommunityOracle } from './community/community_oracle';
 import { ArFSDAOAnonymous } from './arfsdao_anonymous';
 import { CLICommand } from './CLICommand';
+import { ArDriveAnonymous } from './ardrive_anonymus';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: CLI_APP_VERSION } = require('../package.json');

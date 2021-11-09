@@ -34,23 +34,18 @@ import {
 	ArFSPublicFolderTransactionData
 } from './arfs_trx_data_types';
 import { urlEncodeHashKey } from './utils';
-import { ArFSDAOAnonymous, ArFSDAOType, ArFSListPublicFolderParams } from './arfsdao_anonymous';
+import { ArFSDAOType, ArFSListPublicFolderParams } from './arfsdao_anonymous';
 import {
-	ArFSDriveEntity,
 	ArFSPrivateDrive,
 	ArFSPrivateFile,
 	ArFSPrivateFileOrFolderWithPaths,
-	ArFSPrivateFolder,
-	ArFSPublicDrive,
-	ArFSPublicFile,
-	ArFSPublicFileOrFolderWithPaths,
-	ArFSPublicFolder
+	ArFSPrivateFolder
 } from './arfs_entities';
 import { stubEntityID, stubTransactionID } from './utils/stubs';
 import { errorMessage } from './error_message';
-import { PrivateKeyData } from './private_key_data';
 import { EntityNamesAndIds } from './utils/mapper_functions';
 import { WithDriveKey } from './arfs_entity_result_factory';
+import { ArDriveAnonymous } from './ardrive_anonymus';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 
@@ -123,63 +118,6 @@ type MovePrivateFolderParams = MovePublicFolderParams & WithDriveKey;
 
 export abstract class ArDriveType {
 	protected abstract readonly arFsDao: ArFSDAOType;
-}
-
-export class ArDriveAnonymous extends ArDriveType {
-	constructor(protected readonly arFsDao: ArFSDAOAnonymous) {
-		super();
-	}
-
-	async getOwnerForDriveId(driveId: DriveID): Promise<ArweaveAddress> {
-		return this.arFsDao.getOwnerForDriveId(driveId);
-	}
-
-	async getPublicDrive(driveId: DriveID, owner?: ArweaveAddress): Promise<ArFSPublicDrive> {
-		if (!owner) {
-			owner = await this.getOwnerForDriveId(driveId);
-		}
-
-		return this.arFsDao.getPublicDrive(driveId, owner);
-	}
-
-	async getPublicFolder(folderId: FolderID, owner?: ArweaveAddress): Promise<ArFSPublicFolder> {
-		if (!owner) {
-			owner = await this.arFsDao.getDriveOwnerForFolderId(folderId);
-		}
-
-		return this.arFsDao.getPublicFolder(folderId, owner);
-	}
-
-	async getPublicFile(fileId: FileID, owner?: ArweaveAddress): Promise<ArFSPublicFile> {
-		if (!owner) {
-			owner = await this.arFsDao.getDriveOwnerForFileId(fileId);
-		}
-
-		return this.arFsDao.getPublicFile(fileId, owner);
-	}
-
-	async getAllDrivesForAddress(address: ArweaveAddress, privateKeyData: PrivateKeyData): Promise<ArFSDriveEntity[]> {
-		return this.arFsDao.getAllDrivesForAddress(address, privateKeyData);
-	}
-
-	/**
-	 * Lists the children of certain public folder
-	 * @param {FolderID} folderId the folder ID to list children of
-	 * @returns {ArFSPublicFileOrFolderWithPaths[]} an array representation of the children and parent folder
-	 */
-	async listPublicFolder({
-		folderId,
-		maxDepth = 0,
-		includeRoot = false,
-		owner
-	}: ListPublicFolderParams): Promise<ArFSPublicFileOrFolderWithPaths[]> {
-		if (!owner) {
-			owner = await this.arFsDao.getDriveOwnerForFolderId(folderId);
-		}
-
-		const children = await this.arFsDao.listPublicFolder({ folderId, maxDepth, includeRoot, owner });
-		return children;
-	}
 }
 
 export class ArDrive extends ArDriveAnonymous {
