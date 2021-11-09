@@ -680,18 +680,10 @@ export class ArDrive extends ArDriveAnonymous {
 		let uploadEntityResults: ArFSEntityData[] = [];
 		let folderId: FolderID;
 
-		if (
-			conflictResolution === skipOnConflicts &&
-			(wrappedFolder.existingFileAtDestConflict || wrappedFolder.existingId)
-		) {
-			// When conflict resolution is set to skip, return empty result if an
-			// existing folder is found or there is conflict with a file name
-			return { entityResults: [], feeResults: {} };
-		}
-
 		if (wrappedFolder.existingFileAtDestConflict) {
 			// Folder names cannot conflict with file names
-			throw new Error(errorMessage.entityNameExists);
+			// Return an empty result to continue other parts of upload
+			return { entityResults: [], feeResults: {} };
 		} else if (wrappedFolder.existingId) {
 			// Re-use existing parent folder ID for bulk upload if it exists
 			folderId = wrappedFolder.existingId;
@@ -734,11 +726,14 @@ export class ArDrive extends ArDriveAnonymous {
 				// Conflict resolution is set to skip and there is an existing file
 				(conflictResolution === skipOnConflicts && wrappedFile.existingId) ||
 				// Conflict resolution is set to upsert and an existing file has the same last modified date
-				(conflictResolution === upsertOnConflicts && wrappedFile.hasSameLastModifiedDate)
+				(conflictResolution === upsertOnConflicts && wrappedFile.hasSameLastModifiedDate) ||
+				// File names cannot conflict with folder names
+				wrappedFile.existingFolderAtDestConflict
 			) {
 				// Continue loop, don't upload this file
 				continue;
 			}
+
 			const fileDataRewardSettings = {
 				reward: wrappedFile.getBaseCosts().fileDataBaseReward,
 				feeMultiple: this.feeMultiple
@@ -1018,18 +1013,10 @@ export class ArDrive extends ArDriveAnonymous {
 		let uploadEntityResults: ArFSEntityData[] = [];
 		let folderId: FolderID;
 
-		if (
-			conflictResolution === skipOnConflicts &&
-			(wrappedFolder.existingFileAtDestConflict || wrappedFolder.existingId)
-		) {
-			// When conflict resolution is set to skip, return empty result if an
-			// existing folder is found or there is conflict with a file name
-			return { entityResults: [], feeResults: {} };
-		}
-
 		if (wrappedFolder.existingFileAtDestConflict) {
 			// Folder names cannot conflict with file names
-			throw new Error(errorMessage.entityNameExists);
+			// Return an empty result to continue other parts of upload
+			return { entityResults: [], feeResults: {} };
 		} else if (wrappedFolder.existingId) {
 			// Re-use existing parent folder ID for bulk upload if it exists
 			folderId = wrappedFolder.existingId;
@@ -1074,20 +1061,12 @@ export class ArDrive extends ArDriveAnonymous {
 				// Conflict resolution is set to skip and there is an existing file
 				(conflictResolution === skipOnConflicts && wrappedFile.existingId) ||
 				// Conflict resolution is set to upsert and an existing file has the same last modified date
-				(conflictResolution === upsertOnConflicts && wrappedFile.hasSameLastModifiedDate)
+				(conflictResolution === upsertOnConflicts && wrappedFile.hasSameLastModifiedDate) ||
+				// File names cannot conflict with folder names
+				wrappedFile.existingFolderAtDestConflict
 			) {
 				// Continue loop, don't upload this file
 				continue;
-			}
-
-			if (wrappedFile.existingFolderAtDestConflict) {
-				if (conflictResolution === skipOnConflicts) {
-					// Continue loop, skip uploading this file
-					continue;
-				}
-
-				// Otherwise throw an error, file names cannot conflict with folder names
-				throw new Error(errorMessage.entityNameExists);
 			}
 
 			const fileDataRewardSettings = {

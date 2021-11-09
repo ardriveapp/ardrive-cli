@@ -716,7 +716,7 @@ Expect the behaviors from the following table for each resolution setting:
 | File        | Folder           | Skip   | Fail      | Fail               |
 | Folder      | None             | Insert | Insert    | Insert             |
 | Folder      | File             | Skip   | Fail      | Fail               |
-| Folder      | Folder           | Skip   | Re-use    | Re-use             |
+| Folder      | Folder           | Re-use | Re-use    | Re-use             |
 
 The default upsert behavior will check the destination folder for a file with a conflicting name. If no conflicts are found, it will insert (upload) the file.
 
