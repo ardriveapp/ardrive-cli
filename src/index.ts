@@ -11,7 +11,7 @@ import { FeeMultiple } from './types';
 import { CommunityOracle } from './community/community_oracle';
 import { ArFSDAOAnonymous } from './arfsdao_anonymous';
 import { CLICommand } from './CLICommand';
-import { ArDriveAnonymous } from './ardrive_anonymus';
+import { ArDriveAnonymous } from './ardrive_anonymous';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: CLI_APP_VERSION } = require('../package.json');

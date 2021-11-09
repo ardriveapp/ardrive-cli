@@ -1,5 +1,5 @@
 import { arDriveFactory, cliArweave, cliWalletDao } from '..';
-import { ArDriveAnonymous } from '../ardrive_anonymus';
+import { ArDriveAnonymous } from '../ardrive_anonymous';
 import { ArFSDAOAnonymous } from '../arfsdao_anonymous';
 import { ArFSPrivateFileOrFolderWithPaths, ArFSPublicFileOrFolderWithPaths } from '../arfs_entities';
 import { CLICommand, ParametersHelper } from '../CLICommand';
