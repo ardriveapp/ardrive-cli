@@ -1,17 +1,18 @@
 import { cliArweave } from '..';
-import { CLICommand } from '../CLICommand';
+import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
 import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { ConfirmationsParameter, TransactionIdParameter } from '../parameter_declarations';
-import { TransactionID } from '../types';
+import { TransactionID, TxID } from '../types';
 import { fetchMempool } from '../utils';
 
 new CLICommand({
 	name: 'tx-status',
 	parameters: [TransactionIdParameter, ConfirmationsParameter],
 	action: new CLIAction(async function action(options) {
-		const { confirmations } = options;
-		const txId = new TransactionID(options.txId);
+		const parameters = new ParametersHelper(options);
+		const confirmations = parameters.getParameterValue(ConfirmationsParameter);
+		const txId = parameters.getRequiredParameterValue(TransactionIdParameter, TxID);
 		const transactionsInMempool = (await fetchMempool()).map((id) => new TransactionID(id));
 		const pending = transactionsInMempool.some((tx) => tx.equals(txId));
 		const confirmationAmount = confirmations ?? 15;

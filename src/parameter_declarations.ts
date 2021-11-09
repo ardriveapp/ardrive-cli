@@ -35,6 +35,34 @@ export const DriveCreationPrivacyParameters = [
 ];
 export const DrivePrivacyParameters = [DriveKeyParameter, ...DriveCreationPrivacyParameters];
 export const TreeDepthParams = [AllParameter, MaxDepthParameter];
+export const AllParameters = [
+	WalletFileParameter,
+	SeedPhraseParameter,
+	PrivateParameter,
+	UnsafeDrivePasswordParameter,
+	DriveNameParameter,
+	FolderNameParameter,
+	DriveKeyParameter,
+	AddressParameter,
+	DriveIdParameter,
+	ArAmountParameter,
+	DestinationAddressParameter,
+	TransactionIdParameter,
+	ConfirmationsParameter,
+	FolderIdParameter,
+	FileIdParameter,
+	ParentFolderIdParameter,
+	LocalFilePathParameter,
+	DestinationFileNameParameter,
+	LocalFilesParameter,
+	GetAllRevisionsParameter,
+	AllParameter,
+	MaxDepthParameter,
+	BoostParameter,
+	DryRunParameter,
+	NoVerifyParameter
+] as const;
+export type ParameterName = typeof AllParameters[number];
 
 /**
  * Note: importing this file will declare all the above parameters

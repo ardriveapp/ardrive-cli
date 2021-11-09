@@ -14,7 +14,7 @@ import {
 	BoostParameter
 } from '../parameter_declarations';
 import { cliWalletDao } from '..';
-import { DriveID, DriveKey, ArweaveAddress, SeedPhrase, FeeMultiple } from '../types';
+import { DriveID, DriveKey, ArweaveAddress, SeedPhrase, FeeMultiple, ADDR } from '../types';
 import passwordPrompt from 'prompts';
 import { PrivateKeyData } from '../private_key_data';
 
@@ -79,7 +79,7 @@ export class ParametersHelper {
 	public async getWalletAddress(): Promise<ArweaveAddress> {
 		const address = this.getParameterValue(AddressParameter);
 		if (address) {
-			return new ArweaveAddress(address);
+			return ADDR(address);
 		}
 
 		return this.getRequiredWallet().then((wallet) => wallet.getAddress());
@@ -221,14 +221,21 @@ export class ParametersHelper {
 
 	/**
 	 * @param {ParameterName} parameterName
+	 * @param {(input: any) => T} mapFunc A function that maps the parameter value into a T instance
 	 * @returns {string | undefined}
-	 * Returns the string value for the specific parameter; throws an error if not set
+	 * @throws - When the required parameter value has a falsy value
+	 * Returns the string value for the specific parameter
 	 */
-	public getRequiredParameterValue(parameterName: ParameterName): string {
+	public getRequiredParameterValue<T = string>(
+		parameterName: ParameterName,
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		mapFunc: (input: any) => T = (input: any) => input as T
+	): T {
+		// FIXME: it could also return an array or a boolean!
 		const value = this.options[parameterName];
 		if (!value) {
 			throw new Error(`Required parameter ${parameterName} wasn't provided!`);
 		}
-		return value;
+		return mapFunc(value);
 	}
 }

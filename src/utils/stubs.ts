@@ -7,6 +7,7 @@ import {
 	ArFSPrivateFile
 } from '../arfs_entities';
 import {
+	ADDR,
 	ArFS_O_11,
 	ArweaveAddress,
 	ByteCount,
@@ -19,8 +20,9 @@ import {
 	UnixTime
 } from '../types';
 
-export const stubArweaveAddress = (address = 'abcdefghijklmnopqrxtuvwxyz123456789ABCDEFGH'): ArweaveAddress =>
-	new ArweaveAddress(address);
+export const stubArweaveAddress = (address = 'abcdefghijklmnopqrxtuvwxyz123456789ABCDEFGH'): ArweaveAddress => {
+	return ADDR(address);
+};
 
 export const stubTransactionID = TxID('0000000000000000000000000000000000000000000');
 

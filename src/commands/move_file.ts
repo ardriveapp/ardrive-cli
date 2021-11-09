@@ -18,15 +18,15 @@ new CLICommand({
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
 
-		const { dryRun } = options;
-		const fileId = EID(options.fileId);
-		const parentFolderId = EID(options.parentFolderId);
+		const dryRun = !!parameters.getParameterValue(DryRunParameter);
+		const fileId = parameters.getRequiredParameterValue(FileIdParameter, EID);
+		const parentFolderId = parameters.getRequiredParameterValue(ParentFolderIdParameter, EID);
 
 		const wallet: Wallet = await parameters.getRequiredWallet();
 		const ardrive = arDriveFactory({
 			wallet: wallet,
 			feeMultiple: parameters.getOptionalBoostSetting(),
-			dryRun: dryRun
+			dryRun
 		});
 
 		const createDriveResult = await (async function () {

@@ -24,15 +24,15 @@ new CLICommand({
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
 
-		const { dryRun } = options;
-		const folderId = EID(options.folderId);
-		const newParentFolderId = EID(options.parentFolderId);
+		const dryRun = !!parameters.getParameterValue(DryRunParameter);
+		const folderId = parameters.getRequiredParameterValue(FolderIdParameter, EID);
+		const newParentFolderId = parameters.getRequiredParameterValue(ParentFolderIdParameter, EID);
 
 		const wallet: Wallet = await parameters.getRequiredWallet();
 		const ardrive = arDriveFactory({
 			wallet: wallet,
 			feeMultiple: parameters.getOptionalBoostSetting(),
-			dryRun: dryRun
+			dryRun
 		});
 
 		const moveFolderResult = await (async function () {
