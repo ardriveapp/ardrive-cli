@@ -1266,12 +1266,8 @@ export class ArDrive extends ArDriveAnonymous {
 		let totalPrice = W(0);
 		let totalFilePrice = W(0);
 
-		if (
-			conflictResolution === skipOnConflicts &&
-			(folderToUpload.existingFileAtDestConflict || folderToUpload.existingId)
-		) {
-			// When conflict resolution is set to skip, return empty estimation if an
-			// existing folder is found or there is conflict with a file name
+		if (folderToUpload.existingFileAtDestConflict) {
+			// Return an empty estimation, folders CANNOT overwrite files
 			return { totalPrice: W('0'), totalFilePrice: W('0'), communityWinstonTip: W('0') };
 		}
 
@@ -1298,8 +1294,9 @@ export class ArDrive extends ArDriveAnonymous {
 
 		for await (const file of folderToUpload.files) {
 			if (
-				(conflictResolution === skipOnConflicts && (file.existingId || file.existingFolderAtDestConflict)) ||
-				(conflictResolution === upsertOnConflicts && file.hasSameLastModifiedDate)
+				(conflictResolution === skipOnConflicts && file.existingId) ||
+				(conflictResolution === upsertOnConflicts && file.hasSameLastModifiedDate) ||
+				file.existingFolderAtDestConflict
 			) {
 				// File will skipped, don't estimate it; continue the loop
 				continue;
