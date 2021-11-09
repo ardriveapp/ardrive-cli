@@ -1510,7 +1510,6 @@ export class ArDrive extends ArDriveAnonymous {
 		const writeStream = createWriteStream(path);
 		const fileKey = await deriveFileKey(`${privateFile.fileId}`, driveKey);
 		const decryptingStream = new StreamDecrypt(privateFile.cipherIV, fileKey);
-		encryptedDataStream.pipe(decryptingStream).pipe(writeStream);
-		return encryptedDataStream;
+		return encryptedDataStream.pipe(decryptingStream).pipe(writeStream);
 	}
 }

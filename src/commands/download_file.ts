@@ -1,9 +1,15 @@
 import { statSync } from 'fs';
 import { join as joinPath, parse as parseFile, resolve as resolvePath } from 'path';
-import { arDriveAnonymousFactory } from '..';
+import { arDriveAnonymousFactory, arDriveFactory } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
-import { DrivePrivacyParameters, FileIdParameter, LocalFilePathParameter } from '../parameter_declarations';
+import {
+	DriveIdParameter,
+	DrivePrivacyParameters,
+	DryRunParameter,
+	FileIdParameter,
+	LocalFilePathParameter
+} from '../parameter_declarations';
 import { EID } from '../types';
 
 // const fileCountRegExp = /_([0-9]+)$/;
@@ -37,13 +43,24 @@ function getFullFilePath(path: string, defaultFileName: string): string {
 
 new CLICommand({
 	name: 'download-file',
-	parameters: [FileIdParameter, LocalFilePathParameter, ...DrivePrivacyParameters],
+	parameters: [FileIdParameter, LocalFilePathParameter, DryRunParameter, DriveIdParameter, ...DrivePrivacyParameters],
 	action: new CLIAction(async (options) => {
 		const parameters = new ParametersHelper(options);
+		const dryRun = !!parameters.getParameterValue(DryRunParameter);
 		const fileId = parameters.getRequiredParameterValue(FileIdParameter);
 		const localFilePath = parameters.getRequiredParameterValue(LocalFilePathParameter);
 		if (await parameters.getIsPrivate()) {
-			throw new Error(`Downloading private files is already not implemented!`);
+			const driveId = parameters.getRequiredParameterValue(DriveIdParameter);
+			const driveKey = await parameters.getDriveKey({ driveId: EID(driveId) });
+			const wallet = await parameters.getRequiredWallet();
+			const ardrive = arDriveFactory({
+				wallet,
+				feeMultiple: parameters.getOptionalBoostSetting(),
+				dryRun
+			});
+			const file = await ardrive.getPrivateFile(EID(fileId), driveKey);
+			const fullLocalFilePath = getFullFilePath(localFilePath, file.name);
+			await ardrive.downloadPrivateFile(file, fullLocalFilePath, driveKey);
 		} else {
 			const ardrive = arDriveAnonymousFactory();
 			const file = await ardrive.getPublicFile(EID(fileId));
