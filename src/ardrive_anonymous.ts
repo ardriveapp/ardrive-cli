@@ -74,7 +74,7 @@ export class ArDriveAnonymous extends ArDriveType {
 
 	async downloadPublicFile(publicFile: ArFSPublicFile, path: string): Promise<Stream> {
 		const fileTxId = publicFile.dataTxId;
-		const downloadStream = await this.arFsDao.downloadPublicFile(fileTxId);
+		const downloadStream = await this.arFsDao.downloadFileData(fileTxId);
 		const writeStream = createWriteStream(path);
 		downloadStream.pipe(writeStream);
 		return downloadStream;

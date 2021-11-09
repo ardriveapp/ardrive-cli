@@ -1,6 +1,6 @@
 import { ArFSDAO, PrivateDriveKeyData } from './arfsdao';
 import { CommunityOracle } from './community/community_oracle';
-import { deriveDriveKey, DrivePrivacy, GQLTagInterface } from 'ardrive-core-js';
+import { deriveDriveKey, deriveFileKey, DrivePrivacy, GQLTagInterface } from 'ardrive-core-js';
 import {
 	DriveID,
 	FolderID,
@@ -46,6 +46,9 @@ import { errorMessage } from './error_message';
 import { EntityNamesAndIds } from './utils/mapper_functions';
 import { WithDriveKey } from './arfs_entity_result_factory';
 import { ArDriveAnonymous } from './ardrive_anonymous';
+import { Stream } from 'stream';
+import { StreamDecrypt } from './utils/stream_decrypt';
+import { createWriteStream } from 'fs';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 
@@ -1499,5 +1502,15 @@ export class ArDrive extends ArDriveAnonymous {
 
 	async assertValidPassword(password: string): Promise<void> {
 		await this.arFsDao.assertValidPassword(password);
+	}
+
+	async downloadPrivateFile(privateFile: ArFSPrivateFile, path: string, driveKey: DriveKey): Promise<Stream> {
+		const fileTxId = privateFile.dataTxId;
+		const encryptedDataStream = await this.arFsDao.downloadFileData(fileTxId);
+		const writeStream = createWriteStream(path);
+		const fileKey = await deriveFileKey(`${privateFile.fileId}`, driveKey);
+		const decryptingStream = new StreamDecrypt(privateFile.cipherIV, fileKey);
+		encryptedDataStream.pipe(decryptingStream).pipe(writeStream);
+		return encryptedDataStream;
 	}
 }

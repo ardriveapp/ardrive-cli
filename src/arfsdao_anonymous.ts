@@ -282,7 +282,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		return entitiesWithPath;
 	}
 
-	async downloadPublicFile(fileTxId: TransactionID): Promise<Stream> {
+	async downloadFileData(fileTxId: TransactionID): Promise<Stream> {
 		const dataTxUrl = `${gatewayURL}${fileTxId}`;
 		const response = await axios({
 			method: 'get',
