@@ -45,7 +45,7 @@ import { stubEntityID, stubTransactionID } from './utils/stubs';
 import { errorMessage } from './error_message';
 import { EntityNamesAndIds } from './utils/mapper_functions';
 import { WithDriveKey } from './arfs_entity_result_factory';
-import { ArDriveAnonymous } from './ardrive_anonymus';
+import { ArDriveAnonymous } from './ardrive_anonymous';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 
