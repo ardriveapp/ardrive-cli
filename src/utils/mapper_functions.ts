@@ -25,5 +25,5 @@ export function folderToNameAndIdMap(entity: ArFSFileOrFolderEntity): FolderName
 }
 
 export function fileToNameAndIdMap(entity: ArFSFileOrFolderEntity): FileNameAndId {
-	return { fileId: entity.entityId as FileID, fileName: entity.name };
+	return { fileId: entity.entityId, fileName: entity.name };
 }
