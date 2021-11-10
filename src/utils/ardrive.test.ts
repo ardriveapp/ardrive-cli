@@ -98,7 +98,6 @@ describe('ArDrive class', () => {
 				]
 			];
 			inputsAndExpectedOutputs.forEach(([input, expectedOutput]) => {
-				console.log(JSON.stringify(expectedOutput, null, 4));
 				expect(arDrive.getTipTags(input as TipType)).to.deep.equal(expectedOutput);
 			});
 		});
