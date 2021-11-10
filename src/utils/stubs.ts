@@ -33,19 +33,20 @@ export const stubEntityIDParent = EID('00000000-0000-0000-0000-000000000003');
 export const stubEntityIDChild = EID('00000000-0000-0000-0000-000000000004');
 export const stubEntityIDGrandchild = EID('00000000-0000-0000-0000-000000000005');
 
-export const stubPublicDrive = new ArFSPublicDrive(
-	'Integration Test',
-	'1.0',
-	ArFS_O_11,
-	JSON_CONTENT_TYPE,
-	stubEntityID,
-	'drive',
-	'STUB DRIVE',
-	stubTransactionID,
-	new UnixTime(0),
-	'public',
-	stubEntityID
-);
+export const stubPublicDrive = (): ArFSPublicDrive =>
+	new ArFSPublicDrive(
+		'Integration Test',
+		'1.0',
+		ArFS_O_11,
+		JSON_CONTENT_TYPE,
+		stubEntityID,
+		'drive',
+		'STUB DRIVE',
+		stubTransactionID,
+		new UnixTime(0),
+		'public',
+		stubEntityID
+	);
 
 export const stubPrivateDrive = new ArFSPrivateDrive(
 	'Integration Test',
