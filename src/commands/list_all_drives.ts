@@ -15,7 +15,7 @@ new CLICommand({
 		const address = await parameters.getWalletAddress();
 		const privateKeyData = await parameters.getPrivateKeyData();
 
-		const drives: Partial<ArFSDriveEntity>[] = await ardrive.getAllDrivesForAddress(address, privateKeyData);
+		const drives: Partial<ArFSDriveEntity>[] = await ardrive.getAllDrivesForAddress({ address, privateKeyData });
 
 		// Display data
 		console.log(JSON.stringify(drives, null, 4));

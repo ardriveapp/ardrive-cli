@@ -93,7 +93,7 @@ import {
 	fileConflictInfoMap,
 	folderToNameAndIdMap
 } from './utils/mapper_functions';
-import { ListPrivateFolderParams } from './ardrive';
+import { ListPrivateFolderParams } from './ardrive.types';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 
