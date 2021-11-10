@@ -250,6 +250,7 @@ export class ArDrive extends ArDriveAnonymous {
 		return [
 			{ name: 'App-Name', value: this.appName },
 			{ name: 'App-Version', value: this.appVersion },
+			{ name: 'Type', value: 'fee' },
 			{ name: 'Tip-Type', value: tipType }
 		];
 	}
