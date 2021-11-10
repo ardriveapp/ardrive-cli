@@ -28,7 +28,7 @@ import {
 } from './arfs_entities';
 import { PrivateKeyData } from './private_key_data';
 import axios from 'axios';
-import { Stream } from 'stream';
+import { Readable } from 'stream';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 
@@ -282,7 +282,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		return entitiesWithPath;
 	}
 
-	async downloadFileData(fileTxId: TransactionID): Promise<Stream> {
+	async downloadFileData(fileTxId: TransactionID): Promise<Readable> {
 		const dataTxUrl = `${gatewayURL}${fileTxId}`;
 		const response = await axios({
 			method: 'get',

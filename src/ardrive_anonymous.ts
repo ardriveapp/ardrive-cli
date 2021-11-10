@@ -1,5 +1,7 @@
-import { createWriteStream } from 'fs';
-import { Stream } from 'stream';
+import { createWriteStream, mkdir } from 'fs';
+import { join as joinPath } from 'path';
+import { pipeline } from 'stream';
+import { promisify } from 'util';
 import { ListPublicFolderParams } from './ardrive';
 import { ArFSDAOAnonymous, ArFSDAOType } from './arfsdao_anonymous';
 import {
@@ -12,6 +14,8 @@ import {
 import { PrivateKeyData } from './private_key_data';
 import { ArweaveAddress, DriveID, FileID, FolderID } from './types';
 
+const pipelinePromise = promisify(pipeline);
+const mkdirPromise = promisify(mkdir);
 export abstract class ArDriveType {
 	protected abstract readonly arFsDao: ArFSDAOType;
 }
@@ -72,11 +76,38 @@ export class ArDriveAnonymous extends ArDriveType {
 		return children;
 	}
 
-	async downloadPublicFile(publicFile: ArFSPublicFile, path: string): Promise<Stream> {
+	/**
+	 *
+	 * @param folderId - the ID of the folder to be download
+	 * @returns - the array of streams to write
+	 */
+	async downloadPublicFolder(folderId: FolderID, maxDepth: number, path: string): Promise<void> {
+		// const children = folderEntityDump.slice(1);
+		const folderEntityDump = await this.listPublicFolder({ folderId, maxDepth, includeRoot: true });
+		const rootFolder = folderEntityDump[0];
+		const rootFolderPath = rootFolder.path;
+		const basePath = rootFolderPath.replace(/\/[^/]+$/, '');
+		for (const entity of folderEntityDump) {
+			const relativePath = entity.path.replace(new RegExp(`^${basePath}/`), '');
+			const fullPath = joinPath(path, relativePath);
+			console.log(`About to write "${fullPath}"`);
+			switch (entity.entityType) {
+				case 'folder':
+					await mkdirPromise(fullPath);
+					break;
+				case 'file':
+					await this.downloadPublicFile(entity.getEntity(), fullPath);
+					break;
+				default:
+					throw new Error(`Unsupported entity type: ${entity.entityType}`);
+			}
+		}
+	}
+
+	async downloadPublicFile(publicFile: ArFSPublicFile, path: string): Promise<void> {
 		const fileTxId = publicFile.dataTxId;
 		const downloadStream = await this.arFsDao.downloadFileData(fileTxId);
 		const writeStream = createWriteStream(path);
-		downloadStream.pipe(writeStream);
-		return downloadStream;
+		return pipelinePromise(downloadStream, writeStream);
 	}
 }

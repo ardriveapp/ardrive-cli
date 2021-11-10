@@ -49,6 +49,11 @@ import { ArDriveAnonymous } from './ardrive_anonymous';
 import { Stream } from 'stream';
 import { StreamDecrypt } from './utils/stream_decrypt';
 import { createWriteStream } from 'fs';
+import { mkdir } from 'fs';
+import { join as joinPath } from 'path';
+import { promisify } from 'util';
+
+const mkdirPromise = promisify(mkdir);
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 
@@ -1502,6 +1507,32 @@ export class ArDrive extends ArDriveAnonymous {
 
 	async assertValidPassword(password: string): Promise<void> {
 		await this.arFsDao.assertValidPassword(password);
+	}
+
+	/**
+	 *
+	 * @param folderId - the ID of the folder to be download
+	 * @returns - the array of streams to write
+	 */
+	async downloadPrivateFolder(folderId: FolderID, maxDepth: number, path: string, driveKey: DriveKey): Promise<void> {
+		const folderEntityDump = await this.listPrivateFolder({ folderId, maxDepth, includeRoot: true, driveKey });
+		const rootFolder = folderEntityDump[0];
+		const rootFolderPath = rootFolder.path;
+		const basePath = rootFolderPath.replace(/\/[^/]+$/, '');
+		for (const entity of folderEntityDump) {
+			const relativePath = entity.path.replace(new RegExp(`^${basePath}/`), '');
+			const fullPath = joinPath(path, relativePath);
+			switch (entity.entityType) {
+				case 'folder':
+					await mkdirPromise(fullPath);
+					break;
+				case 'file':
+					await this.downloadPrivateFile(entity.getEntity(), fullPath, driveKey);
+					break;
+				default:
+					throw new Error(`Unsupported entity type: ${entity.entityType}`);
+			}
+		}
 	}
 
 	async downloadPrivateFile(privateFile: ArFSPrivateFile, path: string, driveKey: DriveKey): Promise<Stream> {

@@ -13,7 +13,7 @@ export class StreamDecrypt extends Transform {
 		// this.cork();
 	}
 
-	_transform(chunk: Buffer, encoding: string, next: () => void): void {
+	_transform(chunk: Buffer, encoding: string, next: (err?: Error, data?: Buffer) => void): void {
 		if (encoding !== 'buffer') {
 			throw new Error('The encoding is not a buffer!');
 		}
@@ -21,7 +21,7 @@ export class StreamDecrypt extends Transform {
 		next();
 	}
 
-	_flush(next: () => void): void {
+	_flush(next: (err?: Error, data?: Buffer) => void): void {
 		const authTag: Buffer = this.encryptedData.slice(
 			this.encryptedData.byteLength - authTagLength,
 			this.encryptedData.byteLength
@@ -30,9 +30,11 @@ export class StreamDecrypt extends Transform {
 		const iv: Buffer = Buffer.from(this.cipherIV, 'base64');
 		const decipher = createDecipheriv(algo, this.fileKey, iv, { authTagLength });
 		decipher.setAuthTag(authTag);
-		debugger;
-		const decryptedFile: Buffer = Buffer.concat([decipher.update(encryptedDataSlice), decipher.final()]);
-		this.push(decryptedFile);
-		next();
+		try {
+			const decryptedFile: Buffer = Buffer.concat([decipher.update(encryptedDataSlice), decipher.final()]);
+			next(undefined, decryptedFile);
+		} catch (e) {
+			next(e);
+		}
 	}
 }
