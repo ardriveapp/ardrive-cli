@@ -46,9 +46,15 @@ import { errorMessage } from './error_message';
 import { EntityNamesAndIds } from './utils/mapper_functions';
 import { WithDriveKey } from './arfs_entity_result_factory';
 import { ArDriveAnonymous } from './ardrive_anonymous';
-import { Stream } from 'stream';
+import { pipeline } from 'stream';
 import { StreamDecrypt } from './utils/stream_decrypt';
 import { createWriteStream } from 'fs';
+import { mkdir } from 'fs';
+import { join as joinPath } from 'path';
+import { promisify } from 'util';
+
+const mkdirPromise = promisify(mkdir);
+const pipelinePromise = promisify(pipeline);
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 
@@ -1504,12 +1510,39 @@ export class ArDrive extends ArDriveAnonymous {
 		await this.arFsDao.assertValidPassword(password);
 	}
 
-	async downloadPrivateFile(privateFile: ArFSPrivateFile, path: string, driveKey: DriveKey): Promise<Stream> {
+	/**
+	 *
+	 * @param folderId - the ID of the folder to be download
+	 * @returns - the array of streams to write
+	 */
+	async downloadPrivateFolder(folderId: FolderID, maxDepth: number, path: string, driveKey: DriveKey): Promise<void> {
+		const folderEntityDump = await this.listPrivateFolder({ folderId, maxDepth, includeRoot: true, driveKey });
+		const rootFolder = folderEntityDump[0];
+		const rootFolderPath = rootFolder.path;
+		const basePath = rootFolderPath.replace(/\/[^/]+$/, '');
+		for (const entity of folderEntityDump) {
+			const relativePath = entity.path.replace(new RegExp(`^${basePath}/`), '');
+			const fullPath = joinPath(path, relativePath);
+			switch (entity.entityType) {
+				case 'folder':
+					await mkdirPromise(fullPath);
+					break;
+				case 'file':
+					await this.downloadPrivateFile(entity.getEntity(), fullPath, driveKey);
+					break;
+				default:
+					throw new Error(`Unsupported entity type: ${entity.entityType}`);
+			}
+		}
+	}
+
+	async downloadPrivateFile(privateFile: ArFSPrivateFile, path: string, driveKey: DriveKey): Promise<void> {
 		const fileTxId = privateFile.dataTxId;
 		const encryptedDataStream = await this.arFsDao.downloadFileData(fileTxId);
 		const writeStream = createWriteStream(path);
 		const fileKey = await deriveFileKey(`${privateFile.fileId}`, driveKey);
-		const decryptingStream = new StreamDecrypt(privateFile.cipherIV, fileKey);
-		return encryptedDataStream.pipe(decryptingStream).pipe(writeStream);
+		const cipherIV = await this.arFsDao.getPrivateTransactionCipherIV(fileTxId);
+		const decryptingStream = new StreamDecrypt(cipherIV, fileKey);
+		return pipelinePromise(encryptedDataStream.pipe(decryptingStream), writeStream);
 	}
 }

@@ -1,4 +1,4 @@
-import { ArweaveAddress } from './types';
+import { ArweaveAddress, TransactionID } from './types';
 
 const ownerFragment = `
 	owner {
@@ -44,6 +44,7 @@ export interface BuildGQLQueryParams {
 	cursor?: string;
 	owner?: ArweaveAddress;
 	sort?: Sort;
+	ids?: TransactionID[];
 }
 
 /**
@@ -54,7 +55,7 @@ export interface BuildGQLQueryParams {
  * @example
  * const query = buildQuery([{ name: 'Folder-Id', value: folderId }]);
  */
-export function buildQuery({ tags = [], cursor, owner, sort = DESCENDING_ORDER }: BuildGQLQueryParams): GQLQuery {
+export function buildQuery({ tags = [], cursor, owner, sort = DESCENDING_ORDER, ids }: BuildGQLQueryParams): GQLQuery {
 	let queryTags = ``;
 
 	tags.forEach((t) => {
@@ -67,6 +68,7 @@ export function buildQuery({ tags = [], cursor, owner, sort = DESCENDING_ORDER }
 	return {
 		query: `query {
 			transactions(
+				${ids?.length ? `ids: ${ids.map((id) => `"${id}"`)}` : ''}
 				first: ${singleResult ? latestResult : pageLimit}
 				sort: ${sort}
 				${singleResult ? '' : `after: "${cursor}"`}
