@@ -14,18 +14,16 @@ new CLICommand({
 
 		const driveId = EID(parameters.getRequiredParameterValue(DriveIdParameter));
 
-		// const shouldGetAllRevisions: boolean = options.getAllRevisions;
-
 		const result: Partial<ArFSPublicDrive | ArFSPrivateDrive> = await (async function () {
 			if (await parameters.getIsPrivate()) {
 				const wallet = await parameters.getRequiredWallet();
 				const arDrive = arDriveFactory({ wallet: wallet });
 				const driveKey = await parameters.getDriveKey({ driveId });
 
-				return arDrive.getPrivateDrive({ driveId, driveKey } /*, shouldGetAllRevisions*/);
+				return arDrive.getPrivateDrive({ driveId, driveKey });
 			} else {
 				const arDrive = arDriveAnonymousFactory();
-				return arDrive.getPublicDrive({ driveId } /*, shouldGetAllRevisions*/);
+				return arDrive.getPublicDrive({ driveId });
 			}
 		})();
 
