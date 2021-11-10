@@ -14,9 +14,9 @@ export function latestRevisionFilter(
 	_index: number,
 	allEntities: ArFSFileOrFolderEntity[]
 ): boolean {
-	const allRevisions = allEntities.filter((e) => e.entityId === entity.entityId);
+	const allRevisions = allEntities.filter((e) => e.entityId.equals(entity.entityId));
 	const latestRevision = allRevisions[0];
-	return entity.txId === latestRevision.txId;
+	return entity.txId.equals(latestRevision.txId);
 }
 
 /**

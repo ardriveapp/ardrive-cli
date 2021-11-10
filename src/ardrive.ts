@@ -15,7 +15,8 @@ import {
 	Winston,
 	AR,
 	TransactionID,
-	FeeMultiple
+	FeeMultiple,
+	stubTransactionID
 } from './types';
 import { WalletDAO, Wallet, JWKWallet } from './wallet';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
@@ -41,7 +42,7 @@ import {
 	ArFSPrivateFileOrFolderWithPaths,
 	ArFSPrivateFolder
 } from './arfs_entities';
-import { stubEntityID, stubTransactionID } from './utils/stubs';
+import { stubEntityID } from './utils/stubs';
 import { errorMessage } from './error_message';
 import { EntityNamesAndIds } from './utils/mapper_functions';
 import { WithDriveKey } from './arfs_entity_result_factory';

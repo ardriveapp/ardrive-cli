@@ -16,15 +16,14 @@ import {
 	FolderID,
 	JSON_CONTENT_TYPE,
 	PRIVATE_CONTENT_TYPE,
-	TxID,
+	stubTransactionID,
+	TransactionID,
 	UnixTime
 } from '../types';
 
 export const stubArweaveAddress = (address = 'abcdefghijklmnopqrxtuvwxyz123456789ABCDEFGH'): ArweaveAddress => {
 	return ADDR(address);
 };
-
-export const stubTransactionID = TxID('0000000000000000000000000000000000000000000');
 
 export const stubEntityID = EID('00000000-0000-0000-0000-000000000000');
 export const stubEntityIDAlt = EID('caa8b54a-eb5e-4134-8ae2-a3946a428ec7');
@@ -117,9 +116,14 @@ export const stubPrivateFolder = ({
 interface StubFileParams {
 	driveId?: DriveID;
 	fileName?: string;
+	txId?: TransactionID;
 }
 
-export const stubPublicFile = ({ driveId = stubEntityID, fileName = 'STUB NAME' }: StubFileParams): ArFSPublicFile =>
+export const stubPublicFile = ({
+	driveId = stubEntityID,
+	fileName = 'STUB NAME',
+	txId = stubTransactionID
+}: StubFileParams): ArFSPublicFile =>
 	new ArFSPublicFile(
 		'Integration Test',
 		'1.0',
@@ -128,7 +132,7 @@ export const stubPublicFile = ({ driveId = stubEntityID, fileName = 'STUB NAME' 
 		driveId,
 		'file',
 		fileName,
-		stubTransactionID,
+		txId,
 		new UnixTime(0),
 		stubEntityID,
 		stubEntityID,
