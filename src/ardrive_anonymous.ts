@@ -1,5 +1,4 @@
 import {
-	GetOwnerForDriveIdParams,
 	GetPublicDriveParams,
 	GetPublicFolderParams,
 	GetPublicFileParams,
@@ -14,7 +13,7 @@ import {
 	ArFSPublicFileOrFolderWithPaths,
 	ArFSPublicFolder
 } from './arfs_entities';
-import { ArweaveAddress } from './types';
+import { ArweaveAddress, DriveID } from './types';
 
 export abstract class ArDriveType {
 	protected abstract readonly arFsDao: ArFSDAOType;
@@ -25,13 +24,13 @@ export class ArDriveAnonymous extends ArDriveType {
 		super();
 	}
 
-	public async getOwnerForDriveId({ driveId }: GetOwnerForDriveIdParams): Promise<ArweaveAddress> {
+	public async getOwnerForDriveId(driveId: DriveID): Promise<ArweaveAddress> {
 		return this.arFsDao.getOwnerForDriveId(driveId);
 	}
 
 	public async getPublicDrive({ driveId, owner }: GetPublicDriveParams): Promise<ArFSPublicDrive> {
 		if (!owner) {
-			owner = await this.getOwnerForDriveId({ driveId });
+			owner = await this.getOwnerForDriveId(driveId);
 		}
 
 		return this.arFsDao.getPublicDrive(driveId, owner);

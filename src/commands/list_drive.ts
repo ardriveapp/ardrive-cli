@@ -26,7 +26,7 @@ new CLICommand({
 			const rootFolderId = drive.rootFolderId;
 
 			// We have the drive id from deriving a key, we can derive the owner
-			const driveOwner = await arDrive.getOwnerForDriveId({ driveId });
+			const driveOwner = await arDrive.getOwnerForDriveId(driveId);
 
 			children = await arDrive.listPrivateFolder({
 				folderId: rootFolderId,

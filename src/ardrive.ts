@@ -2,7 +2,19 @@ import { ArFSDAO } from './arfsdao';
 import { UploadPrivateFileParams, UploadPublicFileParams } from './ardrive.types';
 import { CommunityOracle } from './community/community_oracle';
 import { deriveDriveKey, DrivePrivacy, GQLTagInterface } from 'ardrive-core-js';
-import { DriveID, FolderID, TipType, DriveKey, ArweaveAddress, ByteCount, W, Winston, AR, FeeMultiple } from './types';
+import {
+	DriveID,
+	FolderID,
+	TipType,
+	DriveKey,
+	ArweaveAddress,
+	ByteCount,
+	W,
+	Winston,
+	AR,
+	FeeMultiple,
+	FileID
+} from './types';
 import { WalletDAO, Wallet, JWKWallet } from './wallet';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
 import { ArFSFolderToUpload, ArFSFileToUpload } from './arfs_file_wrapper';
@@ -57,8 +69,6 @@ import {
 	MetaDataBaseCosts,
 	FileUploadBaseCosts,
 	DriveUploadBaseCosts,
-	GetDriveIdForFileIdParams,
-	GetDriveIdForFolderIdParams,
 	CreatePrivateDriveParams
 } from './ardrive.types';
 
@@ -109,7 +119,7 @@ export class ArDrive extends ArDriveAnonymous {
 	public async movePublicFile({ fileId, newParentFolderId }: MovePublicFileParams): Promise<ArFSResult> {
 		const destFolderDriveId = await this.arFsDao.getDriveIdForFolderId(newParentFolderId);
 
-		const owner = await this.getOwnerForDriveId({ driveId: destFolderDriveId });
+		const owner = await this.getOwnerForDriveId(destFolderDriveId);
 		await this.assertOwnerAddress(owner);
 
 		const originalFileMetaData = await this.getPublicFile({ fileId });
@@ -167,7 +177,7 @@ export class ArDrive extends ArDriveAnonymous {
 	public async movePrivateFile({ fileId, newParentFolderId, driveKey }: MovePrivateFileParams): Promise<ArFSResult> {
 		const destFolderDriveId = await this.arFsDao.getDriveIdForFolderId(newParentFolderId);
 
-		const owner = await this.getOwnerForDriveId({ driveId: destFolderDriveId });
+		const owner = await this.getOwnerForDriveId(destFolderDriveId);
 		await this.assertOwnerAddress(owner);
 
 		const originalFileMetaData = await this.getPrivateFile({ fileId, driveKey });
@@ -232,7 +242,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		const destFolderDriveId = await this.arFsDao.getDriveIdForFolderId(newParentFolderId);
 
-		const owner = await this.getOwnerForDriveId({ driveId: destFolderDriveId });
+		const owner = await this.getOwnerForDriveId(destFolderDriveId);
 		await this.assertOwnerAddress(owner);
 
 		const originalFolderMetaData = await this.getPublicFolder({ folderId });
@@ -303,7 +313,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 		const destFolderDriveId = await this.arFsDao.getDriveIdForFolderId(newParentFolderId);
 
-		const owner = await this.getOwnerForDriveId({ driveId: destFolderDriveId });
+		const owner = await this.getOwnerForDriveId(destFolderDriveId);
 		await this.assertOwnerAddress(owner);
 
 		const originalFolderMetaData = await this.getPrivateFolder({ folderId, driveKey });
@@ -376,7 +386,7 @@ export class ArDrive extends ArDriveAnonymous {
 	}: UploadPublicFileParams): Promise<ArFSResult> {
 		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
 
-		const owner = await this.getOwnerForDriveId({ driveId });
+		const owner = await this.getOwnerForDriveId(driveId);
 		await this.assertOwnerAddress(owner);
 
 		// Derive destination name and names already within provided destination folder
@@ -465,7 +475,7 @@ export class ArDrive extends ArDriveAnonymous {
 	}: BulkPublicUploadParams): Promise<ArFSResult> {
 		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
 
-		const owner = await this.getOwnerForDriveId({ driveId });
+		const owner = await this.getOwnerForDriveId(driveId);
 		await this.assertOwnerAddress(owner);
 
 		// Derive destination name and names already within provided destination folder
@@ -669,7 +679,7 @@ export class ArDrive extends ArDriveAnonymous {
 	}: UploadPrivateFileParams): Promise<ArFSResult> {
 		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
 
-		const owner = await this.getOwnerForDriveId({ driveId });
+		const owner = await this.getOwnerForDriveId(driveId);
 		await this.assertOwnerAddress(owner);
 
 		// Derive destination name and names already within provided destination folder
@@ -772,7 +782,7 @@ export class ArDrive extends ArDriveAnonymous {
 		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
 
 		// Get owner of drive, will error if no drives are found
-		const owner = await this.getOwnerForDriveId({ driveId });
+		const owner = await this.getOwnerForDriveId(driveId);
 
 		// Assert that the provided wallet is the owner of the drive
 		await this.assertOwnerAddress(owner);
@@ -990,7 +1000,7 @@ export class ArDrive extends ArDriveAnonymous {
 		driveId,
 		parentFolderId
 	}: CreatePublicFolderParams): Promise<ArFSResult> {
-		const owner = await this.getOwnerForDriveId({ driveId });
+		const owner = await this.getOwnerForDriveId(driveId);
 		await this.assertOwnerAddress(owner);
 
 		// Assert that there are no duplicate names in the destination folder
@@ -1035,7 +1045,7 @@ export class ArDrive extends ArDriveAnonymous {
 		driveKey,
 		parentFolderId
 	}: CreatePrivateFolderParams): Promise<ArFSResult> {
-		const owner = await this.getOwnerForDriveId({ driveId });
+		const owner = await this.getOwnerForDriveId(driveId);
 		await this.assertOwnerAddress(owner);
 
 		// Assert that there are no duplicate names in the destination folder
@@ -1301,7 +1311,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 	public async getPrivateDrive({ driveId, driveKey, owner }: GetPrivateDriveParams): Promise<ArFSPrivateDrive> {
 		if (!owner) {
-			owner = await this.getOwnerForDriveId({ driveId });
+			owner = await this.getOwnerForDriveId(driveId);
 		}
 		await this.assertOwnerAddress(owner);
 
@@ -1460,11 +1470,11 @@ export class ArDrive extends ArDriveAnonymous {
 		};
 	}
 
-	public async getDriveIdForFileId({ fileId }: GetDriveIdForFileIdParams): Promise<DriveID> {
+	public async getDriveIdForFileId(fileId: FileID): Promise<DriveID> {
 		return this.arFsDao.getDriveIdForFileId(fileId);
 	}
 
-	public async getDriveIdForFolderId({ folderId }: GetDriveIdForFolderIdParams): Promise<DriveID> {
+	public async getDriveIdForFolderId(folderId: FolderID): Promise<DriveID> {
 		return this.arFsDao.getDriveIdForFolderId(folderId);
 	}
 

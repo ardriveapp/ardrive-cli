@@ -126,18 +126,6 @@ export interface CreatePrivateDriveParams extends CreatePublicDriveParams {
 	newPrivateDriveData: PrivateDriveKeyData;
 }
 
-export interface GetDriveIdForFileIdParams {
-	fileId: FileID;
-}
-
-export interface GetDriveIdForFolderIdParams {
-	folderId: FolderID;
-}
-
-export interface GetOwnerForDriveIdParams {
-	driveId: DriveID;
-}
-
 interface GetEntityParams {
 	owner?: ArweaveAddress;
 }

@@ -102,7 +102,7 @@ new CLICommand({
 
 					const result = await (async () => {
 						if (await parameters.getIsPrivate()) {
-							const driveId = await arDrive.getDriveIdForFolderId({ folderId: parentFolderId });
+							const driveId = await arDrive.getDriveIdForFolderId(parentFolderId);
 							const driveKey =
 								fileDriveKey ??
 								(await parameters.getDriveKey({ driveId, drivePassword, useCache: true }));
