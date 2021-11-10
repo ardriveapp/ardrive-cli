@@ -702,12 +702,35 @@ Users can perform a bulk upload by using the upload-file command on a target fol
 ardrive upload-file --local-file-path /path/to/folder  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
 ```
 
-This method of upload can be used to upload a large number of files and folders within the folder tree. If existing entities are encountered in the destination folder tree that would cause naming conflicts, expect the following behaviors:
+### Name Conflict Resolution on Upload
 
--   Folder names that conflict with a FILE name at the destination will cause an error to be thrown
--   Folder names that conflict with a FOLDER name at the destination will use the existing folder ID (i.e. skip) rather than creating a new folder
--   File names that conflict with a FOLDER name at the destination will cause an error to be thrown
--   File names that conflict with a FILE name at the destination will be uploaded as a REVISION
+By default, the `upload-file` command will use the upsert behavior if existing entities are encountered in the destination folder tree that would cause naming conflicts.
+
+Expect the behaviors from the following table for each resolution setting:
+
+| Source Type | Conflict at Dest | `skip` | `replace` | `upsert` (default) |
+| ----------- | ---------------- | ------ | --------- | ------------------ |
+| File        | None             | Insert | Insert    | Insert             |
+| File        | Matching File    | Skip   | Update    | Skip               |
+| File        | Different File   | Skip   | Update    | Update             |
+| File        | Folder           | Skip   | Fail      | Fail               |
+| Folder      | None             | Insert | Insert    | Insert             |
+| Folder      | File             | Skip   | Fail      | Fail               |
+| Folder      | Folder           | Re-use | Re-use    | Re-use             |
+
+The default upsert behavior will check the destination folder for a file with a conflicting name. If no conflicts are found, it will insert (upload) the file.
+
+In the case that there is a FILE to FILE name conflict found, it will only update it if necessary. To determine if an update is necessary, upsert will compare the last modified dates of conflicting file and the file being uploaded. When they are matching, the upload will be skipped. Otherwise the file will be updated as a new revision.
+
+To override the upsert behavior, use the `--replace` option to always make new revisions of a file or the `--skip` option to always skip the upload on name conflicts:
+
+```shell
+ardrive upload-file --replace --local-file-path /path/to/file.txt  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
+```
+
+```shell
+ardrive upload-file --skip --local-file-path /path/to/file.txt  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
+```
 
 ### Fetching the Metadata of a File Entity
 
@@ -880,7 +903,7 @@ ardrive <command> --help
 [ardrive]: https://ardrive.io
 [arweave]: https://ardrive.io/what-is-arweave/
 [ardrive-github]: https://github.com/ardriveapp/
-[arfs]: https://ardrive.atlassian.net/l/c/yDcGDbUm
+[arfs]: https://ardrive.atlassian.net/l/c/m6P1vJDo
 [ardrive-web-app]: https://app.ardrive.io
 [ardrive-core]: https://github.com/ardriveapp/ardrive-core-js
 [yarn-install]: https://yarnpkg.com/getting-started/install

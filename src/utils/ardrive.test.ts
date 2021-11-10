@@ -97,10 +97,14 @@ describe('ArDrive class', () => {
 				{ name: 'App-Version', value: '1.0' }
 			];
 			const inputsAndExpectedOutputs = [
-				[undefined, [...baseTags, { name: 'Tip-Type', value: 'data upload' }]],
-				['data upload', [...baseTags, { name: 'Tip-Type', value: 'data upload' }]]
+				[undefined, [...baseTags, { name: 'Type', value: 'fee' }, { name: 'Tip-Type', value: 'data upload' }]],
+				[
+					'data upload',
+					[...baseTags, { name: 'Type', value: 'fee' }, { name: 'Tip-Type', value: 'data upload' }]
+				]
 			];
 			inputsAndExpectedOutputs.forEach(([input, expectedOutput]) => {
+				console.log(JSON.stringify(expectedOutput, null, 4));
 				expect(arDrive.getTipTags(input as TipType)).to.deep.equal(expectedOutput);
 			});
 		});
