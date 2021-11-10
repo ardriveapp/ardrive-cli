@@ -40,3 +40,6 @@ export type RewardSettings = {
 
 type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
 export type MakeOptional<T, K> = Omit<T, K> & Partial<T>;
+export type Mutable<T> = {
+	-readonly [P in keyof T]: T[P];
+};

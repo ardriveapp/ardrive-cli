@@ -160,7 +160,7 @@ describe('ArDrive class - integrated', () => {
 
 			it('returns the correct ArFSResult', async () => {
 				stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
-				stub(arfsDao, 'getPublicDrive').resolves(stubPublicDrive);
+				stub(arfsDao, 'getPublicDrive').resolves(stubPublicDrive());
 
 				const result = await arDrive.createPublicFolder({
 					folderName: 'TEST_FOLDER',

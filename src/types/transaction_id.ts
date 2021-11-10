@@ -1,7 +1,6 @@
 import { Equatable } from './equatable';
 
 const trxIdRegex = /^(\w|-){43}$/;
-
 export class TransactionID implements Equatable<TransactionID> {
 	constructor(private readonly transactionId: string) {
 		if (!transactionId.match(trxIdRegex)) {
@@ -39,3 +38,5 @@ export class TransactionID implements Equatable<TransactionID> {
 export function TxID(transactionId: string): TransactionID {
 	return new TransactionID(transactionId);
 }
+
+export const stubTransactionID = TxID('0000000000000000000000000000000000000000000');

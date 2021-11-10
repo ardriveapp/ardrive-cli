@@ -13,7 +13,8 @@ import {
 	Winston,
 	AR,
 	FeeMultiple,
-	FileID
+	FileID,
+	stubTransactionID
 } from './types';
 import { WalletDAO, Wallet, JWKWallet } from './wallet';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
@@ -38,7 +39,7 @@ import {
 	ArFSPrivateFileOrFolderWithPaths,
 	ArFSPrivateFolder
 } from './arfs_entities';
-import { stubEntityID, stubTransactionID } from './utils/stubs';
+import { stubEntityID } from './utils/stubs';
 import { errorMessage } from './error_message';
 import { ArDriveAnonymous } from './ardrive_anonymous';
 import {
