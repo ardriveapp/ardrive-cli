@@ -18,7 +18,7 @@ new CLICommand({
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
 		const arAmount = parameters.getRequiredParameterValue(ArAmountParameter, AR.from);
-		const destAddress = parameters.getRequiredParameterValue(DestinationAddressParameter, (addr) => ADDR(addr));
+		const destAddress = parameters.getRequiredParameterValue(DestinationAddressParameter, ADDR);
 		const wallet = await parameters.getRequiredWallet();
 		const walletAddress = await wallet.getAddress();
 		const boost = parameters.getOptionalBoostSetting();
