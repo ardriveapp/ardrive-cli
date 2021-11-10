@@ -1,6 +1,6 @@
 import { ArFSFileOrFolderEntity } from './arfs_entities';
 import { FolderID, EID } from './types';
-import { ROOT_FOLDER_ID_PLACEHOLDER } from './utils/arfs_builders/arfs_folder_builders';
+import { RootFolderID } from './utils/arfs_builders/arfs_folder_builders';
 
 export class FolderTreeNode {
 	constructor(
@@ -130,7 +130,7 @@ export class FolderHierarchy {
 		if (this.rootNode.parent) {
 			throw new Error(`Can't compute paths from sub-tree`);
 		}
-		if (`${folderId}` === ROOT_FOLDER_ID_PLACEHOLDER) {
+		if (folderId.equals(new RootFolderID())) {
 			return '/';
 		}
 		let folderNode = this.folderIdToNodeMap[`${folderId}`];
@@ -151,7 +151,7 @@ export class FolderHierarchy {
 		if (this.rootNode.parent) {
 			throw new Error(`Can't compute paths from sub-tree`);
 		}
-		if (`${folderId}` === ROOT_FOLDER_ID_PLACEHOLDER) {
+		if (folderId.equals(new RootFolderID())) {
 			return '/';
 		}
 		let folderNode = this.folderIdToNodeMap[`${folderId}`];
@@ -170,7 +170,7 @@ export class FolderHierarchy {
 		if (this.rootNode.parent) {
 			throw new Error(`Can't compute paths from sub-tree`);
 		}
-		if (`${folderId}` === ROOT_FOLDER_ID_PLACEHOLDER) {
+		if (folderId.equals(new RootFolderID())) {
 			return '/';
 		}
 		let folderNode = this.folderIdToNodeMap[`${folderId}`];
