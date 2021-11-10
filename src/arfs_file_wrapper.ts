@@ -167,7 +167,7 @@ export class ArFSFolderToUpload {
 			if (existingFileAtDestConflict) {
 				file.existingId = existingFileAtDestConflict.fileId;
 
-				if (existingFileAtDestConflict.lastModifiedDate === file.lastModifiedDate) {
+				if (existingFileAtDestConflict.lastModifiedDate.valueOf() === file.lastModifiedDate.valueOf()) {
 					// Check last modified date and set to true to resolve upsert conditional
 					file.hasSameLastModifiedDate = true;
 				}

@@ -486,7 +486,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 			if (
 				conflictResolution === upsertOnConflicts &&
-				conflictingFileName.lastModifiedDate === wrappedFile.lastModifiedDate
+				conflictingFileName.lastModifiedDate.valueOf() === wrappedFile.lastModifiedDate.valueOf()
 			) {
 				// These files have the same name and last modified date, skip the upload
 				return emptyArFSResult;
@@ -778,7 +778,7 @@ export class ArDrive extends ArDriveAnonymous {
 
 			if (
 				conflictResolution === upsertOnConflicts &&
-				conflictingFileName.lastModifiedDate === wrappedFile.lastModifiedDate
+				conflictingFileName.lastModifiedDate.valueOf() === wrappedFile.lastModifiedDate.valueOf()
 			) {
 				// These files have the same name and last modified date, skip the upload
 				return emptyArFSResult;
