@@ -650,13 +650,18 @@ export class ArDrive extends ArDriveAnonymous {
 			owner
 		});
 
-		const sortedChildren = children.sort((a, b) => alphabeticalOrder(a.path, b.path)) as (
+		const sortedChildren = children.sort((a, b) => alphabeticalOrder(a.path, b.path));
+
+		// Slice and replace path to compare above pattern
+		const baseFolderPath = sortedChildren[0].path;
+
+		const castedChildren = sortedChildren as (
 			| Partial<ArFSPrivateFileOrFolderWithPaths>
 			| Partial<ArFSPublicFileOrFolderWithPaths>
 		)[];
 
 		// TODO: Fix base types so deleting un-used values is not necessary; Tickets: PE-525 + PE-556
-		sortedChildren.map((fileOrFolderMetaData) => {
+		castedChildren.map((fileOrFolderMetaData) => {
 			if (fileOrFolderMetaData.entityType === 'folder') {
 				delete fileOrFolderMetaData.lastModifiedDate;
 				delete fileOrFolderMetaData.size;
@@ -668,11 +673,11 @@ export class ArDrive extends ArDriveAnonymous {
 
 		// TURN SORTED CHILDREN INTO MANIFEST
 		const pathMap: ManifestPathMap = {};
-		sortedChildren.forEach((child) => {
+		castedChildren.forEach((child) => {
 			if (child.dataTxId && child.path && child.dataContentType !== MANIFEST_CONTENT_TYPE) {
 				const path = child.path
-					// Slice off the leading "/" so manifest URLs path correctly
-					.slice(1)
+					// Slice off base folder path and the leading "/" so manifest URLs path correctly
+					.slice(baseFolderPath.length + 1)
 					// Replace spaces with underscores for sharing links
 					.replace(/ /g, '_');
 
@@ -680,13 +685,8 @@ export class ArDrive extends ArDriveAnonymous {
 			}
 		});
 
-		// Slice and replace path to compare above pattern
-		const baseFolderPath = sortedChildren[0]?.path?.slice(1).replace(/ /g, '_');
-
 		// Use index.html in the specified folder if it exists, otherwise show first file found
-		const indexPath = Object.keys(pathMap).includes(`${baseFolderPath}/index.html`)
-			? `${baseFolderPath}/index.html`
-			: Object.keys(pathMap)[0];
+		const indexPath = Object.keys(pathMap).includes(`index.html`) ? `index.html` : Object.keys(pathMap)[0];
 
 		const arweaveManifest = new ArFSManifestToUpload({
 			manifest: 'arweave/paths',
