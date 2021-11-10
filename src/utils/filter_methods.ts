@@ -14,13 +14,7 @@ export function latestRevisionFilter(
 	_index: number,
 	allEntities: ArFSFileOrFolderEntity[]
 ): boolean {
-	const allRevisions = allEntities
-		.filter((e) => e.entityId === entity.entityId)
-		.sort((a, b) =>
-			Buffer.from(`${a.txId}`, 'base64')
-				.toString()
-				.localeCompare(Buffer.from(`${b.txId}`, 'base64').toString())
-		);
+	const allRevisions = allEntities.filter((e) => e.entityId.equals(entity.entityId));
 	const latestRevision = allRevisions[0];
 	return entity.txId === latestRevision.txId;
 }
