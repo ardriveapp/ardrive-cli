@@ -3,6 +3,7 @@ import { arDriveFactory } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import {
 	BoostParameter,
+	ConflictResolutionParams,
 	DestinationFileNameParameter,
 	DrivePrivacyParameters,
 	DryRunParameter,
@@ -33,6 +34,7 @@ new CLICommand({
 		LocalFilesParameter,
 		BoostParameter,
 		DryRunParameter,
+		...ConflictResolutionParams,
 		...DrivePrivacyParameters
 	],
 	action: new CLIAction(async function action(options) {
@@ -80,6 +82,8 @@ new CLICommand({
 		if (filesToUpload.length) {
 			const wallet = parameters.getRequiredParameterValue(WalletFileParameter, readJWKFile);
 
+			const conflictResolution = parameters.getFileNameConflictResolution();
+
 			const arDrive = arDriveFactory({
 				wallet: wallet,
 				feeMultiple: parameters.getOptionalBoostSetting(),
@@ -104,29 +108,37 @@ new CLICommand({
 								(await parameters.getDriveKey({ driveId, drivePassword, useCache: true }));
 
 							if (isFolder(wrappedEntity)) {
-								return arDrive.createPrivateFolderAndUploadChildren(
+								return arDrive.createPrivateFolderAndUploadChildren({
 									parentFolderId,
-									wrappedEntity,
+									wrappedFolder: wrappedEntity,
 									driveKey,
-									destinationFileName
-								);
+									destParentFolderName: destinationFileName,
+									conflictResolution
+								});
 							} else {
-								return arDrive.uploadPrivateFile(
+								return arDrive.uploadPrivateFile({
 									parentFolderId,
-									wrappedEntity,
+									wrappedFile: wrappedEntity,
 									driveKey,
-									destinationFileName
-								);
+									destinationFileName,
+									conflictResolution
+								});
 							}
 						} else {
 							if (isFolder(wrappedEntity)) {
-								return arDrive.createPublicFolderAndUploadChildren(
+								return arDrive.createPublicFolderAndUploadChildren({
 									parentFolderId,
-									wrappedEntity,
-									destinationFileName
-								);
+									wrappedFolder: wrappedEntity,
+									destParentFolderName: destinationFileName,
+									conflictResolution
+								});
 							} else {
-								return arDrive.uploadPublicFile(parentFolderId, wrappedEntity, destinationFileName);
+								return arDrive.uploadPublicFile({
+									parentFolderId,
+									wrappedFile: wrappedEntity,
+									destinationFileName,
+									conflictResolution
+								});
 							}
 						}
 					})();
