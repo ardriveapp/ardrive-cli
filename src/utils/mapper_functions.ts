@@ -1,8 +1,8 @@
 import { ArFSFileOrFolderEntity } from '../arfs_entities';
-import { FileID, FolderID } from '../types';
+import { FileID, FolderID, UnixTime } from '../types';
 
 export interface EntityNamesAndIds {
-	files: FileNameAndId[];
+	files: FileConflictInfo[];
 	folders: FolderNameAndId[];
 }
 
@@ -11,9 +11,10 @@ interface FolderNameAndId {
 	folderId: FolderID;
 }
 
-interface FileNameAndId {
+interface FileConflictInfo {
 	fileName: string;
 	fileId: FileID;
+	lastModifiedDate: UnixTime;
 }
 
 export function entityToNameMap(entity: ArFSFileOrFolderEntity): string {
@@ -24,6 +25,6 @@ export function folderToNameAndIdMap(entity: ArFSFileOrFolderEntity): FolderName
 	return { folderId: entity.entityId, folderName: entity.name };
 }
 
-export function fileToNameAndIdMap(entity: ArFSFileOrFolderEntity): FileNameAndId {
-	return { fileId: entity.entityId, fileName: entity.name };
+export function fileConflictInfoMap(entity: ArFSFileOrFolderEntity): FileConflictInfo {
+	return { fileId: entity.entityId, fileName: entity.name, lastModifiedDate: entity.lastModifiedDate };
 }

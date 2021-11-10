@@ -3,6 +3,7 @@ import { extToMime } from 'ardrive-core-js';
 import { basename, join } from 'path';
 import { ByteCount, DataContentType, FileID, FolderID, UnixTime } from './types';
 import { BulkFileBaseCosts, MetaDataBaseCosts } from './ardrive';
+import { EntityNamesAndIds } from './utils/mapper_functions';
 
 type BaseFileName = string;
 type FilePath = string;
@@ -61,13 +62,19 @@ export class ArFSFileToUpload {
 
 	baseCosts?: BulkFileBaseCosts;
 	existingId?: FileID;
+	existingFolderAtDestConflict = false;
+	hasSameLastModifiedDate = false;
 
 	public gatherFileInfo(): FileInfo {
 		const dataContentType = this.getContentType();
-		const lastModifiedDateMS = Math.floor(this.fileStats.mtimeMs);
+		const lastModifiedDateMS = this.lastModifiedDate;
 		const fileSize = this.fileStats.size;
 
 		return { dataContentType, lastModifiedDateMS, fileSize };
+	}
+
+	public get lastModifiedDate(): UnixTime {
+		return Math.floor(this.fileStats.mtimeMs);
 	}
 
 	public getBaseCosts(): BulkFileBaseCosts {
@@ -102,6 +109,7 @@ export class ArFSFolderToUpload {
 	baseCosts?: MetaDataBaseCosts;
 	existingId?: FolderID;
 	destinationName?: string;
+	existingFileAtDestConflict = false;
 
 	constructor(public readonly filePath: FilePath, public readonly fileStats: fs.Stats) {
 		const entitiesInFolder = fs.readdirSync(this.filePath);
@@ -117,7 +125,75 @@ export class ArFSFolderToUpload {
 			} else {
 				// Child is a file, build a new file
 				const childFile = new ArFSFileToUpload(absoluteEntityPath, entityStats);
-				this.files.push(childFile);
+				if (childFile.getBaseFileName() !== '.DS_Store') {
+					this.files.push(childFile);
+				}
+			}
+		}
+	}
+
+	public async checkAndAssignExistingNames(
+		getExistingNamesFn: (parentFolderId: FolderID) => Promise<EntityNamesAndIds>
+	): Promise<void> {
+		if (!this.existingId) {
+			// Folder has no existing ID to check
+			return;
+		}
+
+		const existingEntityNamesAndIds = await getExistingNamesFn(this.existingId);
+
+		for await (const file of this.files) {
+			const baseFileName = file.getBaseFileName();
+
+			const existingFolderAtDestConflict = existingEntityNamesAndIds.folders.find(
+				({ folderName }) => folderName === baseFileName
+			);
+
+			if (existingFolderAtDestConflict) {
+				// Folder name cannot conflict with a file name
+				file.existingFolderAtDestConflict = true;
+				continue;
+			}
+
+			const existingFileAtDestConflict = existingEntityNamesAndIds.files.find(
+				({ fileName }) => fileName === baseFileName
+			);
+
+			// Conflicting file name creates a REVISION by default
+			if (existingFileAtDestConflict) {
+				file.existingId = existingFileAtDestConflict.fileId;
+
+				if (existingFileAtDestConflict.lastModifiedDate === file.lastModifiedDate) {
+					// Check last modified date and set to true to resolve upsert conditional
+					file.hasSameLastModifiedDate = true;
+				}
+			}
+		}
+
+		for await (const folder of this.folders) {
+			const baseFolderName = folder.getBaseFileName();
+
+			const existingFileAtDestConflict = existingEntityNamesAndIds.files.find(
+				({ fileName }) => fileName === baseFolderName
+			);
+
+			if (existingFileAtDestConflict) {
+				// Folder name cannot conflict with a file name
+				this.existingFileAtDestConflict = true;
+				continue;
+			}
+
+			const existingFolderAtDestConflict = existingEntityNamesAndIds.folders.find(
+				({ folderName }) => folderName === baseFolderName
+			);
+
+			// Conflicting folder name uses EXISTING folder by default
+			if (existingFolderAtDestConflict) {
+				// Assigns existing id for later use
+				folder.existingId = existingFolderAtDestConflict.folderId;
+
+				// Recurse into existing folder on folder name conflict
+				await folder.checkAndAssignExistingNames(getExistingNamesFn);
 			}
 		}
 	}
