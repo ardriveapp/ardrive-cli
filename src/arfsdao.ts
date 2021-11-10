@@ -41,7 +41,9 @@ import {
 	ArweaveAddress,
 	W,
 	TxID,
-	EID
+	EID,
+	TransactionID,
+	CipherIV
 } from './types';
 import { CreateTransactionInterface } from 'arweave/node/common';
 import { ArFSPrivateFileBuilder, ArFSPublicFileBuilder } from './utils/arfs_builders/arfs_file_builders';
@@ -969,5 +971,29 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		) {
 			throw new Error(`Invalid password! Please type the same as your other private drives!`);
 		}
+	}
+
+	async getPrivateTransactionCipherIV(txId: TransactionID): Promise<CipherIV> {
+		const wallet = this.wallet;
+		const walletAddress = await wallet.getAddress();
+		const query = buildQuery({
+			tags: [],
+			owner: walletAddress,
+			ids: [txId]
+		});
+		const response = await this.arweave.api.post(graphQLURL, query);
+		const { data } = response.data;
+		const { transactions } = data;
+		const { edges } = transactions;
+		if (!edges.length) {
+			throw new Error(`No such private file with transaction ID "${txId}"`);
+		}
+		const { node } = edges[0];
+		const { tags } = node;
+		const cipherIV = (tags as GQLTagInterface[]).find((tag) => tag.name === 'Cipher-IV');
+		if (!cipherIV) {
+			throw new Error("The private file doesn't has a valid Cipher-IV");
+		}
+		return cipherIV.value;
 	}
 }

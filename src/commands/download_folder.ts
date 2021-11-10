@@ -3,6 +3,7 @@ import { arDriveAnonymousFactory, arDriveFactory } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
 import {
+	AllParameter,
 	DriveIdParameter,
 	DrivePrivacyParameters,
 	DryRunParameter,
@@ -11,41 +12,13 @@ import {
 } from '../parameter_declarations';
 import { EID } from '../types';
 
-// const fileCountRegExp = /_([0-9]+)$/;
-
-// function getFullFilePath(path: string, defaultFileName: string): string {
-// 	const fullLocalFilePath = resolvePath(path);
-// 	const parsedFile = parseFile(fullLocalFilePath);
-// 	try {
-// 		const fileStat = statSync(fullLocalFilePath);
-// 		if (fileStat.isDirectory()) {
-// 			return joinPath(fullLocalFilePath, defaultFileName);
-// 		} else {
-// 			// const fileName = parsedFile.name;
-// 			// const fileNameMatch = fileName.match(fileCountRegExp);
-// 			// const fileCount = fileNameMatch ? fileNameMatch[0] : 0;
-// 			// const fileExtension = parsedFile.ext;
-// 			console.log(`TODO: conflict name resolution for local files`);
-// 			console.log(`Overriding "${fullLocalFilePath}"`);
-// 			return `${fullLocalFilePath}`;
-// 		}
-// 	} catch (e) {
-// 		const parentLocalFolder = parsedFile.dir;
-// 		const dirStat = statSync(parentLocalFolder);
-// 		if (dirStat.isDirectory()) {
-// 			// The file does not exist, but the parent folder IS a directory
-// 			return fullLocalFilePath;
-// 		}
-// 		throw new Error(`No such file or directory: ${parentLocalFolder}`);
-// 	}
-// }
-
 new CLICommand({
 	name: 'download-folder',
 	parameters: [
 		FolderIdParameter,
 		LocalFilePathParameter,
 		DryRunParameter,
+		AllParameter,
 		{ name: DriveIdParameter, required: false },
 		...DrivePrivacyParameters
 	],
