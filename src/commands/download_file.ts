@@ -47,7 +47,7 @@ new CLICommand({
 	action: new CLIAction(async (options) => {
 		const parameters = new ParametersHelper(options);
 		const dryRun = !!parameters.getParameterValue(DryRunParameter);
-		const fileId = parameters.getRequiredParameterValue(FileIdParameter);
+		const fileId = parameters.getRequiredParameterValue(FileIdParameter, EID);
 		const localFilePath = parameters.getRequiredParameterValue(LocalFilePathParameter);
 		if (await parameters.getIsPrivate()) {
 			const driveId = parameters.getRequiredParameterValue(DriveIdParameter);
@@ -58,12 +58,12 @@ new CLICommand({
 				feeMultiple: parameters.getOptionalBoostSetting(),
 				dryRun
 			});
-			const file = await ardrive.getPrivateFile(EID(fileId), driveKey);
+			const file = await ardrive.getPrivateFile({ fileId, driveKey });
 			const fullLocalFilePath = getFullFilePath(localFilePath, file.name);
 			await ardrive.downloadPrivateFile(file, fullLocalFilePath, driveKey);
 		} else {
 			const ardrive = arDriveAnonymousFactory();
-			const file = await ardrive.getPublicFile(EID(fileId));
+			const file = await ardrive.getPublicFile({ fileId });
 			const fullLocalFilePath = getFullFilePath(localFilePath, file.name);
 			await ardrive.downloadPublicFile(file, fullLocalFilePath);
 		}
