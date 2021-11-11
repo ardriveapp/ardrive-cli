@@ -46,7 +46,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 	}
 
 	public async getOwnerForPublicDriveId(driveId: DriveID): Promise<ArweaveAddress> {
-		return this.getOwnerForDriveId(driveId, 'private');
+		return this.getOwnerForDriveId(driveId, 'public');
 	}
 
 	public async getOwnerForPrivateDriveId(driveId: DriveID): Promise<ArweaveAddress> {
