@@ -6,11 +6,10 @@ import {
 	ParentFolderIdParameter,
 	DrivePrivacyParameters
 } from '../parameter_declarations';
-import { Wallet } from '../wallet';
-import { arDriveFactory } from '..';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { CLIAction } from '../CLICommand/action';
-import { EID } from '../types';
+import { EID, Wallet } from 'ardrive-core-js';
+import { cliArDriveFactory } from '..';
 
 new CLICommand({
 	name: 'move-folder',
@@ -29,7 +28,7 @@ new CLICommand({
 		const newParentFolderId = parameters.getRequiredParameterValue(ParentFolderIdParameter, EID);
 
 		const wallet: Wallet = await parameters.getRequiredWallet();
-		const ardrive = arDriveFactory({
+		const ardrive = cliArDriveFactory({
 			wallet: wallet,
 			feeMultiple: parameters.getOptionalBoostSetting(),
 			dryRun

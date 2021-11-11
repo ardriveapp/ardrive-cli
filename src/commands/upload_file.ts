@@ -1,5 +1,3 @@
-import { ArFSFileToUpload, ArFSFolderToUpload, isFolder, wrapFileOrFolder } from '../arfs_file_wrapper';
-import { arDriveFactory } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import {
 	BoostParameter,
@@ -12,10 +10,19 @@ import {
 	ParentFolderIdParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
-import { DriveKey, EID, FolderID } from '../types';
-import { readJWKFile } from '../utils';
 import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { CLIAction } from '../CLICommand/action';
+import {
+	FolderID,
+	ArFSFileToUpload,
+	ArFSFolderToUpload,
+	DriveKey,
+	wrapFileOrFolder,
+	EID,
+	readJWKFile,
+	isFolder
+} from 'ardrive-core-js';
+import { cliArDriveFactory } from '..';
 
 interface UploadFileParameter {
 	parentFolderId: FolderID;
@@ -84,7 +91,7 @@ new CLICommand({
 
 			const conflictResolution = parameters.getFileNameConflictResolution();
 
-			const arDrive = arDriveFactory({
+			const arDrive = cliArDriveFactory({
 				wallet: wallet,
 				feeMultiple: parameters.getOptionalBoostSetting(),
 				dryRun: !!options.dryRun

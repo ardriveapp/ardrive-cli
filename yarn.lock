@@ -1307,7 +1307,7 @@ __metadata:
     "@types/uuid": ^8.3.0
     "@typescript-eslint/eslint-plugin": ^4.18.0
     "@typescript-eslint/parser": ^4.18.0
-    ardrive-core-js: 0.5.1
+    ardrive-core-js: ../ardrive-core-js
     arweave: ^1.10.16
     arweave-bundles: ^1.0.3
     arweave-mnemonic-keys: ^0.0.9
@@ -1341,19 +1341,23 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"ardrive-core-js@npm:0.5.1":
+"ardrive-core-js@file:../ardrive-core-js::locator=ardrive-cli%40workspace%3A.":
   version: 0.5.1
-  resolution: "ardrive-core-js@npm:0.5.1"
+  resolution: "ardrive-core-js@file:../ardrive-core-js#../ardrive-core-js::hash=e1a67e&locator=ardrive-cli%40workspace%3A."
   dependencies:
     arweave: ^1.10.16
     arweave-bundles: ^1.0.3
+    arweave-mnemonic-keys: ^0.0.9
     axios: ^0.21.1
+    base64-js: ^1.5.1
     better-sqlite3: ^7.1.2
+    bignumber.js: ^9.0.1
     chokidar: ^3.5.1
     concat-stream: ^2.0.0
     folder-hash: ^4.0.0
     futoin-hkdf: ^1.3.3
     jwk-to-pem: ^2.0.4
+    lodash: ^4.17.21
     md5-file: ^5.0.0
     mime-types: ^2.1.29
     node-fetch: ^2.6.1
@@ -1361,11 +1365,12 @@ __metadata:
     prompt-password: ^1.2.0
     prompt-sync: ^4.2.0
     prompts: ^2.4.0
+    regression: ^2.0.1
     smartweave: ^0.4.45
     typescript: ^4.2.3
     utf8: ^3.0.0
     uuid: ^8.3.2
-  checksum: da4d2d7539f55d8d2f6150761c42f158b55c6682b6546cf062d3201071a460fb885a831f111ca40e2f0e472f688b9b8aa7f5724b5b7f9a5c36b1dc5773577de8
+  checksum: fc70feaadf4e3ad5e4eb5b05c0cd898b58d098028c2dbefac4ec49909336682528fa0b8f482c54c200482affc3365a8e6a15870538caab0e7929d362e4c03168
   languageName: node
   linkType: hard
 
