@@ -14,7 +14,8 @@ import {
 	AR,
 	FeeMultiple,
 	FileID,
-	stubTransactionID
+	stubTransactionID,
+	CipherIV
 } from './types';
 import { WalletDAO, Wallet, JWKWallet } from './wallet';
 import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
@@ -1543,28 +1544,41 @@ export class ArDrive extends ArDriveAnonymous {
 		const rootFolder = folderEntityDump[0];
 		const rootFolderPath = rootFolder.path;
 		const basePath = rootFolderPath.replace(/\/[^/]+$/, '');
+		const allFileTransactionIDs = folderEntityDump
+			.filter((entity) => entity.entityType === 'file')
+			.map((entity) => entity.dataTxId);
+		const allCipherIVs = await this.arFsDao.getCipherIVOfPrivateTransactionIDs(allFileTransactionIDs);
 		for (const entity of folderEntityDump) {
 			const relativePath = entity.path.replace(new RegExp(`^${basePath}/`), '');
 			const fullPath = joinPath(path, relativePath);
-			switch (entity.entityType) {
-				case 'folder':
-					await mkdirPromise(fullPath);
-					break;
-				case 'file':
-					await this.downloadPrivateFile(entity.getEntity(), fullPath, driveKey);
-					break;
-				default:
-					throw new Error(`Unsupported entity type: ${entity.entityType}`);
+			if (entity.entityType === 'folder') {
+				await mkdirPromise(fullPath);
+			} else if (entity.entityType === 'file') {
+				const cipherIVresult = allCipherIVs.find((queryResult) => queryResult.txId === entity.dataTxId);
+				if (!cipherIVresult) {
+					throw new Error(`The transaction data of the file with txID "${entity.txId}" has no cipher IV!`);
+				}
+				await this.downloadPrivateFile(entity.getEntity(), fullPath, driveKey, cipherIVresult.cipherIV);
+			} else {
+				throw new Error(`Unsupported entity type: ${entity.entityType}`);
 			}
 		}
 	}
 
-	async downloadPrivateFile(privateFile: ArFSPrivateFile, path: string, driveKey: DriveKey): Promise<void> {
+	async downloadPrivateFile(
+		privateFile: ArFSPrivateFile,
+		path: string,
+		driveKey: DriveKey,
+		cipherIV?: CipherIV
+	): Promise<void> {
 		const fileTxId = privateFile.dataTxId;
 		const encryptedDataStream = await this.arFsDao.downloadFileData(fileTxId);
 		const writeStream = createWriteStream(path);
 		const fileKey = await deriveFileKey(`${privateFile.fileId}`, driveKey);
-		const cipherIV = await this.arFsDao.getPrivateTransactionCipherIV(fileTxId);
+		if (!cipherIV) {
+			// Only fetch the data if no CipherIV was provided
+			cipherIV = await this.arFsDao.getPrivateTransactionCipherIV(fileTxId);
+		}
 		const decryptingStream = new StreamDecrypt(cipherIV, fileKey);
 		return pipelinePromise(encryptedDataStream.pipe(decryptingStream), writeStream);
 	}
