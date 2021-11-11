@@ -95,7 +95,7 @@ import {
 	fileConflictInfoMap,
 	folderToNameAndIdMap
 } from './utils/mapper_functions';
-import { ListPrivateFolderParams } from './ardrive.types';
+import { CipherIVQueryResult, ListPrivateFolderParams } from './ardrive.types';
 
 export const graphQLURL = 'https://arweave.net/graphql';
 
@@ -979,26 +979,36 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	}
 
 	async getPrivateTransactionCipherIV(txId: TransactionID): Promise<CipherIV> {
+		const results = await this.getCipherIVOfPrivateTransactionIDs([txId]);
+		const singleResult = results[0];
+		return singleResult.cipherIV;
+	}
+
+	async getCipherIVOfPrivateTransactionIDs(txIDs: TransactionID[]): Promise<CipherIVQueryResult[]> {
 		const wallet = this.wallet;
 		const walletAddress = await wallet.getAddress();
 		const query = buildQuery({
 			tags: [],
 			owner: walletAddress,
-			ids: [txId]
+			ids: txIDs
 		});
 		const response = await this.arweave.api.post(graphQLURL, query);
 		const { data } = response.data;
 		const { transactions } = data;
-		const { edges } = transactions;
+		const { edges }: { edges: GQLEdgeInterface[] } = transactions;
 		if (!edges.length) {
-			throw new Error(`No such private file with transaction ID "${txId}"`);
+			throw new Error(`No such private transactions with IDs: "${txIDs}"`);
 		}
-		const { node } = edges[0];
-		const { tags } = node;
-		const cipherIV = (tags as GQLTagInterface[]).find((tag) => tag.name === 'Cipher-IV');
-		if (!cipherIV) {
-			throw new Error("The private file doesn't has a valid Cipher-IV");
-		}
-		return cipherIV.value;
+		return edges.map((edge) => {
+			const { node } = edge;
+			const { tags } = node;
+			const txId = TxID(node.id);
+			const cipherIVTag = tags.find((tag) => tag.name === 'Cipher-IV');
+			if (!cipherIVTag) {
+				throw new Error("The private file doesn't has a valid Cipher-IV");
+			}
+			const cipherIV = cipherIVTag?.value;
+			return { txId, cipherIV };
+		});
 	}
 }

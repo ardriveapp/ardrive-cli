@@ -3,7 +3,17 @@ import { ArFSListPublicFolderParams } from './arfsdao_anonymous';
 import { WithDriveKey } from './arfs_entity_result_factory';
 import { ArFSFolderToUpload, ArFSFileToUpload } from './arfs_file_wrapper';
 import { PrivateKeyData } from './private_key_data';
-import { TransactionID, AnyEntityID, MakeOptional, ArweaveAddress, Winston, FolderID, DriveID, FileID } from './types';
+import {
+	TransactionID,
+	AnyEntityID,
+	MakeOptional,
+	ArweaveAddress,
+	Winston,
+	FolderID,
+	DriveID,
+	FileID,
+	CipherIV
+} from './types';
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 
@@ -147,4 +157,9 @@ export type GetPrivateFileParams = GetPublicFileParams & WithDriveKey;
 export interface GetAllDrivesForAddressParams {
 	address: ArweaveAddress;
 	privateKeyData: PrivateKeyData;
+}
+
+export interface CipherIVQueryResult {
+	txId: TransactionID;
+	cipherIV: CipherIV;
 }
