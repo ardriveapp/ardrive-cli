@@ -146,27 +146,33 @@ export class ArFSPublicFileOrFolderWithPaths extends ArFSFileOrFolderEntity impl
 	readonly txIdPath: string;
 	readonly entityIdPath: string;
 
-	constructor(entity: ArFSPublicFile | ArFSPublicFolder, hierarchy: FolderHierarchy) {
+	constructor(private readonly _entity: ArFSPublicFile | ArFSPublicFolder, hierarchy: FolderHierarchy) {
 		super(
-			entity.appName,
-			entity.appVersion,
-			entity.arFS,
-			entity.contentType,
-			entity.driveId,
-			entity.entityType,
-			entity.name,
-			entity.size,
-			entity.txId,
-			entity.unixTime,
-			entity.lastModifiedDate,
-			entity.dataTxId,
-			entity.dataContentType,
-			entity.parentFolderId,
-			entity.entityId
+			_entity.appName,
+			_entity.appVersion,
+			_entity.arFS,
+			_entity.contentType,
+			_entity.driveId,
+			_entity.entityType,
+			_entity.name,
+			_entity.size,
+			_entity.txId,
+			_entity.unixTime,
+			_entity.lastModifiedDate,
+			_entity.dataTxId,
+			_entity.dataContentType,
+			_entity.parentFolderId,
+			_entity.entityId
 		);
-		this.path = `${hierarchy.pathToFolderId(entity.parentFolderId)}${entity.name}`;
-		this.txIdPath = `${hierarchy.txPathToFolderId(entity.parentFolderId)}${entity.txId}`;
-		this.entityIdPath = `${hierarchy.entityPathToFolderId(entity.parentFolderId)}${entity.entityId}`;
+		this.path = `${hierarchy.pathToFolderId(_entity.parentFolderId)}${_entity.name}`;
+		this.txIdPath = `${hierarchy.txPathToFolderId(_entity.parentFolderId)}${_entity.txId}`;
+		this.entityIdPath = `${hierarchy.entityPathToFolderId(_entity.parentFolderId)}${_entity.entityId}`;
+	}
+
+	getEntity<T = ArFSPublicFile | ArFSPublicFolder>(): T {
+		const entityAsUnknown = this._entity as unknown;
+		const entityAsT = entityAsUnknown as T;
+		return entityAsT;
 	}
 }
 
@@ -177,29 +183,35 @@ export class ArFSPrivateFileOrFolderWithPaths extends ArFSFileOrFolderEntity imp
 	readonly txIdPath: string;
 	readonly entityIdPath: string;
 
-	constructor(entity: ArFSPrivateFile | ArFSPrivateFolder, hierarchy: FolderHierarchy) {
+	constructor(private readonly _entity: ArFSPrivateFile | ArFSPrivateFolder, hierarchy: FolderHierarchy) {
 		super(
-			entity.appName,
-			entity.appVersion,
-			entity.arFS,
-			entity.contentType,
-			entity.driveId,
-			entity.entityType,
-			entity.name,
-			entity.size,
-			entity.txId,
-			entity.unixTime,
-			entity.lastModifiedDate,
-			entity.dataTxId,
-			entity.dataContentType,
-			entity.parentFolderId,
-			entity.entityId
+			_entity.appName,
+			_entity.appVersion,
+			_entity.arFS,
+			_entity.contentType,
+			_entity.driveId,
+			_entity.entityType,
+			_entity.name,
+			_entity.size,
+			_entity.txId,
+			_entity.unixTime,
+			_entity.lastModifiedDate,
+			_entity.dataTxId,
+			_entity.dataContentType,
+			_entity.parentFolderId,
+			_entity.entityId
 		);
-		this.cipher = entity.cipher;
-		this.cipherIV = entity.cipherIV;
-		this.path = `${hierarchy.pathToFolderId(entity.parentFolderId)}${entity.name}`;
-		this.txIdPath = `${hierarchy.txPathToFolderId(entity.parentFolderId)}${entity.txId}`;
-		this.entityIdPath = `${hierarchy.entityPathToFolderId(entity.parentFolderId)}${entity.entityId}`;
+		this.cipher = _entity.cipher;
+		this.cipherIV = _entity.cipherIV;
+		this.path = `${hierarchy.pathToFolderId(_entity.parentFolderId)}${_entity.name}`;
+		this.txIdPath = `${hierarchy.txPathToFolderId(_entity.parentFolderId)}${_entity.txId}`;
+		this.entityIdPath = `${hierarchy.entityPathToFolderId(_entity.parentFolderId)}${_entity.entityId}`;
+	}
+
+	getEntity<T = ArFSPublicFile | ArFSPublicFolder>(): T {
+		const entityAsUnknown = this._entity as unknown;
+		const entityAsT = entityAsUnknown as T;
+		return entityAsT;
 	}
 }
 

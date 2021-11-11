@@ -10,7 +10,6 @@ export class StreamDecrypt extends Transform {
 
 	constructor(private readonly cipherIV: CipherIV, private readonly fileKey: FileKey) {
 		super();
-		// this.cork();
 	}
 
 	_transform(chunk: Buffer, encoding: string, next: () => void): void {
@@ -30,7 +29,6 @@ export class StreamDecrypt extends Transform {
 		const iv: Buffer = Buffer.from(this.cipherIV, 'base64');
 		const decipher = createDecipheriv(algo, this.fileKey, iv, { authTagLength });
 		decipher.setAuthTag(authTag);
-		debugger;
 		const decryptedFile: Buffer = Buffer.concat([decipher.update(encryptedDataSlice), decipher.final()]);
 		this.push(decryptedFile);
 		next();
