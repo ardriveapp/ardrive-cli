@@ -3,12 +3,12 @@ import { arDriveAnonymousFactory, arDriveFactory } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
 import {
-	AllParameter,
 	DriveIdParameter,
 	DrivePrivacyParameters,
 	DryRunParameter,
 	FolderIdParameter,
-	LocalFilePathParameter
+	LocalFilePathParameter,
+	MaxDepthParameter
 } from '../parameter_declarations';
 import { EID } from '../types';
 
@@ -18,7 +18,7 @@ new CLICommand({
 		FolderIdParameter,
 		LocalFilePathParameter,
 		DryRunParameter,
-		AllParameter,
+		MaxDepthParameter,
 		{ name: DriveIdParameter, required: false },
 		...DrivePrivacyParameters
 	],
@@ -27,7 +27,7 @@ new CLICommand({
 		const dryRun = !!parameters.getParameterValue(DryRunParameter);
 		const folderId = parameters.getRequiredParameterValue(FolderIdParameter, EID);
 		const localFilePath = parameters.getRequiredParameterValue(LocalFilePathParameter, resolve);
-		const maxDepth = await parameters.getMaxDepth();
+		const maxDepth = await parameters.getMaxDepth(Number.MAX_SAFE_INTEGER);
 
 		if (await parameters.getIsPrivate()) {
 			const driveId = parameters.getRequiredParameterValue(DriveIdParameter, EID);
