@@ -24,6 +24,10 @@ export const AllParameter = 'all';
 export const MaxDepthParameter = 'maxDepth';
 export const BoostParameter = 'boost';
 export const DryRunParameter = 'dryRun';
+export const SkipParameter = 'skip';
+export const ReplaceParameter = 'replace';
+export const UpsertParameter = 'upsert';
+// export const AskParameter = 'ask';
 export const NoVerifyParameter = 'verify'; // commander maps --no-x style params to options.x and always includes in options
 
 // Aggregates for convenience
@@ -63,6 +67,8 @@ export const AllParameters = [
 	NoVerifyParameter
 ] as const;
 export type ParameterName = typeof AllParameters[number];
+
+export const ConflictResolutionParams = [SkipParameter, ReplaceParameter, UpsertParameter /* , AskParameter */];
 
 /**
  * Note: importing this file will declare all the above parameters
@@ -241,6 +247,31 @@ Parameter.declare({
 	description:
 		'(OPTIONAL) Print the results of the transactions that would occur, and their potential tips and mining rewards, without sending the transactions.',
 	type: 'boolean'
+});
+
+Parameter.declare({
+	name: SkipParameter,
+	aliases: ['--skip'],
+	description: '(OPTIONAL) Skip upload if there is a name conflict within destination folder',
+	type: 'boolean',
+	forbiddenConjunctionParameters: [ReplaceParameter, UpsertParameter]
+});
+
+Parameter.declare({
+	name: ReplaceParameter,
+	aliases: ['--replace'],
+	description: '(OPTIONAL) Create new file revisions if there is a name conflict within destination folder',
+	type: 'boolean',
+	forbiddenConjunctionParameters: [SkipParameter, UpsertParameter]
+});
+
+Parameter.declare({
+	name: UpsertParameter,
+	aliases: ['--upsert'],
+	description:
+		'(OPTIONAL) When there is a name conflict within the destination folder, only upload file if a modification is detected. Skip otherwise.',
+	type: 'boolean',
+	forbiddenConjunctionParameters: [SkipParameter, ReplaceParameter]
 });
 
 Parameter.declare({

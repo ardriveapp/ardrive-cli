@@ -1,7 +1,7 @@
 import Arweave from 'arweave';
 import { expect } from 'chai';
 import { stub } from 'sinon';
-import { ArDrive, ArFSResult } from '../../src/ardrive';
+import { ArDrive } from '../../src/ardrive';
 import { readJWKFile, urlEncodeHashKey } from '../../src/utils';
 import {
 	stubArweaveAddress,
@@ -25,13 +25,14 @@ import { expectAsyncErrorThrow } from '../../src/utils/test_helpers';
 import { ArDriveCommunityOracle } from '../../src/community/ardrive_community_oracle';
 import { ArFSDAO, PrivateDriveKeyData } from '../../src/arfsdao';
 import { deriveDriveKey, DrivePrivacy } from 'ardrive-core-js';
-import { DriveKey, FileID, W, Winston, FeeMultiple, EID } from '../../src/types';
+import { DriveKey, FileID, W, Winston, FeeMultiple, EID, UnixTime } from '../../src/types';
 import { ArFSFileToUpload, wrapFileOrFolder } from '../../src/arfs_file_wrapper';
 import { RootFolderID } from '../../src/utils/arfs_builders/arfs_folder_builders';
+import { ArFSResult } from '../../src/ardrive.types';
 
 // Don't use the existing constants just to make sure our expectations don't change
 const entityIdRegex = /^[a-f\d]{8}-([a-f\d]{4}-){3}[a-f\d]{12}$/i;
-const trxIdRegex = /^([a-zA-Z]|[0-9]|-|_){43}$/;
+const trxIdRegex = /^(\w|-){43}$/;
 const fileKeyRegex = /^([a-zA-Z]|[0-9]|-|_|\/|\+){43}$/;
 
 describe('ArDrive class - integrated', () => {
@@ -89,7 +90,7 @@ describe('ArDrive class - integrated', () => {
 			it('returns the correct TipResult', async () => {
 				stub(communityOracle, 'selectTokenHolder').resolves(stubArweaveAddress());
 
-				const result = await arDrive.sendCommunityTip(W('12345'));
+				const result = await arDrive.sendCommunityTip({ communityWinstonTip: W('12345') });
 
 				// Can't know the txID ahead of time without mocking arweave deeply
 				expect(result.tipData.txId).to.match(trxIdRegex);
@@ -103,7 +104,7 @@ describe('ArDrive class - integrated', () => {
 	describe('drive function', () => {
 		describe('createPublicDrive', () => {
 			it('returns the correct ArFSResult', async () => {
-				const result = await arDrive.createPublicDrive('TEST_DRIVE');
+				const result = await arDrive.createPublicDrive({ driveName: 'TEST_DRIVE' });
 				assertCreateDriveExpectations(result, W(75), W(21));
 			});
 		});
@@ -116,7 +117,10 @@ describe('ArDrive class - integrated', () => {
 					driveKey: stubDriveKey
 				};
 
-				const result = await arDrive.createPrivateDrive('TEST_DRIVE', stubPrivateDriveData);
+				const result = await arDrive.createPrivateDrive({
+					driveName: 'TEST_DRIVE',
+					newPrivateDriveData: stubPrivateDriveData
+				});
 				assertCreateDriveExpectations(result, W(91), W(37), urlEncodeHashKey(stubDriveKey));
 			});
 		});
@@ -156,7 +160,7 @@ describe('ArDrive class - integrated', () => {
 
 			it('returns the correct ArFSResult', async () => {
 				stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
-				stub(arfsDao, 'getPublicDrive').resolves(stubPublicDrive);
+				stub(arfsDao, 'getPublicDrive').resolves(stubPublicDrive());
 
 				const result = await arDrive.createPublicFolder({
 					folderName: 'TEST_FOLDER',
@@ -466,6 +470,9 @@ describe('ArDrive class - integrated', () => {
 		});
 
 		describe('file function', () => {
+			const matchingLastModifiedDate = new UnixTime(420);
+			const differentLastModifiedDate = new UnixTime(1337);
+
 			describe('uploadPublicFile', () => {
 				const wrappedFile = wrapFileOrFolder('test_wallet.json') as ArFSFileToUpload;
 
@@ -473,8 +480,14 @@ describe('ArDrive class - integrated', () => {
 					stub(communityOracle, 'getCommunityWinstonTip').resolves(W('1'));
 					stub(communityOracle, 'selectTokenHolder').resolves(stubArweaveAddress());
 
-					stub(arfsDao, 'getPublicEntityNamesAndIdsInFolder').resolves({
-						files: [{ fileName: 'CONFLICTING_FILE_NAME', fileId: existingFileId }],
+					stub(arfsDao, 'getPublicNameConflictInfoInFolder').resolves({
+						files: [
+							{
+								fileName: 'CONFLICTING_FILE_NAME',
+								fileId: existingFileId,
+								lastModifiedDate: matchingLastModifiedDate
+							}
+						],
 						folders: [{ folderName: 'CONFLICTING_FOLDER_NAME', folderId: stubEntityID }]
 					});
 				});
@@ -483,7 +496,10 @@ describe('ArDrive class - integrated', () => {
 					stub(arfsDao, 'getOwnerForDriveId').resolves(unexpectedOwner);
 
 					await expectAsyncErrorThrow({
-						promiseToError: arDrive.uploadPublicFile(EID(stubEntityID.toString()), wrappedFile),
+						promiseToError: arDrive.uploadPublicFile({
+							parentFolderId: EID(stubEntityID.toString()),
+							wrappedFile
+						}),
 						errorMessage: 'Supplied wallet is not the owner of this drive!'
 					});
 				});
@@ -492,28 +508,86 @@ describe('ArDrive class - integrated', () => {
 					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 
 					await expectAsyncErrorThrow({
-						promiseToError: arDrive.uploadPublicFile(stubEntityID, wrappedFile, 'CONFLICTING_FOLDER_NAME'),
+						promiseToError: arDrive.uploadPublicFile({
+							parentFolderId: stubEntityID,
+							wrappedFile,
+							destinationFileName: 'CONFLICTING_FOLDER_NAME'
+						}),
 						errorMessage: 'Entity name already exists in destination folder!'
 					});
 				});
 
-				it('returns the correct ArFSResult revision if destination folder has a conflicting FILE name', async () => {
+				it('returns the correct empty ArFSResult if destination folder has a conflicting FILE name and conflict resolution is set to skip', async () => {
 					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 
-					const result = await arDrive.uploadPublicFile(
-						EID(stubEntityID.toString()),
+					const result = await arDrive.uploadPublicFile({
+						parentFolderId: stubEntityID,
 						wrappedFile,
-						'CONFLICTING_FILE_NAME'
-					);
+						destinationFileName: 'CONFLICTING_FILE_NAME',
+						conflictResolution: 'skip'
+					});
+
+					expect(result).to.deep.equal({
+						created: [],
+						tips: [],
+						fees: {}
+					});
+				});
+
+				it('returns the correct ArFSResult revision if destination folder has a conflicting FILE name and conflict resolution is set to replace', async () => {
+					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
+
+					const result = await arDrive.uploadPublicFile({
+						parentFolderId: EID(stubEntityID.toString()),
+						wrappedFile,
+						destinationFileName: 'CONFLICTING_FILE_NAME',
+						conflictResolution: 'replace'
+					});
 
 					// Pass expected existing file id, so that the file would be considered a revision
 					assertUploadFileExpectations(result, W(3204), W(171), W(0), W(1), 'public', existingFileId);
 				});
 
+				it('returns an empty ArFSResult if destination folder has a conflicting FILE name and a matching last modified date and the conflict resolution is set to upsert', async () => {
+					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
+					stub(wrappedFile, 'lastModifiedDate').get(() => matchingLastModifiedDate);
+
+					const result = await arDrive.uploadPublicFile({
+						parentFolderId: stubEntityID,
+						wrappedFile,
+						destinationFileName: 'CONFLICTING_FILE_NAME',
+						conflictResolution: 'upsert'
+					});
+
+					expect(result).to.deep.equal({
+						created: [],
+						tips: [],
+						fees: {}
+					});
+				});
+
+				it('returns the correct ArFSResult revision if destination folder has a conflicting FILE name and a different last modified date and the conflict resolution is set to upsert', async () => {
+					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
+					stub(wrappedFile, 'lastModifiedDate').get(() => differentLastModifiedDate);
+
+					const result = await arDrive.uploadPublicFile({
+						parentFolderId: stubEntityID,
+						wrappedFile,
+						destinationFileName: 'CONFLICTING_FILE_NAME',
+						conflictResolution: 'upsert'
+					});
+
+					// Pass expected existing file id, so that the file would be considered a revision
+					assertUploadFileExpectations(result, W(3204), W(162), W(0), W('1'), 'public', existingFileId);
+				});
+
 				it('returns the correct ArFSResult', async () => {
 					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 
-					const result = await arDrive.uploadPublicFile(EID(stubEntityID.toString()), wrappedFile);
+					const result = await arDrive.uploadPublicFile({
+						parentFolderId: EID(stubEntityID.toString()),
+						wrappedFile
+					});
 					assertUploadFileExpectations(result, W(3204), W(166), W(0), W(1), 'public');
 				});
 			});
@@ -525,8 +599,14 @@ describe('ArDrive class - integrated', () => {
 					stub(communityOracle, 'getCommunityWinstonTip').resolves(W('1'));
 					stub(communityOracle, 'selectTokenHolder').resolves(stubArweaveAddress());
 
-					stub(arfsDao, 'getPrivateEntityNamesAndIdsInFolder').resolves({
-						files: [{ fileName: 'CONFLICTING_FILE_NAME', fileId: existingFileId }],
+					stub(arfsDao, 'getPrivateNameConflictInfoInFolder').resolves({
+						files: [
+							{
+								fileName: 'CONFLICTING_FILE_NAME',
+								fileId: existingFileId,
+								lastModifiedDate: matchingLastModifiedDate
+							}
+						],
 						folders: [{ folderName: 'CONFLICTING_FOLDER_NAME', folderId: stubEntityID }]
 					});
 				});
@@ -535,11 +615,11 @@ describe('ArDrive class - integrated', () => {
 					stub(arfsDao, 'getOwnerForDriveId').resolves(unexpectedOwner);
 
 					await expectAsyncErrorThrow({
-						promiseToError: arDrive.uploadPrivateFile(
-							EID(stubEntityID.toString()),
+						promiseToError: arDrive.uploadPrivateFile({
+							parentFolderId: EID(stubEntityID.toString()),
 							wrappedFile,
-							await getStubDriveKey()
-						),
+							driveKey: await getStubDriveKey()
+						}),
 						errorMessage: 'Supplied wallet is not the owner of this drive!'
 					});
 				});
@@ -548,39 +628,93 @@ describe('ArDrive class - integrated', () => {
 					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 
 					await expectAsyncErrorThrow({
-						promiseToError: arDrive.uploadPrivateFile(
-							stubEntityID,
+						promiseToError: arDrive.uploadPrivateFile({
+							parentFolderId: stubEntityID,
 							wrappedFile,
-							await getStubDriveKey(),
-							'CONFLICTING_FOLDER_NAME'
-						),
+							driveKey: await getStubDriveKey(),
+							destinationFileName: 'CONFLICTING_FOLDER_NAME'
+						}),
 						errorMessage: 'Entity name already exists in destination folder!'
 					});
 				});
 
-				it('returns the correct ArFSResult revision if destination folder has a conflicting FILE name', async () => {
+				it('returns the correct empty ArFSResult if destination folder has a conflicting FILE name and conflict resolution is set to skip', async () => {
 					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 
-					const result = await arDrive.uploadPrivateFile(
-						stubEntityID,
+					const result = await arDrive.uploadPrivateFile({
+						parentFolderId: stubEntityID,
 						wrappedFile,
-						await getStubDriveKey(),
-						'CONFLICTING_FILE_NAME'
-					);
+						driveKey: await getStubDriveKey(),
+						destinationFileName: 'CONFLICTING_FILE_NAME',
+						conflictResolution: 'skip'
+					});
+
+					expect(result).to.deep.equal({
+						created: [],
+						tips: [],
+						fees: {}
+					});
+				});
+
+				it('returns the correct ArFSResult revision with if destination folder has a conflicting FILE name and conflict resolution is set to replace', async () => {
+					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
+
+					const result = await arDrive.uploadPrivateFile({
+						parentFolderId: stubEntityID,
+						wrappedFile,
+						driveKey: await getStubDriveKey(),
+						destinationFileName: 'CONFLICTING_FILE_NAME',
+						conflictResolution: 'replace'
+					});
 
 					// Pass expected existing file id, so that the file would be considered a revision
 					assertUploadFileExpectations(result, W(3220), W(187), W(0), W(1), 'private', existingFileId);
+				});
+
+				it('returns an empty ArFSResult if destination folder has a conflicting FILE name and a matching last modified date and the conflict resolution is set to upsert', async () => {
+					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
+					stub(wrappedFile, 'lastModifiedDate').get(() => matchingLastModifiedDate);
+
+					const result = await arDrive.uploadPrivateFile({
+						parentFolderId: stubEntityID,
+						wrappedFile,
+						destinationFileName: 'CONFLICTING_FILE_NAME',
+						conflictResolution: 'upsert',
+						driveKey: await getStubDriveKey()
+					});
+
+					expect(result).to.deep.equal({
+						created: [],
+						tips: [],
+						fees: {}
+					});
+				});
+
+				it('returns the correct ArFSResult revision if destination folder has a conflicting FILE name and a different last modified date and the conflict resolution is set to upsert', async () => {
+					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
+					stub(wrappedFile, 'lastModifiedDate').get(() => differentLastModifiedDate);
+
+					const result = await arDrive.uploadPrivateFile({
+						parentFolderId: stubEntityID,
+						wrappedFile,
+						destinationFileName: 'CONFLICTING_FILE_NAME',
+						conflictResolution: 'upsert',
+						driveKey: await getStubDriveKey()
+					});
+
+					// Pass expected existing file id, so that the file would be considered a revision
+					assertUploadFileExpectations(result, W(3220), W(178), W(0), W('1'), 'private', existingFileId);
 				});
 
 				it('returns the correct ArFSResult', async () => {
 					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 					const stubDriveKey = await getStubDriveKey();
 
-					const result = await arDrive.uploadPrivateFile(
-						EID(stubEntityID.toString()),
+					const result = await arDrive.uploadPrivateFile({
+						parentFolderId: EID(stubEntityID.toString()),
 						wrappedFile,
-						stubDriveKey
-					);
+						driveKey: stubDriveKey
+					});
 					assertUploadFileExpectations(result, W(3220), W(182), W(0), W(1), 'private');
 				});
 			});
@@ -594,7 +728,10 @@ describe('ArDrive class - integrated', () => {
 					stub(arfsDao, 'getOwnerForDriveId').resolves(unexpectedOwner);
 
 					await expectAsyncErrorThrow({
-						promiseToError: arDrive.movePublicFile(stubEntityID, stubEntityIDAlt),
+						promiseToError: arDrive.movePublicFile({
+							fileId: stubEntityID,
+							newParentFolderId: stubEntityIDAlt
+						}),
 						errorMessage: 'Supplied wallet is not the owner of this drive!'
 					});
 				});
@@ -604,7 +741,10 @@ describe('ArDrive class - integrated', () => {
 					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 
 					await expectAsyncErrorThrow({
-						promiseToError: arDrive.movePublicFile(stubEntityID, stubEntityIDAlt),
+						promiseToError: arDrive.movePublicFile({
+							fileId: stubEntityID,
+							newParentFolderId: stubEntityIDAlt
+						}),
 						errorMessage: 'Entity name already exists in destination folder!'
 					});
 				});
@@ -614,7 +754,10 @@ describe('ArDrive class - integrated', () => {
 					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 
 					await expectAsyncErrorThrow({
-						promiseToError: arDrive.movePublicFile(stubEntityID, EID(stubEntityID.toString()))
+						promiseToError: arDrive.movePublicFile({
+							fileId: stubEntityID,
+							newParentFolderId: EID(stubEntityID.toString())
+						})
 					});
 				});
 
@@ -623,7 +766,10 @@ describe('ArDrive class - integrated', () => {
 					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 
 					await expectAsyncErrorThrow({
-						promiseToError: arDrive.movePublicFile(stubEntityID, EID(stubEntityID.toString())),
+						promiseToError: arDrive.movePublicFile({
+							fileId: stubEntityID,
+							newParentFolderId: EID(stubEntityID.toString())
+						}),
 						errorMessage: 'Entity must stay in the same drive!'
 					});
 				});
@@ -632,7 +778,10 @@ describe('ArDrive class - integrated', () => {
 					stub(arfsDao, 'getPublicFile').resolves(stubPublicFile({}));
 					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 
-					const result = await arDrive.movePublicFile(stubEntityID, stubEntityIDAlt);
+					const result = await arDrive.movePublicFile({
+						fileId: stubEntityID,
+						newParentFolderId: stubEntityIDAlt
+					});
 					assertMoveFileExpectations(result, W(153), 'public');
 				});
 			});
@@ -646,7 +795,11 @@ describe('ArDrive class - integrated', () => {
 					stub(arfsDao, 'getOwnerForDriveId').resolves(unexpectedOwner);
 
 					await expectAsyncErrorThrow({
-						promiseToError: arDrive.movePrivateFile(stubEntityID, stubEntityIDAlt, await getStubDriveKey()),
+						promiseToError: arDrive.movePrivateFile({
+							fileId: stubEntityID,
+							newParentFolderId: stubEntityIDAlt,
+							driveKey: await getStubDriveKey()
+						}),
 						errorMessage: 'Supplied wallet is not the owner of this drive!'
 					});
 				});
@@ -656,7 +809,11 @@ describe('ArDrive class - integrated', () => {
 					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 
 					await expectAsyncErrorThrow({
-						promiseToError: arDrive.movePrivateFile(stubEntityID, stubEntityIDAlt, await getStubDriveKey()),
+						promiseToError: arDrive.movePrivateFile({
+							fileId: stubEntityID,
+							newParentFolderId: stubEntityIDAlt,
+							driveKey: await getStubDriveKey()
+						}),
 						errorMessage: 'Entity name already exists in destination folder!'
 					});
 				});
@@ -666,11 +823,11 @@ describe('ArDrive class - integrated', () => {
 					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 
 					await expectAsyncErrorThrow({
-						promiseToError: arDrive.movePrivateFile(
-							stubEntityID,
-							EID(stubEntityID.toString()),
-							await getStubDriveKey()
-						),
+						promiseToError: arDrive.movePrivateFile({
+							fileId: stubEntityID,
+							newParentFolderId: EID(stubEntityID.toString()),
+							driveKey: await getStubDriveKey()
+						}),
 						errorMessage: `File already has parent folder with ID: ${stubEntityID}`
 					});
 				});
@@ -680,11 +837,11 @@ describe('ArDrive class - integrated', () => {
 					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 
 					await expectAsyncErrorThrow({
-						promiseToError: arDrive.movePrivateFile(
-							stubEntityID,
-							EID(stubEntityID.toString()),
-							await getStubDriveKey()
-						),
+						promiseToError: arDrive.movePrivateFile({
+							fileId: stubEntityID,
+							newParentFolderId: EID(stubEntityID.toString()),
+							driveKey: await getStubDriveKey()
+						}),
 						errorMessage: 'Entity must stay in the same drive!'
 					});
 				});
@@ -693,11 +850,11 @@ describe('ArDrive class - integrated', () => {
 					stub(arfsDao, 'getPrivateFile').resolves(stubPrivateFile({}));
 					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 
-					const result = await arDrive.movePrivateFile(
-						stubEntityID,
-						stubEntityIDAlt,
-						await getStubDriveKey()
-					);
+					const result = await arDrive.movePrivateFile({
+						fileId: stubEntityID,
+						newParentFolderId: stubEntityIDAlt,
+						driveKey: await getStubDriveKey()
+					});
 					assertMoveFileExpectations(result, W(169), 'private');
 				});
 			});

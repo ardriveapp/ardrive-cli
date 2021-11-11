@@ -16,7 +16,7 @@ export function latestRevisionFilter(
 ): boolean {
 	const allRevisions = allEntities.filter((e) => e.entityId.equals(entity.entityId));
 	const latestRevision = allRevisions[0];
-	return entity.txId === latestRevision.txId;
+	return entity.txId.equals(latestRevision.txId);
 }
 
 /**
@@ -35,7 +35,7 @@ export function latestRevisionFilterForDrives(
 ): boolean {
 	const allRevisions = allEntities.filter((e) => e.driveId.equals(entity.driveId));
 	const latestRevision = allRevisions[0];
-	return entity.txId === latestRevision.txId;
+	return entity.txId.equals(latestRevision.txId);
 }
 
 export function fileFilter(entity: ArFSFileOrFolderEntity): boolean {

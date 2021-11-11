@@ -10,7 +10,6 @@ export class StreamDecrypt extends Transform {
 
 	constructor(private readonly cipherIV: CipherIV, private readonly fileKey: FileKey) {
 		super();
-		// this.cork();
 	}
 
 	_transform(chunk: Buffer, encoding: string, next: (err?: Error, data?: Buffer) => void): void {

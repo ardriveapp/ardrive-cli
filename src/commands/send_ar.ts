@@ -1,5 +1,5 @@
-import { cliWalletDao } from '..';
 import { AR, ADDR } from '../types';
+import { cliWalletDao, CLI_APP_NAME, CLI_APP_VERSION } from '..';
 import { CLICommand } from '../CLICommand';
 import { ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
@@ -18,7 +18,7 @@ new CLICommand({
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
 		const arAmount = parameters.getRequiredParameterValue(ArAmountParameter, AR.from);
-		const destAddress = parameters.getRequiredParameterValue(DestinationAddressParameter, (addr) => ADDR(addr));
+		const destAddress = parameters.getRequiredParameterValue(DestinationAddressParameter, ADDR);
 		const wallet = await parameters.getRequiredWallet();
 		const walletAddress = await wallet.getAddress();
 		const boost = parameters.getOptionalBoostSetting();
@@ -35,8 +35,8 @@ new CLICommand({
 			rewardSetting,
 			dryRun,
 			[
-				{ name: 'App-Name', value: 'ArDrive-CLI' },
-				{ name: 'App-Version', value: '2.0' },
+				{ name: 'App-Name', value: CLI_APP_NAME },
+				{ name: 'App-Version', value: CLI_APP_VERSION },
 				{ name: 'Type', value: 'transfer' }
 			],
 			true
