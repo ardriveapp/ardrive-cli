@@ -34,12 +34,8 @@ export const UpsertParameter = 'upsert';
 export const NoVerifyParameter = 'verify'; // commander maps --no-x style params to options.x and always includes in options
 
 // Aggregates for convenience
-export const DriveCreationPrivacyParameters = [
-	PrivateParameter,
-	UnsafeDrivePasswordParameter,
-	WalletFileParameter,
-	SeedPhraseParameter
-];
+export const WalletTypeParameters = [WalletFileParameter, SeedPhraseParameter];
+export const DriveCreationPrivacyParameters = [...WalletTypeParameters, PrivateParameter, UnsafeDrivePasswordParameter];
 export const DrivePrivacyParameters = [DriveKeyParameter, ...DriveCreationPrivacyParameters];
 export const TreeDepthParams = [AllParameter, MaxDepthParameter];
 

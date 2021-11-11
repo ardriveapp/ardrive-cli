@@ -8,13 +8,19 @@ import {
 	BoostParameter,
 	DestinationAddressParameter,
 	DryRunParameter,
-	WalletFileParameter
+	WalletTypeParameters
 } from '../parameter_declarations';
 import { assertARPrecision } from '../utils/ar_unit';
 
 new CLICommand({
 	name: 'send-ar',
-	parameters: [ArAmountParameter, DestinationAddressParameter, WalletFileParameter, BoostParameter, DryRunParameter],
+	parameters: [
+		ArAmountParameter,
+		DestinationAddressParameter,
+		BoostParameter,
+		DryRunParameter,
+		...WalletTypeParameters
+	],
 	async action(options) {
 		assertARPrecision(options.arAmount);
 		const parameters = new ParametersHelper(options);

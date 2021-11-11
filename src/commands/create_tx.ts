@@ -9,7 +9,7 @@ import {
 	DestinationAddressParameter,
 	LastTxParameter,
 	RewardParameter,
-	WalletFileParameter
+	WalletTypeParameters
 } from '../parameter_declarations';
 import { Winston } from '../types';
 import { assertARPrecision } from '../utils/ar_unit';
@@ -17,7 +17,13 @@ import { JWKWallet } from '../wallet';
 
 new CLICommand({
 	name: 'create-tx',
-	parameters: [ArAmountParameter, DestinationAddressParameter, WalletFileParameter, RewardParameter, LastTxParameter],
+	parameters: [
+		ArAmountParameter,
+		DestinationAddressParameter,
+		RewardParameter,
+		LastTxParameter,
+		...WalletTypeParameters
+	],
 	async action(options) {
 		assertARPrecision(options.arAmount);
 		const parameters = new ParametersHelper(options);

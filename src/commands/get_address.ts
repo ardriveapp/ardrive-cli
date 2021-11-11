@@ -1,10 +1,10 @@
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
-import { SeedPhraseParameter, WalletFileParameter } from '../parameter_declarations';
+import { WalletTypeParameters } from '../parameter_declarations';
 
 new CLICommand({
 	name: 'get-address',
-	parameters: [WalletFileParameter, SeedPhraseParameter],
+	parameters: [...WalletTypeParameters],
 	async action(options) {
 		const parameters = new ParametersHelper(options);
 		const address = await parameters.getWalletAddress();
