@@ -2,6 +2,7 @@ import { JWKWallet, Wallet } from './wallet';
 import * as fs from 'fs';
 import fetch from 'node-fetch';
 import { JWKInterface } from 'ardrive-core-js';
+import { ArweaveAddress } from './types';
 
 export function readJWKFile(path: string): Wallet {
 	const walletFileData = fs.readFileSync(path, { encoding: 'utf8', flag: 'r' });
@@ -18,4 +19,9 @@ export async function fetchMempool(): Promise<string[]> {
 
 export function urlEncodeHashKey(keyBuffer: Buffer): string {
 	return keyBuffer.toString('base64').replace('=', '');
+}
+
+export async function lastTxForAddress(address: ArweaveAddress): Promise<string> {
+	const response = await fetch(`https://arweave.net/wallet/${address}/last_tx`);
+	return response.text();
 }

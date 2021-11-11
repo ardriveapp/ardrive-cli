@@ -107,6 +107,7 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
         3. [Check for network congestion before uploading](#check-congestion)
         4. [Front-run Congestion By Boosting Miner Rewards](#boost)
+        5. [Send AR Transactions From a Cold Wallet](#cold-tx)
 4. [All ArDrive CLI Commands](#all-ardrive-cli-commands)
 5. [Getting Help](#getting-help)
 
@@ -833,6 +834,40 @@ ardrive get-mempool | jq 'length'
 ```shell
 # Increase the miner reward on your transactions by 50%
 ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0c58c11-430c-4383-8e54-4d864cc7e927" --local-file-path ./helloworld.txt --boost 1.5
+```
+
+#### Send AR Transactions From a Cold Wallet<a id="cold-tx"></a>
+
+The best cold wallet storage never exposes your seed phrase and/or private keys to the Internet or a compromised system interface. You can use the ArDrive CLI to facilitate cold storage and transfer of AR.
+
+If you need a new cold AR wallet, generate one from an airgapped machine capable of running the ArDrive CLI by following the instructions in the [Wallet Operations](#wallet-operations) section. Fund your cold wallet from whatever external sources you'd like. NOTE: Your cold wallet won't appear on chain until it has received AR.
+
+The workflow to send the AR out from your cold wallet requires you to generate a signed transaction with your cold wallet on your airgapped machine via the ArDrive CLI, and then to transfer the signed transaction (e.g. by a file on a clean thumb drive) to an Internet-connected machine and send the transaction to the network via the ArDrive CLI. You'll need two inputs from the Internect-connected machine:
+• the last transaction sent OUT from the cold wallet (or an empty string if none has ever been sent out)
+• the base fee for an Arweave transaction (i.e. a zero bye transaction). Note that this value could change if a sufficient amount of time passes between the time you fetch this value, create the transaction, and send the transaction.
+
+To get the last transaction sent from your cold wallet, use the `last-tx` command, specifying either your seed phrase, wallet file, or wallet address, e.g.:
+
+```
+ardrive last-tx -w /path/to/wallet/file.json
+```
+
+To get the base fee for an Arweave transaction, simply send a dry run AR transaction and extract the reward value. Or, to save a few keystrokes, just use curl:
+
+```
+curl https://arweave.net/price/0
+```
+
+Write down or securely copy the values you derived from the Internet-connected machine and run the following commands on the airgapped machine, piping the signed transaction data to a file in the process, e.g. `sendme.json` (if that's your signed transaction transfer medium preference):
+
+```
+ardrive create-tx -w /path/to/wallet/file.json -d <dest Arweave address> -a <AR amount to send> --last-tx <from previos steps> --reward "<from previous steps>" > sendme.json
+```
+
+Transport your signed transaction to the Internet-connected machine and run the following command to send your transaction to the Arweave network:
+
+```
+ardrive send-tx -x /path/to/sendme.json
 ```
 
 # All ArDrive CLI Commands
