@@ -66,7 +66,13 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 
 		if (drivePrivacy) {
 			// Assert drive privacy tag if it has been passed down
-			if (edgeOfFirstDrive.node.tags.find((t) => t.name === 'Drive-Privacy')?.value !== drivePrivacy) {
+			const drivePrivacyFromTag = edgeOfFirstDrive.node.tags.find((t) => t.name === 'Drive-Privacy');
+
+			if (!drivePrivacyFromTag) {
+				throw new Error('Target drive has no "Drive-Privacy" tag!');
+			}
+
+			if (drivePrivacyFromTag.value !== drivePrivacy) {
 				throw new Error(`Target drive is not a ${drivePrivacy} drive!`);
 			}
 		}
