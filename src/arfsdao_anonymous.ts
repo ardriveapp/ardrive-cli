@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import Arweave from 'arweave';
-import { ArFSDriveEntity, GQLEdgeInterface } from 'ardrive-core-js';
+import { ArFSDriveEntity, DrivePrivacy, GQLEdgeInterface } from 'ardrive-core-js';
 import { ASCENDING_ORDER, buildQuery } from './query';
 import { DriveID, FolderID, FileID, DEFAULT_APP_NAME, DEFAULT_APP_VERSION, EntityID } from './types';
 import { latestRevisionFilter, latestRevisionFilterForDrives } from './utils/filter_methods';
@@ -45,8 +45,16 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		super();
 	}
 
-	public async getOwnerForDriveId(driveId: DriveID): Promise<ArweaveAddress> {
-		const gqlQuery = buildQuery({ tags: [{ name: 'Drive-Id', value: driveId }], sort: ASCENDING_ORDER });
+	public async getOwnerForPublicDriveId(driveId: DriveID): Promise<ArweaveAddress> {
+		return this.getOwnerForDriveId(driveId, 'private');
+	}
+
+	public async getOwnerForPrivateDriveId(driveId: DriveID): Promise<ArweaveAddress> {
+		return this.getOwnerForDriveId(driveId, 'private');
+	}
+
+	public async getOwnerForDriveId(driveId: DriveID, drivePrivacy?: DrivePrivacy): Promise<ArweaveAddress> {
+		const gqlQuery = buildQuery({ tags: [{ name: 'Drive-Id', value: `${driveId}` }], sort: ASCENDING_ORDER });
 		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 		const edges: GQLEdgeInterface[] = response.data.data.transactions.edges;
 
@@ -55,6 +63,14 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		}
 
 		const edgeOfFirstDrive = edges[0];
+
+		if (drivePrivacy) {
+			// Assert drive privacy tag if it has been passed down
+			if (edgeOfFirstDrive.node.tags.find((t) => t.name === 'Drive-Privacy')?.value !== drivePrivacy) {
+				throw new Error(`Target drive is not a ${drivePrivacy} drive!`);
+			}
+		}
+
 		const driveOwnerAddress = edgeOfFirstDrive.node.owner.address;
 
 		return new ArweaveAddress(driveOwnerAddress);

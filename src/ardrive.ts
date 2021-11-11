@@ -1134,7 +1134,7 @@ export class ArDrive extends ArDriveAnonymous {
 	}
 
 	async createPublicFolder({ folderName, driveId, parentFolderId }: CreatePublicFolderParams): Promise<ArFSResult> {
-		const owner = await this.getOwnerForDriveId(driveId);
+		const owner = await this.arFsDao.getOwnerForPublicDriveId(driveId);
 		await this.assertOwnerAddress(owner);
 
 		// Assert that there are no duplicate names in the destination folder
@@ -1179,7 +1179,7 @@ export class ArDrive extends ArDriveAnonymous {
 		driveKey,
 		parentFolderId
 	}: CreatePrivateFolderParams): Promise<ArFSResult> {
-		const owner = await this.getOwnerForDriveId(driveId);
+		const owner = await this.arFsDao.getOwnerForPrivateDriveId(driveId);
 		await this.assertOwnerAddress(owner);
 
 		// Assert that there are no duplicate names in the destination folder
