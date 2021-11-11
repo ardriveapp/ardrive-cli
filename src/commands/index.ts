@@ -1,4 +1,3 @@
-import { CLICommand } from '../CLICommand';
 import '../parameter_declarations';
 import './create_drive';
 import './create_folder';
@@ -18,9 +17,3 @@ import './list_folder';
 import './list_drive';
 import './move_file';
 import './move_folder';
-import './send_ar';
-import './send_tx';
-import './tx_status';
-import './upload_file';
-
-CLICommand.parse();

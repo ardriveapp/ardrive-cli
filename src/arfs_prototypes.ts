@@ -39,7 +39,7 @@ export abstract class ArFSEntityMetaDataPrototype extends ArFSObjectMetadataProt
 		super();
 
 		// Get the current time so the app can display the "created" data later on
-		this.unixTime = Math.round(Date.now() / 1000);
+		this.unixTime = new UnixTime(Math.round(Date.now() / 1000));
 	}
 }
 
@@ -57,7 +57,7 @@ export abstract class ArFSDriveMetaDataPrototype extends ArFSEntityMetaDataProto
 		transaction.addTag('Content-Type', this.contentType);
 		transaction.addTag('Entity-Type', 'drive');
 		transaction.addTag('Unix-Time', this.unixTime.toString());
-		transaction.addTag('Drive-Id', this.driveId);
+		transaction.addTag('Drive-Id', `${this.driveId}`);
 		transaction.addTag('Drive-Privacy', this.privacy);
 	}
 }
@@ -106,11 +106,11 @@ export abstract class ArFSFolderMetaDataPrototype extends ArFSEntityMetaDataProt
 		transaction.addTag('Content-Type', this.contentType);
 		transaction.addTag('Entity-Type', 'folder');
 		transaction.addTag('Unix-Time', this.unixTime.toString());
-		transaction.addTag('Drive-Id', this.driveId);
-		transaction.addTag('Folder-Id', this.folderId);
+		transaction.addTag('Drive-Id', `${this.driveId}`);
+		transaction.addTag('Folder-Id', `${this.folderId}`);
 		if (this.parentFolderId) {
 			// Root folder transactions do not have Parent-Folder-Id
-			transaction.addTag('Parent-Folder-Id', this.parentFolderId);
+			transaction.addTag('Parent-Folder-Id', `${this.parentFolderId}`);
 		}
 	}
 }
@@ -167,9 +167,9 @@ export abstract class ArFSFileMetaDataPrototype extends ArFSEntityMetaDataProtot
 		transaction.addTag('Content-Type', this.contentType);
 		transaction.addTag('Entity-Type', 'file');
 		transaction.addTag('Unix-Time', this.unixTime.toString());
-		transaction.addTag('Drive-Id', this.driveId);
-		transaction.addTag('File-Id', this.fileId);
-		transaction.addTag('Parent-Folder-Id', this.parentFolderId);
+		transaction.addTag('Drive-Id', `${this.driveId}`);
+		transaction.addTag('File-Id', `${this.fileId}`);
+		transaction.addTag('Parent-Folder-Id', `${this.parentFolderId}`);
 	}
 }
 export class ArFSPublicFileMetaDataPrototype extends ArFSFileMetaDataPrototype {

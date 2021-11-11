@@ -1,5 +1,6 @@
 import { ArFSFileOrFolderEntity } from './arfs_entities';
-import { FolderID } from './types';
+import { FolderID, EID } from './types';
+import { ROOT_FOLDER_ID_PLACEHOLDER } from './utils/arfs_builders/arfs_folder_builders';
 
 export class FolderTreeNode {
 	constructor(
@@ -24,7 +25,7 @@ export class FolderHierarchy {
 
 	static newFromEntities(entities: ArFSFileOrFolderEntity[]): FolderHierarchy {
 		const folderIdToEntityMap = entities.reduce((accumulator, entity) => {
-			return Object.assign(accumulator, { [entity.entityId]: entity });
+			return Object.assign(accumulator, { [`${entity.entityId}`]: entity });
 		}, {});
 		const folderIdToNodeMap: { [k: string]: FolderTreeNode } = {};
 
@@ -40,24 +41,24 @@ export class FolderHierarchy {
 		folderIdToEntityMap: { [k: string]: ArFSFileOrFolderEntity },
 		folderIdToNodeMap: { [k: string]: FolderTreeNode }
 	): void {
-		const folderIdKeyIsPresent = Object.keys(folderIdToNodeMap).includes(entity.entityId);
-		const parentFolderIdKeyIsPresent = Object.keys(folderIdToNodeMap).includes(entity.parentFolderId);
+		const folderIdKeyIsPresent = Object.keys(folderIdToNodeMap).includes(`${entity.entityId}`);
+		const parentFolderIdKeyIsPresent = Object.keys(folderIdToNodeMap).includes(`${entity.parentFolderId}`);
 		if (!folderIdKeyIsPresent) {
 			if (!parentFolderIdKeyIsPresent) {
-				const parentFolderEntity = folderIdToEntityMap[entity.parentFolderId];
+				const parentFolderEntity = folderIdToEntityMap[`${entity.parentFolderId}`];
 				if (parentFolderEntity) {
 					this.setupNodesWithEntity(parentFolderEntity, folderIdToEntityMap, folderIdToNodeMap);
 				}
 			}
-			const parent = folderIdToNodeMap[entity.parentFolderId];
+			const parent = folderIdToNodeMap[`${entity.parentFolderId}`];
 			if (parent) {
 				const node = new FolderTreeNode(entity.entityId, parent);
 				parent.children.push(node);
-				folderIdToNodeMap[entity.entityId] = node;
+				folderIdToNodeMap[`${entity.entityId}`] = node;
 			} else {
 				// this one is supposed to be the new root
 				const rootNode = new FolderTreeNode(entity.entityId);
-				folderIdToNodeMap[entity.entityId] = rootNode;
+				folderIdToNodeMap[`${entity.entityId}`] = rootNode;
 			}
 		}
 	}
@@ -69,7 +70,7 @@ export class FolderHierarchy {
 
 		const someFolderId = Object.keys(this.folderIdToEntityMap)[0];
 		let tmpNode = this.folderIdToNodeMap[someFolderId];
-		while (tmpNode.parent && this.folderIdToNodeMap[tmpNode.parent.folderId]) {
+		while (tmpNode.parent && this.folderIdToNodeMap[`${tmpNode.parent.folderId}`]) {
 			tmpNode = tmpNode.parent;
 		}
 		this._rootNode = tmpNode;
@@ -77,22 +78,22 @@ export class FolderHierarchy {
 	}
 
 	public subTreeOf(folderId: FolderID, maxDepth = Number.MAX_SAFE_INTEGER): FolderHierarchy {
-		const newRootNode = this.folderIdToNodeMap[folderId];
+		const newRootNode = this.folderIdToNodeMap[`${folderId}`];
 
 		const subTreeNodes = this.nodeAndChildrenOf(newRootNode, maxDepth);
 
 		const entitiesMapping = subTreeNodes.reduce((accumulator, node) => {
-			return Object.assign(accumulator, { [node.folderId]: this.folderIdToEntityMap[node.folderId] });
+			return Object.assign(accumulator, { [`${node.folderId}`]: this.folderIdToEntityMap[`${node.folderId}`] });
 		}, {});
 		const nodesMapping = subTreeNodes.reduce((accumulator, node) => {
-			return Object.assign(accumulator, { [node.folderId]: node });
+			return Object.assign(accumulator, { [`${node.folderId}`]: node });
 		}, {});
 
 		return new FolderHierarchy(entitiesMapping, nodesMapping);
 	}
 
 	public allFolderIDs(): FolderID[] {
-		return Object.keys(this.folderIdToEntityMap);
+		return Object.keys(this.folderIdToEntityMap).map((eid) => EID(eid));
 	}
 
 	public nodeAndChildrenOf(node: FolderTreeNode, maxDepth: number): FolderTreeNode[] {
@@ -106,7 +107,7 @@ export class FolderHierarchy {
 	}
 
 	public folderIdSubtreeFromFolderId(folderId: FolderID, maxDepth: number): FolderID[] {
-		const rootNode = this.folderIdToNodeMap[folderId];
+		const rootNode = this.folderIdToNodeMap[`${folderId}`];
 		const subTree: FolderID[] = [rootNode.folderId];
 		switch (maxDepth) {
 			case -1:
@@ -129,18 +130,18 @@ export class FolderHierarchy {
 		if (this.rootNode.parent) {
 			throw new Error(`Can't compute paths from sub-tree`);
 		}
-		if (folderId === 'root folder') {
+		if (`${folderId}` === ROOT_FOLDER_ID_PLACEHOLDER) {
 			return '/';
 		}
-		let folderNode = this.folderIdToNodeMap[folderId];
+		let folderNode = this.folderIdToNodeMap[`${folderId}`];
 		const nodesInPathToFolder = [folderNode];
-		while (folderNode.parent && folderNode.folderId !== this.rootNode.folderId) {
+		while (folderNode.parent && !folderNode.folderId.equals(this.rootNode.folderId)) {
 			folderNode = folderNode.parent;
 			nodesInPathToFolder.push(folderNode);
 		}
 		const olderFirstNodesInPathToFolder = nodesInPathToFolder.reverse();
 		const olderFirstNamesOfNodesInPath = olderFirstNodesInPathToFolder.map(
-			(n) => this.folderIdToEntityMap[n.folderId].name
+			(n) => this.folderIdToEntityMap[`${n.folderId}`].name
 		);
 		const stringPath = olderFirstNamesOfNodesInPath.join('/');
 		return `/${stringPath}/`;
@@ -150,12 +151,12 @@ export class FolderHierarchy {
 		if (this.rootNode.parent) {
 			throw new Error(`Can't compute paths from sub-tree`);
 		}
-		if (folderId === 'root folder') {
+		if (`${folderId}` === ROOT_FOLDER_ID_PLACEHOLDER) {
 			return '/';
 		}
-		let folderNode = this.folderIdToNodeMap[folderId];
+		let folderNode = this.folderIdToNodeMap[`${folderId}`];
 		const nodesInPathToFolder = [folderNode];
-		while (folderNode.parent && folderNode.folderId !== this.rootNode.folderId) {
+		while (folderNode.parent && !folderNode.folderId.equals(this.rootNode.folderId)) {
 			folderNode = folderNode.parent;
 			nodesInPathToFolder.push(folderNode);
 		}
@@ -169,18 +170,18 @@ export class FolderHierarchy {
 		if (this.rootNode.parent) {
 			throw new Error(`Can't compute paths from sub-tree`);
 		}
-		if (folderId === 'root folder') {
+		if (`${folderId}` === ROOT_FOLDER_ID_PLACEHOLDER) {
 			return '/';
 		}
-		let folderNode = this.folderIdToNodeMap[folderId];
+		let folderNode = this.folderIdToNodeMap[`${folderId}`];
 		const nodesInPathToFolder = [folderNode];
-		while (folderNode.parent && folderNode.folderId !== this.rootNode.folderId) {
+		while (folderNode.parent && !folderNode.folderId.equals(this.rootNode.folderId)) {
 			folderNode = folderNode.parent;
 			nodesInPathToFolder.push(folderNode);
 		}
 		const olderFirstNodesInPathToFolder = nodesInPathToFolder.reverse();
 		const olderFirstTxTDsOfNodesInPath = olderFirstNodesInPathToFolder.map(
-			(n) => this.folderIdToEntityMap[n.folderId].txId
+			(n) => this.folderIdToEntityMap[`${n.folderId}`].txId
 		);
 		const stringPath = olderFirstTxTDsOfNodesInPath.join('/');
 		return `/${stringPath}/`;

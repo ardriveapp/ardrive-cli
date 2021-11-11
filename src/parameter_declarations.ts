@@ -38,6 +38,34 @@ export const WalletTypeParameters = [WalletFileParameter, SeedPhraseParameter];
 export const DriveCreationPrivacyParameters = [...WalletTypeParameters, PrivateParameter, UnsafeDrivePasswordParameter];
 export const DrivePrivacyParameters = [DriveKeyParameter, ...DriveCreationPrivacyParameters];
 export const TreeDepthParams = [AllParameter, MaxDepthParameter];
+export const AllParameters = [
+	WalletFileParameter,
+	SeedPhraseParameter,
+	PrivateParameter,
+	UnsafeDrivePasswordParameter,
+	DriveNameParameter,
+	FolderNameParameter,
+	DriveKeyParameter,
+	AddressParameter,
+	DriveIdParameter,
+	ArAmountParameter,
+	DestinationAddressParameter,
+	TransactionIdParameter,
+	ConfirmationsParameter,
+	FolderIdParameter,
+	FileIdParameter,
+	ParentFolderIdParameter,
+	LocalFilePathParameter,
+	DestinationFileNameParameter,
+	LocalFilesParameter,
+	GetAllRevisionsParameter,
+	AllParameter,
+	MaxDepthParameter,
+	BoostParameter,
+	DryRunParameter,
+	NoVerifyParameter
+] as const;
+export type ParameterName = typeof AllParameters[number];
 
 export const ConflictResolutionParams = [SkipParameter, ReplaceParameter, UpsertParameter /* , AskParameter */];
 
@@ -261,7 +289,7 @@ Parameter.declare({
 	name: UpsertParameter,
 	aliases: ['--upsert'],
 	description:
-		'(OPTIONAL) When there is a name conflict within the destination folder, if that file was last modified at the same time as the file to upload, skip the upload, otherwise upload that file as a new revision',
+		'(OPTIONAL) When there is a name conflict within the destination folder, only upload file if a modification is detected. Skip otherwise.',
 	type: 'boolean',
 	forbiddenConjunctionParameters: [SkipParameter, ReplaceParameter]
 });

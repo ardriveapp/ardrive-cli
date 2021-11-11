@@ -1,5 +1,4 @@
 import {
-	ArFSEntity,
 	ContentType,
 	EntityType,
 	GQLNodeInterface,
@@ -8,13 +7,21 @@ import {
 } from 'ardrive-core-js';
 import Arweave from 'arweave';
 import { graphQLURL } from '../../arfsdao';
-import { ArFSFileOrFolderEntity } from '../../arfs_entities';
-import { ArweaveAddress } from '../../arweave_address';
+import { ArFSEntity, ArFSFileOrFolderEntity } from '../../arfs_entities';
 import { buildQuery } from '../../query';
-import { DriveID, EntityID, EntityKey, FolderID, TransactionID, UnixTime } from '../../types';
-
+import {
+	ArweaveAddress,
+	DriveID,
+	AnyEntityID,
+	EntityKey,
+	FolderID,
+	TransactionID,
+	TxID,
+	UnixTime,
+	EID
+} from '../../types';
 export interface ArFSMetadataEntityBuilderParams {
-	entityId: EntityID;
+	entityId: AnyEntityID;
 	arweave: Arweave;
 	owner?: ArweaveAddress;
 }
@@ -39,7 +46,7 @@ export abstract class ArFSMetadataEntityBuilder<T extends ArFSEntity> {
 	name?: string;
 	txId?: TransactionID;
 	unixTime?: UnixTime;
-	protected readonly entityId: EntityID;
+	protected readonly entityId: AnyEntityID;
 	protected readonly arweave: Arweave;
 	protected readonly owner?: ArweaveAddress;
 
@@ -78,7 +85,7 @@ export abstract class ArFSMetadataEntityBuilder<T extends ArFSEntity> {
 
 			node = edges[0].node;
 		}
-		this.txId = node.id;
+		this.txId = TxID(node.id);
 		const { tags } = node;
 		tags.forEach((tag: GQLTagInterface) => {
 			const key = tag.name;
@@ -97,13 +104,13 @@ export abstract class ArFSMetadataEntityBuilder<T extends ArFSEntity> {
 					this.contentType = value as ContentType;
 					break;
 				case 'Drive-Id':
-					this.driveId = value;
+					this.driveId = EID(value);
 					break;
 				case 'Entity-Type':
 					this.entityType = value as EntityType;
 					break;
 				case 'Unix-Time':
-					this.unixTime = +value;
+					this.unixTime = new UnixTime(+value);
 					break;
 				default:
 					unparsedTags.push(tag);
@@ -131,7 +138,7 @@ export abstract class ArFSFileOrFolderBuilder<T extends ArFSFileOrFolderEntity> 
 			const { value } = tag;
 			switch (key) {
 				case 'Parent-Folder-Id':
-					this.parentFolderId = value;
+					this.parentFolderId = EID(value);
 					break;
 				default:
 					unparsedTags.push(tag);
