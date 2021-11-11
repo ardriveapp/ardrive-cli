@@ -1007,7 +1007,7 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			if (!cipherIVTag) {
 				throw new Error("The private file doesn't has a valid Cipher-IV");
 			}
-			const cipherIV = cipherIVTag?.value;
+			const cipherIV = cipherIVTag.value;
 			return { txId, cipherIV };
 		});
 	}
