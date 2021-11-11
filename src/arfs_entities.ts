@@ -10,9 +10,9 @@ import {
 	ByteCount,
 	JSON_CONTENT_TYPE,
 	TransactionID,
-	UnixTime
+	UnixTime,
+	stubTransactionID
 } from './types';
-import { stubTransactionID } from './utils/stubs';
 
 // The primary ArFS entity that all other entities inherit from.
 export class ArFSEntity {

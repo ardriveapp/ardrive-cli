@@ -22,7 +22,7 @@ new CLICommand({
 			const wallet = await parameters.getRequiredWallet();
 			const arDrive = arDriveFactory({ wallet });
 			const driveKey = await parameters.getDriveKey({ driveId });
-			const drive = await arDrive.getPrivateDrive(driveId, driveKey);
+			const drive = await arDrive.getPrivateDrive({ driveId, driveKey });
 			const rootFolderId = drive.rootFolderId;
 
 			// We have the drive id from deriving a key, we can derive the owner
@@ -37,7 +37,7 @@ new CLICommand({
 			});
 		} else {
 			const arDrive = new ArDriveAnonymous(new ArFSDAOAnonymous(cliArweave));
-			const drive = await arDrive.getPublicDrive(driveId);
+			const drive = await arDrive.getPublicDrive({ driveId });
 			const rootFolderId = drive.rootFolderId;
 			children = await arDrive.listPublicFolder({ folderId: rootFolderId, maxDepth, includeRoot: true });
 		}

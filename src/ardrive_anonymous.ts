@@ -1,6 +1,12 @@
 import { createWriteStream } from 'fs';
 import { Stream } from 'stream';
-import { ListPublicFolderParams } from './ardrive';
+import {
+	GetPublicDriveParams,
+	GetPublicFolderParams,
+	GetPublicFileParams,
+	GetAllDrivesForAddressParams,
+	ListPublicFolderParams
+} from './ardrive.types';
 import { ArFSDAOAnonymous, ArFSDAOType } from './arfsdao_anonymous';
 import {
 	ArFSDriveEntity,
@@ -9,8 +15,7 @@ import {
 	ArFSPublicFileOrFolderWithPaths,
 	ArFSPublicFolder
 } from './arfs_entities';
-import { PrivateKeyData } from './private_key_data';
-import { ArweaveAddress, DriveID, FileID, FolderID } from './types';
+import { ArweaveAddress, DriveID } from './types';
 
 export abstract class ArDriveType {
 	protected abstract readonly arFsDao: ArFSDAOType;
@@ -21,11 +26,11 @@ export class ArDriveAnonymous extends ArDriveType {
 		super();
 	}
 
-	async getOwnerForDriveId(driveId: DriveID): Promise<ArweaveAddress> {
+	public async getOwnerForDriveId(driveId: DriveID): Promise<ArweaveAddress> {
 		return this.arFsDao.getOwnerForDriveId(driveId);
 	}
 
-	async getPublicDrive(driveId: DriveID, owner?: ArweaveAddress): Promise<ArFSPublicDrive> {
+	public async getPublicDrive({ driveId, owner }: GetPublicDriveParams): Promise<ArFSPublicDrive> {
 		if (!owner) {
 			owner = await this.getOwnerForDriveId(driveId);
 		}
@@ -33,7 +38,7 @@ export class ArDriveAnonymous extends ArDriveType {
 		return this.arFsDao.getPublicDrive(driveId, owner);
 	}
 
-	async getPublicFolder(folderId: FolderID, owner?: ArweaveAddress): Promise<ArFSPublicFolder> {
+	public async getPublicFolder({ folderId, owner }: GetPublicFolderParams): Promise<ArFSPublicFolder> {
 		if (!owner) {
 			owner = await this.arFsDao.getDriveOwnerForFolderId(folderId);
 		}
@@ -41,7 +46,7 @@ export class ArDriveAnonymous extends ArDriveType {
 		return this.arFsDao.getPublicFolder(folderId, owner);
 	}
 
-	async getPublicFile(fileId: FileID, owner?: ArweaveAddress): Promise<ArFSPublicFile> {
+	public async getPublicFile({ fileId, owner }: GetPublicFileParams): Promise<ArFSPublicFile> {
 		if (!owner) {
 			owner = await this.arFsDao.getDriveOwnerForFileId(fileId);
 		}
@@ -49,7 +54,10 @@ export class ArDriveAnonymous extends ArDriveType {
 		return this.arFsDao.getPublicFile(fileId, owner);
 	}
 
-	async getAllDrivesForAddress(address: ArweaveAddress, privateKeyData: PrivateKeyData): Promise<ArFSDriveEntity[]> {
+	public async getAllDrivesForAddress({
+		address,
+		privateKeyData
+	}: GetAllDrivesForAddressParams): Promise<ArFSDriveEntity[]> {
 		return this.arFsDao.getAllDrivesForAddress(address, privateKeyData);
 	}
 
@@ -58,7 +66,7 @@ export class ArDriveAnonymous extends ArDriveType {
 	 * @param {FolderID} folderId the folder ID to list children of
 	 * @returns {ArFSPublicFileOrFolderWithPaths[]} an array representation of the children and parent folder
 	 */
-	async listPublicFolder({
+	public async listPublicFolder({
 		folderId,
 		maxDepth = 0,
 		includeRoot = false,

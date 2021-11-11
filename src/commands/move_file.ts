@@ -20,7 +20,7 @@ new CLICommand({
 
 		const dryRun = !!parameters.getParameterValue(DryRunParameter);
 		const fileId = parameters.getRequiredParameterValue(FileIdParameter, EID);
-		const parentFolderId = parameters.getRequiredParameterValue(ParentFolderIdParameter, EID);
+		const newParentFolderId = parameters.getRequiredParameterValue(ParentFolderIdParameter, EID);
 
 		const wallet: Wallet = await parameters.getRequiredWallet();
 		const ardrive = arDriveFactory({
@@ -31,12 +31,12 @@ new CLICommand({
 
 		const createDriveResult = await (async function () {
 			if (await parameters.getIsPrivate()) {
-				const driveId = await ardrive.getDriveIdForFolderId(parentFolderId);
+				const driveId = await ardrive.getDriveIdForFolderId(newParentFolderId);
 				const driveKey = await parameters.getDriveKey({ driveId });
 
-				return ardrive.movePrivateFile(fileId, parentFolderId, driveKey);
+				return ardrive.movePrivateFile({ fileId, newParentFolderId, driveKey });
 			} else {
-				return ardrive.movePublicFile(fileId, parentFolderId);
+				return ardrive.movePublicFile({ fileId, newParentFolderId });
 			}
 		})();
 		console.log(JSON.stringify(createDriveResult, null, 4));

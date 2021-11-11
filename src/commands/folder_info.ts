@@ -11,7 +11,6 @@ new CLICommand({
 	parameters: [FolderIdParameter, GetAllRevisionsParameter, ...DrivePrivacyParameters],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
-		// const shouldGetAllRevisions: boolean = options.getAllRevisions;
 
 		const result: Partial<ArFSPublicFolder | ArFSPrivateFolder> = await (async function () {
 			const folderId = EID(parameters.getRequiredParameterValue(FolderIdParameter));
@@ -26,10 +25,10 @@ new CLICommand({
 				// We have the drive id from deriving a key, we can derive the owner
 				const driveOwner = await arDrive.getOwnerForDriveId(driveId);
 
-				return arDrive.getPrivateFolder(folderId, driveKey, driveOwner /*, shouldGetAllRevisions*/);
+				return arDrive.getPrivateFolder({ folderId, driveKey, owner: driveOwner });
 			} else {
 				const arDrive = arDriveAnonymousFactory();
-				return arDrive.getPublicFolder(folderId /*, shouldGetAllRevisions*/);
+				return arDrive.getPublicFolder({ folderId });
 			}
 		})();
 

@@ -7,7 +7,7 @@ import {
 	ArFSPublicFileMetadataTransactionData,
 	ArFSPublicFolderTransactionData
 } from '../../src/arfs_trx_data_types';
-import { TipType } from '../../src/types';
+import { stubTransactionID, TipType } from '../../src/types';
 import { readJWKFile } from '../../src/utils';
 import { ArweaveOracle } from '../../src/utils/arweave_oracle';
 import { ARDataPriceRegressionEstimator } from '../../src/utils/ar_data_price_regression_estimator';
@@ -17,7 +17,7 @@ import { expectAsyncErrorThrow } from '../../src/utils/test_helpers';
 import { ArDriveCommunityOracle } from '../../src/community/ardrive_community_oracle';
 import { CommunityOracle } from '../../src/community/community_oracle';
 import { ArFSDAO } from '../arfsdao';
-import { stubEntityID, stubTransactionID } from './stubs';
+import { stubEntityID } from './stubs';
 import { W, FeeMultiple, ByteCount, UnixTime } from '../types';
 
 describe('ArDrive class', () => {
@@ -91,8 +91,11 @@ describe('ArDrive class', () => {
 				{ name: 'App-Version', value: '1.0' }
 			];
 			const inputsAndExpectedOutputs = [
-				[undefined, [...baseTags, { name: 'Tip-Type', value: 'data upload' }]],
-				['data upload', [...baseTags, { name: 'Tip-Type', value: 'data upload' }]]
+				[undefined, [...baseTags, { name: 'Type', value: 'fee' }, { name: 'Tip-Type', value: 'data upload' }]],
+				[
+					'data upload',
+					[...baseTags, { name: 'Type', value: 'fee' }, { name: 'Tip-Type', value: 'data upload' }]
+				]
 			];
 			inputsAndExpectedOutputs.forEach(([input, expectedOutput]) => {
 				expect(arDrive.getTipTags(input as TipType)).to.deep.equal(expectedOutput);
