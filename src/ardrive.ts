@@ -521,7 +521,7 @@ export class ArDrive extends ArDriveAnonymous {
 	}: UploadPublicFileParams): Promise<ArFSResult> {
 		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
 
-		const owner = await this.getOwnerForDriveId(driveId);
+		const owner = await this.arFsDao.getOwnerForPublicDriveId(driveId);
 		await this.assertOwnerAddress(owner);
 
 		// Derive destination name and names already within provided destination folder
@@ -610,7 +610,7 @@ export class ArDrive extends ArDriveAnonymous {
 	}: BulkPublicUploadParams): Promise<ArFSResult> {
 		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
 
-		const owner = await this.getOwnerForDriveId(driveId);
+		const owner = await this.arFsDao.getOwnerForPublicDriveId(driveId);
 		await this.assertOwnerAddress(owner);
 
 		// Derive destination name and names already within provided destination folder
@@ -817,7 +817,7 @@ export class ArDrive extends ArDriveAnonymous {
 	}: UploadPrivateFileParams): Promise<ArFSResult> {
 		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
 
-		const owner = await this.getOwnerForDriveId(driveId);
+		const owner = await this.arFsDao.getOwnerForPrivateDriveId(driveId);
 		await this.assertOwnerAddress(owner);
 
 		// Derive destination name and names already within provided destination folder
@@ -920,7 +920,7 @@ export class ArDrive extends ArDriveAnonymous {
 		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
 
 		// Get owner of drive, will error if no drives are found
-		const owner = await this.getOwnerForDriveId(driveId);
+		const owner = await this.arFsDao.getOwnerForPrivateDriveId(driveId);
 
 		// Assert that the provided wallet is the owner of the drive
 		await this.assertOwnerAddress(owner);
