@@ -817,7 +817,7 @@ export class ArDrive extends ArDriveAnonymous {
 	}: UploadPrivateFileParams): Promise<ArFSResult> {
 		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
 
-		const owner = await this.arFsDao.getOwnerForPrivateDriveId(driveId);
+		const owner = await this.arFsDao.getOwnerForPrivateDriveId(driveId, driveKey);
 		await this.assertOwnerAddress(owner);
 
 		// Derive destination name and names already within provided destination folder
@@ -920,7 +920,7 @@ export class ArDrive extends ArDriveAnonymous {
 		const driveId = await this.arFsDao.getDriveIdForFolderId(parentFolderId);
 
 		// Get owner of drive, will error if no drives are found
-		const owner = await this.arFsDao.getOwnerForPrivateDriveId(driveId);
+		const owner = await this.arFsDao.getOwnerForPrivateDriveId(driveId, driveKey);
 
 		// Assert that the provided wallet is the owner of the drive
 		await this.assertOwnerAddress(owner);
@@ -1179,7 +1179,7 @@ export class ArDrive extends ArDriveAnonymous {
 		driveKey,
 		parentFolderId
 	}: CreatePrivateFolderParams): Promise<ArFSResult> {
-		const owner = await this.arFsDao.getOwnerForPrivateDriveId(driveId);
+		const owner = await this.arFsDao.getOwnerForPrivateDriveId(driveId, driveKey);
 		await this.assertOwnerAddress(owner);
 
 		// Assert that there are no duplicate names in the destination folder
