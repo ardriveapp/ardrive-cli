@@ -1,8 +1,8 @@
 /* eslint-disable no-console */
 import Arweave from 'arweave';
-import { ArFSDriveEntity, driveDecrypt, DrivePrivacy, GQLEdgeInterface } from 'ardrive-core-js';
+import { ArFSDriveEntity, GQLEdgeInterface } from 'ardrive-core-js';
 import { ASCENDING_ORDER, buildQuery } from './query';
-import { DriveID, FolderID, FileID, DEFAULT_APP_NAME, DEFAULT_APP_VERSION, EntityID, DriveKey } from './types';
+import { DriveID, FolderID, FileID, DEFAULT_APP_NAME, DEFAULT_APP_VERSION, EntityID } from './types';
 import { latestRevisionFilter, latestRevisionFilterForDrives } from './utils/filter_methods';
 import { FolderHierarchy } from './folderHierarchy';
 import { ArFSPublicDriveBuilder, SafeArFSDriveBuilder } from './utils/arfs_builders/arfs_drive_builders';
@@ -45,19 +45,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		super();
 	}
 
-	public async getOwnerForPublicDriveId(driveId: DriveID): Promise<ArweaveAddress> {
-		return this.getOwnerForDriveId(driveId, true);
-	}
-
-	public async getOwnerForPrivateDriveId(driveId: DriveID, driveKey: DriveKey): Promise<ArweaveAddress> {
-		return this.getOwnerForDriveId(driveId, true, driveKey);
-	}
-
-	public async getOwnerForDriveId(
-		driveId: DriveID,
-		assertPrivacy = false,
-		driveKey?: DriveKey
-	): Promise<ArweaveAddress> {
+	public async getOwnerForDriveId(driveId: DriveID): Promise<ArweaveAddress> {
 		const gqlQuery = buildQuery({ tags: [{ name: 'Drive-Id', value: `${driveId}` }], sort: ASCENDING_ORDER });
 		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 		const edges: GQLEdgeInterface[] = response.data.data.transactions.edges;
@@ -67,38 +55,6 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		}
 
 		const edgeOfFirstDrive = edges[0];
-
-		if (assertPrivacy) {
-			// Conditionally assert drive privacy when methods need to
-			const drivePrivacy: DrivePrivacy = driveKey ? 'private' : 'public';
-			const drivePrivacyFromTag = edgeOfFirstDrive.node.tags.find((t) => t.name === 'Drive-Privacy');
-
-			if (!drivePrivacyFromTag) {
-				throw new Error('Target drive has no "Drive-Privacy" tag!');
-			}
-
-			if (drivePrivacyFromTag.value !== drivePrivacy) {
-				throw new Error(`Target drive is not a ${drivePrivacy} drive!`);
-			}
-
-			if (drivePrivacyFromTag.value === 'private' && driveKey) {
-				const cipherIVFromTag = edgeOfFirstDrive.node.tags.find((t) => t.name === 'Cipher-IV');
-				if (!cipherIVFromTag) {
-					throw new Error('Target private drive has no "Cipher-IV" tag!');
-				}
-
-				const driveDataBuffer = Buffer.from(
-					await this.arweave.transactions.getData(edgeOfFirstDrive.node.id, { decode: true })
-				);
-
-				try {
-					// Attempt to decrypt drive to assert drive key is correct
-					await driveDecrypt(cipherIVFromTag.value, driveKey, driveDataBuffer);
-				} catch {
-					throw new Error('Provided drive key or password could not decrypt target private drive!');
-				}
-			}
-		}
 
 		const driveOwnerAddress = edgeOfFirstDrive.node.owner.address;
 
