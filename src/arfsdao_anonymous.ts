@@ -87,7 +87,9 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 					throw new Error('Target private drive has no "Cipher-IV" tag!');
 				}
 
-				const driveDataBuffer = Buffer.from(await this.arweave.transactions.getData(edgeOfFirstDrive.node.id));
+				const driveDataBuffer = Buffer.from(
+					await this.arweave.transactions.getData(edgeOfFirstDrive.node.id, { decode: true })
+				);
 
 				try {
 					// Attempt to decrypt drive to assert drive key is correct
