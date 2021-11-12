@@ -917,7 +917,13 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	}
 
 	public async getOwnerAndAssertDrive(driveId: DriveID, driveKey?: DriveKey): Promise<ArweaveAddress> {
-		const gqlQuery = buildQuery({ tags: [{ name: 'Drive-Id', value: `${driveId}` }], sort: ASCENDING_ORDER });
+		const gqlQuery = buildQuery({
+			tags: [
+				{ name: 'Entity-Type', value: 'drive' },
+				{ name: 'Drive-Id', value: `${driveId}` }
+			],
+			sort: ASCENDING_ORDER
+		});
 		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 		const edges: GQLEdgeInterface[] = response.data.data.transactions.edges;
 
