@@ -1,7 +1,7 @@
+import { fetchMempool } from 'ardrive-core-js';
 import { CLICommand } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
-import { fetchMempool } from '../utils';
 
 new CLICommand({
 	name: 'get-mempool',

@@ -26,11 +26,9 @@ import {
 	AllParameter
 } from '../parameter_declarations';
 import '../parameter_declarations';
-import { urlEncodeHashKey } from '../utils';
-import { stubArweaveAddress } from '../utils/stubs';
-import { EID } from '../types';
 import { CLIAction } from './action';
 import { SUCCESS_EXIT_CODE } from './error_codes';
+import { stubArweaveAddress, EID, urlEncodeHashKey } from 'ardrive-core-js';
 
 const expectedArweaveAddress = stubArweaveAddress('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
 

@@ -1,4 +1,4 @@
-import { deriveFileKey } from 'ardrive-core-js';
+import { ArFSPrivateFileBuilder, deriveFileKey, DriveID, EID, urlEncodeHashKey } from 'ardrive-core-js';
 import { cliArweave } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
@@ -9,9 +9,6 @@ import {
 	FileIdParameter,
 	NoVerifyParameter
 } from '../parameter_declarations';
-import { DriveID, EID } from '../types';
-import { urlEncodeHashKey } from '../utils';
-import { ArFSPrivateFileBuilder } from '../utils/arfs_builders/arfs_file_builders';
 
 new CLICommand({
 	name: 'get-file-key',

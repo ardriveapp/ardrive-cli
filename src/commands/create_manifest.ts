@@ -1,4 +1,5 @@
-import { arDriveFactory, cliWalletDao } from '..';
+import { EID } from 'ardrive-core-js';
+import { cliArDriveFactory, cliWalletDao } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
@@ -12,7 +13,6 @@ import {
 	WalletFileParameter,
 	DestinationManifestNameParameter
 } from '../parameter_declarations';
-import { EID } from '../types';
 
 new CLICommand({
 	name: 'create-manifest',
@@ -31,7 +31,7 @@ new CLICommand({
 
 		const wallet = await parameters.getRequiredWallet();
 
-		const arDrive = arDriveFactory({
+		const arDrive = cliArDriveFactory({
 			wallet: wallet,
 			feeMultiple: parameters.getOptionalBoostSetting(),
 			dryRun: !!options.dryRun

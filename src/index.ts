@@ -1,17 +1,14 @@
-#!/usr/bin/env node
-
-import { Wallet, WalletDAO } from './wallet';
 import Arweave from 'arweave';
-import { ArDriveCommunityOracle } from './community/ardrive_community_oracle';
-import { ArDrive } from './ardrive';
-import { ArFSDAO } from './arfsdao';
-import { ARDataPriceEstimator } from './utils/ar_data_price_estimator';
-import { ARDataPriceRegressionEstimator } from './utils/ar_data_price_regression_estimator';
-import { FeeMultiple } from './types';
-import { CommunityOracle } from './community/community_oracle';
-import { ArFSDAOAnonymous } from './arfsdao_anonymous';
 import { CLICommand } from './CLICommand';
-import { ArDriveAnonymous } from './ardrive_anonymous';
+import {
+	ArDrive,
+	ArDriveAnonymous,
+	arDriveAnonymousFactory,
+	arDriveFactory,
+	ArDriveSettings,
+	ArDriveSettingsAnonymous,
+	WalletDAO
+} from 'ardrive-core-js';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: CLI_APP_VERSION } = require('../package.json');
@@ -44,46 +41,38 @@ export const cliArweave = Arweave.init({
 
 export const cliWalletDao = new WalletDAO(cliArweave, CLI_APP_NAME, CLI_APP_VERSION);
 
-export interface ArDriveSettingsAnonymous {
-	arweave?: Arweave;
-}
-export interface ArDriveSettings extends ArDriveSettingsAnonymous {
-	wallet: Wallet;
-	walletDao?: WalletDAO;
-	priceEstimator?: ARDataPriceEstimator;
-	communityOracle?: CommunityOracle;
-	feeMultiple?: FeeMultiple;
-	dryRun?: boolean;
-	arfsDao?: ArFSDAO;
-}
-
-export function arDriveFactory({
+export const cliArDriveFactory = ({
+	appName = CLI_APP_NAME,
+	appVersion = CLI_APP_VERSION,
 	arweave = cliArweave,
-	priceEstimator = new ARDataPriceRegressionEstimator(),
-	communityOracle = new ArDriveCommunityOracle(arweave),
-	wallet,
 	walletDao = cliWalletDao,
 	dryRun,
 	feeMultiple,
-	arfsDao = new ArFSDAO(wallet, arweave, dryRun, CLI_APP_NAME, CLI_APP_VERSION)
-}: ArDriveSettings): ArDrive {
-	return new ArDrive(
-		wallet,
+	wallet,
+	arfsDao,
+	communityOracle,
+	priceEstimator
+}: ArDriveSettings): ArDrive =>
+	arDriveFactory({
+		appName,
+		appVersion,
+		arweave,
 		walletDao,
+		dryRun,
+		feeMultiple,
+		wallet,
 		arfsDao,
 		communityOracle,
-		CLI_APP_NAME,
-		CLI_APP_VERSION,
-		priceEstimator,
-		feeMultiple,
-		dryRun
-	);
-}
+		priceEstimator
+	});
 
-export function arDriveAnonymousFactory(
-	settings: ArDriveSettingsAnonymous = {
-		arweave: cliArweave
-	}
-): ArDriveAnonymous {
-	return new ArDriveAnonymous(new ArFSDAOAnonymous(settings.arweave ?? cliArweave, CLI_APP_NAME, CLI_APP_VERSION));
-}
+export const cliArDriveAnonymousFactory = ({
+	appName = CLI_APP_NAME,
+	appVersion = CLI_APP_VERSION,
+	arweave = cliArweave
+}: ArDriveSettingsAnonymous): ArDriveAnonymous =>
+	arDriveAnonymousFactory({
+		appName,
+		appVersion,
+		arweave
+	});
