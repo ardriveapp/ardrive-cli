@@ -46,7 +46,13 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 	}
 
 	public async getOwnerForDriveId(driveId: DriveID): Promise<ArweaveAddress> {
-		const gqlQuery = buildQuery({ tags: [{ name: 'Drive-Id', value: driveId }], sort: ASCENDING_ORDER });
+		const gqlQuery = buildQuery({
+			tags: [
+				{ name: 'Drive-Id', value: `${driveId}` },
+				{ name: 'Entity-Type', value: 'drive' }
+			],
+			sort: ASCENDING_ORDER
+		});
 		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 		const edges: GQLEdgeInterface[] = response.data.data.transactions.edges;
 
@@ -55,6 +61,7 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 		}
 
 		const edgeOfFirstDrive = edges[0];
+
 		const driveOwnerAddress = edgeOfFirstDrive.node.owner.address;
 
 		return new ArweaveAddress(driveOwnerAddress);
