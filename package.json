@@ -8,7 +8,7 @@
 	},
 	"types": "./lib/index.d.ts",
 	"dependencies": {
-		"ardrive-core-js": "../ardrive-core-js",
+		"ardrive-core-js": "alpha",
 		"arweave": "^1.10.16",
 		"commander": "^8.2.0",
 		"lodash": "^4.17.21",
