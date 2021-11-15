@@ -47,9 +47,9 @@ import {
 	ArFSPrivateFolder,
 	ArFSPublicFileOrFolderWithPaths
 } from './arfs_entities';
+import { alphabeticalOrder } from './utils/sort_functions';
 import { stubEntityID } from './utils/stubs';
 import { errorMessage } from './error_message';
-import { alphabeticalOrder } from './utils/sort_functions';
 import { ArDriveAnonymous } from './ardrive_anonymous';
 import {
 	CommunityTipParams,
