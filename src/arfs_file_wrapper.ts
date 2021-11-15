@@ -2,8 +2,8 @@ import * as fs from 'fs';
 import { extToMime } from 'ardrive-core-js';
 import { basename, join } from 'path';
 import { ByteCount, DataContentType, FileID, FolderID, Manifest, MANIFEST_CONTENT_TYPE, UnixTime } from './types';
-import { BulkFileBaseCosts, MetaDataBaseCosts } from './ardrive';
 import { EntityNamesAndIds } from './utils/mapper_functions';
+import { BulkFileBaseCosts, MetaDataBaseCosts } from './ardrive.types';
 
 type BaseFileName = string;
 type FilePath = string;
@@ -14,7 +14,7 @@ type FilePath = string;
  *  Public : 2147483647 bytes
  *  Private: 2147483646 bytes
  */
-const maxFileSize: ByteCount = 2147483646;
+const maxFileSize = new ByteCount(2147483646);
 
 export interface FileInfo {
 	dataContentType: DataContentType;
@@ -64,7 +64,7 @@ export class ArFSManifestToUpload implements ArFSEntityToUpload {
 
 	public gatherFileInfo(): FileInfo {
 		const dataContentType = MANIFEST_CONTENT_TYPE;
-		const lastModifiedDateMS = Math.round(Date.now() / 1000); // new unix time
+		const lastModifiedDateMS = new UnixTime(Math.round(Date.now() / 1000)); // new unix time
 
 		return { dataContentType, lastModifiedDateMS, fileSize: this.size };
 	}
@@ -78,13 +78,13 @@ export class ArFSManifestToUpload implements ArFSEntityToUpload {
 	}
 
 	public get size(): ByteCount {
-		return Buffer.byteLength(JSON.stringify(this.manifest));
+		return new ByteCount(Buffer.byteLength(JSON.stringify(this.manifest)));
 	}
 }
 
 export class ArFSFileToUpload implements ArFSEntityToUpload {
 	constructor(public readonly filePath: FilePath, public readonly fileStats: fs.Stats) {
-		if (this.fileStats.size >= maxFileSize) {
+		if (+this.fileStats.size >= +maxFileSize) {
 			throw new Error(`Files greater than "${maxFileSize}" bytes are not yet supported!`);
 		}
 	}
@@ -95,15 +95,19 @@ export class ArFSFileToUpload implements ArFSEntityToUpload {
 	hasSameLastModifiedDate = false;
 
 	public gatherFileInfo(): FileInfo {
-		const dataContentType = this.getContentType();
+		const dataContentType = this.contentType;
 		const lastModifiedDateMS = this.lastModifiedDate;
-		const fileSize = this.fileStats.size;
+		const fileSize = this.size;
 
 		return { dataContentType, lastModifiedDateMS, fileSize };
 	}
 
+	public get size(): ByteCount {
+		return new ByteCount(this.fileStats.size);
+	}
+
 	public get lastModifiedDate(): UnixTime {
-		return Math.floor(this.fileStats.mtimeMs);
+		return new UnixTime(Math.floor(this.fileStats.mtimeMs));
 	}
 
 	public getBaseCosts(): BulkFileBaseCosts {
@@ -117,7 +121,7 @@ export class ArFSFileToUpload implements ArFSEntityToUpload {
 		return fs.readFileSync(this.filePath);
 	}
 
-	public getContentType(): DataContentType {
+	public get contentType(): DataContentType {
 		return extToMime(this.filePath);
 	}
 
@@ -127,7 +131,7 @@ export class ArFSFileToUpload implements ArFSEntityToUpload {
 
 	/** Computes the size of a private file encrypted with AES256-GCM */
 	public encryptedDataSize(): ByteCount {
-		return (this.fileStats.size / 16 + 1) * 16;
+		return new ByteCount((this.fileStats.size / 16 + 1) * 16);
 	}
 }
 
@@ -192,7 +196,7 @@ export class ArFSFolderToUpload {
 			if (existingFileAtDestConflict) {
 				file.existingId = existingFileAtDestConflict.fileId;
 
-				if (existingFileAtDestConflict.lastModifiedDate === file.lastModifiedDate) {
+				if (existingFileAtDestConflict.lastModifiedDate.valueOf() === file.lastModifiedDate.valueOf()) {
 					// Check last modified date and set to true to resolve upsert conditional
 					file.hasSameLastModifiedDate = true;
 				}
@@ -242,12 +246,12 @@ export class ArFSFolderToUpload {
 		let totalByteCount = 0;
 
 		for (const file of this.files) {
-			totalByteCount += encrypted ? file.encryptedDataSize() : file.fileStats.size;
+			totalByteCount += encrypted ? +file.encryptedDataSize() : file.fileStats.size;
 		}
 		for (const folder of this.folders) {
-			totalByteCount += folder.getTotalByteCount(encrypted);
+			totalByteCount += +folder.getTotalByteCount(encrypted);
 		}
 
-		return totalByteCount;
+		return new ByteCount(totalByteCount);
 	}
 }

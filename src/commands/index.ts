@@ -1,4 +1,3 @@
-import { CLICommand } from '../CLICommand';
 import '../parameter_declarations';
 import './create_drive';
 import './drive_info';
@@ -21,5 +20,3 @@ import './move_folder';
 import './get_drive_key';
 import './get_file_key';
 import './create_manifest';
-
-CLICommand.parse();

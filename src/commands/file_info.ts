@@ -1,16 +1,17 @@
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { GetAllRevisionsParameter, FileIdParameter, DrivePrivacyParameters } from '../parameter_declarations';
 import { arDriveAnonymousFactory, arDriveFactory, cliWalletDao } from '..';
-import { FileID } from '../types';
+import { FileID, EID } from '../types';
 import { ArFSPrivateFile, ArFSPublicFile } from '../arfs_entities';
-import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
+import { CLIAction } from '../CLICommand/action';
 
 new CLICommand({
 	name: 'file-info',
 	parameters: [FileIdParameter, GetAllRevisionsParameter, ...DrivePrivacyParameters],
-	async action(options) {
+	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options, cliWalletDao);
-		const fileId: FileID = parameters.getRequiredParameterValue(FileIdParameter);
+		const fileId: FileID = EID(parameters.getRequiredParameterValue(FileIdParameter));
 		// const shouldGetAllRevisions: boolean = options.getAllRevisions;
 
 		const result: Partial<ArFSPublicFile | ArFSPrivateFile> = await (async function () {
@@ -24,17 +25,14 @@ new CLICommand({
 				// We have the drive id from deriving a key, we can derive the owner
 				const driveOwner = await arDrive.getOwnerForDriveId(driveId);
 
-				return arDrive.getPrivateFile(fileId, driveKey, driveOwner /*, shouldGetAllRevisions*/);
+				return arDrive.getPrivateFile({ fileId, driveKey, owner: driveOwner });
 			} else {
 				const arDrive = arDriveAnonymousFactory();
-				return arDrive.getPublicFile(fileId /*, shouldGetAllRevisions*/);
+				return arDrive.getPublicFile({ fileId });
 			}
 		})();
 
-		// TODO: Fix base types so deleting un-used values is not necessary; Tickets: PE-525 + PE-556
-		delete result.syncStatus;
-
 		console.log(JSON.stringify(result, null, 4));
 		return SUCCESS_EXIT_CODE;
-	}
+	})
 });

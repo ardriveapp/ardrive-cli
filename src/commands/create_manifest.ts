@@ -1,6 +1,7 @@
 import { arDriveFactory, cliWalletDao } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
-import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
+import { CLIAction } from '../CLICommand/action';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import {
 	BoostParameter,
 	FolderIdParameter,
@@ -11,7 +12,7 @@ import {
 	WalletFileParameter,
 	DestinationManifestNameParameter
 } from '../parameter_declarations';
-import { FeeMultiple } from '../types';
+import { EID } from '../types';
 
 new CLICommand({
 	name: 'create-manifest',
@@ -25,15 +26,15 @@ new CLICommand({
 		SeedPhraseParameter,
 		...TreeDepthParams
 	],
-	async action(options) {
+	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options, cliWalletDao);
 
 		const wallet = await parameters.getRequiredWallet();
 
 		const arDrive = arDriveFactory({
 			wallet: wallet,
-			feeMultiple: options.boost as FeeMultiple,
-			dryRun: options.dryRun
+			feeMultiple: parameters.getOptionalBoostSetting(),
+			dryRun: !!options.dryRun
 		});
 
 		// User can specify either a drive ID or a folder ID
@@ -53,8 +54,8 @@ new CLICommand({
 
 		// TODO: Private manifests 🤔
 		const result = await arDrive.uploadPublicManifest({
-			driveId,
-			folderId,
+			driveId: driveId ? EID(driveId) : undefined,
+			folderId: folderId ? EID(folderId) : undefined,
 			maxDepth,
 			destManifestName
 		});
@@ -62,5 +63,5 @@ new CLICommand({
 		console.log(JSON.stringify(result, null, 4));
 
 		return SUCCESS_EXIT_CODE;
-	}
+	})
 });

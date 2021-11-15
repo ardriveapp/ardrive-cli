@@ -3,56 +3,47 @@ import type { ArweaveOracle } from './arweave_oracle';
 import { expect } from 'chai';
 import { SinonStubbedInstance, stub } from 'sinon';
 import { ARDataPriceRegressionEstimator } from './ar_data_price_regression_estimator';
-import { expectAsyncErrorThrow } from './test_helpers';
-import type { ArDriveCommunityTip } from '../types';
+import { ArDriveCommunityTip, W, AR, ByteCount } from '../types';
 
 describe('ARDataPriceEstimator class', () => {
 	let spyedOracle: SinonStubbedInstance<ArweaveOracle>;
 	let calculator: ARDataPriceRegressionEstimator;
 
-	const arDriveCommunityTip: ArDriveCommunityTip = { minWinstonFee: 10, tipPercentage: 0.15 };
+	const arDriveCommunityTip: ArDriveCommunityTip = { minWinstonFee: W(10), tipPercentage: 0.15 };
 
 	beforeEach(() => {
 		// Set pricing algo up as x = y (bytes = Winston)
 		// TODO: Get ts-sinon working with snowpack so we don't have to use a concrete type here
 		spyedOracle = stub(new GatewayOracle());
-		spyedOracle.getWinstonPriceForByteCount.callsFake((input) => Promise.resolve(input));
+		spyedOracle.getWinstonPriceForByteCount.callsFake((input) => Promise.resolve(W(+input)));
 		calculator = new ARDataPriceRegressionEstimator(true, spyedOracle);
 	});
 
 	it('can be instantiated without making oracle calls', async () => {
 		const gatewayOracleStub = stub(new GatewayOracle());
-		gatewayOracleStub.getWinstonPriceForByteCount.callsFake(() => Promise.resolve(123));
+		gatewayOracleStub.getWinstonPriceForByteCount.callsFake(() => Promise.resolve(W(123)));
 		new ARDataPriceRegressionEstimator(true, gatewayOracleStub);
 		expect(gatewayOracleStub.getWinstonPriceForByteCount.notCalled).to.be.true;
 	});
 
 	it('makes 3 oracle calls during routine instantiation', async () => {
 		const gatewayOracleStub = stub(new GatewayOracle());
-		gatewayOracleStub.getWinstonPriceForByteCount.callsFake(() => Promise.resolve(123));
+		gatewayOracleStub.getWinstonPriceForByteCount.callsFake(() => Promise.resolve(W(123)));
 		new ARDataPriceRegressionEstimator(false, gatewayOracleStub);
 		expect(gatewayOracleStub.getWinstonPriceForByteCount.calledThrice).to.be.true;
 	});
 
 	it('makes three oracle calls after the first price estimation request', async () => {
-		await calculator.getBaseWinstonPriceForByteCount(0);
+		await calculator.getBaseWinstonPriceForByteCount(new ByteCount(0));
 		expect(spyedOracle.getWinstonPriceForByteCount.calledThrice).to.be.true;
 	});
 
 	it('throws an error when constructed with a byte volume array that has only one number', () => {
-		expect(() => new ARDataPriceRegressionEstimator(true, spyedOracle, [1])).to.throw(Error);
-	});
-
-	it('throws an error when constructed with a byte volume array that has negative integers', () => {
-		expect(() => new ARDataPriceRegressionEstimator(true, spyedOracle, [-1, -2])).to.throw(Error);
-	});
-
-	it('throws an error when constructed with a byte volume array that has non-integer decimal values', () => {
-		expect(() => new ARDataPriceRegressionEstimator(true, spyedOracle, [0.1, 5.5])).to.throw(Error);
+		expect(() => new ARDataPriceRegressionEstimator(true, spyedOracle, [new ByteCount(1)])).to.throw(Error);
 	});
 
 	it('uses byte volumes from provided byte volume array', () => {
-		const byteVolumes = [1, 5, 10];
+		const byteVolumes = [1, 5, 10].map((vol) => new ByteCount(vol));
 		new ARDataPriceRegressionEstimator(false, spyedOracle, byteVolumes);
 
 		expect(spyedOracle.getWinstonPriceForByteCount.firstCall.args[0]).to.equal(byteVolumes[0]);
@@ -61,65 +52,60 @@ describe('ARDataPriceEstimator class', () => {
 	});
 
 	it('getWinstonPriceForByteCount function returns the expected value', async () => {
-		const actualWinstonPriceEstimation = await calculator.getBaseWinstonPriceForByteCount(100);
-		expect(actualWinstonPriceEstimation).to.equal(100);
+		const actualWinstonPriceEstimation = await calculator.getBaseWinstonPriceForByteCount(new ByteCount(100));
+		expect(`${actualWinstonPriceEstimation}`).to.equal('100');
 	});
 
 	describe('getByteCountForWinston function', () => {
 		it('returns the expected value', async () => {
-			const actualByteCountEstimation = await calculator.getByteCountForWinston(100);
-			expect(actualByteCountEstimation).to.equal(100);
-		});
-
-		it('throws an error when provided winston value is a negative integer', async () => {
-			await expectAsyncErrorThrow({ promiseToError: calculator.getByteCountForWinston(-1) });
-		});
-
-		it('throws an error when provided winston value is represented as a decimal', async () => {
-			await expectAsyncErrorThrow({ promiseToError: calculator.getByteCountForWinston(0.1) });
+			const actualByteCountEstimation = await calculator.getByteCountForWinston(W(100));
+			expect(actualByteCountEstimation.equals(new ByteCount(100))).to.be.true;
 		});
 
 		it('makes three oracle calls after the first price estimation request', async () => {
-			await calculator.getByteCountForWinston(0);
+			await calculator.getByteCountForWinston(W(0));
 			expect(spyedOracle.getWinstonPriceForByteCount.calledThrice).to.be.true;
 		});
 
 		it('returns 0 if provided winston value does not cover baseWinstonPrice', async () => {
-			const stubRegressionByteVolumes = [0, 1];
+			const stubRegressionByteVolumes = [0, 1].map((vol) => new ByteCount(vol));
 
 			const priceEstimator = new ARDataPriceRegressionEstimator(true, spyedOracle, stubRegressionByteVolumes);
 
 			// Stub out the returned prices for each byte value to arrive at base price 5 and marginal price 1
-			spyedOracle.getWinstonPriceForByteCount.onFirstCall().callsFake(() => Promise.resolve(5));
-			spyedOracle.getWinstonPriceForByteCount.onSecondCall().callsFake(() => Promise.resolve(6));
+			spyedOracle.getWinstonPriceForByteCount.onFirstCall().callsFake(() => Promise.resolve(W(5)));
+			spyedOracle.getWinstonPriceForByteCount.onSecondCall().callsFake(() => Promise.resolve(W(6)));
 
 			// Expect 4 to be reduced to 0 because it does not cover baseWinstonPrice of 5
-			expect(await priceEstimator.getByteCountForWinston(4)).to.equal(0);
+			expect(await (await priceEstimator.getByteCountForWinston(W(4))).equals(new ByteCount(0))).to.be.true;
 		});
 	});
 
 	describe('getByteCountForAR function', () => {
 		it('returns the expected value', async () => {
 			const actualByteCountEstimation = await calculator.getByteCountForAR(
-				0.000_000_000_100,
+				AR.from(0.000_000_000_100),
 				arDriveCommunityTip
 			);
-			expect(actualByteCountEstimation).to.equal(87);
+			expect(actualByteCountEstimation.equals(new ByteCount(87))).to.be.true;
 		});
 
 		it('returns 0 if estimation does not cover the minimum winston fee', async () => {
 			const actualByteCountEstimation = await calculator.getByteCountForAR(
-				0.000_000_000_010,
+				AR.from(0.000_000_000_010),
 				arDriveCommunityTip
 			);
-			expect(actualByteCountEstimation).to.equal(0);
+			expect(actualByteCountEstimation.equals(new ByteCount(0))).to.be.true;
 		});
 	});
 
 	it('getARPriceForByteCount function returns the expected value', async () => {
-		const actualARPriceEstimation = await calculator.getARPriceForByteCount(100, arDriveCommunityTip);
+		const actualARPriceEstimation = await calculator.getARPriceForByteCount(
+			new ByteCount(100),
+			arDriveCommunityTip
+		);
 
-		expect(actualARPriceEstimation).to.equal(0.000_000_000_115);
+		expect(`${actualARPriceEstimation}`).to.equal('0.000000000115');
 	});
 
 	describe('refreshPriceData function', () => {
