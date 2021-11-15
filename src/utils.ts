@@ -25,3 +25,8 @@ export async function lastTxForAddress(address: ArweaveAddress): Promise<string>
 	const response = await fetch(`https://arweave.net/wallet/${address}/last_tx`);
 	return response.text();
 }
+
+export async function getBaseFee(): Promise<string> {
+	const response = await fetch(`https://arweave.net/price/0`);
+	return response.text();
+}

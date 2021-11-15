@@ -1,4 +1,5 @@
 import '../parameter_declarations';
+import './base_fee';
 import './create_drive';
 import './create_folder';
 import './create_tx';
