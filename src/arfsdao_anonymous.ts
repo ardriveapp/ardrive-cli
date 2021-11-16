@@ -83,6 +83,10 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 
 		const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 		const { data } = response.data;
+		const { errors } = response.data;
+		if (errors) {
+			throw new Error(`GQL error: ${JSON.stringify(errors)}`);
+		}
 		const { transactions } = data;
 
 		const edges: GQLEdgeInterface[] = transactions.edges;
@@ -143,6 +147,10 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 
 			const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 			const { data } = response.data;
+			const { errors } = response.data;
+			if (errors) {
+				throw new Error(`GQL error: ${JSON.stringify(errors)}`);
+			}
 			const { transactions } = data;
 			const { edges } = transactions;
 			hasNextPage = transactions.pageInfo.hasNextPage;
@@ -183,6 +191,10 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 
 			const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 			const { data } = response.data;
+			const { errors } = response.data;
+			if (errors) {
+				throw new Error(`GQL error: ${JSON.stringify(errors)}`);
+			}
 			const { transactions } = data;
 			const { edges } = transactions;
 			hasNextPage = transactions.pageInfo.hasNextPage;
@@ -218,6 +230,10 @@ export class ArFSDAOAnonymous extends ArFSDAOType {
 
 			const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 			const { data } = response.data;
+			const { errors } = response.data;
+			if (errors) {
+				throw new Error(`GQL error: ${JSON.stringify(errors)}`);
+			}
 			const { transactions } = data;
 			const { edges } = transactions;
 
