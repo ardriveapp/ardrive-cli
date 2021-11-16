@@ -1,5 +1,5 @@
 import regression, { DataPoint } from 'regression';
-import { ByteCount } from '../types';
+import { W, Winston, ByteCount } from '../types';
 import { ARDataPrice } from './ar_data_price';
 
 /**
@@ -21,7 +21,8 @@ export class ARDataPriceRegression {
 		}
 
 		const dataPoints: DataPoint[] = pricingData.map(
-			(pricingDatapoint) => [pricingDatapoint.numBytes, pricingDatapoint.winstonPrice] as DataPoint
+			// TODO: BigNumber regressions
+			(pricingDatapoint) => [+pricingDatapoint.numBytes, +pricingDatapoint.winstonPrice.toString()] as DataPoint
 		);
 
 		this.regression = regression.linear(dataPoints);
@@ -34,20 +35,17 @@ export class ARDataPriceRegression {
 	 * @throws {@link Error} if `numBytes` is negative or not an integer
 	 */
 	predictedPriceForByteCount(numBytes: ByteCount): ARDataPrice {
-		if (numBytes < 0 || !Number.isInteger(numBytes)) {
-			throw new Error(`numBytes (${numBytes}) should be a positive integer`);
-		}
-
-		const regressionResult = this.regression.predict(numBytes);
-		return new ARDataPrice(regressionResult[0], Math.ceil(regressionResult[1]));
+		const regressionResult = this.regression.predict(+numBytes);
+		// TODO: BigNumber regressions
+		return { numBytes: new ByteCount(regressionResult[0]), winstonPrice: W(Math.ceil(regressionResult[1])) };
 	}
 
 	/**
 	 * Returns the current base AR price in Winston for submitting an Arweave transaction,
 	 * which has been calculated by the regression model
 	 */
-	baseWinstonPrice(): number {
-		return this.regression.equation[1];
+	baseWinstonPrice(): Winston {
+		return W(this.regression.equation[1]);
 	}
 
 	/**

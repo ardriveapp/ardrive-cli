@@ -9,8 +9,17 @@ import {
 } from 'ardrive-core-js';
 import Arweave from 'arweave';
 import { ArFSPrivateFile, ArFSPublicFile } from '../../arfs_entities';
-import { ArweaveAddress } from '../../arweave_address';
-import { ByteCount, CipherIV, DriveKey, FileID, FileKey, TransactionID, UnixTime } from '../../types';
+import {
+	ArweaveAddress,
+	CipherIV,
+	DriveKey,
+	FileID,
+	FileKey,
+	ByteCount,
+	TransactionID,
+	UnixTime,
+	EID
+} from '../../types';
 import { ArFSFileOrFolderBuilder } from './arfs_builders';
 
 interface FileMetaDataTransactionData {
@@ -28,7 +37,7 @@ export abstract class ArFSFileBuilder<T extends ArFSPublicFile | ArFSPrivateFile
 
 	getGqlQueryParameters(): GQLTagInterface[] {
 		return [
-			{ name: 'File-Id', value: this.entityId },
+			{ name: 'File-Id', value: `${this.entityId}` },
 			{ name: 'Entity-Type', value: 'file' }
 		];
 	}
@@ -41,7 +50,7 @@ export class ArFSPublicFileBuilder extends ArFSFileBuilder<ArFSPublicFile> {
 		if (!fileId) {
 			throw new Error('File-ID tag missing!');
 		}
-		const fileBuilder = new ArFSPublicFileBuilder({ entityId: fileId, arweave });
+		const fileBuilder = new ArFSPublicFileBuilder({ entityId: EID(fileId), arweave });
 		return fileBuilder;
 	}
 
@@ -51,14 +60,14 @@ export class ArFSPublicFileBuilder extends ArFSFileBuilder<ArFSPublicFile> {
 			this.appVersion?.length &&
 			this.arFS?.length &&
 			this.contentType?.length &&
-			this.driveId?.length &&
+			this.driveId &&
 			this.entityType?.length &&
-			this.txId?.length &&
+			this.txId &&
 			this.unixTime &&
-			this.parentFolderId?.length &&
-			this.entityId?.length
+			this.parentFolderId &&
+			this.entityId
 		) {
-			const txData = await this.arweave.transactions.getData(this.txId, { decode: true });
+			const txData = await this.arweave.transactions.getData(`${this.txId}`, { decode: true });
 			const dataString = await Utf8ArrayToStr(txData);
 			const dataJSON: FileMetaDataTransactionData = await JSON.parse(dataString);
 
@@ -123,7 +132,7 @@ export class ArFSPrivateFileBuilder extends ArFSFileBuilder<ArFSPrivateFile> {
 		if (!fileId) {
 			throw new Error('File-ID tag missing!');
 		}
-		const fileBuilder = new ArFSPrivateFileBuilder(fileId, arweave, driveKey);
+		const fileBuilder = new ArFSPrivateFileBuilder(EID(fileId), arweave, driveKey);
 		return fileBuilder;
 	}
 
@@ -154,18 +163,18 @@ export class ArFSPrivateFileBuilder extends ArFSFileBuilder<ArFSPrivateFile> {
 			this.appVersion?.length &&
 			this.arFS?.length &&
 			this.contentType?.length &&
-			this.driveId?.length &&
+			this.driveId &&
 			this.entityType?.length &&
-			this.txId?.length &&
+			this.txId &&
 			this.unixTime &&
-			this.parentFolderId?.length &&
-			this.entityId?.length &&
+			this.parentFolderId &&
+			this.entityId &&
 			this.cipher?.length &&
 			this.cipherIV?.length
 		) {
-			const txData = await this.arweave.transactions.getData(this.txId, { decode: true });
+			const txData = await this.arweave.transactions.getData(`${this.txId}`, { decode: true });
 			const dataBuffer = Buffer.from(txData);
-			const fileKey = this.fileKey ?? (await deriveFileKey(this.fileId, this.driveKey));
+			const fileKey = this.fileKey ?? (await deriveFileKey(`${this.fileId}`, this.driveKey));
 
 			const decryptedFileBuffer: Buffer = await fileDecrypt(this.cipherIV, fileKey, dataBuffer);
 			const decryptedFileString: string = await Utf8ArrayToStr(decryptedFileBuffer);
