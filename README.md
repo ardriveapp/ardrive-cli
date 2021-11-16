@@ -852,16 +852,16 @@ To get the last transaction sent from your cold wallet, use the `last-tx` comman
 ardrive last-tx -w /path/to/wallet/file.json
 ```
 
-To get the base fee for an Arweave transaction, simply send a dry run AR transaction and extract the reward value. Or, to save a few keystrokes, just use curl:
+To get the base transaction reward required for an AR transaction, use the `base-reward` function, optionally applying a reward boost multiple if you're looking to front-run network congestion:
 
 ```
-curl https://arweave.net/price/0
+ardrive base-reward --boost 1.5
 ```
 
-Write down or securely copy the values you derived from the Internet-connected machine and run the following commands on the airgapped machine, piping the signed transaction data to a file in the process, e.g. `sendme.json` (if that's your signed transaction transfer medium preference):
+Write down or securely copy the values you derived from the Internet-connected machine and run the following commands on the airgapped machine, piping the outputted signed transaction data to a file in the process, e.g. `sendme.json` (if that's your signed transaction transfer medium preference):
 
 ```
-ardrive create-tx -w /path/to/wallet/file.json -d <dest Arweave address> -a <AR amount to send> --last-tx <from previos steps> --reward "<from previous steps>" > sendme.json
+ardrive create-tx -w /path/to/wallet/file.json -d <dest Arweave address> -a <AR amount to send> --last-tx <from previous steps> --reward "<from previous steps>" > sendme.json
 ```
 
 Transport your signed transaction to the Internet-connected machine and run the following command to send your transaction to the Arweave network:
