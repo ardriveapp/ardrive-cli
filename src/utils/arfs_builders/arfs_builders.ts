@@ -76,6 +76,10 @@ export abstract class ArFSMetadataEntityBuilder<T extends ArFSEntity> {
 			const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 
 			const { data } = response.data;
+			const { errors } = response.data;
+			if (errors) {
+				throw new Error(`GQL error: ${JSON.stringify(errors)}`);
+			}
 			const transactions: GQLTransactionsResultInterface = data.transactions;
 			const { edges } = transactions;
 
