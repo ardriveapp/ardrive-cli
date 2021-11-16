@@ -1,7 +1,5 @@
-import { JWKWallet, Wallet, WalletDAO } from '../wallet';
 import { ParameterName } from './parameter';
 import * as fs from 'fs';
-import { deriveDriveKey, JWKInterface } from 'ardrive-core-js';
 import {
 	AddressParameter,
 	AllParameter,
@@ -12,14 +10,29 @@ import {
 	WalletFileParameter,
 	PrivateParameter,
 	ReplaceParameter,
-	SkipParameter
+	SkipParameter,
+	BoostParameter
 } from '../parameter_declarations';
 import { cliWalletDao } from '..';
-import { DriveID, DriveKey } from '../types';
 import passwordPrompt from 'prompts';
-import { PrivateKeyData } from '../private_key_data';
-import { ArweaveAddress } from '../arweave_address';
-import { FileNameConflictResolution, replaceOnConflicts, skipOnConflicts, upsertOnConflicts } from '../ardrive';
+import {
+	DriveID,
+	DriveKey,
+	WalletDAO,
+	Wallet,
+	JWKWallet,
+	SeedPhrase,
+	ArweaveAddress,
+	ADDR,
+	FeeMultiple,
+	PrivateKeyData,
+	deriveDriveKey,
+	FileNameConflictResolution,
+	replaceOnConflicts,
+	skipOnConflicts,
+	upsertOnConflicts
+} from 'ardrive-core-js';
+import { JWKInterface } from 'arweave/node/lib/wallet';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ParameterOptions = any;
@@ -70,7 +83,7 @@ export class ParametersHelper {
 			const walletJWK: JWKInterface = walletJSON as JWKInterface;
 			return new JWKWallet(walletJWK);
 		} else if (seedPhrase) {
-			return await this.walletDao.generateJWKWallet(seedPhrase);
+			return await this.walletDao.generateJWKWallet(new SeedPhrase(seedPhrase));
 		}
 		throw new Error('Neither a wallet file nor seed phrase was provided!');
 	}
@@ -82,10 +95,15 @@ export class ParametersHelper {
 	public async getWalletAddress(): Promise<ArweaveAddress> {
 		const address = this.getParameterValue(AddressParameter);
 		if (address) {
-			return new ArweaveAddress(address);
+			return ADDR(address);
 		}
 
 		return this.getRequiredWallet().then((wallet) => wallet.getAddress());
+	}
+
+	public getOptionalBoostSetting(): FeeMultiple | undefined {
+		const boost = this.getParameterValue(BoostParameter);
+		return boost ? new FeeMultiple(+boost) : undefined;
 	}
 
 	public async getPrivateKeyData(): Promise<PrivateKeyData> {
@@ -116,7 +134,7 @@ export class ParametersHelper {
 		// • (--wallet-file or --seed-phrase) + (--unsafe-drive-password or --private password)
 
 		if (useCache) {
-			const cachedDriveKey = ParametersHelper.driveKeyCache[driveId];
+			const cachedDriveKey = ParametersHelper.driveKeyCache[`${driveId}`];
 			if (cachedDriveKey) {
 				return cachedDriveKey;
 			}
@@ -125,7 +143,7 @@ export class ParametersHelper {
 		const driveKey = this.getParameterValue(DriveKeyParameter);
 		if (driveKey) {
 			const paramDriveKey = Buffer.from(driveKey, 'base64');
-			ParametersHelper.driveKeyCache[driveId] = paramDriveKey;
+			ParametersHelper.driveKeyCache[`${driveId}`] = paramDriveKey;
 			return paramDriveKey;
 		}
 
@@ -134,10 +152,10 @@ export class ParametersHelper {
 			const wallet: JWKWallet = (await this.getRequiredWallet()) as JWKWallet;
 			const derivedDriveKey: DriveKey = await deriveDriveKey(
 				drivePassword,
-				driveId,
+				`${driveId}`,
 				JSON.stringify(wallet.getPrivateKey())
 			);
-			ParametersHelper.driveKeyCache[driveId] = derivedDriveKey;
+			ParametersHelper.driveKeyCache[`${driveId}`] = derivedDriveKey;
 			return derivedDriveKey;
 		}
 		throw new Error(`No drive key or password provided for drive ID ${driveId}!`);
@@ -193,7 +211,7 @@ export class ParametersHelper {
 		return unsafePassword;
 	}
 
-	public async getMaxDepth(defaultDepth: number): Promise<number> {
+	public async getMaxDepth(defaultDepth = 0): Promise<number> {
 		if (this.getParameterValue(AllParameter)) {
 			return Number.MAX_SAFE_INTEGER;
 		}
@@ -235,14 +253,21 @@ export class ParametersHelper {
 
 	/**
 	 * @param {ParameterName} parameterName
+	 * @param {(input: any) => T} mapFunc A function that maps the parameter value into a T instance
 	 * @returns {string | undefined}
-	 * Returns the string value for the specific parameter; throws an error if not set
+	 * @throws - When the required parameter value has a falsy value
+	 * Returns the string value for the specific parameter
 	 */
-	public getRequiredParameterValue(parameterName: ParameterName): string {
+	public getRequiredParameterValue<T = string>(
+		parameterName: ParameterName,
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		mapFunc: (input: any) => T = (input: any) => input as T
+	): T {
+		// FIXME: it could also return an array or a boolean!
 		const value = this.options[parameterName];
 		if (!value) {
 			throw new Error(`Required parameter ${parameterName} wasn't provided!`);
 		}
-		return value;
+		return mapFunc(value);
 	}
 }

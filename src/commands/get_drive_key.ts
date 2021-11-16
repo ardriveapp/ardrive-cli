@@ -1,19 +1,20 @@
-import { arDriveFactory } from '..';
+import { EID, urlEncodeHashKey } from 'ardrive-core-js';
+import { cliArDriveFactory } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
+import { CLIAction } from '../CLICommand/action';
 import { DriveCreationPrivacyParameters, DriveIdParameter, NoVerifyParameter } from '../parameter_declarations';
-import { urlEncodeHashKey } from '../utils';
 
 new CLICommand({
 	name: 'get-drive-key',
 	parameters: [...DriveCreationPrivacyParameters, DriveIdParameter, NoVerifyParameter],
-	async action(options) {
+	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
-		const driveId = parameters.getRequiredParameterValue(DriveIdParameter);
+		const driveId = EID(parameters.getRequiredParameterValue(DriveIdParameter));
 		const driveKey = await parameters.getDriveKey({ driveId });
 		if (options.verify) {
-			const arDrive = arDriveFactory({ wallet: await parameters.getRequiredWallet() });
-			await arDrive.getPrivateDrive(driveId, driveKey);
+			const arDrive = cliArDriveFactory({ wallet: await parameters.getRequiredWallet() });
+			await arDrive.getPrivateDrive({ driveId, driveKey });
 		}
 		console.log(urlEncodeHashKey(driveKey));
-	}
+	})
 });
