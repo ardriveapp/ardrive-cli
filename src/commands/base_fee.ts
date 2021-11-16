@@ -1,9 +1,13 @@
+import { FeeMultiple } from 'ardrive-core-js';
 import { CLICommand } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { BoostParameter } from '../parameter_declarations';
-import { FeeMultiple } from '../types';
-import { getBaseFee } from '../utils';
+
+async function getBaseFee(): Promise<string> {
+	const response = await fetch(`https://arweave.net/price/0`);
+	return response.text();
+}
 
 new CLICommand({
 	name: 'base-fee',

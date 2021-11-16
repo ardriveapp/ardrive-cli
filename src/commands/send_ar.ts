@@ -1,4 +1,4 @@
-import { AR, ADDR } from '../types';
+import { AR, ADDR } from 'ardrive-core-js';
 import { cliWalletDao, CLI_APP_NAME, CLI_APP_VERSION } from '..';
 import { CLICommand } from '../CLICommand';
 import { ParametersHelper } from '../CLICommand';

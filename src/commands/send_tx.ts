@@ -4,9 +4,9 @@ import { DryRunParameter, TxFilePathParameter } from '../parameter_declarations'
 import * as fs from 'fs';
 import Transaction from 'arweave/node/lib/transaction';
 import * as crypto from 'crypto';
-import { b64UrlToBuffer, bufferTob64Url } from '../wallet';
 import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { CLIAction } from '../CLICommand/action';
+import { b64UrlToBuffer, bufferTob64Url } from 'ardrive-core-js';
 
 new CLICommand({
 	name: 'send-tx',

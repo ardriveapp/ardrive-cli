@@ -1,3 +1,4 @@
+import { ADDR, AR, JWKWallet, Winston } from 'ardrive-core-js';
 import { CreateTransactionInterface } from 'arweave/node/common';
 import { cliArweave, CLI_APP_NAME, CLI_APP_VERSION } from '..';
 import { CLICommand } from '../CLICommand';
@@ -11,8 +12,6 @@ import {
 	RewardParameter,
 	WalletTypeParameters
 } from '../parameter_declarations';
-import { ADDR, AR, Winston } from '../types';
-import { JWKWallet } from '../wallet';
 
 new CLICommand({
 	name: 'create-tx',

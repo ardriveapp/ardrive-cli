@@ -1,8 +1,13 @@
+import { ArweaveAddress } from 'ardrive-core-js';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { AddressParameter, WalletTypeParameters } from '../parameter_declarations';
-import { lastTxForAddress } from '../utils';
+
+async function lastTxForAddress(address: ArweaveAddress): Promise<string> {
+	const response = await fetch(`https://arweave.net/wallet/${address}/last_tx`);
+	return response.text();
+}
 
 new CLICommand({
 	name: 'last-tx',

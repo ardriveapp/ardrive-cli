@@ -1,10 +1,9 @@
 import { CLICommand, ParametersHelper } from '../CLICommand';
-import { EID } from '../types';
 import { DriveIdParameter, GetAllRevisionsParameter, DrivePrivacyParameters } from '../parameter_declarations';
-import { arDriveAnonymousFactory, arDriveFactory } from '..';
-import { ArFSPrivateDrive, ArFSPublicDrive } from '../arfs_entities';
+import { cliArDriveAnonymousFactory, cliArDriveFactory } from '..';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { CLIAction } from '../CLICommand/action';
+import { EID, ArFSPublicDrive, ArFSPrivateDrive } from 'ardrive-core-js';
 
 new CLICommand({
 	name: 'drive-info',
@@ -17,12 +16,12 @@ new CLICommand({
 		const result: Partial<ArFSPublicDrive | ArFSPrivateDrive> = await (async function () {
 			if (await parameters.getIsPrivate()) {
 				const wallet = await parameters.getRequiredWallet();
-				const arDrive = arDriveFactory({ wallet: wallet });
+				const arDrive = cliArDriveFactory({ wallet: wallet });
 				const driveKey = await parameters.getDriveKey({ driveId });
 
 				return arDrive.getPrivateDrive({ driveId, driveKey });
 			} else {
-				const arDrive = arDriveAnonymousFactory();
+				const arDrive = cliArDriveAnonymousFactory({});
 				return arDrive.getPublicDrive({ driveId });
 			}
 		})();
