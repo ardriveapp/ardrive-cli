@@ -3,7 +3,14 @@ import type { JWKWallet, Wallet } from './wallet';
 import Arweave from 'arweave';
 import { v4 as uuidv4 } from 'uuid';
 import Transaction from 'arweave/node/lib/transaction';
-import { deriveDriveKey, GQLEdgeInterface, GQLNodeInterface, GQLTagInterface, JWKInterface } from 'ardrive-core-js';
+import {
+	deriveDriveKey,
+	GQLEdgeInterface,
+	GQLNodeInterface,
+	GQLTagInterface,
+	GQLTransactionsResultInterface,
+	JWKInterface
+} from 'ardrive-core-js';
 import {
 	ArFSPublicFileDataPrototype,
 	ArFSObjectMetadataPrototype,
@@ -700,6 +707,10 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 			const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 			const { data } = response.data;
+			const { errors } = response.data;
+			if (errors) {
+				throw new Error(`GQL error: ${JSON.stringify(errors)}`);
+			}
 			const { transactions } = data;
 			const { edges } = transactions;
 			hasNextPage = transactions.pageInfo.hasNextPage;
@@ -707,8 +718,11 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 			const folders: Promise<ArFSPrivateFolder>[] = edges.map(async (edge: GQLEdgeInterface) => {
 				cursor = edge.cursor;
 				const { node } = edge;
+				const metaDataTxId = TxID(node.id);
 				const folderBuilder = await ArFSPrivateFolderBuilder.fromArweaveNode(node, this.arweave, driveKey);
-				return await folderBuilder.build(node);
+				const folder = await folderBuilder.build(node);
+				folder.dataTxId = metaDataTxId;
+				return folder;
 			});
 			allFolders.push(...(await Promise.all(folders)));
 		}
@@ -737,6 +751,10 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 			const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 			const { data } = response.data;
+			const { errors } = response.data;
+			if (errors) {
+				throw new Error(`GQL error: ${JSON.stringify(errors)}`);
+			}
 			const { transactions } = data;
 			const { edges } = transactions;
 			hasNextPage = transactions.pageInfo.hasNextPage;
@@ -779,6 +797,10 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 
 			const response = await this.arweave.api.post(graphQLURL, gqlQuery);
 			const { data } = response.data;
+			const { errors } = response.data;
+			if (errors) {
+				throw new Error(`GQL error: ${JSON.stringify(errors)}`);
+			}
 			const { transactions } = data;
 			const { edges } = transactions;
 			hasNextPage = transactions.pageInfo.hasNextPage;
@@ -957,6 +979,10 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 		});
 		const response = await this.arweave.api.post(graphQLURL, query);
 		const { data } = response.data;
+		const { errors } = response.data;
+		if (errors) {
+			throw new Error(`GQL error: ${JSON.stringify(errors)}`);
+		}
 		const { transactions } = data;
 		const { edges } = transactions;
 		if (!edges.length) {
@@ -985,30 +1011,43 @@ export class ArFSDAO extends ArFSDAOAnonymous {
 	}
 
 	async getCipherIVOfPrivateTransactionIDs(txIDs: TransactionID[]): Promise<CipherIVQueryResult[]> {
+		const result: CipherIVQueryResult[] = [];
 		const wallet = this.wallet;
 		const walletAddress = await wallet.getAddress();
-		const query = buildQuery({
-			tags: [],
-			owner: walletAddress,
-			ids: txIDs
-		});
-		const response = await this.arweave.api.post(graphQLURL, query);
-		const { data } = response.data;
-		const { transactions } = data;
-		const { edges }: { edges: GQLEdgeInterface[] } = transactions;
-		if (!edges.length) {
-			throw new Error(`No such private transactions with IDs: "${txIDs}"`);
-		}
-		return edges.map((edge) => {
-			const { node } = edge;
-			const { tags } = node;
-			const txId = TxID(node.id);
-			const cipherIVTag = tags.find((tag) => tag.name === 'Cipher-IV');
-			if (!cipherIVTag) {
-				throw new Error("The private file doesn't has a valid Cipher-IV");
+		let cursor = '';
+		let hasNextPage = true;
+		while (hasNextPage) {
+			const query = buildQuery({
+				tags: [],
+				owner: walletAddress,
+				ids: txIDs,
+				cursor
+			});
+			const response = await this.arweave.api.post(graphQLURL, query);
+			const { data } = response.data;
+			const { errors } = response.data;
+			if (errors) {
+				throw new Error(`GQL error: ${JSON.stringify(errors)}`);
 			}
-			const cipherIV = cipherIVTag.value;
-			return { txId, cipherIV };
-		});
+			const { transactions }: { transactions: GQLTransactionsResultInterface } = data;
+			const { edges } = transactions;
+			hasNextPage = transactions.pageInfo.hasNextPage;
+			if (!edges.length) {
+				throw new Error(`No such private transactions with IDs: "${txIDs}"`);
+			}
+			edges.forEach((edge) => {
+				cursor = edge.cursor;
+				const { node } = edge;
+				const { tags } = node;
+				const txId = TxID(node.id);
+				const cipherIVTag = tags.find((tag) => tag.name === 'Cipher-IV');
+				if (!cipherIVTag) {
+					throw new Error("The private file doesn't has a valid Cipher-IV");
+				}
+				const cipherIV = cipherIVTag.value;
+				result.push({ txId, cipherIV });
+			});
+		}
+		return result;
 	}
 }

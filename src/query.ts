@@ -68,7 +68,7 @@ export function buildQuery({ tags = [], cursor, owner, sort = DESCENDING_ORDER, 
 	return {
 		query: `query {
 			transactions(
-				${ids?.length ? `ids: ${ids.map((id) => `"${id}"`)}` : ''}
+				${ids?.length ? `ids: [${ids.map((id) => `"${id}"`)}]` : ''}
 				first: ${singleResult ? latestResult : pageLimit}
 				sort: ${sort}
 				${singleResult ? '' : `after: "${cursor}"`}
