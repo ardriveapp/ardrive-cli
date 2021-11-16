@@ -14,7 +14,7 @@ import {
 import { DriveKey, FeeMultiple, FolderID } from '../types';
 import { readJWKFile } from '../utils';
 import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/constants';
-import { fileNameConflictAskPrompt } from '../prompts';
+import { fileUploadConflictPrompts, folderUploadConflictPrompts } from '../prompts';
 
 interface UploadFileParameter {
 	parentFolderId: FolderID;
@@ -109,7 +109,7 @@ new CLICommand({
 									driveKey,
 									destParentFolderName: destinationFileName,
 									conflictResolution,
-									fileNameConflictAskPrompt
+									prompts: folderUploadConflictPrompts
 								});
 							} else {
 								return arDrive.uploadPrivateFile({
@@ -118,7 +118,7 @@ new CLICommand({
 									driveKey,
 									destinationFileName,
 									conflictResolution,
-									fileNameConflictAskPrompt
+									prompts: fileUploadConflictPrompts
 								});
 							}
 						} else {
@@ -128,7 +128,7 @@ new CLICommand({
 									wrappedFolder: wrappedEntity,
 									destParentFolderName: destinationFileName,
 									conflictResolution,
-									fileNameConflictAskPrompt
+									prompts: folderUploadConflictPrompts
 								});
 							} else {
 								return arDrive.uploadPublicFile({
@@ -136,7 +136,7 @@ new CLICommand({
 									wrappedFile: wrappedEntity,
 									destinationFileName,
 									conflictResolution,
-									fileNameConflictAskPrompt
+									prompts: fileUploadConflictPrompts
 								});
 							}
 						}

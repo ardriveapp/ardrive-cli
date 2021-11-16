@@ -3,18 +3,6 @@ export const CURRENT_ARFS_VERSION = ArFS_O_11;
 export const DEFAULT_APP_NAME = 'ArDrive-Core';
 export const DEFAULT_APP_VERSION = '1.0.0';
 
-export const skipOnConflicts = 'skip';
-export const replaceOnConflicts = 'replace';
-export const upsertOnConflicts = 'upsert';
-export const askOnConflicts = 'ask';
-export const renameOnConflicts = 'rename';
-
-export type FileNameConflictResolution =
-	| typeof skipOnConflicts
-	| typeof replaceOnConflicts
-	| typeof upsertOnConflicts
-	| typeof askOnConflicts;
-
 export const JSON_CONTENT_TYPE = 'application/json';
 export const PRIVATE_CONTENT_TYPE = 'application/octet-stream';
 

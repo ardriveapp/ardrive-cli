@@ -1,12 +1,12 @@
 import { ArFSFileOrFolderEntity } from '../arfs_entities';
 import { FileID, FolderID, UnixTime } from '../types';
 
-export interface EntityNamesAndIds {
+export interface NameConflictInfo {
 	files: FileConflictInfo[];
 	folders: FolderNameAndId[];
 }
 
-interface FolderNameAndId {
+export interface FolderNameAndId {
 	folderName: string;
 	folderId: FolderID;
 }

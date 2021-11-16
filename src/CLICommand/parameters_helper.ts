@@ -16,18 +16,17 @@ import {
 	SkipParameter
 } from '../parameter_declarations';
 import { cliWalletDao } from '..';
-import {
-	askOnConflicts,
-	DriveID,
-	DriveKey,
-	FileNameConflictResolution,
-	replaceOnConflicts,
-	skipOnConflicts,
-	upsertOnConflicts
-} from '../types';
+import { DriveID, DriveKey } from '../types';
 import passwordPrompt from 'prompts';
 import { PrivateKeyData } from '../private_key_data';
 import { ArweaveAddress } from '../arweave_address';
+import {
+	FileNameConflictResolution,
+	replaceOnConflicts,
+	skipOnConflicts,
+	askOnConflicts,
+	upsertOnConflicts
+} from '../utils/upload_conflict_resolution';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ParameterOptions = any;
