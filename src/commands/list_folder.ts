@@ -1,11 +1,14 @@
-import { arDriveAnonymousFactory, arDriveFactory } from '..';
-import { ArFSPrivateFileOrFolderWithPaths, ArFSPublicFileOrFolderWithPaths } from '../arfs_entities';
+import {
+	EID,
+	ArFSPrivateFileOrFolderWithPaths,
+	ArFSPublicFileOrFolderWithPaths,
+	alphabeticalOrder
+} from 'ardrive-core-js';
+import { cliArDriveAnonymousFactory, cliArDriveFactory } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { DrivePrivacyParameters, ParentFolderIdParameter, TreeDepthParams } from '../parameter_declarations';
-import { EID } from '../types';
-import { alphabeticalOrder } from '../utils/sort_functions';
 
 new CLICommand({
 	name: 'list-folder',
@@ -18,7 +21,7 @@ new CLICommand({
 
 		if (await parameters.getIsPrivate()) {
 			const wallet = await parameters.getRequiredWallet();
-			const arDrive = arDriveFactory({ wallet });
+			const arDrive = cliArDriveFactory({ wallet });
 
 			const driveId = await arDrive.getDriveIdForFolderId(folderId);
 			const driveKey = await parameters.getDriveKey({ driveId });
@@ -28,7 +31,7 @@ new CLICommand({
 
 			children = await arDrive.listPrivateFolder({ folderId, driveKey, maxDepth, owner: driveOwner });
 		} else {
-			const arDrive = arDriveAnonymousFactory();
+			const arDrive = cliArDriveAnonymousFactory({});
 			children = await arDrive.listPublicFolder({ folderId, maxDepth });
 		}
 

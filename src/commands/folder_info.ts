@@ -1,10 +1,9 @@
 import { CLICommand, ParametersHelper } from '../CLICommand';
-import { EID } from '../types';
 import { GetAllRevisionsParameter, FolderIdParameter, DrivePrivacyParameters } from '../parameter_declarations';
-import { arDriveAnonymousFactory, arDriveFactory } from '..';
-import { ArFSPrivateFolder, ArFSPublicFolder } from '../arfs_entities';
+import { cliArDriveAnonymousFactory, cliArDriveFactory } from '..';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { CLIAction } from '../CLICommand/action';
+import { ArFSPublicFolder, ArFSPrivateFolder, EID } from 'ardrive-core-js';
 
 new CLICommand({
 	name: 'folder-info',
@@ -17,7 +16,7 @@ new CLICommand({
 
 			if (await parameters.getIsPrivate()) {
 				const wallet = await parameters.getRequiredWallet();
-				const arDrive = arDriveFactory({ wallet: wallet });
+				const arDrive = cliArDriveFactory({ wallet: wallet });
 
 				const driveId = await arDrive.getDriveIdForFolderId(folderId);
 				const driveKey = await parameters.getDriveKey({ driveId });
@@ -27,7 +26,7 @@ new CLICommand({
 
 				return arDrive.getPrivateFolder({ folderId, driveKey, owner: driveOwner });
 			} else {
-				const arDrive = arDriveAnonymousFactory();
+				const arDrive = cliArDriveAnonymousFactory({});
 				return arDrive.getPublicFolder({ folderId });
 			}
 		})();

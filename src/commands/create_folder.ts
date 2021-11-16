@@ -6,11 +6,10 @@ import {
 	ParentFolderIdParameter,
 	DrivePrivacyParameters
 } from '../parameter_declarations';
-import { arDriveFactory } from '..';
-import { Wallet } from '../wallet';
+import { cliArDriveFactory } from '..';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { CLIAction } from '../CLICommand/action';
-import { EID } from '../types';
+import { Wallet, EID } from 'ardrive-core-js';
 
 new CLICommand({
 	name: 'create-folder',
@@ -26,7 +25,7 @@ new CLICommand({
 		const wallet: Wallet = await parameters.getRequiredWallet();
 		const dryRun = !!parameters.getParameterValue(DryRunParameter);
 
-		const ardrive = arDriveFactory({
+		const ardrive = cliArDriveFactory({
 			wallet,
 			feeMultiple: parameters.getOptionalBoostSetting(),
 			dryRun

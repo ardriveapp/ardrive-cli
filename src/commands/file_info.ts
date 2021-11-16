@@ -1,10 +1,9 @@
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { GetAllRevisionsParameter, FileIdParameter, DrivePrivacyParameters } from '../parameter_declarations';
-import { arDriveAnonymousFactory, arDriveFactory, cliWalletDao } from '..';
-import { FileID, EID } from '../types';
-import { ArFSPrivateFile, ArFSPublicFile } from '../arfs_entities';
+import { cliArDriveAnonymousFactory, cliArDriveFactory, cliWalletDao } from '..';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { CLIAction } from '../CLICommand/action';
+import { FileID, EID, ArFSPublicFile, ArFSPrivateFile } from 'ardrive-core-js';
 
 new CLICommand({
 	name: 'file-info',
@@ -12,12 +11,11 @@ new CLICommand({
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options, cliWalletDao);
 		const fileId: FileID = EID(parameters.getRequiredParameterValue(FileIdParameter));
-		// const shouldGetAllRevisions: boolean = options.getAllRevisions;
 
 		const result: Partial<ArFSPublicFile | ArFSPrivateFile> = await (async function () {
 			if (await parameters.getIsPrivate()) {
 				const wallet = await parameters.getRequiredWallet();
-				const arDrive = arDriveFactory({ wallet: wallet });
+				const arDrive = cliArDriveFactory({ wallet: wallet });
 				const driveId = await arDrive.getDriveIdForFileId(fileId);
 
 				const driveKey = await parameters.getDriveKey({ driveId });
@@ -27,7 +25,7 @@ new CLICommand({
 
 				return arDrive.getPrivateFile({ fileId, driveKey, owner: driveOwner });
 			} else {
-				const arDrive = arDriveAnonymousFactory();
+				const arDrive = cliArDriveAnonymousFactory({});
 				return arDrive.getPublicFile({ fileId });
 			}
 		})();

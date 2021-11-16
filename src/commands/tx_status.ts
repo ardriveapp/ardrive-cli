@@ -1,10 +1,9 @@
+import { fetchMempool, TransactionID, TxID } from 'ardrive-core-js';
 import { cliArweave } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
 import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { ConfirmationsParameter, TransactionIdParameter } from '../parameter_declarations';
-import { TransactionID, TxID } from '../types';
-import { fetchMempool } from '../utils';
 
 new CLICommand({
 	name: 'tx-status',
