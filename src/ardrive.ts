@@ -79,6 +79,7 @@ import {
 	CreatePrivateDriveParams
 } from './ardrive.types';
 
+// TODO: use mkdir exported from 'fs/promises' (node v14^) and the pipeline exported from 'stream/promises' (node v15^), and remove above
 const mkdirPromise = promisify(mkdir);
 const pipelinePromise = promisify(pipeline);
 
