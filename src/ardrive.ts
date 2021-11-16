@@ -1544,17 +1544,19 @@ export class ArDrive extends ArDriveAnonymous {
 		const rootFolder = folderEntityDump[0];
 		const rootFolderPath = rootFolder.path;
 		const basePath = rootFolderPath.replace(/\/[^/]+$/, '');
-		const allFileTransactionIDs = folderEntityDump
+		const allFileDataTransactionIDs = folderEntityDump
 			.filter((entity) => entity.entityType === 'file')
 			.map((entity) => entity.dataTxId);
-		const allCipherIVs = await this.arFsDao.getCipherIVOfPrivateTransactionIDs(allFileTransactionIDs);
+		const allCipherIVs = await this.arFsDao.getCipherIVOfPrivateTransactionIDs(allFileDataTransactionIDs);
 		for (const entity of folderEntityDump) {
 			const relativePath = entity.path.replace(new RegExp(`^${basePath}/`), '');
 			const fullPath = joinPath(path, relativePath);
 			if (entity.entityType === 'folder') {
 				await mkdirPromise(fullPath);
 			} else if (entity.entityType === 'file') {
-				const cipherIVresult = allCipherIVs.find((queryResult) => queryResult.txId === entity.dataTxId);
+				const cipherIVresult = allCipherIVs.find(
+					(queryResult) => `${queryResult.txId}` === `${entity.dataTxId}`
+				);
 				if (!cipherIVresult) {
 					throw new Error(`The transaction data of the file with txID "${entity.txId}" has no cipher IV!`);
 				}
