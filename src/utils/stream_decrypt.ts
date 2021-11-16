@@ -6,7 +6,7 @@ const algo = 'aes-256-gcm'; // crypto library does not accept this in uppercase.
 const authTagLength = 16;
 
 export class StreamDecrypt extends Transform {
-	private encryptedData: Buffer = Buffer.from('');
+	private encryptedData: Buffer = Buffer.from(''); // TODO: is it possible to pop the stream data in a buffer-like manner?
 
 	constructor(private readonly cipherIV: CipherIV, private readonly fileKey: FileKey) {
 		super();
