@@ -35,7 +35,7 @@ new CLICommand({
 			console.log(
 				JSON.stringify(
 					{
-						trxID: transaction.id,
+						txID: transaction.id,
 						winston: transaction.quantity,
 						reward: transaction.reward
 					},
