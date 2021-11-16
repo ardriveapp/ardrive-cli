@@ -3,6 +3,7 @@ import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { AddressParameter, WalletTypeParameters } from '../parameter_declarations';
+import fetch from 'node-fetch';
 
 async function lastTxForAddress(address: ArweaveAddress): Promise<string> {
 	const response = await fetch(`https://arweave.net/wallet/${address}/last_tx`);
