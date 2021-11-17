@@ -1,5 +1,5 @@
 import { ArFSDAO } from './arfsdao';
-import { UploadPrivateFileParams, UploadPublicFileParams } from './ardrive.types';
+import { replaceOnConflicts, UploadPrivateFileParams, UploadPublicFileParams } from './ardrive.types';
 import { CommunityOracle } from './community/community_oracle';
 import { deriveDriveKey, deriveFileKey, DrivePrivacy, GQLTagInterface } from 'ardrive-core-js';
 import {
@@ -45,8 +45,7 @@ import { errorMessage } from './error_message';
 import { ArDriveAnonymous } from './ardrive_anonymous';
 import { pipeline } from 'stream';
 import { StreamDecrypt } from './utils/stream_decrypt';
-import { createWriteStream } from 'fs';
-import { mkdir } from 'fs';
+import { mkdir, createWriteStream, stat, Stats, utimes } from 'fs';
 import { join as joinPath } from 'path';
 import { promisify } from 'util';
 import {
@@ -82,6 +81,8 @@ import {
 
 const mkdirPromise = promisify(mkdir);
 const pipelinePromise = promisify(pipeline);
+const statPromise = promisify(stat);
+const utimesPromise = promisify(utimes);
 
 export type ArFSEntityDataType = 'drive' | 'folder' | 'file';
 
@@ -1539,7 +1540,13 @@ export class ArDrive extends ArDriveAnonymous {
 	 * @param folderId - the ID of the folder to be download
 	 * @returns - the array of streams to write
 	 */
-	async downloadPrivateFolder(folderId: FolderID, maxDepth: number, path: string, driveKey: DriveKey): Promise<void> {
+	async downloadPrivateFolder(
+		folderId: FolderID,
+		maxDepth: number,
+		path: string,
+		driveKey: DriveKey,
+		conflictResolutionStrategy: FileNameConflictResolution = upsertOnConflicts
+	): Promise<void> {
 		const folderEntityDump = await this.listPrivateFolder({ folderId, maxDepth, includeRoot: true, driveKey });
 		const rootFolder = folderEntityDump[0];
 		const rootFolderPath = rootFolder.path;
@@ -1552,7 +1559,34 @@ export class ArDrive extends ArDriveAnonymous {
 			const relativePath = entity.path.replace(new RegExp(`^${basePath}/`), '');
 			const fullPath = joinPath(path, relativePath);
 			if (entity.entityType === 'folder') {
-				await mkdirPromise(fullPath);
+				const proceedWriting = await statPromise(fullPath)
+					.catch(() => {
+						// directory does not exist
+						return true;
+					})
+					.then((value: Stats | boolean) => {
+						// file exist with the same name...
+						if (typeof value === 'boolean') {
+							// early return the same boolean value that came from catch()
+							return value;
+						}
+						const fileStat = value;
+						if (fileStat.isDirectory()) {
+							// ... and is an actual directory
+							console.debug(`Re-use existing directory ${fullPath}`);
+							return false;
+						} else {
+							// ... but is not a directory
+							if ([upsertOnConflicts, replaceOnConflicts].includes(conflictResolutionStrategy)) {
+								throw new Error(`Cannot override the file "${fullPath}" with a folder!`);
+							}
+							console.debug(`Skip existing file ${fullPath}`);
+							return false;
+						}
+					});
+				if (proceedWriting) {
+					await mkdirPromise(fullPath);
+				}
 			} else if (entity.entityType === 'file') {
 				const cipherIVresult = allCipherIVs.find(
 					(queryResult) => `${queryResult.txId}` === `${entity.dataTxId}`
@@ -1571,17 +1605,66 @@ export class ArDrive extends ArDriveAnonymous {
 		privateFile: ArFSPrivateFile,
 		path: string,
 		driveKey: DriveKey,
-		cipherIV?: CipherIV
+		cipherIV?: CipherIV,
+		conflictResolutionStrategy: FileNameConflictResolution = upsertOnConflicts
 	): Promise<void> {
-		const fileTxId = privateFile.dataTxId;
-		const encryptedDataStream = await this.arFsDao.downloadFileData(fileTxId);
-		const writeStream = createWriteStream(path);
-		const fileKey = await deriveFileKey(`${privateFile.fileId}`, driveKey);
-		if (!cipherIV) {
-			// Only fetch the data if no CipherIV was provided
-			cipherIV = await this.arFsDao.getPrivateTransactionCipherIV(fileTxId);
+		const remoteFileLastModifiedDate = Math.ceil(+privateFile.lastModifiedDate / 1000);
+		const proceedWriting = await statPromise(path)
+			.catch(() => {
+				// file does not exist
+				return true;
+			})
+			.then((value: Stats | boolean) => {
+				if (typeof value === 'boolean') {
+					// early return the same boolean value that came from catch()
+					return value;
+				}
+				const fileStat = value;
+				// file exist with the same name...
+				if (fileStat.isDirectory()) {
+					if ([upsertOnConflicts, replaceOnConflicts].includes(conflictResolutionStrategy)) {
+						throw new Error(`Cannot override the directory "${path}" with a file!`);
+					}
+					console.debug(`Skipping existing directory ${path}`);
+					return false;
+				}
+				const localFileLastModifiedDate = fileStat.mtime.getTime() / 1000;
+				if (localFileLastModifiedDate === remoteFileLastModifiedDate) {
+					// ... and has the same last-modified-date
+					if (conflictResolutionStrategy === replaceOnConflicts) {
+						console.debug(`Replace existing file ${path}`);
+						return true;
+					}
+					console.debug(`Skip existing file ${path}`);
+					return false;
+				} else {
+					console.debug(
+						`Different timestamps: ${localFileLastModifiedDate} !== ${remoteFileLastModifiedDate}`
+					);
+					// ... but the last-modified-dates differ
+					if ([upsertOnConflicts, replaceOnConflicts].includes(conflictResolutionStrategy)) {
+						console.debug(`Replace existing but different file ${path}`);
+						return true;
+					}
+					console.debug(`Skip existing but different file ${path}`);
+					return false;
+				}
+			});
+		if (proceedWriting) {
+			const fileTxId = privateFile.dataTxId;
+			const encryptedDataStream = await this.arFsDao.downloadFileData(fileTxId);
+			const writeStream = createWriteStream(path);
+			const fileKey = await deriveFileKey(`${privateFile.fileId}`, driveKey);
+			if (!cipherIV) {
+				// Only fetch the data if no CipherIV was provided
+				cipherIV = await this.arFsDao.getPrivateTransactionCipherIV(fileTxId);
+			}
+			const decryptingStream = new StreamDecrypt(cipherIV, fileKey);
+			return pipelinePromise(encryptedDataStream.pipe(decryptingStream), writeStream).finally(() => {
+				// update the last-modified-date
+				console.debug(`Updating the utimes for ${path}: ${remoteFileLastModifiedDate}`);
+				return utimesPromise(path, Date.now(), remoteFileLastModifiedDate);
+			});
 		}
-		const decryptingStream = new StreamDecrypt(cipherIV, fileKey);
-		return pipelinePromise(encryptedDataStream.pipe(decryptingStream), writeStream);
 	}
 }
