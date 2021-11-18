@@ -524,15 +524,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/axios@npm:^0.14.0":
-  version: 0.14.0
-  resolution: "@types/axios@npm:0.14.0"
-  dependencies:
-    axios: "*"
-  checksum: aaf4dd6152704956fe58023e884bd965bacbf251db40553faa920f60dffae6f1b7460af4213b16e0de48eeff3bde107fae838285c049c166ebcf0b509ada7c56
-  languageName: node
-  linkType: hard
-
 "@types/chai@npm:*, @types/chai@npm:^4.2.21":
   version: 4.2.21
   resolution: "@types/chai@npm:4.2.21"
@@ -997,7 +988,6 @@ __metadata:
   resolution: "ardrive-cli@workspace:."
   dependencies:
     "@istanbuljs/nyc-config-typescript": ^1.0.1
-    "@types/axios": ^0.14.0
     "@types/chai": ^4.2.21
     "@types/jwk-to-pem": ^2.0.0
     "@types/lodash": ^4
@@ -1010,14 +1000,6 @@ __metadata:
     "@typescript-eslint/parser": ^4.18.0
     ardrive-core-js: 1.0.0
     arweave: ^1.10.16
-<<<<<<< HEAD
-    arweave-bundles: ^1.0.3
-    arweave-mnemonic-keys: ^0.0.9
-    axios: ^0.24.0
-    base64-js: ^1.5.1
-    bignumber.js: ^9.0.0
-=======
->>>>>>> PE-461
     chai: ^4.3.4
     commander: ^8.2.0
     eslint: ^7.23.0
@@ -1203,15 +1185,6 @@ __metadata:
   version: 1.10.1
   resolution: "aws4@npm:1.10.1"
   checksum: 53f2897324997542e3cfeca0b24f5960e2470eb8527f0b6587432a4607dcb8ca817955aef4297a3b429f1ca5fa688ba1b6bc57d744add41292ffcb59466392bb
-  languageName: node
-  linkType: hard
-
-"axios@npm:*, axios@npm:^0.24.0":
-  version: 0.24.0
-  resolution: "axios@npm:0.24.0"
-  dependencies:
-    follow-redirects: ^1.14.4
-  checksum: e741dfea07def55be7b1082824d71f54f7859b9c3c75a86c6a74b91c6e48bb461aceac683f77867313f89ff40ef5f2d1d2a1fe1953fcb71bdc1c1fc0fc069925
   languageName: node
   linkType: hard
 
