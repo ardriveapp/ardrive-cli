@@ -5,11 +5,10 @@ import {
 	DriveNameParameter,
 	DryRunParameter
 } from '../parameter_declarations';
-import { arDriveFactory } from '..';
-import { JWKWallet, Wallet } from '../wallet';
-import { PrivateDriveKeyData } from '../arfsdao';
+import { cliArDriveFactory } from '..';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { CLIAction } from '../CLICommand/action';
+import { Wallet, JWKWallet, PrivateDriveKeyData } from 'ardrive-core-js';
 
 new CLICommand({
 	name: 'create-drive',
@@ -20,7 +19,7 @@ new CLICommand({
 		const dryRun = !!parameters.getParameterValue(DryRunParameter);
 		const driveName = parameters.getRequiredParameterValue(DriveNameParameter);
 
-		const ardrive = arDriveFactory({
+		const ardrive = cliArDriveFactory({
 			wallet: wallet,
 			feeMultiple: parameters.getOptionalBoostSetting(),
 			dryRun

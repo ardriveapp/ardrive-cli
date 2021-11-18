@@ -1,13 +1,16 @@
-import { arDriveFactory, cliArweave, cliWalletDao } from '..';
-import { ArDriveAnonymous } from '../ardrive_anonymous';
-import { ArFSDAOAnonymous } from '../arfsdao_anonymous';
-import { ArFSPrivateFileOrFolderWithPaths, ArFSPublicFileOrFolderWithPaths } from '../arfs_entities';
+import {
+	EID,
+	ArFSPrivateFileOrFolderWithPaths,
+	ArFSPublicFileOrFolderWithPaths,
+	ArDriveAnonymous,
+	ArFSDAOAnonymous,
+	alphabeticalOrder
+} from 'ardrive-core-js';
+import { cliArDriveFactory, cliArweave, cliWalletDao } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { DriveIdParameter, DrivePrivacyParameters, TreeDepthParams } from '../parameter_declarations';
-import { EID } from '../types';
-import { alphabeticalOrder } from '../utils/sort_functions';
 
 new CLICommand({
 	name: 'list-drive',
@@ -20,7 +23,7 @@ new CLICommand({
 
 		if (await parameters.getIsPrivate()) {
 			const wallet = await parameters.getRequiredWallet();
-			const arDrive = arDriveFactory({ wallet });
+			const arDrive = cliArDriveFactory({ wallet });
 			const driveKey = await parameters.getDriveKey({ driveId });
 			const drive = await arDrive.getPrivateDrive({ driveId, driveKey });
 			const rootFolderId = drive.rootFolderId;

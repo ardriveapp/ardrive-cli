@@ -1,5 +1,5 @@
-import { arDriveAnonymousFactory, cliWalletDao } from '..';
-import { ArFSDriveEntity } from '../arfs_entities';
+import { ArFSDriveEntity } from 'ardrive-core-js';
+import { cliArDriveAnonymousFactory, cliWalletDao } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
@@ -10,7 +10,7 @@ new CLICommand({
 	parameters: [AddressParameter, ...DrivePrivacyParameters],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options, cliWalletDao);
-		const ardrive = arDriveAnonymousFactory();
+		const ardrive = cliArDriveAnonymousFactory({});
 
 		const address = await parameters.getWalletAddress();
 		const privateKeyData = await parameters.getPrivateKeyData();
