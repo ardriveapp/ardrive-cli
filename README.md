@@ -772,15 +772,15 @@ ArDrive supports the creation of Arweave manifests using any of your PUBLIC fold
 ardrive create-manifest -d bc9af866-6421-40f1-ac89-202bddb5c487 -w /path/to/wallet
 ```
 
-This manifest is tagged with a unique content-type, `application/x.arweave-manifest+json`, which tells the gateway to treat this file as a manifest. The file itself is a .json file that holds the paths (the data transaction ids) to each file in the specified folder/drive.
+The manifest data transaction is tagged with a unique content-type, `application/x.arweave-manifest+json`, which tells the gateway to treat this file as a manifest. The file itself is a .json file that holds the paths (the data transaction ids) to each file in the specified folder/drive.
 
 These paths are used by the gateway to create working links to each of your files:
 
 ```shell
 arweave.net/ztZAc-ahH2Im3EytKOfmO85Ae1zYfRK8k2cSzw9wHx4",
-        "arweave.net/ztZAc-ahH2Im3EytKOfmO85Ae1zYfRK8k2cSzw9wHx4/a_fun_subfolder/e.png",
-        "arweave.net/ztZAc-ahH2Im3EytKOfmO85Ae1zYfRK8k2cSzw9wHx4/a_fun_subfolder/hello_world.txt",
-        "arweave.net/ztZAc-ahH2Im3EytKOfmO85Ae1zYfRK8k2cSzw9wHx4/a_fun_subfolder/hello_world2.txt"
+"arweave.net/ztZAc-ahH2Im3EytKOfmO85Ae1zYfRK8k2cSzw9wHx4/a_fun_subfolder/e.png",
+"arweave.net/ztZAc-ahH2Im3EytKOfmO85Ae1zYfRK8k2cSzw9wHx4/a_fun_subfolder/hello_world.txt",
+"arweave.net/ztZAc-ahH2Im3EytKOfmO85Ae1zYfRK8k2cSzw9wHx4/a_fun_subfolder/hello_world2.txt"
 ```
 
 When creating this manifest, you can link up an index.html page as the first path by uploading it in to the root of the folder or drive before creating a manifest. Using this method, your index.html will even be able path to assets within the folder tree:
