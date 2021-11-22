@@ -10,7 +10,7 @@ import {
 	replaceOnConflicts,
 	skipOnConflicts,
 	useExistingFolder
-} from './utils/upload_conflict_resolution';
+} from 'ardrive-core-js';
 
 export const fileToFileNameConflict: FileToFileNameConflictPrompt = async ({
 	fileId,
