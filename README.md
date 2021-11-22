@@ -774,6 +774,10 @@ ardrive create-manifest -d bc9af866-6421-40f1-ac89-202bddb5c487 -w /path/to/wall
 
 The manifest data transaction is tagged with a unique content-type, `application/x.arweave-manifest+json`, which tells the gateway to treat this file as a manifest. The file itself is a .json file that holds the paths (the data transaction ids) to each file in the specified folder/drive.
 
+When your drive or folder is later changed by adding files or updating them with new revisions, the original manifest will not be updated on its own. A manifest is a permanent record of your files in their current state.
+
+However, creating a subsequent manifest with the same manifest name will create a new revision of that manifest in its new current state. Manifests follow the same name conflict resolution as outlined for files above (upsert by default).
+
 These paths are used by the gateway to create working links to each of your files:
 
 ```shell
@@ -796,7 +800,7 @@ my-ardrive-folder
     my-font.ttf
 ```
 
-This is effectively hosting a web page on ArDrive. See our [example manifest web page](arweave.net/V_L4J79QOrjQ_1Nbh5yAetVn8OY_KzvagIFNdCn1X_o).
+This is effectively hosting a web page on ArDrive. See our [example manifest web page][example-manifest-webpage]. You can find out more about Arweave path manifests [here][arweave-manifest]
 
 ### Create New Drive and Upload Folder Pipeline Example<a id="create-upload-pipeline"></a>
 
@@ -953,3 +957,5 @@ ardrive <command> --help
 [ardrive-discord]: https://discord.gg/w4vvrezD
 [arconnect]: https://arconnect.io/
 [kb-wallets]: https://ardrive.atlassian.net/l/c/FpK8FuoQ
+[arweave-manifests]: https://github.com/ArweaveTeam/arweave/wiki/Path-Manifests
+[example-manifest-webpage]: arweave.net/V_L4J79QOrjQ_1Nbh5yAetVn8OY_KzvagIFNdCn1X_o
