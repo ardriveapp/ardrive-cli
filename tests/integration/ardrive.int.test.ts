@@ -27,7 +27,7 @@ import { ArFSDAO, PrivateDriveKeyData } from '../../src/arfsdao';
 import { deriveDriveKey, DrivePrivacy } from 'ardrive-core-js';
 import { DriveKey, FileID, Winston } from '../../src/types';
 import { ArFSFileToUpload, wrapFileOrFolder } from '../../src/arfs_file_wrapper';
-import { fileNameConflictAskPrompt } from '../../src/prompts';
+import { fileUploadConflictPrompts } from '../../src/prompts';
 
 const entityIdRegex = /^([a-f]|[0-9]){8}-([a-f]|[0-9]){4}-([a-f]|[0-9]){4}-([a-f]|[0-9]){4}-([a-f]|[0-9]){12}$/;
 const trxIdRegex = /^([a-zA-Z]|[0-9]|-|_){43}$/;
@@ -454,12 +454,13 @@ describe('ArDrive class - integrated', () => {
 		describe('file function', () => {
 			const matchingLastModifiedDate = 420;
 			const differentLastModifiedDate = 1337;
-			const askPrompt = { fileNameConflictAskPrompt };
+			const stubbedFileAskPrompts = { ...fileUploadConflictPrompts };
+			let wrappedFile: ArFSFileToUpload;
 
 			describe('uploadPublicFile', () => {
-				const wrappedFile = wrapFileOrFolder('test_wallet.json') as ArFSFileToUpload;
-
 				beforeEach(() => {
+					wrappedFile = wrapFileOrFolder('test_wallet.json') as ArFSFileToUpload;
+
 					stub(communityOracle, 'getCommunityWinstonTip').resolves('1');
 					stub(communityOracle, 'selectTokenHolder').resolves(stubArweaveAddress());
 
@@ -478,22 +479,27 @@ describe('ArDrive class - integrated', () => {
 				it('throws an error if the owner of the drive conflicts with supplied wallet', async () => {
 					stub(arfsDao, 'getOwnerForDriveId').resolves(unexpectedOwner);
 
+					const wrappedFile = wrapFileOrFolder('test_wallet.json') as ArFSFileToUpload;
+
 					await expectAsyncErrorThrow({
 						promiseToError: arDrive.uploadPublicFile({ parentFolderId: stubEntityID, wrappedFile }),
 						errorMessage: 'Supplied wallet is not the owner of this drive!'
 					});
 				});
 
-				it('throws an error if destination folder has a conflicting FOLDER name', async () => {
+				it('returns an empty ArFS result if destination folder has a conflicting FOLDER name', async () => {
 					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 
-					await expectAsyncErrorThrow({
-						promiseToError: arDrive.uploadPublicFile({
-							parentFolderId: stubEntityID,
-							wrappedFile,
-							destinationFileName: 'CONFLICTING_FOLDER_NAME'
-						}),
-						errorMessage: 'Entity name already exists in destination folder!'
+					const result = await arDrive.uploadPublicFile({
+						parentFolderId: stubEntityID,
+						wrappedFile,
+						destinationFileName: 'CONFLICTING_FOLDER_NAME'
+					});
+
+					expect(result).to.deep.equal({
+						created: [],
+						tips: [],
+						fees: {}
 					});
 				});
 
@@ -548,6 +554,7 @@ describe('ArDrive class - integrated', () => {
 
 				it('returns the correct ArFSResult revision if destination folder has a conflicting FILE name and a different last modified date and the conflict resolution is set to upsert', async () => {
 					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
+
 					stub(wrappedFile, 'lastModifiedDate').get(() => differentLastModifiedDate);
 
 					const result = await arDrive.uploadPublicFile({
@@ -564,7 +571,7 @@ describe('ArDrive class - integrated', () => {
 				it('returns the correct ArFSResult if destination folder has a conflicting FILE name and the conflict resolution is set to ask and the user supplies a new file name', async () => {
 					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 
-					stub(askPrompt, 'fileNameConflictAskPrompt').resolves({
+					stub(stubbedFileAskPrompts, 'fileToFileNameConflict').resolves({
 						resolution: 'rename',
 						newFileName: 'New File!'
 					});
@@ -574,7 +581,7 @@ describe('ArDrive class - integrated', () => {
 						wrappedFile,
 						destinationFileName: 'CONFLICTING_FILE_NAME',
 						conflictResolution: 'ask',
-						fileNameConflictAskPrompt: askPrompt.fileNameConflictAskPrompt
+						prompts: stubbedFileAskPrompts
 					});
 
 					assertUploadFileExpectations(result, 3204, 159, 0, '1', 'public');
@@ -583,7 +590,7 @@ describe('ArDrive class - integrated', () => {
 				it('returns the correct revision ArFSResult if destination folder has a conflicting FILE name and the conflict resolution is set to ask and the user chooses to replace', async () => {
 					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 
-					stub(askPrompt, 'fileNameConflictAskPrompt').resolves({
+					stub(stubbedFileAskPrompts, 'fileToFileNameConflict').resolves({
 						resolution: 'replace'
 					});
 
@@ -592,7 +599,7 @@ describe('ArDrive class - integrated', () => {
 						wrappedFile,
 						destinationFileName: 'CONFLICTING_FILE_NAME',
 						conflictResolution: 'ask',
-						fileNameConflictAskPrompt: askPrompt.fileNameConflictAskPrompt
+						prompts: stubbedFileAskPrompts
 					});
 
 					assertUploadFileExpectations(result, 3204, 171, 0, '1', 'public', existingFileId);
@@ -601,7 +608,7 @@ describe('ArDrive class - integrated', () => {
 				it('returns the correct empty ArFSResult if destination folder has a conflicting FILE name and the conflict resolution is set to ask and the user chooses to skip', async () => {
 					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 
-					stub(askPrompt, 'fileNameConflictAskPrompt').resolves({
+					stub(stubbedFileAskPrompts, 'fileToFileNameConflict').resolves({
 						resolution: 'skip'
 					});
 
@@ -610,7 +617,7 @@ describe('ArDrive class - integrated', () => {
 						wrappedFile,
 						destinationFileName: 'CONFLICTING_FILE_NAME',
 						conflictResolution: 'ask',
-						fileNameConflictAskPrompt: askPrompt.fileNameConflictAskPrompt
+						prompts: stubbedFileAskPrompts
 					});
 
 					expect(result).to.deep.equal({
@@ -629,9 +636,9 @@ describe('ArDrive class - integrated', () => {
 			});
 
 			describe('uploadPrivateFile', () => {
-				const wrappedFile = wrapFileOrFolder('test_wallet.json') as ArFSFileToUpload;
-
 				beforeEach(() => {
+					wrappedFile = wrapFileOrFolder('test_wallet.json') as ArFSFileToUpload;
+
 					stub(communityOracle, 'getCommunityWinstonTip').resolves('1');
 					stub(communityOracle, 'selectTokenHolder').resolves(stubArweaveAddress());
 
@@ -660,17 +667,20 @@ describe('ArDrive class - integrated', () => {
 					});
 				});
 
-				it('throws an error if destination folder has a conflicting FOLDER name', async () => {
+				it('returns an empty ArFS result if destination folder has a conflicting FOLDER name', async () => {
 					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 
-					await expectAsyncErrorThrow({
-						promiseToError: arDrive.uploadPrivateFile({
-							parentFolderId: stubEntityID,
-							wrappedFile,
-							driveKey: await getStubDriveKey(),
-							destinationFileName: 'CONFLICTING_FOLDER_NAME'
-						}),
-						errorMessage: 'Entity name already exists in destination folder!'
+					const result = await arDrive.uploadPrivateFile({
+						parentFolderId: stubEntityID,
+						wrappedFile,
+						driveKey: await getStubDriveKey(),
+						destinationFileName: 'CONFLICTING_FOLDER_NAME'
+					});
+
+					expect(result).to.deep.equal({
+						created: [],
+						tips: [],
+						fees: {}
 					});
 				});
 
@@ -745,7 +755,7 @@ describe('ArDrive class - integrated', () => {
 				it('returns the correct ArFSResult if destination folder has a conflicting FILE name and the conflict resolution is set to ask and the user supplies a new file name', async () => {
 					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 
-					stub(askPrompt, 'fileNameConflictAskPrompt').resolves({
+					stub(stubbedFileAskPrompts, 'fileToFileNameConflict').resolves({
 						resolution: 'rename',
 						newFileName: 'New File!'
 					});
@@ -756,7 +766,7 @@ describe('ArDrive class - integrated', () => {
 						destinationFileName: 'CONFLICTING_FILE_NAME',
 						conflictResolution: 'ask',
 						driveKey: await getStubDriveKey(),
-						fileNameConflictAskPrompt: askPrompt.fileNameConflictAskPrompt
+						prompts: stubbedFileAskPrompts
 					});
 
 					assertUploadFileExpectations(result, 3220, 175, 0, '1', 'private');
@@ -765,7 +775,7 @@ describe('ArDrive class - integrated', () => {
 				it('returns the correct revision ArFSResult if destination folder has a conflicting FILE name and the conflict resolution is set to ask and the user chooses to replace', async () => {
 					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 
-					stub(askPrompt, 'fileNameConflictAskPrompt').resolves({
+					stub(stubbedFileAskPrompts, 'fileToFileNameConflict').resolves({
 						resolution: 'replace'
 					});
 
@@ -775,7 +785,7 @@ describe('ArDrive class - integrated', () => {
 						destinationFileName: 'CONFLICTING_FILE_NAME',
 						conflictResolution: 'ask',
 						driveKey: await getStubDriveKey(),
-						fileNameConflictAskPrompt: askPrompt.fileNameConflictAskPrompt
+						prompts: stubbedFileAskPrompts
 					});
 
 					assertUploadFileExpectations(result, 3220, 187, 0, '1', 'private', existingFileId);
@@ -784,7 +794,7 @@ describe('ArDrive class - integrated', () => {
 				it('returns the correct empty ArFSResult if destination folder has a conflicting FILE name and the conflict resolution is set to ask and the user chooses to skip', async () => {
 					stub(arfsDao, 'getOwnerForDriveId').resolves(walletOwner);
 
-					stub(askPrompt, 'fileNameConflictAskPrompt').resolves({
+					stub(stubbedFileAskPrompts, 'fileToFileNameConflict').resolves({
 						resolution: 'skip'
 					});
 
@@ -794,7 +804,7 @@ describe('ArDrive class - integrated', () => {
 						destinationFileName: 'CONFLICTING_FILE_NAME',
 						conflictResolution: 'ask',
 						driveKey: await getStubDriveKey(),
-						fileNameConflictAskPrompt: askPrompt.fileNameConflictAskPrompt
+						prompts: stubbedFileAskPrompts
 					});
 
 					expect(result).to.deep.equal({
