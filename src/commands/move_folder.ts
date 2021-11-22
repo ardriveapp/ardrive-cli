@@ -6,10 +6,10 @@ import {
 	ParentFolderIdParameter,
 	DrivePrivacyParameters
 } from '../parameter_declarations';
-import { Wallet } from '../wallet';
-import { arDriveFactory } from '..';
-import { FeeMultiple } from '../types';
-import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
+import { CLIAction } from '../CLICommand/action';
+import { EID, Wallet } from 'ardrive-core-js';
+import { cliArDriveFactory } from '..';
 
 new CLICommand({
 	name: 'move-folder',
@@ -20,16 +20,18 @@ new CLICommand({
 		DryRunParameter,
 		...DrivePrivacyParameters
 	],
-	async action(options) {
+	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
 
-		const { folderId, parentFolderId: newParentFolderId, boost, dryRun } = options;
+		const dryRun = !!parameters.getParameterValue(DryRunParameter);
+		const folderId = parameters.getRequiredParameterValue(FolderIdParameter, EID);
+		const newParentFolderId = parameters.getRequiredParameterValue(ParentFolderIdParameter, EID);
 
 		const wallet: Wallet = await parameters.getRequiredWallet();
-		const ardrive = arDriveFactory({
+		const ardrive = cliArDriveFactory({
 			wallet: wallet,
-			feeMultiple: boost as FeeMultiple,
-			dryRun: dryRun
+			feeMultiple: parameters.getOptionalBoostSetting(),
+			dryRun
 		});
 
 		const moveFolderResult = await (async function () {
@@ -46,5 +48,5 @@ new CLICommand({
 		console.log(JSON.stringify(moveFolderResult, null, 4));
 
 		return SUCCESS_EXIT_CODE;
-	}
+	})
 });

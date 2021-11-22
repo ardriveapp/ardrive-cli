@@ -1,22 +1,27 @@
-import { arDriveAnonymousFactory, arDriveFactory } from '..';
-import { ArFSPrivateFileOrFolderWithPaths, ArFSPublicFileOrFolderWithPaths } from '../arfs_entities';
+import {
+	EID,
+	ArFSPrivateFileOrFolderWithPaths,
+	ArFSPublicFileOrFolderWithPaths,
+	alphabeticalOrder
+} from 'ardrive-core-js';
+import { cliArDriveAnonymousFactory, cliArDriveFactory } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
-import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
+import { CLIAction } from '../CLICommand/action';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { DrivePrivacyParameters, ParentFolderIdParameter, TreeDepthParams } from '../parameter_declarations';
-import { alphabeticalOrder } from '../utils/sort_functions';
 
 new CLICommand({
 	name: 'list-folder',
 	parameters: [ParentFolderIdParameter, ...TreeDepthParams, ...DrivePrivacyParameters],
-	async action(options) {
+	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
-		const folderId = parameters.getRequiredParameterValue(ParentFolderIdParameter);
+		const folderId = EID(parameters.getRequiredParameterValue(ParentFolderIdParameter));
 		let children: (ArFSPrivateFileOrFolderWithPaths | ArFSPublicFileOrFolderWithPaths)[];
 		const maxDepth = await parameters.getMaxDepth(0);
 
 		if (await parameters.getIsPrivate()) {
 			const wallet = await parameters.getRequiredWallet();
-			const arDrive = arDriveFactory({ wallet });
+			const arDrive = cliArDriveFactory({ wallet });
 
 			const driveId = await arDrive.getDriveIdForFolderId(folderId);
 			const driveKey = await parameters.getDriveKey({ driveId });
@@ -26,7 +31,7 @@ new CLICommand({
 
 			children = await arDrive.listPrivateFolder({ folderId, driveKey, maxDepth, owner: driveOwner });
 		} else {
-			const arDrive = arDriveAnonymousFactory();
+			const arDrive = cliArDriveAnonymousFactory({});
 			children = await arDrive.listPublicFolder({ folderId, maxDepth });
 		}
 
@@ -43,11 +48,10 @@ new CLICommand({
 				delete fileOrFolderMetaData.dataTxId;
 				delete fileOrFolderMetaData.dataContentType;
 			}
-			delete fileOrFolderMetaData.syncStatus;
 		});
 
 		// Display data
 		console.log(JSON.stringify(sortedChildren, null, 4));
 		return SUCCESS_EXIT_CODE;
-	}
+	})
 });

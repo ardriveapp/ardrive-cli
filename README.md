@@ -716,7 +716,7 @@ Expect the behaviors from the following table for each resolution setting:
 | File        | Folder           | Skip   | Fail      | Fail               |
 | Folder      | None             | Insert | Insert    | Insert             |
 | Folder      | File             | Skip   | Fail      | Fail               |
-| Folder      | Folder           | Skip   | Re-use    | Re-use             |
+| Folder      | Folder           | Re-use | Re-use    | Re-use             |
 
 The default upsert behavior will check the destination folder for a file with a conflicting name. If no conflicts are found, it will insert (upload) the file.
 
@@ -903,7 +903,7 @@ ardrive <command> --help
 [ardrive]: https://ardrive.io
 [arweave]: https://ardrive.io/what-is-arweave/
 [ardrive-github]: https://github.com/ardriveapp/
-[arfs]: https://ardrive.atlassian.net/l/c/yDcGDbUm
+[arfs]: https://ardrive.atlassian.net/l/c/m6P1vJDo
 [ardrive-web-app]: https://app.ardrive.io
 [ardrive-core]: https://github.com/ardriveapp/ardrive-core-js
 [yarn-install]: https://yarnpkg.com/getting-started/install
