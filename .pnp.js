@@ -49,7 +49,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/source-map-support", "npm:0.5.4"],
             ["@typescript-eslint/eslint-plugin", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
             ["@typescript-eslint/parser", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
-            ["ardrive-core-js", "npm:0.6.0-alpha-1"],
+            ["ardrive-core-js", "npm:1.0.3"],
             ["arweave", "npm:1.10.16"],
             ["chai", "npm:4.3.4"],
             ["commander", "npm:8.3.0"],
@@ -1306,7 +1306,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/source-map-support", "npm:0.5.4"],
             ["@typescript-eslint/eslint-plugin", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
             ["@typescript-eslint/parser", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
-            ["ardrive-core-js", "npm:0.6.0-alpha-1"],
+            ["ardrive-core-js", "npm:1.0.3"],
             ["arweave", "npm:1.10.16"],
             ["chai", "npm:4.3.4"],
             ["commander", "npm:8.3.0"],
@@ -1332,10 +1332,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["ardrive-core-js", [
-        ["npm:0.6.0-alpha-1", {
-          "packageLocation": "./.yarn/cache/ardrive-core-js-npm-0.6.0-alpha-1-90c637583d-2eebcb3cd3.zip/node_modules/ardrive-core-js/",
+        ["npm:1.0.3", {
+          "packageLocation": "./.yarn/cache/ardrive-core-js-npm-1.0.3-3eb958d43d-ee93abf5a7.zip/node_modules/ardrive-core-js/",
           "packageDependencies": [
-            ["ardrive-core-js", "npm:0.6.0-alpha-1"],
+            ["ardrive-core-js", "npm:1.0.3"],
             ["arweave", "npm:1.10.16"],
             ["arweave-bundles", "npm:1.0.3"],
             ["arweave-mnemonic-keys", "npm:0.0.9"],
@@ -1346,7 +1346,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["jwk-to-pem", "npm:2.0.4"],
             ["lodash", "npm:4.17.21"],
             ["mime-types", "npm:2.1.29"],
-            ["node-fetch", "npm:2.6.2"],
             ["regression", "npm:2.0.1"],
             ["smartweave", "npm:0.4.45"],
             ["utf8", "npm:3.0.0"],
@@ -4673,15 +4672,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [
             ["node-addon-api", "npm:2.0.2"],
             ["node-gyp", "npm:7.1.2"]
-          ],
-          "linkType": "HARD",
-        }]
-      ]],
-      ["node-fetch", [
-        ["npm:2.6.2", {
-          "packageLocation": "./.yarn/cache/node-fetch-npm-2.6.2-2820154539-f48d84c89c.zip/node_modules/node-fetch/",
-          "packageDependencies": [
-            ["node-fetch", "npm:2.6.2"]
           ],
           "linkType": "HARD",
         }]
