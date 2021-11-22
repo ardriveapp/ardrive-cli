@@ -28,9 +28,9 @@ import {
 import '../parameter_declarations';
 import { CLIAction } from './action';
 import { SUCCESS_EXIT_CODE } from './error_codes';
-import { stubArweaveAddress, EID, urlEncodeHashKey } from 'ardrive-core-js';
+import { ArweaveAddress, EID, urlEncodeHashKey } from 'ardrive-core-js';
 
-const expectedArweaveAddress = stubArweaveAddress('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
+const expectedArweaveAddress = new ArweaveAddress('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
 
 const dummyActionHandler = () => Promise.resolve(SUCCESS_EXIT_CODE);
 

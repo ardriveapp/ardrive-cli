@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import Arweave from 'arweave';
 import { CLICommand } from './CLICommand';
 import {
