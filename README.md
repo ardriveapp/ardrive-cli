@@ -101,7 +101,8 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         1. [Uploading a Single File](#uploading-a-single-file)
         2. [Uploading a Folder with Files](#bulk-upload)
         3. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
-        4. [Create New Drive and Upload Folder Pipeline Example](#create-upload-pipeline)
+        4. [Uploading Manifests](#uploading-manifests)
+        5. [Create New Drive and Upload Folder Pipeline Example](#create-upload-pipeline)
     7. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -763,6 +764,40 @@ Example output:
 }
 ```
 
+### Uploading Manifests
+
+ArDrive supports the creation of Arweave manifests using any of your PUBLIC folders or drives. This manifest will be created at the root of specified folder or drive just as any other ArFS file entity:
+
+```shell
+ardrive create-manifest -d bc9af866-6421-40f1-ac89-202bddb5c487 -w /path/to/wallet
+```
+
+This manifest is tagged with a unique content-type, `application/x.arweave-manifest+json`, which tells the gateway to treat this file as a manifest. The file itself is a .json file that holds the paths (the data transaction ids) to each file in the specified folder/drive.
+
+These paths are used by the gateway to create working links to each of your files:
+
+```shell
+arweave.net/ztZAc-ahH2Im3EytKOfmO85Ae1zYfRK8k2cSzw9wHx4",
+        "arweave.net/ztZAc-ahH2Im3EytKOfmO85Ae1zYfRK8k2cSzw9wHx4/a_fun_subfolder/e.png",
+        "arweave.net/ztZAc-ahH2Im3EytKOfmO85Ae1zYfRK8k2cSzw9wHx4/a_fun_subfolder/hello_world.txt",
+        "arweave.net/ztZAc-ahH2Im3EytKOfmO85Ae1zYfRK8k2cSzw9wHx4/a_fun_subfolder/hello_world2.txt"
+```
+
+When creating this manifest, you can link up an index.html page as the first path by uploading it in to the root of the folder or drive before creating a manifest. Using this method, your index.html will even be able path to assets within the folder tree:
+
+```shell
+my-ardrive-folder
+  index.html
+  css
+    styles.css
+  js
+    scripts.js
+  font
+    my-font.ttf
+```
+
+This is effectively hosting a web page on ArDrive. See our [example manifest web page](arweave.net/V_L4J79QOrjQ_1Nbh5yAetVn8OY_KzvagIFNdCn1X_o).
+
 ### Create New Drive and Upload Folder Pipeline Example<a id="create-upload-pipeline"></a>
 
 ```shell
@@ -857,6 +892,7 @@ Write ArFS
 create-drive
 create-folder
 upload-file
+create-manifest
 
 move-file
 move-folder
