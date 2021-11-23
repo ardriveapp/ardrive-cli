@@ -3,11 +3,11 @@ import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { AddressParameter, WalletTypeParameters } from '../parameter_declarations';
-import fetch from 'node-fetch';
+import axios, { AxiosResponse } from 'axios';
 
 async function lastTxForAddress(address: ArweaveAddress): Promise<string> {
-	const response = await fetch(`https://arweave.net/wallet/${address}/last_tx`);
-	return response.text();
+	const response: AxiosResponse = await axios.get(`https://arweave.net/wallet/${address}/last_tx`);
+	return `${response.data}`;
 }
 
 new CLICommand({

@@ -3,11 +3,11 @@ import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { BoostParameter } from '../parameter_declarations';
-import fetch from 'node-fetch';
+import axios, { AxiosResponse } from 'axios';
 
 async function getBaseReward(byteCount?: ByteCount): Promise<string> {
-	const response = await fetch(`https://arweave.net/price/${byteCount ?? 0}`);
-	return response.text();
+	const response: AxiosResponse = await axios.get(`https://arweave.net/price/${byteCount ?? 0}`);
+	return `${response.data}`;
 }
 
 new CLICommand({

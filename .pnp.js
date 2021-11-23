@@ -43,7 +43,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/lodash", "npm:4.14.176"],
             ["@types/mocha", "npm:9.0.0"],
             ["@types/node", "npm:14.17.15"],
-            ["@types/node-fetch", "npm:2.5.12"],
             ["@types/prompts", "npm:2.4.0"],
             ["@types/sinon", "npm:10.0.2"],
             ["@types/source-map-support", "npm:0.5.4"],
@@ -51,6 +50,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@typescript-eslint/parser", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
             ["ardrive-core-js", "npm:1.0.3"],
             ["arweave", "npm:1.10.16"],
+            ["axios", "npm:0.21.1"],
             ["chai", "npm:4.3.4"],
             ["commander", "npm:8.3.0"],
             ["eslint", "npm:7.23.0"],
@@ -60,7 +60,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["lint-staged", "npm:11.0.0"],
             ["lodash", "npm:4.17.21"],
             ["mocha", "npm:9.1.1"],
-            ["node-fetch", "npm:2.6.6"],
             ["nyc", "npm:15.1.0"],
             ["prettier", "npm:2.2.1"],
             ["prompts", "npm:2.4.0"],
@@ -805,17 +804,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD",
         }]
       ]],
-      ["@types/node-fetch", [
-        ["npm:2.5.12", {
-          "packageLocation": "./.yarn/cache/@types-node-fetch-npm-2.5.12-e9530d4758-f648728116.zip/node_modules/@types/node-fetch/",
-          "packageDependencies": [
-            ["@types/node-fetch", "npm:2.5.12"],
-            ["@types/node", "npm:16.7.13"],
-            ["form-data", "npm:3.0.1"]
-          ],
-          "linkType": "HARD",
-        }]
-      ]],
       ["@types/parse-json", [
         ["npm:4.0.0", {
           "packageLocation": "./.yarn/cache/@types-parse-json-npm-4.0.0-298522afa6-4a8f720afa.zip/node_modules/@types/parse-json/",
@@ -1300,7 +1288,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/lodash", "npm:4.14.176"],
             ["@types/mocha", "npm:9.0.0"],
             ["@types/node", "npm:14.17.15"],
-            ["@types/node-fetch", "npm:2.5.12"],
             ["@types/prompts", "npm:2.4.0"],
             ["@types/sinon", "npm:10.0.2"],
             ["@types/source-map-support", "npm:0.5.4"],
@@ -1308,6 +1295,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@typescript-eslint/parser", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
             ["ardrive-core-js", "npm:1.0.3"],
             ["arweave", "npm:1.10.16"],
+            ["axios", "npm:0.21.1"],
             ["chai", "npm:4.3.4"],
             ["commander", "npm:8.3.0"],
             ["eslint", "npm:7.23.0"],
@@ -1317,7 +1305,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["lint-staged", "npm:11.0.0"],
             ["lodash", "npm:4.17.21"],
             ["mocha", "npm:9.1.1"],
-            ["node-fetch", "npm:2.6.6"],
             ["nyc", "npm:15.1.0"],
             ["prettier", "npm:2.2.1"],
             ["prompts", "npm:2.4.0"],
@@ -3063,16 +3050,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["mime-types", "npm:2.1.29"]
           ],
           "linkType": "HARD",
-        }],
-        ["npm:3.0.1", {
-          "packageLocation": "./.yarn/cache/form-data-npm-3.0.1-d080d436e0-6574ff4d2d.zip/node_modules/form-data/",
-          "packageDependencies": [
-            ["form-data", "npm:3.0.1"],
-            ["asynckit", "npm:0.4.0"],
-            ["combined-stream", "npm:1.0.8"],
-            ["mime-types", "npm:2.1.29"]
-          ],
-          "linkType": "HARD",
         }]
       ]],
       ["fromentries", [
@@ -4676,16 +4653,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD",
         }]
       ]],
-      ["node-fetch", [
-        ["npm:2.6.6", {
-          "packageLocation": "./.yarn/cache/node-fetch-npm-2.6.6-056db6b778-c0a4450cca.zip/node_modules/node-fetch/",
-          "packageDependencies": [
-            ["node-fetch", "npm:2.6.6"],
-            ["whatwg-url", "npm:5.0.0"]
-          ],
-          "linkType": "HARD",
-        }]
-      ]],
       ["node-forge", [
         ["npm:0.10.0", {
           "packageLocation": "./.yarn/cache/node-forge-npm-0.10.0-605ba7b28b-c7a729933a.zip/node_modules/node-forge/",
@@ -6085,15 +6052,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD",
         }]
       ]],
-      ["tr46", [
-        ["npm:0.0.3", {
-          "packageLocation": "./.yarn/cache/tr46-npm-0.0.3-de53018915-37bdfff7c5.zip/node_modules/tr46/",
-          "packageDependencies": [
-            ["tr46", "npm:0.0.3"]
-          ],
-          "linkType": "HARD",
-        }]
-      ]],
       ["ts-node", [
         ["npm:10.2.1", {
           "packageLocation": "./.yarn/cache/ts-node-npm-10.2.1-18dc22b42d-528e79c827.zip/node_modules/ts-node/",
@@ -6404,26 +6362,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [
             ["wcwidth", "npm:1.0.1"],
             ["defaults", "npm:1.0.3"]
-          ],
-          "linkType": "HARD",
-        }]
-      ]],
-      ["webidl-conversions", [
-        ["npm:3.0.1", {
-          "packageLocation": "./.yarn/cache/webidl-conversions-npm-3.0.1-60310f6a2b-25ef547ff1.zip/node_modules/webidl-conversions/",
-          "packageDependencies": [
-            ["webidl-conversions", "npm:3.0.1"]
-          ],
-          "linkType": "HARD",
-        }]
-      ]],
-      ["whatwg-url", [
-        ["npm:5.0.0", {
-          "packageLocation": "./.yarn/cache/whatwg-url-npm-5.0.0-374fb45e60-55eca009f5.zip/node_modules/whatwg-url/",
-          "packageDependencies": [
-            ["whatwg-url", "npm:5.0.0"],
-            ["tr46", "npm:0.0.3"],
-            ["webidl-conversions", "npm:3.0.1"]
           ],
           "linkType": "HARD",
         }]
