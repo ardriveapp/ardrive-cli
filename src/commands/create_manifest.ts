@@ -6,7 +6,6 @@ import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import {
 	BoostParameter,
 	FolderIdParameter,
-	DriveIdParameter,
 	DryRunParameter,
 	SeedPhraseParameter,
 	TreeDepthParams,
@@ -17,7 +16,6 @@ import {
 new CLICommand({
 	name: 'create-manifest',
 	parameters: [
-		DriveIdParameter,
 		FolderIdParameter,
 		DestinationManifestNameParameter,
 		BoostParameter,
@@ -37,25 +35,13 @@ new CLICommand({
 			dryRun: !!options.dryRun
 		});
 
-		// User can specify either a drive ID or a folder ID
-		const driveId = parameters.getParameterValue(DriveIdParameter);
-		const folderId = parameters.getParameterValue(FolderIdParameter);
-
-		if (driveId && folderId) {
-			throw new Error('Drive ID cannot be used in conjunction with folder ID!');
-		}
-
-		if (!driveId && !folderId) {
-			throw new Error('Must provide either a drive ID or a folder ID to!');
-		}
+		const folderId = parameters.getRequiredParameterValue(FolderIdParameter, EID);
 
 		const maxDepth = await parameters.getMaxDepth(Number.MAX_SAFE_INTEGER);
 		const destManifestName = parameters.getParameterValue(DestinationManifestNameParameter);
 
-		// TODO: Private manifests 🤔
 		const result = await arDrive.uploadPublicManifest({
-			driveId: driveId ? EID(driveId) : undefined,
-			folderId: folderId ? EID(folderId) : undefined,
+			folderId: folderId,
 			maxDepth,
 			destManifestName
 		});

@@ -148,7 +148,8 @@ Parameter.declare({
 Parameter.declare({
 	name: DriveIdParameter,
 	aliases: ['-d', '--drive-id'],
-	description: 'the ArFS entity ID associated with the target drive'
+	description: 'the ArFS entity ID associated with the target drive',
+	required: true
 });
 
 Parameter.declare({
@@ -190,7 +191,8 @@ Parameter.declare({
 Parameter.declare({
 	name: FolderIdParameter,
 	aliases: ['-f', '--folder-id'],
-	description: `the ArFS folder ID for the folder to query`
+	description: `the ArFS folder ID for the folder to query`,
+	required: true
 });
 
 Parameter.declare({
