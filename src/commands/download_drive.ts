@@ -1,5 +1,5 @@
+import { EID } from 'ardrive-core-js';
 import { resolve } from 'path';
-import { arDriveAnonymousFactory, arDriveFactory } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
 import {
@@ -9,7 +9,7 @@ import {
 	LocalFilePathParameter,
 	MaxDepthParameter
 } from '../parameter_declarations';
-import { EID } from '../types';
+import { cliArDriveFactory, cliArDriveAnonymousFactory } from '..';
 
 new CLICommand({
 	name: 'download-drive',
@@ -30,7 +30,7 @@ new CLICommand({
 		if (await parameters.getIsPrivate()) {
 			const driveKey = await parameters.getDriveKey({ driveId });
 			const wallet = await parameters.getRequiredWallet();
-			const ardrive = arDriveFactory({
+			const ardrive = cliArDriveFactory({
 				wallet,
 				feeMultiple: parameters.getOptionalBoostSetting(),
 				dryRun
@@ -38,7 +38,7 @@ new CLICommand({
 			const drive = await ardrive.getPrivateDrive({ driveId, driveKey });
 			await ardrive.downloadPrivateFolder(drive.rootFolderId, maxDepth, localFilePath, driveKey);
 		} else {
-			const ardrive = arDriveAnonymousFactory();
+			const ardrive = cliArDriveAnonymousFactory({});
 			const drive = await ardrive.getPublicDrive({ driveId });
 			await ardrive.downloadPublicFolder(drive.rootFolderId, maxDepth, localFilePath);
 		}
