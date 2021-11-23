@@ -920,12 +920,16 @@ send-ar
 get-drive-key
 get-file-key
 
+last-tx
+
 
 Arweave Ops
 ===========
-tx-status
+base-reward
 get-mempool
-
+create-tx
+send-tx
+tx-status
 
 # Learn more about a command:
 ardrive <command> --help
