@@ -10,7 +10,8 @@ import {
 	SeedPhraseParameter,
 	TreeDepthParams,
 	WalletFileParameter,
-	DestinationManifestNameParameter
+	DestinationManifestNameParameter,
+	ConflictResolutionParams
 } from '../parameter_declarations';
 
 new CLICommand({
@@ -22,6 +23,7 @@ new CLICommand({
 		DryRunParameter,
 		WalletFileParameter,
 		SeedPhraseParameter,
+		...ConflictResolutionParams,
 		...TreeDepthParams
 	],
 	action: new CLIAction(async function action(options) {
@@ -39,11 +41,13 @@ new CLICommand({
 
 		const maxDepth = await parameters.getMaxDepth(Number.MAX_SAFE_INTEGER);
 		const destManifestName = parameters.getParameterValue(DestinationManifestNameParameter);
+		const conflictResolution = parameters.getFileNameConflictResolution();
 
 		const result = await arDrive.uploadPublicManifest({
 			folderId: folderId,
 			maxDepth,
-			destManifestName
+			destManifestName,
+			conflictResolution
 		});
 
 		console.log(JSON.stringify(result, null, 4));
