@@ -1,6 +1,6 @@
 {
 	"name": "ardrive-cli",
-	"version": "1.0.3",
+	"version": "1.1.0",
 	"description": "The ArDrive Command Line Interface (CLI is a Node.js application for terminal-based ArDrive workflows. It also offers utility operations for securely interacting with Arweave wallets and inspecting various Arweave blockchain conditions.",
 	"main": "./lib/index.js",
 	"bin": {
@@ -8,23 +8,11 @@
 	},
 	"types": "./lib/index.d.ts",
 	"dependencies": {
-		"@types/axios": "^0.14.0",
-		"ardrive-core-js": "0.5.1",
+		"ardrive-core-js": "../ardrive-core-js_PE-461_migrate_code_from_cli",
 		"arweave": "^1.10.16",
-		"arweave-bundles": "^1.0.3",
-		"arweave-mnemonic-keys": "^0.0.9",
-		"axios": "^0.24.0",
-		"base64-js": "^1.5.1",
-		"bignumber.js": "^9.0.0",
 		"commander": "^8.2.0",
-		"jwk-to-pem": "^2.0.4",
 		"lodash": "^4.17.21",
-		"node-fetch": "2.6.2",
-		"prompts": "^2.4.0",
-		"regression": "^2.0.1",
-		"smartweave": "^0.4.45",
-		"typescript": "^4.2.3",
-		"uuid": "^8.3.2"
+		"prompts": "^2.4.0"
 	},
 	"devDependencies": {
 		"@istanbuljs/nyc-config-typescript": "^1.0.1",
@@ -33,12 +21,9 @@
 		"@types/lodash": "^4",
 		"@types/mocha": "^9.0.0",
 		"@types/node": "^14.14.32",
-		"@types/node-fetch": "2.5.3",
 		"@types/prompts": "^2.0.9",
-		"@types/regression": "^2.0.2",
 		"@types/sinon": "^10.0.2",
 		"@types/source-map-support": "^0",
-		"@types/uuid": "^8.3.0",
 		"@typescript-eslint/eslint-plugin": "^4.18.0",
 		"@typescript-eslint/parser": "^4.18.0",
 		"chai": "^4.3.4",
@@ -54,7 +39,8 @@
 		"sinon": "^11.1.2",
 		"source-map-support": "^0.5.20",
 		"ts-node": "^10.2.1",
-		"ts-sinon": "^2.0.1"
+		"ts-sinon": "^2.0.1",
+		"typescript": "^4.2.3"
 	},
 	"scripts": {
 		"clean": "rimraf [ lib .nyc_output node_modules coverage ]",
