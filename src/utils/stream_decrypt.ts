@@ -1,6 +1,6 @@
+import { CipherIV, FileKey } from 'ardrive-core-js';
 import { createDecipheriv } from 'crypto';
 import { Transform } from 'stream';
-import { CipherIV, FileKey } from '../types';
 
 const algo = 'aes-256-gcm'; // crypto library does not accept this in uppercase. So gotta keep using aes-256-gcm
 const authTagLength = 16;
