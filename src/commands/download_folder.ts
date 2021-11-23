@@ -1,5 +1,6 @@
+import { EID } from 'ardrive-core-js';
 import { resolve } from 'path';
-import { arDriveAnonymousFactory, arDriveFactory } from '..';
+import { cliArDriveAnonymousFactory, cliArDriveFactory } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
 import {
@@ -10,7 +11,6 @@ import {
 	LocalFilePathParameter,
 	MaxDepthParameter
 } from '../parameter_declarations';
-import { EID } from '../types';
 
 new CLICommand({
 	name: 'download-folder',
@@ -33,14 +33,14 @@ new CLICommand({
 			const driveId = parameters.getRequiredParameterValue(DriveIdParameter, EID);
 			const driveKey = await parameters.getDriveKey({ driveId });
 			const wallet = await parameters.getRequiredWallet();
-			const ardrive = arDriveFactory({
+			const ardrive = cliArDriveFactory({
 				wallet,
 				feeMultiple: parameters.getOptionalBoostSetting(),
 				dryRun
 			});
 			await ardrive.downloadPrivateFolder(folderId, maxDepth, localFilePath, driveKey);
 		} else {
-			const ardrive = arDriveAnonymousFactory();
+			const ardrive = cliArDriveAnonymousFactory({});
 			await ardrive.downloadPublicFolder(folderId, maxDepth, localFilePath);
 		}
 		console.log(`Folder with ID "${folderId}" was successfully download to "${localFilePath}"`);

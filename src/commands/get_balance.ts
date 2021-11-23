@@ -1,9 +1,9 @@
+import { AR } from 'ardrive-core-js';
 import { cliWalletDao } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { AddressParameter, SeedPhraseParameter, WalletFileParameter } from '../parameter_declarations';
-import { AR } from '../types';
 
 new CLICommand({
 	name: 'get-balance',

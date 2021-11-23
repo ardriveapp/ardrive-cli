@@ -1,7 +1,5 @@
-import { JWKWallet, Wallet, WalletDAO } from '../wallet';
 import { ParameterName } from './parameter';
 import * as fs from 'fs';
-import { deriveDriveKey, JWKInterface } from 'ardrive-core-js';
 import {
 	AddressParameter,
 	AllParameter,
@@ -16,10 +14,25 @@ import {
 	BoostParameter
 } from '../parameter_declarations';
 import { cliWalletDao } from '..';
-import { DriveID, DriveKey, ArweaveAddress, SeedPhrase, FeeMultiple, ADDR } from '../types';
 import passwordPrompt from 'prompts';
-import { PrivateKeyData } from '../private_key_data';
-import { FileNameConflictResolution, replaceOnConflicts, skipOnConflicts, upsertOnConflicts } from '../ardrive.types';
+import {
+	DriveID,
+	DriveKey,
+	WalletDAO,
+	Wallet,
+	JWKWallet,
+	SeedPhrase,
+	ArweaveAddress,
+	ADDR,
+	FeeMultiple,
+	PrivateKeyData,
+	deriveDriveKey,
+	FileNameConflictResolution,
+	replaceOnConflicts,
+	skipOnConflicts,
+	upsertOnConflicts
+} from 'ardrive-core-js';
+import { JWKInterface } from 'arweave/node/lib/wallet';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ParameterOptions = any;
