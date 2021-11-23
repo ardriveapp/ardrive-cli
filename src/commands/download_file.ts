@@ -50,7 +50,7 @@ new CLICommand({
 		const parameters = new ParametersHelper(options);
 		const dryRun = !!parameters.getParameterValue(DryRunParameter);
 		const fileId = parameters.getRequiredParameterValue(FileIdParameter, EID);
-		const localFilePath = parameters.getRequiredParameterValue(LocalFilePathParameter);
+		const localFilePath = parameters.getParameterValue(LocalFilePathParameter) || './';
 		if (await parameters.getIsPrivate()) {
 			const driveId = parameters.getRequiredParameterValue(DriveIdParameter);
 			const driveKey = await parameters.getDriveKey({ driveId: EID(driveId) });
