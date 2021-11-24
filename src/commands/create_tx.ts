@@ -1,4 +1,4 @@
-import { ADDR, AR, JWKWallet, Winston } from 'ardrive-core-js';
+import { ADDR, AR, JWKWallet, TxID, W, Winston } from 'ardrive-core-js';
 import { CreateTransactionInterface } from 'arweave/node/common';
 import { cliArweave, CLI_APP_NAME, CLI_APP_VERSION } from '..';
 import { CLICommand } from '../CLICommand';
@@ -28,13 +28,15 @@ new CLICommand({
 		const winston: Winston = arAmount.toWinston();
 		const destAddress = parameters.getRequiredParameterValue(DestinationAddressParameter, ADDR);
 		const jwkWallet = (await parameters.getRequiredWallet()) as JWKWallet;
+		const lastTxParam = parameters.getParameterValue(LastTxParameter); // Can be provided as a txID or empty string
+		const last_tx = lastTxParam && lastTxParam.length ? `${TxID(lastTxParam)}` : undefined;
 
 		// Create and sign transaction
 		const trxAttributes: Partial<CreateTransactionInterface> = {
 			target: destAddress.toString(),
 			quantity: winston.toString(),
-			reward: parameters.getParameterValue(RewardParameter),
-			last_tx: parameters.getParameterValue(LastTxParameter)
+			reward: `${parameters.getRequiredParameterValue(RewardParameter, W)}`,
+			last_tx
 		};
 		const transaction = await cliArweave.createTransaction(trxAttributes, jwkWallet.getPrivateKey());
 		transaction.addTag('App-Name', CLI_APP_NAME);
