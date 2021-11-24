@@ -998,7 +998,7 @@ __metadata:
     "@types/source-map-support": ^0
     "@typescript-eslint/eslint-plugin": ^4.18.0
     "@typescript-eslint/parser": ^4.18.0
-    ardrive-core-js: 1.0.1
+    ardrive-core-js: 1.0.4
     arweave: ^1.10.16
     chai: ^4.3.4
     commander: ^8.2.0
@@ -1023,9 +1023,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"ardrive-core-js@npm:1.0.1":
-  version: 1.0.1
-  resolution: "ardrive-core-js@npm:1.0.1"
+"ardrive-core-js@npm:1.0.4":
+  version: 1.0.4
+  resolution: "ardrive-core-js@npm:1.0.4"
   dependencies:
     arweave: ^1.10.16
     arweave-bundles: ^1.0.3
@@ -1037,12 +1037,11 @@ __metadata:
     jwk-to-pem: ^2.0.4
     lodash: ^4.17.21
     mime-types: ^2.1.29
-    node-fetch: ^2.6.1
     regression: ^2.0.1
     smartweave: ^0.4.45
     utf8: ^3.0.0
     uuid: ^8.3.2
-  checksum: 0a2f7f56192f1e002d79550b17771f645d47797c68da84bb53b088522869401f8fcd7a4be97449377ef263d2abed0e7994467d063d0e354ded0174ed353e4046
+  checksum: 22109e31bc9264580fc53788f4b5b2217a28ede4e1f0b6e2401762c25eb54c0617ea2da8c03a1b5868691aac4f9d87c9ce799908a19b83984ab300a61a3606ad
   languageName: node
   linkType: hard
 
@@ -3920,13 +3919,6 @@ fsevents@~2.3.2:
   dependencies:
     node-gyp: latest
   checksum: c40748948918fc82b83a9f3442a98f4fa92bd9786bb1d1b507facf77a22fb7a4b5b9332102f6ad94c7e2828ae3cd353907cbaa8eaf4ce9c5edaa9d327d501301
-  languageName: node
-  linkType: hard
-
-"node-fetch@npm:^2.6.1":
-  version: 2.6.2
-  resolution: "node-fetch@npm:2.6.2"
-  checksum: f48d84c89c861ae7ff6d0a363a6c85fb7159e51165b1b97819c1b750f1fbbe27765d7bbda37c7a0e453a736db25a396d3ec22057d257d3403a79e722710a97f7
   languageName: node
   linkType: hard
 
