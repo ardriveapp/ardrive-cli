@@ -766,28 +766,32 @@ Example output:
 
 ### Uploading Manifests
 
-ArDrive supports the creation of Arweave manifests using any of your PUBLIC folders or drives. This manifest will be created at the root of specified folder or drive just as any other ArFS file entity:
+[Arweave Path Manifests][arweave-manifests] are are special `.json` files that instruct Arweave Gateways to map file data associated with specific, disparate transaction IDs to customized, hosted paths relative to that of the manifest file itself. So if, for example, your manifest file had an arweave.net URL like:
 
 ```shell
-ardrive create-manifest -d bc9af866-6421-40f1-ac89-202bddb5c487 -w /path/to/wallet
+https://arweave.net/{manifest tx id}
 ```
 
-The manifest data transaction is tagged with a unique content-type, `application/x.arweave-manifest+json`, which tells the gateway to treat this file as a manifest. The file itself is a .json file that holds the paths (the data transaction ids) to each file in the specified folder/drive.
+Then, all the mapped txs and paths in the manifest file would be addressable at URLs like:
 
-When your drive or folder is later changed by adding files or updating them with new revisions, the original manifest will not be updated on its own. A manifest is a permanent record of your files in their current state.
+```shell
+https://arweave.net/{manifest tx id}/foo.txt
+https://arweave.net/{manifest tx id}/bar/baz.png
+```
+
+ArDrive supports the creation of these Arweave manifests using any of your PUBLIC folders or drives. This manifest will reside in the root folder of the drive they describe.
+
+```shell
+ardrive create-manifest -f bc9af866-6421-40f1-ac89-202bddb5c487 -w /path/to/wallet
+```
+
+The manifest data transaction is tagged with a unique content-type, `application/x.arweave-manifest+json`, which tells the gateway to treat this file as a manifest. The manifest file itself is a `.json` file that holds the paths (the data transaction ids) to each file in the specified folder/drive.
+
+When your drive or folder is later changed by adding files or updating them with new revisions, the original manifest will NOT be updated on its own. A manifest is a permanent record of your files in their current state.
 
 However, creating a subsequent manifest with the same manifest name will create a new revision of that manifest in its new current state. Manifests follow the same name conflict resolution as outlined for files above (upsert by default).
 
-These paths are used by the gateway to create working links to each of your files:
-
-```shell
-arweave.net/ztZAc-ahH2Im3EytKOfmO85Ae1zYfRK8k2cSzw9wHx4",
-"arweave.net/ztZAc-ahH2Im3EytKOfmO85Ae1zYfRK8k2cSzw9wHx4/a_fun_subfolder/e.png",
-"arweave.net/ztZAc-ahH2Im3EytKOfmO85Ae1zYfRK8k2cSzw9wHx4/a_fun_subfolder/hello_world.txt",
-"arweave.net/ztZAc-ahH2Im3EytKOfmO85Ae1zYfRK8k2cSzw9wHx4/a_fun_subfolder/hello_world2.txt"
-```
-
-When creating this manifest, you can link up an index.html page as the first path by uploading it in to the root of the folder or drive before creating a manifest. Using this method, your index.html will even be able path to assets within the folder tree:
+When creating this manifest, you can link up an `index.html` web page as the first path by uploading that `index.html` file into the root of the folder or drive before creating a manifest. Using this method, your `index.html` will even be able path to assets within the folder tree:
 
 ```shell
 my-ardrive-folder
@@ -800,7 +804,7 @@ my-ardrive-folder
     my-font.ttf
 ```
 
-This is effectively hosting a web page on ArDrive. See our [example manifest web page][example-manifest-webpage]. You can find out more about Arweave path manifests [here][arweave-manifest]
+This is effectively hosting a web page on ArDrive. See our [example manifest web page][example-manifest-webpage].
 
 ### Create New Drive and Upload Folder Pipeline Example<a id="create-upload-pipeline"></a>
 
