@@ -779,19 +779,19 @@ https://arweave.net/{manifest tx id}/foo.txt
 https://arweave.net/{manifest tx id}/bar/baz.png
 ```
 
-ArDrive supports the creation of these Arweave manifests using any of your PUBLIC folders. To create a manifest of an entire public drive, specify the root folder of that drive. The generated manifest will reside in the root of the folder they describe.
+ArDrive supports the creation of these Arweave manifests using any of your PUBLIC folders. To create a manifest of an entire public drive, specify the root folder of that drive. The generated manifest will reside in the root of the folder it describes.
 
 ```shell
 ardrive create-manifest -f bc9af866-6421-40f1-ac89-202bddb5c487 -w /path/to/wallet
 ```
 
-The manifest data transaction is tagged with a unique content-type, `application/x.arweave-manifest+json`, which tells the gateway to treat this file as a manifest. The manifest file itself is a `.json` file that holds the paths (the data transaction ids) to each file in the specified folder.
+The manifest data transaction is tagged with a unique content-type, `application/x.arweave-manifest+json`, which tells the gateway to treat this file as a manifest. The manifest file itself is a `.json` file that holds the paths (the data transaction ids) to each file within the specified folder.
 
 When your folder is later changed by adding files or updating them with new revisions, the original manifest will NOT be updated on its own. A manifest is a permanent record of your files in their current state.
 
 However, creating a subsequent manifest with the same manifest name will create a new revision of that manifest in its new current state. Manifests follow the same name conflict resolution as outlined for files above (upsert by default).
 
-When creating this manifest, you can link up an `index.html` web page as the first path by uploading that `index.html` file into the root of the folder before creating a manifest. Using this method, your `index.html` will even be able path to assets within the folder tree:
+When creating this manifest, you can link up an `index.html` web page as the first path by uploading that `index.html` file into the root of the folder before creating a manifest. Using this method, your `index.html` will even be able to path to assets within the folder tree:
 
 ```shell
 my-ardrive-folder
@@ -804,7 +804,7 @@ my-ardrive-folder
     my-font.ttf
 ```
 
-This is effectively hosting a web page on ArDrive. See our [example manifest web page][example-manifest-webpage].
+This is effectively hosting a web page with ArDrive. See our [example manifest web page][example-manifest-webpage].
 
 ### Create New Drive and Upload Folder Pipeline Example<a id="create-upload-pipeline"></a>
 
