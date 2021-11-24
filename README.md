@@ -846,10 +846,10 @@ The workflow to send the AR out from your cold wallet requires you to generate a
 • the last transaction sent OUT from the cold wallet (or an empty string if none has ever been sent out)
 • the base fee for an Arweave transaction (i.e. a zero bye transaction). Note that this value could change if a sufficient amount of time passes between the time you fetch this value, create the transaction, and send the transaction.
 
-To get the last transaction sent from your cold wallet, use the `last-tx` command, specifying either your seed phrase, wallet file, or wallet address, e.g.:
+To get the last transaction sent from your cold wallet, use the `last-tx` command and specify your wallet address e.g.:
 
 ```
-ardrive last-tx -w /path/to/wallet/file.json
+ardrive last-tx -a <Arweave address of cold wallet>
 ```
 
 To get the base transaction reward required for an AR transaction, use the `base-reward` function, optionally applying a reward boost multiple if you're looking to front-run network congestion:
