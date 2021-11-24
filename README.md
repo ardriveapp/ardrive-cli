@@ -779,7 +779,7 @@ https://arweave.net/{manifest tx id}/foo.txt
 https://arweave.net/{manifest tx id}/bar/baz.png
 ```
 
-ArDrive supports the creation of these Arweave manifests using any of your PUBLIC folders or drives. This manifest will reside in the root folder of the drive they describe.
+ArDrive supports the creation of these Arweave manifests using any of your PUBLIC folders. To create a manifest of an entire public drive, specify the root folder of that drive. The generated manifest will reside in the root of the folder they describe.
 
 ```shell
 ardrive create-manifest -f bc9af866-6421-40f1-ac89-202bddb5c487 -w /path/to/wallet
