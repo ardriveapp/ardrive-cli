@@ -1,6 +1,8 @@
-import { EID } from 'ardrive-core-js';
-import { Stats, statSync } from 'fs';
+import { ArFSFileToDownload, EID } from 'ardrive-core-js';
+import { createWriteStream, Stats, statSync, utimesSync } from 'fs';
 import { join as joinPath, parse as parsePath, resolve as resolvePath } from 'path';
+import { pipeline } from 'stream';
+import { promisify } from 'util';
 import { cliArDriveAnonymousFactory, cliArDriveFactory } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
@@ -11,6 +13,9 @@ import {
 	FileIdParameter,
 	LocalFilePathParameter
 } from '../parameter_declarations';
+import { ProgressBar } from '../utils';
+
+const pipelinePromise = promisify(pipeline);
 
 /**
  * Gets the full file name
@@ -50,7 +55,9 @@ new CLICommand({
 		const parameters = new ParametersHelper(options);
 		const dryRun = !!parameters.getParameterValue(DryRunParameter);
 		const fileId = parameters.getRequiredParameterValue(FileIdParameter, EID);
-		const localFilePath = parameters.getParameterValue(LocalFilePathParameter) || './';
+		const localFilePath = resolvePath(parameters.getParameterValue(LocalFilePathParameter) || './');
+		let fileToDownload: ArFSFileToDownload;
+
 		if (await parameters.getIsPrivate()) {
 			const driveId = parameters.getRequiredParameterValue(DriveIdParameter);
 			const driveKey = await parameters.getDriveKey({ driveId: EID(driveId) });
@@ -61,14 +68,35 @@ new CLICommand({
 				dryRun
 			});
 			const file = await ardrive.getPrivateFile({ fileId, driveKey });
-			const fullLocalFilePath = getAbsoluteFilePath(localFilePath, file.name);
-			await ardrive.downloadPrivateFile(file, fullLocalFilePath, driveKey);
+			const allEntitiesOnDrive = await ardrive.listPrivateFolder({ folderId: file.parentFolderId, driveKey });
+			const fileWithPaths = allEntitiesOnDrive.find((entity) => entity.entityId.equals(file.fileId));
+			if (!fileWithPaths) {
+				throw new Error(`Could not retreive the private file with id: ${file.fileId}`);
+			}
+			const cipherIv = await ardrive.getCipherIVOfPrivateTransactionID(file.dataTxId);
+			fileToDownload = new ArFSFileToDownload(ardrive, fileWithPaths, driveKey, cipherIv);
 		} else {
 			const ardrive = cliArDriveAnonymousFactory({});
 			const file = await ardrive.getPublicFile({ fileId });
-			const fullLocalFilePath = getAbsoluteFilePath(localFilePath, file.name);
-			await ardrive.downloadPublicFile(file, fullLocalFilePath);
+			const allEntitiesOnDrive = ardrive.listPublicFolder({ folderId: file.parentFolderId });
+			const fileWithPaths = (await allEntitiesOnDrive).find((entity) => entity.entityId.equals(file.fileId));
+			if (!fileWithPaths) {
+				throw new Error(`Could not retreive the public file with id: ${file.fileId}`);
+			}
+			fileToDownload = new ArFSFileToDownload(ardrive, fileWithPaths);
 		}
+		const fullLocalFilePath = getAbsoluteFilePath(localFilePath, fileToDownload.fileEntity.name);
+		const remoteFileLastModifiedDate = Math.ceil(+fileToDownload.fileEntity.lastModifiedDate / 1000);
+		const dataStream = await fileToDownload.getDataStream();
+		const downloadProgressBar = new ProgressBar(fileToDownload.length, 1, 1);
+		const progressBarStream = downloadProgressBar.passThroughStream;
+		const decryptingStream = await fileToDownload.getDecryptingStream();
+		const writeStream = createWriteStream(fullLocalFilePath);
+		await pipelinePromise(dataStream, progressBarStream, decryptingStream, writeStream).finally(() => {
+			// update the last-modified-date
+			const accessTime = Date.now();
+			utimesSync(fullLocalFilePath, accessTime, remoteFileLastModifiedDate);
+		});
 		console.log(`File with ID "${fileId}" was successfully download to "${localFilePath}"`);
 	})
 });

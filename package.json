@@ -8,10 +8,11 @@
 	},
 	"types": "./lib/index.d.ts",
 	"dependencies": {
-		"ardrive-core-js": "../ardrive-core-js_PE-461_migrate_code_from_cli",
+		"ardrive-core-js": "../ardrive-core-js_PE-677_download_progress",
 		"arweave": "^1.10.16",
 		"commander": "^8.2.0",
 		"lodash": "^4.17.21",
+		"progress": "^2.0.3",
 		"prompts": "^2.4.0"
 	},
 	"devDependencies": {
@@ -21,6 +22,7 @@
 		"@types/lodash": "^4",
 		"@types/mocha": "^9.0.0",
 		"@types/node": "^14.14.32",
+		"@types/progress": "^2",
 		"@types/prompts": "^2.0.9",
 		"@types/sinon": "^10.0.2",
 		"@types/source-map-support": "^0",
