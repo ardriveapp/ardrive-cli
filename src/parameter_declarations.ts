@@ -29,6 +29,7 @@ export const ReplaceParameter = 'replace';
 export const UpsertParameter = 'upsert';
 // export const AskParameter = 'ask';
 export const NoVerifyParameter = 'verify'; // commander maps --no-x style params to options.x and always includes in options
+export const GlobParameter = 'glob';
 
 // Aggregates for convenience
 export const DriveCreationPrivacyParameters = [
@@ -64,7 +65,8 @@ export const AllParameters = [
 	MaxDepthParameter,
 	BoostParameter,
 	DryRunParameter,
-	NoVerifyParameter
+	NoVerifyParameter,
+	GlobParameter
 ] as const;
 export type ParameterName = typeof AllParameters[number];
 
@@ -294,4 +296,14 @@ Parameter.declare({
 	description:
 		'(OPTIONAL) Derives a drive key for the given drive ID without verifying its correctness against the drive on chain.',
 	type: 'boolean'
+});
+
+Parameter.declare({
+	name: GlobParameter,
+	aliases: ['-g', '--glob'],
+	description: `the base64 encoded symmetric encryption key (with '=' characters excised) for the drive (or parent drive in the case of folder operations)
+\t\t\t\t\t\t\t• Required only for operations involving private drives or entities within them
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --unsafe-drive-password
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --private`,
+	forbiddenConjunctionParameters: [LocalFilesParameter, LocalFilePathParameter]
 });

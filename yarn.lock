@@ -554,6 +554,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/glob@npm:^7":
+  version: 7.2.0
+  resolution: "@types/glob@npm:7.2.0"
+  dependencies:
+    "@types/minimatch": "*"
+    "@types/node": "*"
+  checksum: 7ffc39eae2ee62ddbb3062f332cf3abb9f9d0a91821821e032cab9e38a1362f0f6f9eb5c34fb0b40647a25e57884e68462d5fb635810ad9ad12f5f6b2c393f8b
+  languageName: node
+  linkType: hard
+
 "@types/inquirer@npm:^7.3.1":
   version: 7.3.1
   resolution: "@types/inquirer@npm:7.3.1"
@@ -589,6 +599,13 @@ __metadata:
   version: 4.0.1
   resolution: "@types/long@npm:4.0.1"
   checksum: ed2a125330dbf2b425b2e58b1e1151a37106ceeec973f9f191fba0bda83ed00fae6d858254022e8b6e7165fec5f0c3872b7cb5f425c753383fed54699fb63b38
+  languageName: node
+  linkType: hard
+
+"@types/minimatch@npm:*":
+  version: 3.0.5
+  resolution: "@types/minimatch@npm:3.0.5"
+  checksum: 517a8ea1bfad4cc9d2563fc70c3ecd9afb13f9ef2b2cb06f8910989baf199d24f2fc6a8ccaae16a27c856e022b311042ca67ff42ffbda48750f2f84a5bf48716
   languageName: node
   linkType: hard
 
@@ -989,6 +1006,7 @@ __metadata:
   dependencies:
     "@istanbuljs/nyc-config-typescript": ^1.0.1
     "@types/chai": ^4.2.21
+    "@types/glob": ^7
     "@types/jwk-to-pem": ^2.0.0
     "@types/lodash": ^4
     "@types/mocha": ^9.0.0
@@ -1005,6 +1023,7 @@ __metadata:
     eslint: ^7.23.0
     eslint-config-prettier: ^8.1.0
     eslint-plugin-prettier: latest
+    glob: ^7.2.0
     husky: ^=6
     lint-staged: ^11.0.0
     lodash: ^4.17.21
@@ -2680,6 +2699,20 @@ fsevents@~2.3.2:
     once: ^1.3.0
     path-is-absolute: ^1.0.0
   checksum: 352f74f08247db5420161a2f68f2bd84b53228b5fcfc9dcc37cd54d3f19ec0232495d84aeff1286d0727059e9fdc1031400e00b971bdc59e30f8f82b199c9d02
+  languageName: node
+  linkType: hard
+
+"glob@npm:^7.2.0":
+  version: 7.2.0
+  resolution: "glob@npm:7.2.0"
+  dependencies:
+    fs.realpath: ^1.0.0
+    inflight: ^1.0.4
+    inherits: 2
+    minimatch: ^3.0.4
+    once: ^1.3.0
+    path-is-absolute: ^1.0.0
+  checksum: 1171c3d7b1f5a367499e498826cddafc642aa55ef21e810031a287d3199612a889059d7d2c276a04c636c3ac2fd5943896bfc309110b21fafaeb8a1e0a199d6e
   languageName: node
   linkType: hard
 

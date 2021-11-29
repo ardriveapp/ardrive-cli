@@ -1,3 +1,4 @@
+import glob from 'glob';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import {
 	BoostParameter,
@@ -5,6 +6,7 @@ import {
 	DestinationFileNameParameter,
 	DrivePrivacyParameters,
 	DryRunParameter,
+	GlobParameter,
 	LocalFilePathParameter,
 	LocalFilesParameter,
 	ParentFolderIdParameter,
@@ -32,20 +34,25 @@ interface UploadFileParameter {
 	driveKey?: DriveKey;
 }
 
+type FilePath = string;
+
 new CLICommand({
 	name: 'upload-file',
 	parameters: [
-		ParentFolderIdParameter,
-		LocalFilePathParameter,
-		DestinationFileNameParameter,
-		LocalFilesParameter,
 		BoostParameter,
+		DestinationFileNameParameter,
 		DryRunParameter,
+		GlobParameter,
+		LocalFilePathParameter,
+		LocalFilesParameter,
+		ParentFolderIdParameter,
 		...ConflictResolutionParams,
 		...DrivePrivacyParameters
 	],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
+		const globValue = parameters.getParameterValue(GlobParameter);
+
 		const filesToUpload: UploadFileParameter[] = await (async function (): Promise<UploadFileParameter[]> {
 			const localFiles = parameters.getParameterValue(LocalFilesParameter);
 			if (localFiles) {
@@ -69,14 +76,31 @@ new CLICommand({
 						driveKey
 					};
 				});
+
 				return fileParameters;
+			}
+
+			const parentFolderId: FolderID = parameters.getRequiredParameterValue(ParentFolderIdParameter, EID);
+
+			if (globValue) {
+				const files = glob.sync(globValue);
+				const globParameters = files.map((filePath: FilePath) => {
+					const wrappedEntity = wrapFileOrFolder(filePath);
+
+					return {
+						parentFolderId,
+						wrappedEntity,
+						destinationFileName: options.destFileName as string
+					};
+				});
+
+				return globParameters;
 			}
 
 			if (!options.localFilePath) {
 				throw new Error('Must provide a local file path!');
 			}
 
-			const parentFolderId: FolderID = parameters.getRequiredParameterValue(ParentFolderIdParameter, EID);
 			const localFilePath = parameters.getRequiredParameterValue(LocalFilePathParameter, wrapFileOrFolder);
 			const singleParameter = {
 				parentFolderId: parentFolderId,
@@ -149,6 +173,9 @@ new CLICommand({
 							}
 						}
 					})();
+					if (globValue) {
+						console.log(`\n${wrappedEntity.filePath}`);
+					}
 					console.log(JSON.stringify(result, null, 4));
 				})
 			);
