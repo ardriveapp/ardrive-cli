@@ -301,9 +301,8 @@ Parameter.declare({
 Parameter.declare({
 	name: GlobParameter,
 	aliases: ['-g', '--glob'],
-	description: `the base64 encoded symmetric encryption key (with '=' characters excised) for the drive (or parent drive in the case of folder operations)
-\t\t\t\t\t\t\t• Required only for operations involving private drives or entities within them
-\t\t\t\t\t\t\t• Can NOT be used in conjunction with --unsafe-drive-password
-\t\t\t\t\t\t\t• Can NOT be used in conjunction with --private`,
+	description: `(BETA) a glob pattern to select files to be uploaded
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-files-path
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-files`,
 	forbiddenConjunctionParameters: [LocalFilesParameter, LocalFilePathParameter]
 });
