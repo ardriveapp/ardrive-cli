@@ -18,6 +18,7 @@ import {
 	FolderID,
 	ArFSFileToUpload,
 	ArFSFolderToUpload,
+	ArFSResult,
 	DriveKey,
 	wrapFileOrFolder,
 	EID,
@@ -35,6 +36,21 @@ interface UploadFileParameter {
 }
 
 type FilePath = string;
+
+const formatResults = (results: ArFSResult[]): ArFSResult => {
+	const isFolderUploadResults = results.length === 1;
+	if (isFolderUploadResults) {
+		return results[0];
+	}
+	return results.reduce(
+		(previousValue, currentValue) => ({
+			created: [...previousValue.created, ...currentValue.created],
+			tips: [...previousValue.tips, ...currentValue.tips],
+			fees: { ...previousValue.fees, ...currentValue.fees }
+		}),
+		{ created: [], tips: [], fees: {} }
+	);
+};
 
 new CLICommand({
 	name: 'upload-file',
@@ -89,8 +105,7 @@ new CLICommand({
 
 					return {
 						parentFolderId,
-						wrappedEntity,
-						destinationFileName: options.destFileName as string
+						wrappedEntity
 					};
 				});
 
@@ -121,7 +136,7 @@ new CLICommand({
 				dryRun: !!options.dryRun
 			});
 
-			await Promise.all(
+			const results = await Promise.all(
 				filesToUpload.map(async (fileToUpload) => {
 					const {
 						parentFolderId,
@@ -131,7 +146,7 @@ new CLICommand({
 						driveKey: fileDriveKey
 					} = fileToUpload;
 
-					const result = await (async () => {
+					return await (async () => {
 						if (await parameters.getIsPrivate()) {
 							const driveId = await arDrive.getDriveIdForFolderId(parentFolderId);
 							const driveKey =
@@ -173,14 +188,13 @@ new CLICommand({
 							}
 						}
 					})();
-					if (globValue) {
-						console.log(`\n${wrappedEntity.filePath}`);
-					}
-					console.log(JSON.stringify(result, null, 4));
 				})
 			);
+
+			console.log(JSON.stringify(formatResults(results), null, 4));
 			return SUCCESS_EXIT_CODE;
 		}
+
 		console.log(`No files to upload`);
 		return ERROR_EXIT_CODE;
 	})
