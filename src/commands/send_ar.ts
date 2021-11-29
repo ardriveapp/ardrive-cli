@@ -9,12 +9,18 @@ import {
 	BoostParameter,
 	DestinationAddressParameter,
 	DryRunParameter,
-	WalletFileParameter
+	WalletTypeParameters
 } from '../parameter_declarations';
 
 new CLICommand({
 	name: 'send-ar',
-	parameters: [ArAmountParameter, DestinationAddressParameter, WalletFileParameter, BoostParameter, DryRunParameter],
+	parameters: [
+		ArAmountParameter,
+		DestinationAddressParameter,
+		BoostParameter,
+		DryRunParameter,
+		...WalletTypeParameters
+	],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
 		const arAmount = parameters.getRequiredParameterValue(ArAmountParameter, AR.from);

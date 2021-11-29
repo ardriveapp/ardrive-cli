@@ -10,6 +10,7 @@
 	"dependencies": {
 		"ardrive-core-js": "1.0.4",
 		"arweave": "^1.10.16",
+		"axios": "^0.21.1",
 		"commander": "^8.2.0",
 		"lodash": "^4.17.21",
 		"prompts": "^2.4.0"
