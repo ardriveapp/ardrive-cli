@@ -962,4 +962,4 @@ ardrive <command> --help
 [arconnect]: https://arconnect.io/
 [kb-wallets]: https://ardrive.atlassian.net/l/c/FpK8FuoQ
 [arweave-manifests]: https://github.com/ArweaveTeam/arweave/wiki/Path-Manifests
-[example-manifest-webpage]: arweave.net/V_L4J79QOrjQ_1Nbh5yAetVn8OY_KzvagIFNdCn1X_o
+[example-manifest-webpage]: https://arweave.net/V_L4J79QOrjQ_1Nbh5yAetVn8OY_KzvagIFNdCn1X_o
