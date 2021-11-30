@@ -709,7 +709,7 @@ Users can declare a glob pattern to select files to be upload in bulk. `upload-f
 The example above will upload all `jpg` files from the indicated path.
 
 ```shell
-ardrive upload-file --glob "/path/to/photos/folder/*.jpg" --parend-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
+ardrive upload-file --glob "/path/to/photos/folder/*.jpg" --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
 ```
 
 ### Name Conflict Resolution on Upload
