@@ -839,6 +839,17 @@ And finally, create the manifest using the generated Folder ID from the build fo
 ardrive create-manifest -f "41759f05-614d-45ad-846b-63f3767504a4" -w "/path/to/wallet"
 ```
 
+In the return output, the top link will be a link to the deployed web app:
+
+```shell
+    "links": [
+        "https://arweave.net/0MK68J8TqGhaaOpPe713Zn0jdpczMt2NGS2CtRYiuAg",
+        "https://arweave.net/0MK68J8TqGhaaOpPe713Zn0jdpczMt2NGS2CtRYiuAg/asset-manifest.json",
+        "https://arweave.net/0MK68J8TqGhaaOpPe713Zn0jdpczMt2NGS2CtRYiuAg/favicon.ico",
+        "https://arweave.net/0MK68J8TqGhaaOpPe713Zn0jdpczMt2NGS2CtRYiuAg/index.html",
+        # ...
+```
+
 This is effectively hosting a web app with ArDrive. Check out the ArDrive Price Calculator React App hosted as an [ArDrive Manifest][example-manifest-webpage].
 
 ### Create New Drive and Upload Folder Pipeline Example<a id="create-upload-pipeline"></a>
