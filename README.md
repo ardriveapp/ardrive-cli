@@ -709,7 +709,7 @@ ardrive upload-file --local-file-path /path/to/folder  --parent-folder-id "9af69
 
 By default, the `upload-file` command will use the upsert behavior if existing entities are encountered in the destination folder tree that would cause naming conflicts.
 
-Expect the behaviors from the following table for each resolution setting:
+Expect the behaviors from the following table for each of these resolution settings:
 
 | Source Type | Conflict at Dest | `skip` | `replace` | `upsert` (default) |
 | ----------- | ---------------- | ------ | --------- | ------------------ |
@@ -733,6 +733,24 @@ ardrive upload-file --replace --local-file-path /path/to/file.txt  --parent-fold
 
 ```shell
 ardrive upload-file --skip --local-file-path /path/to/file.txt  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
+```
+
+Alternatively, the upload-file commands now also supports the `--ask` conflict resolution option. This setting will always provide an interactive prompt on name conflicts that allows users to decide how to resolve each conflict found:
+
+```shell
+ardrive upload-file --ask --local-file-path /path/to/file.txt  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
+
+Destination folder has a file to file name conflict!
+
+File name: 2.png
+File ID: efbc0370-b69f-44d9-812c-0d272b019027
+This file has a DIFFERENT last modified date
+
+Please select how to proceed:
+ › - Use arrow-keys. Return to submit.
+❯   Replace as new file revision
+    Upload with a different file name
+    Skip this file upload
 ```
 
 ### Fetching the Metadata of a File Entity
