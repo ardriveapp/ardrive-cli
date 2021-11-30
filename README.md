@@ -768,7 +768,7 @@ Example output:
 
 ### Uploading Manifests
 
-[Arweave Path Manifests][arweave-manifests] are are special `.json` files that instruct Arweave Gateways to map file data associated with specific, disparate transaction IDs to customized, hosted paths relative to that of the manifest file itself. So if, for example, your manifest file had an arweave.net URL like:
+[Arweave Path Manifests][arweave-manifests] are are special `.json` files that instruct Arweave Gateways to map file data associated with specific, unique transaction IDs to customized, hosted paths relative to that of the manifest file itself. So if, for example, your manifest file had an arweave.net URL like:
 
 ```shell
 https://arweave.net/{manifest tx id}
