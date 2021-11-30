@@ -10,6 +10,9 @@ export const DriveKeyParameter = 'driveKey';
 export const AddressParameter = 'address';
 export const DriveIdParameter = 'driveId';
 export const ArAmountParameter = 'arAmount';
+export const RewardParameter = 'reward';
+export const LastTxParameter = 'lastTx';
+export const TxFilePathParameter = 'txFilePath';
 export const DestinationAddressParameter = 'destAddress';
 export const TransactionIdParameter = 'txId';
 export const ConfirmationsParameter = 'confirmations';
@@ -32,40 +35,39 @@ export const UpsertParameter = 'upsert';
 export const NoVerifyParameter = 'verify'; // commander maps --no-x style params to options.x and always includes in options
 
 // Aggregates for convenience
-export const DriveCreationPrivacyParameters = [
-	PrivateParameter,
-	UnsafeDrivePasswordParameter,
-	WalletFileParameter,
-	SeedPhraseParameter
-];
+export const WalletTypeParameters = [WalletFileParameter, SeedPhraseParameter];
+export const DriveCreationPrivacyParameters = [...WalletTypeParameters, PrivateParameter, UnsafeDrivePasswordParameter];
 export const DrivePrivacyParameters = [DriveKeyParameter, ...DriveCreationPrivacyParameters];
 export const TreeDepthParams = [AllParameter, MaxDepthParameter];
 export const AllParameters = [
-	WalletFileParameter,
-	SeedPhraseParameter,
-	PrivateParameter,
-	UnsafeDrivePasswordParameter,
-	DriveNameParameter,
-	FolderNameParameter,
-	DriveKeyParameter,
 	AddressParameter,
-	DriveIdParameter,
-	ArAmountParameter,
-	DestinationAddressParameter,
-	TransactionIdParameter,
-	ConfirmationsParameter,
-	FolderIdParameter,
-	FileIdParameter,
-	ParentFolderIdParameter,
-	LocalFilePathParameter,
-	DestinationFileNameParameter,
-	LocalFilesParameter,
-	GetAllRevisionsParameter,
 	AllParameter,
-	MaxDepthParameter,
+	ArAmountParameter,
 	BoostParameter,
+	ConfirmationsParameter,
+	DestinationAddressParameter,
+	DestinationFileNameParameter,
+	DriveKeyParameter,
+	DriveNameParameter,
+	DriveIdParameter,
 	DryRunParameter,
-	NoVerifyParameter
+	FileIdParameter,
+	FolderIdParameter,
+	FolderNameParameter,
+	GetAllRevisionsParameter,
+	LastTxParameter,
+	LocalFilesParameter,
+	LocalFilePathParameter,
+	MaxDepthParameter,
+	NoVerifyParameter,
+	ParentFolderIdParameter,
+	PrivateParameter,
+	RewardParameter,
+	SeedPhraseParameter,
+	TransactionIdParameter,
+	TxFilePathParameter,
+	UnsafeDrivePasswordParameter,
+	WalletFileParameter
 ] as const;
 export type ParameterName = typeof AllParameters[number];
 
@@ -157,6 +159,27 @@ Parameter.declare({
 	aliases: ['-a', '--ar-amount'],
 	description: `amount of AR to send to the --dest-address
 \t\t\t\t\t\t\t• does NOT include transaction mining base rewards`,
+	required: true
+});
+
+Parameter.declare({
+	name: RewardParameter,
+	aliases: ['-r', '--reward'],
+	description: `amount of Winston to set as the transaction reward`,
+	required: true
+});
+
+Parameter.declare({
+	name: LastTxParameter,
+	aliases: ['-l', '--last-tx'],
+	description: `the transaction ID of the last transaction sent by this wallet`,
+	required: true
+});
+
+Parameter.declare({
+	name: TxFilePathParameter,
+	aliases: ['-x', '--tx-file-path'],
+	description: `path on the filesystem from which to load the signed transaction data`,
 	required: true
 });
 
