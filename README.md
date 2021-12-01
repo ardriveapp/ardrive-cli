@@ -100,8 +100,9 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
     6. [Working With Files](#working-with-files)
         1. [Uploading a Single File](#uploading-a-single-file)
         2. [Uploading a Folder with Files](#bulk-upload)
-        3. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
-        4. [Create New Drive and Upload Folder Pipeline Example](#create-upload-pipeline)
+        3. [Uploading files using a glob pattern](#glob-upload)
+        4. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
+        5. [Create New Drive and Upload Folder Pipeline Example](#create-upload-pipeline)
     7. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -703,10 +704,10 @@ Users can perform a bulk upload by using the upload-file command on a target fol
 ardrive upload-file --local-file-path /path/to/folder  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
 ```
 
-### Uploading files using a glob pattern (BETA)
+### Uploading files using a glob pattern (BETA)<a id="glob-upload"></a>
 
 Users can declare a glob pattern to select files to be upload in bulk. `upload-file` command will parse the glob pattern and will upload all the files that match the pattern to the selected destination.
-The example above will upload all `jpg` files from the indicated path.
+The example below will upload all `jpg` files from the indicated path.
 
 ```shell
 ardrive upload-file --glob "/path/to/photos/folder/*.jpg" --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
