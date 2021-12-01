@@ -67,7 +67,6 @@ new CLICommand({
 	],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
-		const globValue = parameters.getParameterValue(GlobParameter);
 
 		const filesToUpload: UploadFileParameter[] = await (async function (): Promise<UploadFileParameter[]> {
 			const localFiles = parameters.getParameterValue(LocalFilesParameter);
@@ -97,6 +96,7 @@ new CLICommand({
 			}
 
 			const parentFolderId: FolderID = parameters.getRequiredParameterValue(ParentFolderIdParameter, EID);
+			const globValue = parameters.getParameterValue(GlobParameter);
 
 			if (globValue) {
 				const files = glob.sync(globValue);

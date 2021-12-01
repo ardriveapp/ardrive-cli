@@ -40,7 +40,7 @@ export const DriveCreationPrivacyParameters = [...WalletTypeParameters, PrivateP
 export const DrivePrivacyParameters = [DriveKeyParameter, ...DriveCreationPrivacyParameters];
 export const TreeDepthParams = [AllParameter, MaxDepthParameter];
 export const AllParameters = [
-  AddressParameter,
+	AddressParameter,
 	AllParameter,
 	ArAmountParameter,
 	BoostParameter,
@@ -55,7 +55,7 @@ export const AllParameters = [
 	FolderIdParameter,
 	FolderNameParameter,
 	GetAllRevisionsParameter,
-  GlobParameter,
+	GlobParameter,
 	LastTxParameter,
 	LocalFilesParameter,
 	LocalFilePathParameter,
