@@ -952,11 +952,14 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
 
 The best cold wallet storage never exposes your seed phrase and/or private keys to the Internet or a compromised system interface. You can use the ArDrive CLI to facilitate cold storage and transfer of AR.
 
-If you need a new cold AR wallet, generate one from an airgapped machine capable of running the ArDrive CLI by following the instructions in the [Wallet Operations](#wallet-operations) section. Fund your cold wallet from whatever external sources you'd like. NOTE: Your cold wallet won't appear on chain until it has received AR.
+If you need a new cold AR wallet, generate one from an air-gapped machine capable of running the ArDrive CLI by following the instructions in the [Wallet Operations](#wallet-operations) section. Fund your cold wallet from whatever external sources you'd like. NOTE: Your cold wallet won't appear on chain until it has received AR.
 
-The workflow to send the AR out from your cold wallet requires you to generate a signed transaction with your cold wallet on your airgapped machine via the ArDrive CLI, and then to transfer the signed transaction (e.g. by a file on a clean thumb drive) to an Internet-connected machine and send the transaction to the network via the ArDrive CLI. You'll need two inputs from the Internect-connected machine:
-• the last transaction sent OUT from the cold wallet (or an empty string if none has ever been sent out)
-• the base fee for an Arweave transaction (i.e. a zero bye transaction). Note that this value could change if a sufficient amount of time passes between the time you fetch this value, create the transaction, and send the transaction.
+The workflow to send the AR out from your cold wallet requires you to generate a signed transaction with your cold wallet on your air-gapped machine via the ArDrive CLI, and then to transfer the signed transaction (e.g. by a file on a clean thumb drive) to an Internet-connected machine and send the transaction to the network via the ArDrive CLI. You'll need two inputs from the Internet-connected machine:
+
+<ul>
+<li>the last transaction sent OUT from the cold wallet (or an empty string if none has ever been sent out)</li>
+<li>the base fee for an Arweave transaction (i.e. a zero bye transaction). Note that this value could change if a sufficient amount of time passes between the time you fetch this value, create the transaction, and send the transaction.</li>
+</ul>
 
 To get the last transaction sent from your cold wallet, use the `last-tx` command and specify your wallet address e.g.:
 
