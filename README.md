@@ -706,7 +706,7 @@ ardrive upload-file --local-file-path /path/to/folder  --parent-folder-id "9af69
 
 ### Uploading files using a glob pattern (BETA)<a id="glob-upload"></a>
 
-Users can declare a glob pattern to select files to be upload in bulk. `upload-file` command will parse the glob pattern and will upload all the files that match the pattern to the selected destination.
+Users can declare a glob pattern to select files to be uploaded in bulk. The `upload-file` command will parse the glob pattern and will upload all the files that match the pattern to a specified parent folder.
 The example below will upload all `jpg` files from the indicated path.
 
 ```shell
