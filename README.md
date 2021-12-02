@@ -802,6 +802,32 @@ Creating a `.json` file of your manifest links output can be accomplished here w
 ardrive create-manifest -w /path/to/wallet -f "6c312b3e-4778-4a18-8243-f2b346f5e7cb"  | jq '{links}' > links.json
 ```
 
+Similarly, you can output the raw manifest `.json` file that will be uploaded to your ArDrive folder:
+
+```shell
+ardrive create-manifest -w /path/to/wallet -f "6c312b3e-4778-4a18-8243-f2b346f5e7cb"  | jq '{manifest.manifest}' > manifest.json
+```
+
+```json
+{
+    "manifest": {
+        "manifest": "arweave/paths",
+        "version": "0.1.0",
+        "index": {
+            "path": "index.html"
+        },
+        "paths": {
+            "hello_world.txt": {
+                "id": "Y7GFF8r9y0MEU_oi1aZeD87vrmai97JdRQ2L0cbGJ68"
+            },
+            "index.html": {
+                "id": "pELonjVebHyBsdxVymvxbGTmHD96v9PuuUXj8GUHGoY"
+            }
+        }
+    }
+}
+```
+
 The manifest data transaction is tagged with a unique content-type, `application/x.arweave-manifest+json`, which tells the gateway to treat this file as a manifest. The manifest file itself is a `.json` file that holds the paths (the data transaction ids) to each file within the specified folder.
 
 When your folder is later changed by adding files or updating them with new revisions, the original manifest will NOT be updated on its own. A manifest is a permanent record of your files in their current state.
