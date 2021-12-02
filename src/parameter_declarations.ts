@@ -307,8 +307,7 @@ Parameter.declare({
 Parameter.declare({
 	name: AskParameter,
 	aliases: ['--ask'],
-	description:
-		'(OPTIONAL) Show an interactive prompt to resolve file to file name conflicts within the destination folder',
+	description: '(OPTIONAL) Show an interactive prompt to resolve name conflicts within the destination folder',
 	type: 'boolean',
 	forbiddenConjunctionParameters: [SkipParameter, ReplaceParameter, UpsertParameter]
 });
