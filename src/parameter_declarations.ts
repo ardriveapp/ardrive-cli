@@ -21,6 +21,7 @@ export const FileIdParameter = 'fileId';
 export const ParentFolderIdParameter = 'parentFolderId';
 export const LocalFilePathParameter = 'localFilePath';
 export const DestinationFileNameParameter = 'destFileName';
+export const DestinationManifestNameParameter = 'destManifestName';
 export const LocalFilesParameter = 'localFiles';
 export const GetAllRevisionsParameter = 'getAllRevisions';
 export const AllParameter = 'all';
@@ -236,6 +237,12 @@ Parameter.declare({
 	name: DestinationFileNameParameter,
 	aliases: ['-d', '--dest-file-name'],
 	description: `(OPTIONAL) a destination file name to use when uploaded to ArDrive`
+});
+
+Parameter.declare({
+	name: DestinationManifestNameParameter,
+	aliases: ['-n', '--dest-manifest-name'],
+	description: `(OPTIONAL) a destination file name for the manifest to use when uploaded to ArDrive`
 });
 
 Parameter.declare({
