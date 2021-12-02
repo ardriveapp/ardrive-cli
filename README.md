@@ -802,27 +802,25 @@ Creating a `.json` file of your manifest links output can be accomplished here w
 ardrive create-manifest -w /path/to/wallet -f "6c312b3e-4778-4a18-8243-f2b346f5e7cb"  | jq '{links}' > links.json
 ```
 
-Similarly, you can output the raw manifest `.json` file that will be uploaded to your ArDrive folder:
+If you'd like to preview the contents of your manifest before uploading, you can perform a dry run and do some lightweight post processing to isolate the data:
 
 ```shell
-ardrive create-manifest -w /path/to/wallet -f "6c312b3e-4778-4a18-8243-f2b346f5e7cb"  | jq '{manifest.manifest}' > manifest.json
+ardrive create-manifest -w /path/to/wallet -f "6c312b3e-4778-4a18-8243-f2b346f5e7cb"  --dry-run | jq '{manifest}.manifest'
 ```
 
 ```json
 {
-    "manifest": {
-        "manifest": "arweave/paths",
-        "version": "0.1.0",
-        "index": {
-            "path": "index.html"
+    "manifest": "arweave/paths",
+    "version": "0.1.0",
+    "index": {
+        "path": "index.html"
+    },
+    "paths": {
+        "hello_world.txt": {
+            "id": "Y7GFF8r9y0MEU_oi1aZeD87vrmai97JdRQ2L0cbGJ68"
         },
-        "paths": {
-            "hello_world.txt": {
-                "id": "Y7GFF8r9y0MEU_oi1aZeD87vrmai97JdRQ2L0cbGJ68"
-            },
-            "index.html": {
-                "id": "pELonjVebHyBsdxVymvxbGTmHD96v9PuuUXj8GUHGoY"
-            }
+        "index.html": {
+            "id": "pELonjVebHyBsdxVymvxbGTmHD96v9PuuUXj8GUHGoY"
         }
     }
 }
