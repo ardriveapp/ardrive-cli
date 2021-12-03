@@ -4,6 +4,8 @@ import { ArFSResult, ArweaveAddress, EntityID, TransactionID, Winston } from 'ar
 
 import { formatResults } from './upload_file';
 
+// Any TxIDs, EntityIDS and Arweave addresses used on this mock are invalid as it's not those values that are being tested
+// Real values are not UUIDs.
 const createResultMock = (): ArFSResult => ({
 	created: [
 		{
