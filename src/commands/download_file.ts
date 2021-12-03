@@ -19,13 +19,14 @@ new CLICommand({
 		const destFolderPath = resolvePath(parameters.getParameterValue(LocalFilePathParameter) || './');
 
 		if (await parameters.getIsPrivate()) {
-			const driveId = parameters.getRequiredParameterValue(DriveIdParameter);
-			const driveKey = await parameters.getDriveKey({ driveId: EID(driveId) });
 			const wallet = await parameters.getRequiredWallet();
 			const ardrive = cliArDriveFactory({
 				wallet,
 				feeMultiple: parameters.getOptionalBoostSetting()
 			});
+			const driveIdString = parameters.getParameterValue(DriveIdParameter);
+			const driveId = driveIdString ? EID(driveIdString) : await ardrive.getDriveIdForFileId(fileId);
+			const driveKey = await parameters.getDriveKey({ driveId: driveId });
 			await ardrive.downloadPrivateFile(fileId, destFolderPath, driveKey);
 		} else {
 			const ardrive = cliArDriveAnonymousFactory({});
