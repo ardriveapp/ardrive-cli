@@ -37,12 +37,8 @@ interface UploadFileParameter {
 
 type FilePath = string;
 
-const formatResults = (results: ArFSResult[]): ArFSResult => {
-	const isFolderUploadResults = results.length === 1;
-	if (isFolderUploadResults) {
-		return results[0];
-	}
-	return results.reduce(
+export const formatResults = (results: ArFSResult[]): ArFSResult =>
+	results.reduce(
 		(previousValue, currentValue) => ({
 			created: [...previousValue.created, ...currentValue.created],
 			tips: [...previousValue.tips, ...currentValue.tips],
@@ -50,7 +46,6 @@ const formatResults = (results: ArFSResult[]): ArFSResult => {
 		}),
 		{ created: [], tips: [], fees: {} }
 	);
-};
 
 new CLICommand({
 	name: 'upload-file',
