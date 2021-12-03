@@ -1005,6 +1005,7 @@ list-folder
 list-drive
 list-all-drives
 
+download-file
 
 Wallet Ops
 ===========
