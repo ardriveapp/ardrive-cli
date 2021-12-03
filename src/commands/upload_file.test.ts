@@ -30,7 +30,6 @@ const createResultMock = (): ArFSResult => ({
 describe('Commands - upload-file', () => {
 	it('formatResults should merge multiple results in just one object', () => {
 		const firstResult = createResultMock();
-		console.log(firstResult.created[0].metadataTxId);
 		const secondResult = createResultMock();
 
 		const resultsOutput = formatResults([firstResult, secondResult]);
