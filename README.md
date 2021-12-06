@@ -101,7 +101,9 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         1. [Uploading a Single File](#uploading-a-single-file)
         2. [Uploading a Folder with Files](#bulk-upload)
         3. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
-        4. [Create New Drive and Upload Folder Pipeline Example](#create-upload-pipeline)
+        4. [Uploading Manifests](#uploading-manifests)
+        5. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
+        6. [Create New Drive and Upload Folder Pipeline Example](#create-upload-pipeline)
     7. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -764,6 +766,98 @@ Example output:
 }
 ```
 
+### Uploading Manifests
+
+[Arweave Path Manifests][arweave-manifests] are are special `.json` files that instruct Arweave Gateways to map file data associated with specific, unique transaction IDs to customized, hosted paths relative to that of the manifest file itself. So if, for example, your manifest file had an arweave.net URL like:
+
+```shell
+https://arweave.net/{manifest tx id}
+```
+
+Then, all the mapped transactions and paths in the manifest file would be addressable at URLs like:
+
+```shell
+https://arweave.net/{manifest tx id}/foo.txt
+https://arweave.net/{manifest tx id}/bar/baz.png
+```
+
+ArDrive supports the creation of these Arweave manifests using any of your PUBLIC folders. The generated manifest paths will be links to each of the file entities within the specified folder. The manifest file entity will be created at the root of the folder.
+
+To create a manifest of an entire public drive, specify the root folder of that drive:
+
+```shell
+ardrive create-manifest -f "bc9af866-6421-40f1-ac89-202bddb5c487" -w "/path/to/wallet"
+```
+
+You can also create a manifest of a folder's file entities at a custom depth by using the `--max-depth` option:
+
+```shell
+# Create manifest of a folder's local file contents, excluding all sub-folders
+ardrive create-manifest --max-depth 0  -f "867228d8-4413-4c0e-a499-e1decbf2ea38" -w "/path/to/wallet"
+```
+
+Creating a `.json` file of your manifest links output can be accomplished here with some `jq` parsing and piping to a file:
+
+```shell
+ardrive create-manifest -w /path/to/wallet -f "6c312b3e-4778-4a18-8243-f2b346f5e7cb"  | jq '{links}' > links.json
+```
+
+The manifest data transaction is tagged with a unique content-type, `application/x.arweave-manifest+json`, which tells the gateway to treat this file as a manifest. The manifest file itself is a `.json` file that holds the paths (the data transaction ids) to each file within the specified folder.
+
+When your folder is later changed by adding files or updating them with new revisions, the original manifest will NOT be updated on its own. A manifest is a permanent record of your files in their current state.
+
+However, creating a subsequent manifest with the same manifest name will create a new revision of that manifest in its new current state. Manifests follow the same name conflict resolution as outlined for files above (upsert by default).
+
+#### Hosting a Webpage with Manifest
+
+When creating a manifest, it is possible to host a webpage or web app. You can do this by creating a manifest on a folder that has an `index.html` file in its root.
+
+Using generated build folders from popular frameworks works as well. One requirement here to note is that the `href=` paths from your generated `index.html` file must not have leading a `/`. This means that the manifest will not resolve a path of `/dist/index.js` but it will resolve `dist/index.js` or `./dist/index.js`.
+
+As an example, here is a flow of creating a React app and hosting it with an ArDrive Manifest. First, generate a React app:
+
+```shell
+yarn create react-app my-app
+```
+
+Next, add this field to the generated `package.json` so that the paths will resolve correctly:
+
+```json
+"homepage": ".",
+```
+
+Then, create an optimized production build from within the app's directory:
+
+```shell
+yarn build
+```
+
+Now, we can create and upload that produced build folder on ArDrive to any of your existing ArFS folder entities:
+
+```shell
+ardrive upload-file -l "/build" -w "/path/to/wallet" --parent-folder-id "bc9af866-6421-40f1-ac89-202bddb5c487"
+```
+
+And finally, create the manifest using the generated Folder ID from the build folder creation:
+
+```shell
+# Create manifest using the Folder ID of the `/build` folder
+ardrive create-manifest -f "41759f05-614d-45ad-846b-63f3767504a4" -w "/path/to/wallet"
+```
+
+In the return output, the top link will be a link to the deployed web app:
+
+```shell
+    "links": [
+        "https://arweave.net/0MK68J8TqGhaaOpPe713Zn0jdpczMt2NGS2CtRYiuAg",
+        "https://arweave.net/0MK68J8TqGhaaOpPe713Zn0jdpczMt2NGS2CtRYiuAg/asset-manifest.json",
+        "https://arweave.net/0MK68J8TqGhaaOpPe713Zn0jdpczMt2NGS2CtRYiuAg/favicon.ico",
+        "https://arweave.net/0MK68J8TqGhaaOpPe713Zn0jdpczMt2NGS2CtRYiuAg/index.html",
+        # ...
+```
+
+This is effectively hosting a web app with ArDrive. Check out the ArDrive Price Calculator React App hosted as an [ArDrive Manifest][example-manifest-webpage].
+
 ### Create New Drive and Upload Folder Pipeline Example<a id="create-upload-pipeline"></a>
 
 ```shell
@@ -840,11 +934,14 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
 
 The best cold wallet storage never exposes your seed phrase and/or private keys to the Internet or a compromised system interface. You can use the ArDrive CLI to facilitate cold storage and transfer of AR.
 
-If you need a new cold AR wallet, generate one from an airgapped machine capable of running the ArDrive CLI by following the instructions in the [Wallet Operations](#wallet-operations) section. Fund your cold wallet from whatever external sources you'd like. NOTE: Your cold wallet won't appear on chain until it has received AR.
+If you need a new cold AR wallet, generate one from an air-gapped machine capable of running the ArDrive CLI by following the instructions in the [Wallet Operations](#wallet-operations) section. Fund your cold wallet from whatever external sources you'd like. NOTE: Your cold wallet won't appear on chain until it has received AR.
 
-The workflow to send the AR out from your cold wallet requires you to generate a signed transaction with your cold wallet on your airgapped machine via the ArDrive CLI, and then to transfer the signed transaction (e.g. by a file on a clean thumb drive) to an Internet-connected machine and send the transaction to the network via the ArDrive CLI. You'll need two inputs from the Internect-connected machine:
-• the last transaction sent OUT from the cold wallet (or an empty string if none has ever been sent out)
-• the base fee for an Arweave transaction (i.e. a zero bye transaction). Note that this value could change if a sufficient amount of time passes between the time you fetch this value, create the transaction, and send the transaction.
+The workflow to send the AR out from your cold wallet requires you to generate a signed transaction with your cold wallet on your air-gapped machine via the ArDrive CLI, and then to transfer the signed transaction (e.g. by a file on a clean thumb drive) to an Internet-connected machine and send the transaction to the network via the ArDrive CLI. You'll need two inputs from the Internet-connected machine:
+
+<ul>
+<li>the last transaction sent OUT from the cold wallet (or an empty string if none has ever been sent out)</li>
+<li>the base fee for an Arweave transaction (i.e. a zero bye transaction). Note that this value could change if a sufficient amount of time passes between the time you fetch this value, create the transaction, and send the transaction.</li>
+</ul>
 
 To get the last transaction sent from your cold wallet, use the `last-tx` command and specify your wallet address e.g.:
 
@@ -892,6 +989,7 @@ Write ArFS
 create-drive
 create-folder
 upload-file
+create-manifest
 
 move-file
 move-folder
@@ -907,6 +1005,7 @@ list-folder
 list-drive
 list-all-drives
 
+download-file
 
 Wallet Ops
 ===========
@@ -956,3 +1055,5 @@ ardrive <command> --help
 [ardrive-discord]: https://discord.gg/w4vvrezD
 [arconnect]: https://arconnect.io/
 [kb-wallets]: https://ardrive.atlassian.net/l/c/FpK8FuoQ
+[arweave-manifests]: https://github.com/ArweaveTeam/arweave/wiki/Path-Manifests
+[example-manifest-webpage]: https://arweave.net/qozq9YIUPEHfZhoTp9DkBpJuA_KNULBnfLiMroj5pZI
