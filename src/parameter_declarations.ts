@@ -20,6 +20,7 @@ export const FolderIdParameter = 'folderId';
 export const FileIdParameter = 'fileId';
 export const ParentFolderIdParameter = 'parentFolderId';
 export const LocalFilePathParameter = 'localFilePath';
+export const DestinationFolderPathParameter = 'destFolderPath';
 export const DestinationFileNameParameter = 'destFileName';
 export const DestinationManifestNameParameter = 'destManifestName';
 export const LocalFilesParameter = 'localFiles';
@@ -229,6 +230,13 @@ Parameter.declare({
 	name: LocalFilePathParameter,
 	aliases: ['-l', '--local-file-path'],
 	description: `the path on the local filesystem for the file that will be uploaded`
+});
+
+Parameter.declare({
+	name: DestinationFolderPathParameter,
+	aliases: ['-d', '--dest-folder-path'],
+	description: `the path on the local filesystem of the folder`,
+	forbiddenConjunctionParameters: [LocalFilePathParameter]
 });
 
 Parameter.declare({
