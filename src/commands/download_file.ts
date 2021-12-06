@@ -3,21 +3,11 @@ import { resolve as resolvePath } from 'path';
 import { cliArDriveAnonymousFactory, cliArDriveFactory } from '../index';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
-import {
-	DriveIdParameter,
-	DrivePrivacyParameters,
-	FileIdParameter,
-	DestinationFolderPathParameter
-} from '../parameter_declarations';
+import { DrivePrivacyParameters, FileIdParameter, DestinationFolderPathParameter } from '../parameter_declarations';
 
 new CLICommand({
 	name: 'download-file',
-	parameters: [
-		FileIdParameter,
-		DestinationFolderPathParameter,
-		{ name: DriveIdParameter, required: false },
-		...DrivePrivacyParameters
-	],
+	parameters: [FileIdParameter, DestinationFolderPathParameter, ...DrivePrivacyParameters],
 	action: new CLIAction(async (options) => {
 		const parameters = new ParametersHelper(options);
 		const fileId = parameters.getRequiredParameterValue(FileIdParameter, EID);
@@ -29,8 +19,7 @@ new CLICommand({
 				wallet,
 				feeMultiple: parameters.getOptionalBoostSetting()
 			});
-			const driveIdString = parameters.getParameterValue(DriveIdParameter);
-			const driveId = driveIdString ? EID(driveIdString) : await ardrive.getDriveIdForFileId(fileId);
+			const driveId = await ardrive.getDriveIdForFileId(fileId);
 			const driveKey = await parameters.getDriveKey({ driveId: driveId });
 			await ardrive.downloadPrivateFile(fileId, destFolderPath, driveKey);
 		} else {
