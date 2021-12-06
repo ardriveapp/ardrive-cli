@@ -7,21 +7,21 @@ import {
 	DriveIdParameter,
 	DrivePrivacyParameters,
 	FileIdParameter,
-	LocalFilePathParameter
+	DestinationFolderPathParameter
 } from '../parameter_declarations';
 
 new CLICommand({
 	name: 'download-file',
 	parameters: [
 		FileIdParameter,
-		LocalFilePathParameter,
+		DestinationFolderPathParameter,
 		{ name: DriveIdParameter, required: false },
 		...DrivePrivacyParameters
 	],
 	action: new CLIAction(async (options) => {
 		const parameters = new ParametersHelper(options);
 		const fileId = parameters.getRequiredParameterValue(FileIdParameter, EID);
-		const destFolderPath = resolvePath(parameters.getParameterValue(LocalFilePathParameter) || './');
+		const destFolderPath = resolvePath(parameters.getParameterValue(DestinationFolderPathParameter) || './');
 
 		if (await parameters.getIsPrivate()) {
 			const wallet = await parameters.getRequiredWallet();
