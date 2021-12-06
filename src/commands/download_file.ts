@@ -12,7 +12,12 @@ import {
 
 new CLICommand({
 	name: 'download-file',
-	parameters: [FileIdParameter, LocalFilePathParameter, DriveIdParameter, ...DrivePrivacyParameters],
+	parameters: [
+		FileIdParameter,
+		LocalFilePathParameter,
+		{ name: DriveIdParameter, required: false },
+		...DrivePrivacyParameters
+	],
 	action: new CLIAction(async (options) => {
 		const parameters = new ParametersHelper(options);
 		const fileId = parameters.getRequiredParameterValue(FileIdParameter, EID);
