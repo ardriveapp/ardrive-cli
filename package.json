@@ -8,7 +8,7 @@
 	},
 	"types": "./lib/index.d.ts",
 	"dependencies": {
-		"ardrive-core-js": "1.0.5",
+		"ardrive-core-js": "../ardrive-core-js_PE-462_download_drive",
 		"arweave": "^1.10.16",
 		"axios": "^0.21.1",
 		"commander": "^8.2.0",

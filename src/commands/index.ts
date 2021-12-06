@@ -24,3 +24,4 @@ import './send_ar';
 import './send_tx';
 import './tx_status';
 import './upload_file';
+import './download_drive';
