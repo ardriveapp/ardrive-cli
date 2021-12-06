@@ -1,5 +1,4 @@
 import { EID } from 'ardrive-core-js';
-import { resolve as resolvePath } from 'path';
 import { cliArDriveAnonymousFactory, cliArDriveFactory } from '../index';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
@@ -11,7 +10,7 @@ new CLICommand({
 	action: new CLIAction(async (options) => {
 		const parameters = new ParametersHelper(options);
 		const fileId = parameters.getRequiredParameterValue(FileIdParameter, EID);
-		const destFolderPath = resolvePath(parameters.getParameterValue(DestinationFolderPathParameter) || './');
+		const destFolderPath = parameters.getParameterValue(DestinationFolderPathParameter) || './';
 
 		if (await parameters.getIsPrivate()) {
 			const wallet = await parameters.getRequiredWallet();
