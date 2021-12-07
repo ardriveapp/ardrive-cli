@@ -20,7 +20,7 @@ export const FolderIdParameter = 'folderId';
 export const FileIdParameter = 'fileId';
 export const ParentFolderIdParameter = 'parentFolderId';
 export const LocalFilePathParameter = 'localFilePath';
-export const DestinationFolderPathParameter = 'destFolderPath';
+export const DestinationOutputPathParameter = 'destOutputPath'; // TODO: find a better name
 export const DestinationFileNameParameter = 'destFileName';
 export const DestinationManifestNameParameter = 'destManifestName';
 export const LocalFilesParameter = 'localFiles';
@@ -233,9 +233,9 @@ Parameter.declare({
 });
 
 Parameter.declare({
-	name: DestinationFolderPathParameter,
-	aliases: ['-d', '--dest-folder-path'],
-	description: `the path on the local filesystem of the folder`,
+	name: DestinationOutputPathParameter,
+	aliases: ['-d', '--dest-output-path'],
+	description: `the path on the local filesystem where to download`,
 	forbiddenConjunctionParameters: [LocalFilePathParameter]
 });
 

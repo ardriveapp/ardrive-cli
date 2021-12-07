@@ -2,15 +2,18 @@ import { EID } from 'ardrive-core-js';
 import { cliArDriveAnonymousFactory, cliArDriveFactory } from '../index';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
-import { DrivePrivacyParameters, FileIdParameter, DestinationFolderPathParameter } from '../parameter_declarations';
+import { DrivePrivacyParameters, FileIdParameter, DestinationOutputPathParameter } from '../parameter_declarations';
+import { getOutputFilePathAndName } from '../utils';
 
 new CLICommand({
 	name: 'download-file',
-	parameters: [FileIdParameter, DestinationFolderPathParameter, ...DrivePrivacyParameters],
+	parameters: [FileIdParameter, DestinationOutputPathParameter, ...DrivePrivacyParameters],
 	action: new CLIAction(async (options) => {
 		const parameters = new ParametersHelper(options);
 		const fileId = parameters.getRequiredParameterValue(FileIdParameter, EID);
-		const destFolderPath = parameters.getParameterValue(DestinationFolderPathParameter) || './';
+		const destOutputPath = parameters.getParameterValue(DestinationOutputPathParameter) || './';
+
+		const [destFolderPath, fileName] = getOutputFilePathAndName(destOutputPath);
 
 		if (await parameters.getIsPrivate()) {
 			const wallet = await parameters.getRequiredWallet();
@@ -20,11 +23,11 @@ new CLICommand({
 			});
 			const driveId = await ardrive.getDriveIdForFileId(fileId);
 			const driveKey = await parameters.getDriveKey({ driveId: driveId });
-			await ardrive.downloadPrivateFile(fileId, destFolderPath, driveKey);
+			await ardrive.downloadPrivateFile(fileId, driveKey, destFolderPath, fileName);
 		} else {
 			const ardrive = cliArDriveAnonymousFactory({});
-			await ardrive.downloadPublicFile(fileId, destFolderPath);
+			await ardrive.downloadPublicFile(fileId, destFolderPath, fileName);
 		}
-		console.log(`File with ID "${fileId}" was successfully download to "${destFolderPath}"`);
+		console.log(`File with ID "${fileId}" was successfully download to "${destOutputPath}"`);
 	})
 });
