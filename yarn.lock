@@ -1548,7 +1548,7 @@ __metadata:
 
 "ardrive-core-js@file:../ardrive-core-js::locator=ardrive-cli%40workspace%3A.":
   version: 1.1.0
-  resolution: "ardrive-core-js@file:../ardrive-core-js#../ardrive-core-js::hash=a56a27&locator=ardrive-cli%40workspace%3A."
+  resolution: "ardrive-core-js@file:../ardrive-core-js#../ardrive-core-js::hash=81fa5a&locator=ardrive-cli%40workspace%3A."
   dependencies:
     arbundles: ^0.5.5
     arweave: ^1.10.18
@@ -1564,7 +1564,7 @@ __metadata:
     smartweave: ^0.4.45
     utf8: ^3.0.0
     uuid: ^8.3.2
-  checksum: 41e712d1840a29c8017781991cfb01ba6efdc83a83ddd079b6ba9acb8ce8f43c9600ba3b370a65718434ece0eebcac894fd5ae46865be436813e8081b925e688
+  checksum: e3645fd5ee5747213d0ab090fcf2528fca3b6ab8b5ac33e4824231869cbaf2805f439b3d5b316f903e1bf50290bf6497fef61c308541e40e3f48c5d34bc65790
   languageName: node
   linkType: hard
 
