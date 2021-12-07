@@ -1162,9 +1162,9 @@ __metadata:
   linkType: hard
 
 "@types/tmp@npm:^0.2.1":
-  version: 0.2.1
-  resolution: "@types/tmp@npm:0.2.1"
-  checksum: 3b15c4f7af51cdae5a2f83ee09ed93e79e125d0ab109ec3552a80bbc0d9b55904bb4fd615be95d68721a528e0a42c19adc97633040249e66e658513e38a66931
+  version: 0.2.2
+  resolution: "@types/tmp@npm:0.2.2"
+  checksum: f27e57d93ba384f590ec218ad636ac398bc121f19c51f8c77163718fdc08bdb78cd4df76ab402a9e6dcce3c72e4af6cf71292821d49aa315794a2369de5a0ba7
   languageName: node
   linkType: hard
 
@@ -1636,20 +1636,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"arweave@npm:^1.10.0, arweave@npm:^1.10.13, arweave@npm:^1.10.15, arweave@npm:^1.10.16":
-  version: 1.10.16
-  resolution: "arweave@npm:1.10.16"
-  dependencies:
-    arconnect: ^0.2.8
-    asn1.js: ^5.4.1
-    axios: ^0.21.1
-    base64-js: ^1.3.1
-    bignumber.js: ^9.0.1
-  checksum: 2baa240095f85a03c6cd29c8f9094347571362ccd2a9dc946dc0299c2d2e94af7e8ce3ea3ef9dcad9ee7fe1c2e3463fb3e55d110697e6fff80ae2ea74a92aeba
-  languageName: node
-  linkType: hard
-
-"arweave@npm:^1.10.18":
+"arweave@npm:^1.10.0, arweave@npm:^1.10.15, arweave@npm:^1.10.18":
   version: 1.10.18
   resolution: "arweave@npm:1.10.18"
   dependencies:
@@ -1659,6 +1646,19 @@ __metadata:
     base64-js: ^1.3.1
     bignumber.js: ^9.0.1
   checksum: 81c94216f584adbad4c4db6e8044e46bac77081fe0d910add63c24765e2038e0ff824096c301e2adb951f5cf20c084b4534bf7a4ec0b592390633acc09e655a6
+  languageName: node
+  linkType: hard
+
+"arweave@npm:^1.10.13, arweave@npm:^1.10.16":
+  version: 1.10.16
+  resolution: "arweave@npm:1.10.16"
+  dependencies:
+    arconnect: ^0.2.8
+    asn1.js: ^5.4.1
+    axios: ^0.22.0
+    base64-js: ^1.3.1
+    bignumber.js: ^9.0.1
+  checksum: 2baa240095f85a03c6cd29c8f9094347571362ccd2a9dc946dc0299c2d2e94af7e8ce3ea3ef9dcad9ee7fe1c2e3463fb3e55d110697e6fff80ae2ea74a92aeba
   languageName: node
   linkType: hard
 
@@ -3232,17 +3232,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"follow-redirects@npm:^1.14.0":
-  version: 1.14.4
-  resolution: "follow-redirects@npm:1.14.4"
-  peerDependenciesMeta:
-    debug:
-      optional: true
-  checksum: 93def3c22eba16caa4ff6f6956ccfda5a50e889545b1ba0046194dd8e368ff79ba6ef681b06e6dc7032b50bc93ca59e9441aa8143cb26f43f40a20bbd6374639
-  languageName: node
-  linkType: hard
-
-"follow-redirects@npm:^1.14.4":
+"follow-redirects@npm:^1.14.0, follow-redirects@npm:^1.14.4":
   version: 1.14.5
   resolution: "follow-redirects@npm:1.14.5"
   peerDependenciesMeta:
@@ -6043,11 +6033,11 @@ fsevents@~2.3.2:
   linkType: hard
 
 "tmp-promise@npm:^3.0.2":
-  version: 3.0.2
-  resolution: "tmp-promise@npm:3.0.2"
+  version: 3.0.3
+  resolution: "tmp-promise@npm:3.0.3"
   dependencies:
     tmp: ^0.2.0
-  checksum: dceb1616b2d97bcc20f84544aa6ad0cb02b975da1cf2336648ea2e5f32e3be14d5c54dfc2dfdeedbd7d077ac99d8889d005db2be29c7c8da5d7a9d9207bda013
+  checksum: 6c5a0aefbd458e0eb32f5ab9b3da9673d3ca33a2a78fe5a0ce4694a27cc77ba87f8e776d12fb98e5a317078bff36d40d0016214dbe012b7643273a9f59efcf79
   languageName: node
   linkType: hard
 
