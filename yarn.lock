@@ -1548,7 +1548,7 @@ __metadata:
 
 "ardrive-core-js@file:../ardrive-core-js::locator=ardrive-cli%40workspace%3A.":
   version: 1.1.0
-  resolution: "ardrive-core-js@file:../ardrive-core-js#../ardrive-core-js::hash=05cf4d&locator=ardrive-cli%40workspace%3A."
+  resolution: "ardrive-core-js@file:../ardrive-core-js#../ardrive-core-js::hash=a56a27&locator=ardrive-cli%40workspace%3A."
   dependencies:
     arbundles: ^0.5.5
     arweave: ^1.10.18
@@ -1564,7 +1564,7 @@ __metadata:
     smartweave: ^0.4.45
     utf8: ^3.0.0
     uuid: ^8.3.2
-  checksum: a9c8e20a8298461ac98144512c58ad48ae3c5a59860752534e0704bbd0b68da15e7a9e8690ef22b5f404474712bbd90153f72273a8d82059f9443a5751df4d59
+  checksum: 41e712d1840a29c8017781991cfb01ba6efdc83a83ddd079b6ba9acb8ce8f43c9600ba3b370a65718434ece0eebcac894fd5ae46865be436813e8081b925e688
   languageName: node
   linkType: hard
 
@@ -1655,7 +1655,7 @@ __metadata:
   dependencies:
     arconnect: ^0.2.8
     asn1.js: ^5.4.1
-    axios: ^0.22.0
+    axios: ^0.21.1
     base64-js: ^1.3.1
     bignumber.js: ^9.0.1
   checksum: 2baa240095f85a03c6cd29c8f9094347571362ccd2a9dc946dc0299c2d2e94af7e8ce3ea3ef9dcad9ee7fe1c2e3463fb3e55d110697e6fff80ae2ea74a92aeba
@@ -1732,12 +1732,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:*, axios@npm:^0.21.3":
-  version: 0.21.4
-  resolution: "axios@npm:0.21.4"
+"axios@npm:*":
+  version: 0.24.0
+  resolution: "axios@npm:0.24.0"
   dependencies:
-    follow-redirects: ^1.14.0
-  checksum: e6d42b269b599d36eb13be0671c237781f32e6ae72be824297c55a3e1ce63b22ba4f46bad5ab28da7d3bae50a72637d55c792cf803be1cf9de6a8bcd6d0dcc1a
+    follow-redirects: ^1.14.4
+  checksum: e741dfea07def55be7b1082824d71f54f7859b9c3c75a86c6a74b91c6e48bb461aceac683f77867313f89ff40ef5f2d1d2a1fe1953fcb71bdc1c1fc0fc069925
   languageName: node
   linkType: hard
 
@@ -1747,6 +1747,15 @@ __metadata:
   dependencies:
     follow-redirects: ^1.10.0
   checksum: 864fb7b5d077d236737f10adca53bf451a93f35a15271f56fba8da07265a02d26b7d881b935a6697dc6adb0549ea3e56d2eecb403edaa3bb78f6479901c10f69
+  languageName: node
+  linkType: hard
+
+"axios@npm:^0.21.3":
+  version: 0.21.4
+  resolution: "axios@npm:0.21.4"
+  dependencies:
+    follow-redirects: ^1.14.0
+  checksum: e6d42b269b599d36eb13be0671c237781f32e6ae72be824297c55a3e1ce63b22ba4f46bad5ab28da7d3bae50a72637d55c792cf803be1cf9de6a8bcd6d0dcc1a
   languageName: node
   linkType: hard
 
