@@ -38,16 +38,7 @@ export const fileToFileNameConflict: FileToFileNameConflictPrompt = async ({
 	}
 
 	if (resolution === renameOnConflicts) {
-		let newFileName: string | undefined = undefined;
-
-		while (!newFileName) {
-			const { newFileName: fileNameFromPrompt } = await fileNamePrompt();
-
-			// Repeat the prompt if name is unchanged or conflicts with another name
-			if (fileNameFromPrompt !== fileName && !namesWithinFolder.includes(fileNameFromPrompt)) {
-				newFileName = fileNameFromPrompt;
-			}
-		}
+		const newFileName = await getNewNameFromRenamePrompt(fileName, namesWithinFolder, fileNamePrompt);
 
 		return { resolution: renameOnConflicts, newFileName };
 	}
@@ -74,16 +65,7 @@ export const fileToFolderNameConflict: FileToFolderConflictAskPrompt = async ({
 	}
 
 	if (resolution === renameOnConflicts) {
-		let newFileName: string | undefined = undefined;
-
-		while (!newFileName) {
-			const { newFileName: fileNameFromPrompt } = await fileNamePrompt();
-
-			// Repeat the prompt if name is unchanged or conflicts with another name
-			if (fileNameFromPrompt !== folderName && !namesWithinFolder.includes(fileNameFromPrompt)) {
-				newFileName = fileNameFromPrompt;
-			}
-		}
+		const newFileName = await getNewNameFromRenamePrompt(folderName, namesWithinFolder, fileNamePrompt);
 
 		return { resolution: renameOnConflicts, newFileName };
 	}
@@ -110,16 +92,7 @@ export const folderToFileNameConflict: FolderToFileConflictAskPrompt = async ({
 	}
 
 	if (resolution === renameOnConflicts) {
-		let newFolderName: string | undefined = undefined;
-
-		while (!newFolderName) {
-			const { newFolderName: folderNameFromPrompt } = await folderNamePrompt();
-
-			// Repeat the prompt if name is unchanged or conflicts with another name
-			if (folderNameFromPrompt !== fileName && !namesWithinFolder.includes(folderNameFromPrompt)) {
-				newFolderName = folderNameFromPrompt;
-			}
-		}
+		const newFolderName = await getNewNameFromRenamePrompt(fileName, namesWithinFolder, folderNamePrompt);
 
 		return { resolution: renameOnConflicts, newFolderName };
 	}
@@ -154,16 +127,7 @@ export const folderToFolderNameConflict: FolderToFolderConflictAskPrompt = async
 	}
 
 	if (resolution === renameOnConflicts) {
-		let newFolderName: string | undefined = undefined;
-
-		while (!newFolderName) {
-			const { newFolderName: folderNameFromPrompt } = await folderNamePrompt();
-
-			// Repeat the prompt if name is unchanged or conflicts with another name
-			if (folderNameFromPrompt !== folderName && !namesWithinFolder.includes(folderNameFromPrompt)) {
-				newFolderName = folderNameFromPrompt;
-			}
-		}
+		const newFolderName = await getNewNameFromRenamePrompt(folderName, namesWithinFolder, folderNamePrompt);
 
 		return { resolution: renameOnConflicts, newFolderName };
 	}
@@ -176,14 +140,14 @@ const conflictInterruptedError = 'Name conflict prompt was interrupted or could 
 const fileNamePrompt = () =>
 	prompts({
 		type: 'text',
-		name: 'newFileName',
+		name: 'newName',
 		message: 'Enter new file name'
 	});
 
 const folderNamePrompt = () =>
 	prompts({
 		type: 'text',
-		name: 'newFolderName',
+		name: 'newName',
 		message: 'Enter new folder name'
 	});
 
@@ -206,3 +170,29 @@ export const folderUploadConflictPrompts: FolderConflictPrompts = {
 	folderToFolderNameConflict,
 	folderToFileNameConflict
 };
+
+/** Shared utility function to resolve and display new conflicts during rename */
+export async function getNewNameFromRenamePrompt(
+	conflictingName: string,
+	namesWithinFolder: string[],
+	prompt: () => Promise<prompts.Answers<'newName'>>
+): Promise<string> {
+	let nameFromRename: string | undefined = undefined;
+	while (!nameFromRename) {
+		const { newName } = await prompt();
+
+		// Repeat the prompt if name remains unchanged, or conflicts with another name
+		if (newName === conflictingName) {
+			console.log('That is the same file name, please choose a new name!');
+			continue;
+		}
+		if (namesWithinFolder.includes(newName)) {
+			console.log('That name also conflicts with name in the destination file, choose a non-conflicting name!');
+			continue;
+		}
+
+		nameFromRename = newName;
+	}
+
+	return nameFromRename;
+}
