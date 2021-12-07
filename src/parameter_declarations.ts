@@ -10,6 +10,9 @@ export const DriveKeyParameter = 'driveKey';
 export const AddressParameter = 'address';
 export const DriveIdParameter = 'driveId';
 export const ArAmountParameter = 'arAmount';
+export const RewardParameter = 'reward';
+export const LastTxParameter = 'lastTx';
+export const TxFilePathParameter = 'txFilePath';
 export const DestinationAddressParameter = 'destAddress';
 export const TransactionIdParameter = 'txId';
 export const ConfirmationsParameter = 'confirmations';
@@ -18,23 +21,57 @@ export const FileIdParameter = 'fileId';
 export const ParentFolderIdParameter = 'parentFolderId';
 export const LocalFilePathParameter = 'localFilePath';
 export const DestinationFileNameParameter = 'destFileName';
+export const DestinationManifestNameParameter = 'destManifestName';
 export const LocalFilesParameter = 'localFiles';
 export const GetAllRevisionsParameter = 'getAllRevisions';
 export const AllParameter = 'all';
 export const MaxDepthParameter = 'maxDepth';
 export const BoostParameter = 'boost';
 export const DryRunParameter = 'dryRun';
+export const SkipParameter = 'skip';
+export const ReplaceParameter = 'replace';
+export const UpsertParameter = 'upsert';
+// export const AskParameter = 'ask';
 export const NoVerifyParameter = 'verify'; // commander maps --no-x style params to options.x and always includes in options
 
 // Aggregates for convenience
-export const DriveCreationPrivacyParameters = [
-	PrivateParameter,
-	UnsafeDrivePasswordParameter,
-	WalletFileParameter,
-	SeedPhraseParameter
-];
+export const WalletTypeParameters = [WalletFileParameter, SeedPhraseParameter];
+export const DriveCreationPrivacyParameters = [...WalletTypeParameters, PrivateParameter, UnsafeDrivePasswordParameter];
 export const DrivePrivacyParameters = [DriveKeyParameter, ...DriveCreationPrivacyParameters];
 export const TreeDepthParams = [AllParameter, MaxDepthParameter];
+export const AllParameters = [
+	AddressParameter,
+	AllParameter,
+	ArAmountParameter,
+	BoostParameter,
+	ConfirmationsParameter,
+	DestinationAddressParameter,
+	DestinationFileNameParameter,
+	DriveKeyParameter,
+	DriveNameParameter,
+	DriveIdParameter,
+	DryRunParameter,
+	FileIdParameter,
+	FolderIdParameter,
+	FolderNameParameter,
+	GetAllRevisionsParameter,
+	LastTxParameter,
+	LocalFilesParameter,
+	LocalFilePathParameter,
+	MaxDepthParameter,
+	NoVerifyParameter,
+	ParentFolderIdParameter,
+	PrivateParameter,
+	RewardParameter,
+	SeedPhraseParameter,
+	TransactionIdParameter,
+	TxFilePathParameter,
+	UnsafeDrivePasswordParameter,
+	WalletFileParameter
+] as const;
+export type ParameterName = typeof AllParameters[number];
+
+export const ConflictResolutionParams = [SkipParameter, ReplaceParameter, UpsertParameter /* , AskParameter */];
 
 /**
  * Note: importing this file will declare all the above parameters
@@ -107,7 +144,7 @@ Parameter.declare({
 Parameter.declare({
 	name: AddressParameter,
 	aliases: ['-a', '--address'],
-	description: 'the  43-character Arweave wallet address to use for lookups'
+	description: 'the 43-character Arweave wallet address to use for lookups'
 });
 
 Parameter.declare({
@@ -122,6 +159,27 @@ Parameter.declare({
 	aliases: ['-a', '--ar-amount'],
 	description: `amount of AR to send to the --dest-address
 \t\t\t\t\t\t\t• does NOT include transaction mining base rewards`,
+	required: true
+});
+
+Parameter.declare({
+	name: RewardParameter,
+	aliases: ['-r', '--reward'],
+	description: `amount of Winston to set as the transaction reward`,
+	required: true
+});
+
+Parameter.declare({
+	name: LastTxParameter,
+	aliases: ['-l', '--last-tx'],
+	description: `the transaction ID of the last transaction sent by this wallet`,
+	required: true
+});
+
+Parameter.declare({
+	name: TxFilePathParameter,
+	aliases: ['-x', '--tx-file-path'],
+	description: `path on the filesystem from which to load the signed transaction data`,
 	required: true
 });
 
@@ -180,15 +238,21 @@ Parameter.declare({
 });
 
 Parameter.declare({
+	name: DestinationManifestNameParameter,
+	aliases: ['-n', '--dest-manifest-name'],
+	description: `(OPTIONAL) a destination file name for the manifest to use when uploaded to ArDrive`
+});
+
+Parameter.declare({
 	name: LocalFilesParameter,
 	aliases: ['--local-files'],
-	description: `a path to a csv (tab delimited) file containing rows of data for the following columns:
-\t\t\t\t\t\t\t• CSV Columns
-\t\t\t\t\t\t\t• local file path
-\t\t\t\t\t\t\t• destination file name (optional)
-\t\t\t\t\t\t\t• parent folder ID (optional)
-\t\t\t\t\t\t\t\t• --parent-folder-id used, otherwise
-\t\t\t\t\t\t\t\t• all parent folder IDs should reside in the same drive
+	description: `(BETA) a path to a csv (tab delimited) file containing rows of data for the following columns:
+\t\t\t\t\t\t\t• CSV Columns:
+\t\t\t\t\t\t\t\t• local file path
+\t\t\t\t\t\t\t\t• destination file name (optional)
+\t\t\t\t\t\t\t\t• parent folder ID (optional)
+\t\t\t\t\t\t\t\t\t• --parent-folder-id used, otherwise
+\t\t\t\t\t\t\t• all parent folder IDs should reside in the same drive
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-file-path`,
 	forbiddenConjunctionParameters: [LocalFilePathParameter]
 });
@@ -216,6 +280,31 @@ Parameter.declare({
 });
 
 Parameter.declare({
+	name: SkipParameter,
+	aliases: ['--skip'],
+	description: '(OPTIONAL) Skip upload if there is a name conflict within destination folder',
+	type: 'boolean',
+	forbiddenConjunctionParameters: [ReplaceParameter, UpsertParameter]
+});
+
+Parameter.declare({
+	name: ReplaceParameter,
+	aliases: ['--replace'],
+	description: '(OPTIONAL) Create new file revisions if there is a name conflict within destination folder',
+	type: 'boolean',
+	forbiddenConjunctionParameters: [SkipParameter, UpsertParameter]
+});
+
+Parameter.declare({
+	name: UpsertParameter,
+	aliases: ['--upsert'],
+	description:
+		'(OPTIONAL) When there is a name conflict within the destination folder, only upload file if a modification is detected. Skip otherwise.',
+	type: 'boolean',
+	forbiddenConjunctionParameters: [SkipParameter, ReplaceParameter]
+});
+
+Parameter.declare({
 	name: AllParameter,
 	aliases: ['--all'],
 	description: `(OPTIONAL) gets all contents within this folder, including child files/folders`,
@@ -226,7 +315,7 @@ Parameter.declare({
 Parameter.declare({
 	name: MaxDepthParameter,
 	aliases: ['--max-depth'],
-	description: `(OPTIONAL) enter a number of the amount of sub folder levels to list`
+	description: `(OPTIONAL) a non-negative integer value indicating the depth of the folder tree to list. 0 = specified folder's contents OR root folder for drives`
 });
 
 Parameter.declare({

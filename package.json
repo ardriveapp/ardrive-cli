@@ -1,34 +1,19 @@
 {
 	"name": "ardrive-cli",
-	"version": "1.0.0",
-	"description": "The ArDrive Command Line Interface (CLI) contains all of the needed security, file synchronization and Arweave wallet capabilities via a node.js application.",
+	"version": "1.2.0",
+	"description": "The ArDrive Command Line Interface (CLI is a Node.js application for terminal-based ArDrive workflows. It also offers utility operations for securely interacting with Arweave wallets and inspecting various Arweave blockchain conditions.",
 	"main": "./lib/index.js",
 	"bin": {
 		"ardrive": "./lib/index.js"
 	},
 	"types": "./lib/index.d.ts",
 	"dependencies": {
-		"@types/node": "^14.14.32",
-		"@types/regression": "^2.0.2",
-		"@types/uuid": "^8.3.0",
-		"arbundles": "^0.2.7",
-		"ardrive-core-js": "0.5.1",
-		"arweave": "^1.10.16",
-		"arweave-bundles": "^1.0.3",
-		"arweave-mnemonic-keys": "^0.0.9",
-		"base64-js": "^1.5.1",
+		"ardrive-core-js": "../ardrive-core-js_PE-458_create_drive_bundles",
+		"arweave": "^1.10.18",
+		"axios": "^0.21.1",
 		"commander": "^8.2.0",
-		"jwk-to-pem": "^2.0.4",
 		"lodash": "^4.17.21",
-		"node-fetch": "2.6.2",
-		"progress": "^2.0.3",
-		"prompt-password": "^1.2.0",
-		"prompt-sync": "^4.2.0",
-		"prompts": "^2.4.0",
-		"regression": "^2.0.1",
-		"smartweave": "^0.4.45",
-		"typescript": "^4.2.3",
-		"uuid": "^8.3.2"
+		"prompts": "^2.4.0"
 	},
 	"devDependencies": {
 		"@istanbuljs/nyc-config-typescript": "^1.0.1",
@@ -36,8 +21,7 @@
 		"@types/jwk-to-pem": "^2.0.0",
 		"@types/lodash": "^4",
 		"@types/mocha": "^9.0.0",
-		"@types/node-fetch": "2.5.3",
-		"@types/prompt-sync": "^4.1.0",
+		"@types/node": "^14.14.32",
 		"@types/prompts": "^2.0.9",
 		"@types/sinon": "^10.0.2",
 		"@types/source-map-support": "^0",
@@ -56,7 +40,8 @@
 		"sinon": "^11.1.2",
 		"source-map-support": "^0.5.20",
 		"ts-node": "^10.2.1",
-		"ts-sinon": "^2.0.1"
+		"ts-sinon": "^2.0.1",
+		"typescript": "^4.2.3"
 	},
 	"scripts": {
 		"clean": "rimraf [ lib .nyc_output node_modules coverage ]",
@@ -68,9 +53,6 @@
 		"typecheck": "tsc --noemit",
 		"build": "yarn clean && tsc --project ./tsconfig.prod.json",
 		"ci": "yarn build && yarn test",
-		"version": "yarn run format && git add -A src",
-		"postversion": "git push && git push --tags",
-		"start": "yarn run build && node ./lib/index.js",
 		"dev": "yarn clean && tsc --project ./tsconfig.prod.json -w"
 	},
 	"husky": {

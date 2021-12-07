@@ -1,26 +1,31 @@
-import { arDriveFactory, cliArweave, cliWalletDao } from '..';
-import { ArDriveAnonymous } from '../ardrive';
-import { ArFSDAOAnonymous } from '../arfsdao_anonymous';
-import { ArFSPrivateFileOrFolderWithPaths, ArFSPublicFileOrFolderWithPaths } from '../arfs_entities';
+import {
+	EID,
+	ArFSPrivateFileOrFolderWithPaths,
+	ArFSPublicFileOrFolderWithPaths,
+	ArDriveAnonymous,
+	ArFSDAOAnonymous,
+	alphabeticalOrder
+} from 'ardrive-core-js';
+import { cliArDriveFactory, cliArweave, cliWalletDao } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
-import { SUCCESS_EXIT_CODE } from '../CLICommand/constants';
+import { CLIAction } from '../CLICommand/action';
+import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { DriveIdParameter, DrivePrivacyParameters, TreeDepthParams } from '../parameter_declarations';
-import { alphabeticalOrder } from '../utils/sort_functions';
 
 new CLICommand({
 	name: 'list-drive',
 	parameters: [DriveIdParameter, ...TreeDepthParams, ...DrivePrivacyParameters],
-	async action(options) {
+	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options, cliWalletDao);
-		const driveId = parameters.getRequiredParameterValue(DriveIdParameter);
+		const driveId = EID(parameters.getRequiredParameterValue(DriveIdParameter));
 		let children: (ArFSPrivateFileOrFolderWithPaths | ArFSPublicFileOrFolderWithPaths)[];
 		const maxDepth = await parameters.getMaxDepth(Number.MAX_SAFE_INTEGER);
 
 		if (await parameters.getIsPrivate()) {
 			const wallet = await parameters.getRequiredWallet();
-			const arDrive = arDriveFactory({ wallet });
+			const arDrive = cliArDriveFactory({ wallet });
 			const driveKey = await parameters.getDriveKey({ driveId });
-			const drive = await arDrive.getPrivateDrive(driveId, driveKey);
+			const drive = await arDrive.getPrivateDrive({ driveId, driveKey });
 			const rootFolderId = drive.rootFolderId;
 
 			// We have the drive id from deriving a key, we can derive the owner
@@ -35,7 +40,7 @@ new CLICommand({
 			});
 		} else {
 			const arDrive = new ArDriveAnonymous(new ArFSDAOAnonymous(cliArweave));
-			const drive = await arDrive.getPublicDrive(driveId);
+			const drive = await arDrive.getPublicDrive({ driveId });
 			const rootFolderId = drive.rootFolderId;
 			children = await arDrive.listPublicFolder({ folderId: rootFolderId, maxDepth, includeRoot: true });
 		}
@@ -50,12 +55,13 @@ new CLICommand({
 			if (fileOrFolderMetaData.entityType === 'folder') {
 				delete fileOrFolderMetaData.lastModifiedDate;
 				delete fileOrFolderMetaData.size;
+				delete fileOrFolderMetaData.dataTxId;
+				delete fileOrFolderMetaData.dataContentType;
 			}
-			delete fileOrFolderMetaData.syncStatus;
 		});
 
 		// Display data
 		console.log(JSON.stringify(sortedChildren, null, 4));
 		return SUCCESS_EXIT_CODE;
-	}
+	})
 });

@@ -12,22 +12,20 @@ import {
 import { CliApiObject } from './cli';
 import { baseArgv } from './test_constants';
 import { Parameter } from './parameter';
+import { CLIAction } from './action';
+import { SUCCESS_EXIT_CODE } from './error_codes';
 
 const MY_DRIVE_NAME = 'My awesome drive!';
 const testingCommandName = 'drive-name-test';
+async function dummyAction() {
+	return SUCCESS_EXIT_CODE;
+}
 const driveNameCommandDescription: CommandDescriptor = {
 	name: testingCommandName,
 	parameters: [DriveNameParameter],
-	async action(option) {
-		/** This code here will run after argv is parsed */
-		expect(option.driveNameTest).to.equal(MY_DRIVE_NAME);
-	}
+	action: new CLIAction(dummyAction)
 };
 const driveNameArgv: string[] = [...baseArgv, testingCommandName, '--drive-name', MY_DRIVE_NAME];
-async function action() {
-	// eslint-disable-next-line no-console
-	console.log('DUMMY ACTION');
-}
 const nonEmptyValue = 'non-empty value';
 const commandDescriptorRequiredWallet: CommandDescriptor = {
 	name: testingCommandName,
@@ -35,7 +33,7 @@ const commandDescriptorRequiredWallet: CommandDescriptor = {
 		WalletFileParameter,
 		{ name: UnsafeDrivePasswordParameter, requiredConjunctionParameters: [WalletFileParameter] }
 	],
-	action
+	action: new CLIAction(dummyAction)
 };
 const parsedOptionsMissingWallet = {
 	[WalletFileParameter]: undefined,
@@ -44,7 +42,7 @@ const parsedOptionsMissingWallet = {
 const commandDescriptorForbiddenWalletFileAndSeedPhrase: CommandDescriptor = {
 	name: testingCommandName,
 	parameters: [WalletFileParameter, SeedPhraseParameter],
-	action
+	action: new CLIAction(dummyAction)
 };
 const parsedCommandOptionsBothSpecified = {
 	[WalletFileParameter]: nonEmptyValue,
@@ -61,7 +59,7 @@ class TestCliApiObject {
 	parse = stub(this.program, 'parse');
 	addHelpCommand = stub(this.program, 'addHelpCommand').returnsThis();
 	opts = stub(this.program, 'opts').returnsThis();
-
+	exitOverride = stub(this.program, 'exitOverride').returnsThis();
 	name = stub(this.program, 'name').returnsThis();
 	usage = stub(this.program, 'usage').returnsThis();
 	outputHelp = stub(this.program, 'outputHelp');
@@ -102,7 +100,7 @@ describe('CLICommand class', () => {
 	});
 
 	it('No colliding parameters', () => {
-		const allCommandDescriptors = CLICommand._getAllCommandDescriptors();
+		const allCommandDescriptors = CLICommand.getAllCommandDescriptors();
 		allCommandDescriptors.forEach((command) => {
 			const parameters = command.parameters.map((param) => new Parameter(param));
 			parameters.forEach((parameter_1, index) => {
