@@ -9,7 +9,7 @@
 	"types": "./lib/index.d.ts",
 	"dependencies": {
 		"ardrive-core-js": "1.0.5",
-		"arweave": "^1.10.16",
+		"arweave": "^1.10.18",
 		"axios": "^0.21.1",
 		"commander": "^8.2.0",
 		"lodash": "^4.17.21",
