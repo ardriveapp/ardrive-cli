@@ -53,7 +53,8 @@ export const cliArDriveFactory = ({
 	wallet,
 	arfsDao,
 	communityOracle,
-	priceEstimator
+	priceEstimator,
+	bundle = true
 }: ArDriveSettings): ArDrive =>
 	arDriveFactory({
 		appName,
@@ -65,7 +66,8 @@ export const cliArDriveFactory = ({
 		wallet,
 		arfsDao,
 		communityOracle,
-		priceEstimator
+		priceEstimator,
+		bundle
 	});
 
 export const cliArDriveAnonymousFactory = ({

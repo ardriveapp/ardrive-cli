@@ -3,7 +3,8 @@ import {
 	BoostParameter,
 	DriveCreationPrivacyParameters,
 	DriveNameParameter,
-	DryRunParameter
+	DryRunParameter,
+	NoBundleParameter
 } from '../parameter_declarations';
 import { cliArDriveFactory } from '..';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
@@ -12,17 +13,25 @@ import { Wallet, JWKWallet, PrivateDriveKeyData } from 'ardrive-core-js';
 
 new CLICommand({
 	name: 'create-drive',
-	parameters: [...DriveCreationPrivacyParameters, DriveNameParameter, BoostParameter, DryRunParameter],
+	parameters: [
+		...DriveCreationPrivacyParameters,
+		DriveNameParameter,
+		BoostParameter,
+		DryRunParameter,
+		NoBundleParameter
+	],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
 		const wallet: Wallet = await parameters.getRequiredWallet();
 		const dryRun = !!parameters.getParameterValue(DryRunParameter);
 		const driveName = parameters.getRequiredParameterValue(DriveNameParameter);
+		const bundle = !!parameters.getParameterValue(NoBundleParameter);
 
 		const ardrive = cliArDriveFactory({
 			wallet: wallet,
 			feeMultiple: parameters.getOptionalBoostSetting(),
-			dryRun
+			dryRun,
+			bundle
 		});
 		const createDriveResult = await (async function () {
 			if (await parameters.getIsPrivate()) {
