@@ -1,7 +1,9 @@
 import { statSync } from 'fs';
 import { basename, dirname, resolve } from 'path';
 
-export function getOutputFilePathAndName(destOutputPath: string): [string, string?] {
+export type FilePathAndName = [string, string?];
+
+export function getOutputFilePathAndName(destOutputPath: string): FilePathAndName {
 	const resolvedOutputPath = resolve(destOutputPath);
 	const outputDirname = dirname(resolvedOutputPath);
 	const outputBasename = basename(resolvedOutputPath);
