@@ -12,7 +12,3 @@
     [ "${status}" -eq 0 ]
     [ "${lines[0]}" = "Usage: ardrive [command] [command-specific options]" ]
 }
-
-node@2541a765f4f0:~/ardrive-cli$ exit
-exit
-ariel@Ariels-MacBook-Pro ardr
