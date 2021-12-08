@@ -716,6 +716,8 @@ The example below will upload all `jpg` files from the indicated path.
 ardrive upload-file --glob "/path/to/photos/folder/*.jpg" --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
 ```
 
+NOTE: Ensure that the glob pattern is surrounded by quotations marks or unexpected upload behaviors or errors may occur.
+
 ### Name Conflict Resolution on Upload
 
 By default, the `upload-file` command will use the upsert behavior if existing entities are encountered in the destination folder tree that would cause naming conflicts.
