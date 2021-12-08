@@ -33,7 +33,7 @@ export const ReplaceParameter = 'replace';
 export const UpsertParameter = 'upsert';
 // export const AskParameter = 'ask';
 export const NoVerifyParameter = 'verify'; // commander maps --no-x style params to options.x and always includes in options
-export const GlobParameter = 'glob';
+export const LocalFilesToUploadParameter = 'localFilesToUpload';
 
 // Aggregates for convenience
 export const WalletTypeParameters = [WalletFileParameter, SeedPhraseParameter];
@@ -56,7 +56,7 @@ export const AllParameters = [
 	FolderIdParameter,
 	FolderNameParameter,
 	GetAllRevisionsParameter,
-	GlobParameter,
+	LocalFilesToUploadParameter,
 	LastTxParameter,
 	LocalFilesParameter,
 	LocalFilePathParameter,
@@ -329,8 +329,9 @@ Parameter.declare({
 });
 
 Parameter.declare({
-	name: GlobParameter,
-	aliases: ['-g', '--glob'],
+	name: LocalFilesToUploadParameter,
+	aliases: ['-g', '--local-files-to-upload'],
+	type: 'array',
 	description: `(BETA) a glob pattern to select files to be uploaded
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-files-path
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-files

@@ -14,7 +14,7 @@ new CLICommand({
 		const txId = parameters.getRequiredParameterValue(TransactionIdParameter, TxID);
 		const transactionsInMempool = (await fetchMempool()).map((id) => new TransactionID(id));
 		const pending = transactionsInMempool.some((tx) => tx.equals(txId));
-		const confirmationAmount = confirmations ?? 15;
+		const confirmationAmount = +confirmations ?? 15;
 
 		if (pending) {
 			console.log(`${txId}: Pending`);

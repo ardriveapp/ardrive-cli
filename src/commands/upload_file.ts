@@ -1,4 +1,3 @@
-import glob from 'glob';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import {
 	BoostParameter,
@@ -6,7 +5,7 @@ import {
 	DestinationFileNameParameter,
 	DrivePrivacyParameters,
 	DryRunParameter,
-	GlobParameter,
+	LocalFilesToUploadParameter,
 	LocalFilePathParameter,
 	LocalFilesParameter,
 	ParentFolderIdParameter,
@@ -53,7 +52,7 @@ new CLICommand({
 		BoostParameter,
 		DestinationFileNameParameter,
 		DryRunParameter,
-		GlobParameter,
+		LocalFilesToUploadParameter,
 		LocalFilePathParameter,
 		LocalFilesParameter,
 		ParentFolderIdParameter,
@@ -91,11 +90,11 @@ new CLICommand({
 			}
 
 			const parentFolderId: FolderID = parameters.getRequiredParameterValue(ParentFolderIdParameter, EID);
-			const globValue = parameters.getParameterValue(GlobParameter);
+			const localFilesToUpload = parameters.getParameterValue<string[]>(LocalFilesToUploadParameter);
 
-			if (globValue) {
-				const files = glob.sync(globValue);
-				const globParameters = files.map((filePath: FilePath) => {
+			if (localFilesToUpload) {
+				// const files = glob.sync(localFilesToUpload);
+				const globParameters = localFilesToUpload.map((filePath: FilePath) => {
 					const wrappedEntity = wrapFileOrFolder(filePath);
 
 					return {

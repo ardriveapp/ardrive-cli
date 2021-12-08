@@ -246,9 +246,13 @@ export class ParametersHelper {
 	 * @returns {string | undefined}
 	 * Returns the string value for the specific parameter; returns undefined if not set
 	 */
-	public getParameterValue(parameterName: ParameterName): string | undefined {
+	public getParameterValue<T = string>(
+		parameterName: ParameterName,
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		mapFunc: (input: any) => T = (input: any) => input as T
+	): T {
 		const value = this.options[parameterName];
-		return value;
+		return value ? mapFunc(value) : value;
 	}
 
 	/**
