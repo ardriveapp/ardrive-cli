@@ -13,7 +13,7 @@ new CLICommand({
 		const fileId = parameters.getRequiredParameterValue(FileIdParameter, EID);
 		const destOutputPath = parameters.getParameterValue(DestinationOutputPathParameter) || './';
 
-		const [destFolderPath, fileName] = getOutputFilePathAndName(destOutputPath);
+		const [destFolderPath, defaultFileName] = getOutputFilePathAndName(destOutputPath);
 
 		if (await parameters.getIsPrivate()) {
 			const wallet = await parameters.getRequiredWallet();
@@ -23,10 +23,10 @@ new CLICommand({
 			});
 			const driveId = await ardrive.getDriveIdForFileId(fileId);
 			const driveKey = await parameters.getDriveKey({ driveId: driveId });
-			await ardrive.downloadPrivateFile(fileId, driveKey, destFolderPath, fileName);
+			await ardrive.downloadPrivateFile({ fileId, driveKey, destFolderPath, defaultFileName });
 		} else {
 			const ardrive = cliArDriveAnonymousFactory({});
-			await ardrive.downloadPublicFile(fileId, destFolderPath, fileName);
+			await ardrive.downloadPublicFile({ fileId, destFolderPath, defaultFileName });
 		}
 		console.log(`File with ID "${fileId}" was successfully download to "${destOutputPath}"`);
 	})
