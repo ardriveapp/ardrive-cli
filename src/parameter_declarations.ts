@@ -335,6 +335,5 @@ Parameter.declare({
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-files-path
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-files
 \t\t\t\t\t\t\t• Can lead to false positives or upload errors when glob string is not surrounded by quotation marks`,
-`,
 	forbiddenConjunctionParameters: [LocalFilesParameter, LocalFilePathParameter]
 });
