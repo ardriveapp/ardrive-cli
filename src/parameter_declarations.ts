@@ -235,7 +235,12 @@ Parameter.declare({
 Parameter.declare({
 	name: DestinationOutputPathParameter,
 	aliases: ['-d', '--dest-output-path'],
-	description: `the path on the local filesystem where to download`,
+	description: `a destination path for the file. Uses same destination rules as cp, i.e.:
+\t\t\t\t\t\t\t-d /path/to/existing/folder (on-chain filename used in existing folder)
+\t\t\t\t\t\t\t-d /path/to/existing/file (on-chain filename ignored, local file overwritten)
+\t\t\t\t\t\t\t-d /path/to/existing/folder/nonexistent_thing (nonexistent_thing used as filename)
+\t\t\t\t\t\t\t-d /path/to/nonexistent/folder (error)
+`,
 	forbiddenConjunctionParameters: [LocalFilePathParameter]
 });
 
