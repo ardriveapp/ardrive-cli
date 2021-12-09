@@ -703,13 +703,13 @@ ardrive drive-info -d "c7f87712-b54e-4491-bc96-1c5fa7b1da50" | jq -r '.rootFolde
 By using the `download-file` command you can download a file on chain to a folder in your local storage
 
 ```shell
-ardrive download-file -w /path/to/wallet.json -f "ff450770-a9cb-46a5-9234-89cbd9796610" --dest-output-path ./
+ardrive download-file -w /path/to/wallet.json -file-id "ff450770-a9cb-46a5-9234-89cbd9796610" --dest-output-path /my_ardrive_downloads/
 ```
 
 Specify a filename in the --dest-output-path if you'd like to use a different name than the one that's used in your drive:
 
 ```shell
-ardrive download-file -w /path/to/wallet.json -file-id "ff450770-a9cb-46a5-9234-89cbd9796610" --dest-output-path /my_ardrive_downloads/
+ardrive download-file -w /path/to/wallet.json -file-id "ff450770-a9cb-46a5-9234-89cbd9796610" --dest-output-path /my_ardrive_downloads/my_pic.png
 ```
 
 ### Uploading a Folder with Files (Bulk Upload)<a id="bulk-upload"></a>
