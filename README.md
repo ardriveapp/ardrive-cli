@@ -99,12 +99,12 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         4. [Listing Contents of a Folder](#listing-contents-of-a-folder)
     6. [Working With Files](#working-with-files)
         1. [Uploading a Single File](#uploading-a-single-file)
-        2. [Uploading a Folder with Files](#bulk-upload)
-        3. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
-        4. [Uploading Manifests](#uploading-manifests)
-        5. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
-        6. [Create New Drive and Upload Folder Pipeline Example](#create-upload-pipeline)
-        7. [Download a Single File](#download-file)
+        2. [Download a Single File](#download-file)
+        3. [Uploading a Folder with Files](#bulk-upload)
+        4. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
+        5. [Uploading Manifests](#uploading-manifests)
+        6. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
+        7. [Create New Drive and Upload Folder Pipeline Example](#create-upload-pipeline)
     7. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -698,6 +698,20 @@ NOTE: To upload to the root of a drive, specify its root folder ID as the parent
 ardrive drive-info -d "c7f87712-b54e-4491-bc96-1c5fa7b1da50" | jq -r '.rootFolderId'
 ```
 
+### Download a Single file<a id="download-file"></a>
+
+By using the `download-file` command you can download a file on chain to a folder in your local storage
+
+```shell
+ardrive download-file -w /path/to/wallet.json -f "ff450770-a9cb-46a5-9234-89cbd9796610" --dest-output-path ./
+```
+
+Specify a filename in the --dest-output-path if you'd like to use a different name than the one that's used in your drive:
+
+```shell
+ardrive download-file -w /path/to/wallet.json -file-id "ff450770-a9cb-46a5-9234-89cbd9796610" --dest-output-path /my_ardrive_downloads/
+```
+
 ### Uploading a Folder with Files (Bulk Upload)<a id="bulk-upload"></a>
 
 Users can perform a bulk upload by using the upload-file command on a target folder. The command will reconstruct the folder hierarchy on local disk as ArFS folders on the permaweb and upload each file into their corresponding folders:
@@ -871,20 +885,6 @@ while read -r parentFolderId; do
 ardrive upload-file -w /path/to/wallet.json --local-file-path ./myarchives -F "$parentFolderId";
 done |
 tee upload_folder_output.json
-```
-
-### Download a Single file<a id="download-file"></a>
-
-By using the `download-file` command you can download a file on chain to a folder in your local storage
-
-```shell
-ardrive download-file -w /path/to/wallet.json -f "ff450770-a9cb-46a5-9234-89cbd9796610" --dest-output-path ./
-```
-
-The the downloaded file is named the same way it is on chain. If you want to override this behavior you would specify a custom name
-
-```shell
-ardrive download-file -w /path/to/wallet.json -f "ff450770-a9cb-46a5-9234-89cbd9796610" --dest-output-path ./file.txt
 ```
 
 ## Other Utility Operations
