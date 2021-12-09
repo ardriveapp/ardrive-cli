@@ -104,6 +104,7 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         4. [Uploading Manifests](#uploading-manifests)
         5. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
         6. [Create New Drive and Upload Folder Pipeline Example](#create-upload-pipeline)
+        7. [Download a Single File](#download-file)
     7. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -870,6 +871,20 @@ while read -r parentFolderId; do
 ardrive upload-file -w /path/to/wallet.json --local-file-path ./myarchives -F "$parentFolderId";
 done |
 tee upload_folder_output.json
+```
+
+### Download a Single file<a id="download-file"></a>
+
+By using the `download-file` command you can download a file on chain to a folder in your local storage
+
+```shell
+ardrive download-file -w /path/to/wallet.json -f "ff450770-a9cb-46a5-9234-89cbd9796610" --dest-output-path ./
+```
+
+The the downloaded file is named the same way it is on chain. If you want to override this behavior you would specify a custom name
+
+```shell
+ardrive download-file -w /path/to/wallet.json -f "ff450770-a9cb-46a5-9234-89cbd9796610" --dest-output-path ./file.txt
 ```
 
 ## Other Utility Operations
