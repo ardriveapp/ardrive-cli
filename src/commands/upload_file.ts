@@ -5,8 +5,8 @@ import {
 	DestinationFileNameParameter,
 	DrivePrivacyParameters,
 	DryRunParameter,
-	LocalFilePathParameter,
-	LocalFilesParameter,
+	LocalPathParameter,
+	LocalPathsCSVParameter,
 	ParentFolderIdParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
@@ -36,9 +36,9 @@ new CLICommand({
 	name: 'upload-file',
 	parameters: [
 		ParentFolderIdParameter,
-		LocalFilePathParameter,
+		LocalPathParameter,
 		DestinationFileNameParameter,
-		LocalFilesParameter,
+		LocalPathsCSVParameter,
 		BoostParameter,
 		DryRunParameter,
 		...ConflictResolutionParams,
@@ -47,7 +47,7 @@ new CLICommand({
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
 		const filesToUpload: UploadFileParameter[] = await (async function (): Promise<UploadFileParameter[]> {
-			const localFiles = parameters.getParameterValue(LocalFilesParameter);
+			const localFiles = parameters.getParameterValue(LocalPathsCSVParameter);
 			if (localFiles) {
 				const COLUMN_SEPARATOR = ',';
 				const ROW_SEPARATOR = '.';
@@ -72,12 +72,8 @@ new CLICommand({
 				return fileParameters;
 			}
 
-			if (!options.localFilePath) {
-				throw new Error('Must provide a local file path!');
-			}
-
 			const parentFolderId: FolderID = parameters.getRequiredParameterValue(ParentFolderIdParameter, EID);
-			const localFilePath = parameters.getRequiredParameterValue(LocalFilePathParameter, wrapFileOrFolder);
+			const localFilePath = parameters.getRequiredParameterValue(LocalPathParameter, wrapFileOrFolder);
 			const singleParameter = {
 				parentFolderId: parentFolderId,
 				wrappedEntity: localFilePath,

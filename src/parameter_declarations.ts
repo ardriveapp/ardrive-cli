@@ -19,11 +19,10 @@ export const ConfirmationsParameter = 'confirmations';
 export const FolderIdParameter = 'folderId';
 export const FileIdParameter = 'fileId';
 export const ParentFolderIdParameter = 'parentFolderId';
-export const LocalFilePathParameter = 'localFilePath';
-export const DestinationFolderPathParameter = 'destFolderPath';
+export const LocalPathParameter = 'localPath';
 export const DestinationFileNameParameter = 'destFileName';
 export const DestinationManifestNameParameter = 'destManifestName';
-export const LocalFilesParameter = 'localFiles';
+export const LocalPathsCSVParameter = 'localPathsCsv';
 export const GetAllRevisionsParameter = 'getAllRevisions';
 export const AllParameter = 'all';
 export const MaxDepthParameter = 'maxDepth';
@@ -57,8 +56,8 @@ export const AllParameters = [
 	FolderNameParameter,
 	GetAllRevisionsParameter,
 	LastTxParameter,
-	LocalFilesParameter,
-	LocalFilePathParameter,
+	LocalPathsCSVParameter,
+	LocalPathParameter,
 	MaxDepthParameter,
 	NoVerifyParameter,
 	ParentFolderIdParameter,
@@ -227,16 +226,9 @@ Parameter.declare({
 });
 
 Parameter.declare({
-	name: LocalFilePathParameter,
-	aliases: ['-l', '--local-file-path'],
-	description: `the path on the local filesystem for the file that will be uploaded`
-});
-
-Parameter.declare({
-	name: DestinationFolderPathParameter,
-	aliases: ['-d', '--dest-folder-path'],
-	description: `the path on the local filesystem of the folder`,
-	forbiddenConjunctionParameters: [LocalFilePathParameter]
+	name: LocalPathParameter,
+	aliases: ['-l', '--local-path'],
+	description: `a path in the local storage`
 });
 
 Parameter.declare({
@@ -252,8 +244,8 @@ Parameter.declare({
 });
 
 Parameter.declare({
-	name: LocalFilesParameter,
-	aliases: ['--local-files'],
+	name: LocalPathsCSVParameter,
+	aliases: ['--local-paths-csv'],
 	description: `(BETA) a path to a csv (tab delimited) file containing rows of data for the following columns:
 \t\t\t\t\t\t\t• CSV Columns:
 \t\t\t\t\t\t\t\t• local file path
@@ -262,7 +254,7 @@ Parameter.declare({
 \t\t\t\t\t\t\t\t\t• --parent-folder-id used, otherwise
 \t\t\t\t\t\t\t• all parent folder IDs should reside in the same drive
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-file-path`,
-	forbiddenConjunctionParameters: [LocalFilePathParameter]
+	forbiddenConjunctionParameters: [LocalPathParameter]
 });
 
 Parameter.declare({
