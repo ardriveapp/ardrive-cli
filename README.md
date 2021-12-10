@@ -100,10 +100,11 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
     6. [Working With Files](#working-with-files)
         1. [Uploading a Single File](#uploading-a-single-file)
         2. [Uploading a Folder with Files](#bulk-upload)
-        3. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
-        4. [Uploading Manifests](#uploading-manifests)
-        5. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
-        6. [Create New Drive and Upload Folder Pipeline Example](#create-upload-pipeline)
+        3. [Downloading a Folder with Files](#download-folder)
+        4. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
+        5. [Uploading Manifests](#uploading-manifests)
+        6. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
+        7. [Create New Drive and Upload Folder Pipeline Example](#create-upload-pipeline)
     7. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -705,6 +706,26 @@ Users can perform a bulk upload by using the upload-file command on a target fol
 ardrive upload-file --local-file-path /path/to/folder  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
 ```
 
+### Downloading a Folder with Files<a id="download-folder"></a>
+
+You can download a folder on chain with the `download-folder` command.
+
+```shell
+ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6"
+```
+
+By specifying the `--dest-folder-path` you can choose the parent folder where to download the folder on chain. When the parameter is missing, it defaults to the current working directory (`./`).
+
+```shell
+ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --dest-folder-path /my_ardrive_downloads/
+```
+
+The `--max-depth` parameter let's you choose a custom depth to download, it defaults to all. In the following example only the direct children will be download:
+
+```shell
+ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --max-depth 1
+```
+
 ### Name Conflict Resolution on Upload
 
 By default, the `upload-file` command will use the upsert behavior if existing entities are encountered in the destination folder tree that would cause naming conflicts.
@@ -1028,6 +1049,8 @@ drive-info
 list-folder
 list-drive
 list-all-drives
+
+download-folder
 
 
 Wallet Ops
