@@ -2,11 +2,16 @@ import { EID } from 'ardrive-core-js';
 import { cliArDriveAnonymousFactory, cliArDriveFactory } from '../index';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
-import { DrivePrivacyParameters, FolderIdParameter, DestinationFolderPathParameter } from '../parameter_declarations';
+import {
+	DrivePrivacyParameters,
+	FolderIdParameter,
+	DestinationFolderPathParameter,
+	MaxDepthParameter
+} from '../parameter_declarations';
 
 new CLICommand({
 	name: 'download-folder',
-	parameters: [FolderIdParameter, DestinationFolderPathParameter, ...DrivePrivacyParameters],
+	parameters: [FolderIdParameter, DestinationFolderPathParameter, MaxDepthParameter, ...DrivePrivacyParameters],
 	action: new CLIAction(async (options) => {
 		const parameters = new ParametersHelper(options);
 		const folderId = parameters.getRequiredParameterValue(FolderIdParameter, EID);
