@@ -100,7 +100,7 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
     6. [Working With Files](#working-with-files)
         1. [Uploading a Single File](#uploading-a-single-file)
         2. [Uploading a Folder with Files](#bulk-upload)
-        3. [Uploading files using a glob pattern](#glob-upload)
+        3. [Uploading multiple files](#multi-file-upload)
         4. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
         5. [Create New Drive and Upload Folder Pipeline Example](#create-upload-pipeline)
         6. [Uploading Manifests](#uploading-manifests)
@@ -707,16 +707,17 @@ Users can perform a bulk upload by using the upload-file command on a target fol
 ardrive upload-file --local-file-path /path/to/folder  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
 ```
 
-### Uploading files using a glob pattern (BETA)<a id="glob-upload"></a>
+### Uploading multiple files<a id="multi-file-upload"></a>
 
-Users can declare a glob pattern to select files to be uploaded in bulk. The `upload-file` command will parse the glob pattern and will upload all the files that match the pattern to a specified parent folder.
-The example below will upload all `jpg` files from the indicated path.
+Users can upload multiple files by specifying `--local-paths` with an array of paths:
 
 ```shell
-ardrive upload-file --glob "/path/to/photos/folder/*.jpg" --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
-```
+# Specifying multiple paths
+yarn ardrive upload-file -w wallet.json -F "${PUBLIC_FOLDER_ID}" --local-paths ./package.json /another_file.txt ~/.bashrc
 
-NOTE: Ensure that the glob pattern is surrounded by quotations marks or unexpected upload behaviors or errors may occur.
+# Example for using GLOB
+yarn ardrive upload-file -w wallet.json -F "${PUBLIC_FOLDER_ID}" --local-paths ./*.json
+```
 
 ### Name Conflict Resolution on Upload
 
