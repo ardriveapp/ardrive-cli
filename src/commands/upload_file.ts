@@ -5,7 +5,7 @@ import {
 	DestinationFileNameParameter,
 	DrivePrivacyParameters,
 	DryRunParameter,
-	LocalFilesToUploadParameter,
+	LocalPathsParameter,
 	LocalFilePathParameter,
 	LocalFilesParameter,
 	ParentFolderIdParameter,
@@ -52,7 +52,7 @@ new CLICommand({
 		BoostParameter,
 		DestinationFileNameParameter,
 		DryRunParameter,
-		LocalFilesToUploadParameter,
+		LocalPathsParameter,
 		LocalFilePathParameter,
 		LocalFilesParameter,
 		ParentFolderIdParameter,
@@ -90,7 +90,7 @@ new CLICommand({
 			}
 
 			const parentFolderId: FolderID = parameters.getRequiredParameterValue(ParentFolderIdParameter, EID);
-			const localFilesToUpload = parameters.getParameterValue<string[]>(LocalFilesToUploadParameter);
+			const localFilesToUpload = parameters.getParameterValue<string[]>(LocalPathsParameter);
 
 			if (localFilesToUpload) {
 				// const files = glob.sync(localFilesToUpload);
