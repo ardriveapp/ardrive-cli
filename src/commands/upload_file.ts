@@ -93,7 +93,6 @@ new CLICommand({
 			const localFilesToUpload = parameters.getParameterValue<string[]>(LocalPathsParameter);
 
 			if (localFilesToUpload) {
-				// const files = glob.sync(localFilesToUpload);
 				const globParameters = localFilesToUpload.map((filePath: FilePath) => {
 					const wrappedEntity = wrapFileOrFolder(filePath);
 
