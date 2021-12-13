@@ -14,5 +14,5 @@ load '/home/node/packages/node_modules/bats-assert/load.bash'
 @test "'ardrive get-mempool' first line contains a valid TX" {
     # Needs wrapping for piping
     run yarn ardrive get-mempool
-    assert_line -n 1 --regexp '([^"](\w|-){42})'
+    assert_line -n 1 --regexp '(\s){0,}("){1}(\w|-){43}("){1}(,$){1}'
 }
