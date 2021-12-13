@@ -48,7 +48,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/source-map-support", "npm:0.5.4"],
             ["@typescript-eslint/eslint-plugin", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
             ["@typescript-eslint/parser", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
-            ["ardrive-core-js", "file:../ardrive-core-js#../ardrive-core-js::hash=e34685&locator=ardrive-cli%40workspace%3A."],
+            ["ardrive-core-js", "npm:1.2.0-alpha-1"],
             ["arweave", "npm:1.10.18"],
             ["axios", "npm:0.21.1"],
             ["chai", "npm:4.3.4"],
@@ -1859,7 +1859,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/source-map-support", "npm:0.5.4"],
             ["@typescript-eslint/eslint-plugin", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
             ["@typescript-eslint/parser", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
-            ["ardrive-core-js", "file:../ardrive-core-js#../ardrive-core-js::hash=e34685&locator=ardrive-cli%40workspace%3A."],
+            ["ardrive-core-js", "npm:1.2.0-alpha-1"],
             ["arweave", "npm:1.10.18"],
             ["axios", "npm:0.21.1"],
             ["chai", "npm:4.3.4"],
@@ -1885,10 +1885,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["ardrive-core-js", [
-        ["file:../ardrive-core-js#../ardrive-core-js::hash=e34685&locator=ardrive-cli%40workspace%3A.", {
-          "packageLocation": "./.yarn/unplugged/ardrive-core-js-file-49f3d01486/node_modules/ardrive-core-js/",
+        ["npm:1.2.0-alpha-1", {
+          "packageLocation": "./.yarn/cache/ardrive-core-js-npm-1.2.0-alpha-1-8799091b9d-f46b221605.zip/node_modules/ardrive-core-js/",
           "packageDependencies": [
-            ["ardrive-core-js", "file:../ardrive-core-js#../ardrive-core-js::hash=e34685&locator=ardrive-cli%40workspace%3A."],
+            ["ardrive-core-js", "npm:1.2.0-alpha-1"],
             ["arbundles", "npm:0.5.5"],
             ["arweave", "npm:1.10.18"],
             ["arweave-mnemonic-keys", "npm:0.0.9"],
