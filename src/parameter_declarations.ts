@@ -330,7 +330,7 @@ Parameter.declare({
 
 Parameter.declare({
 	name: LocalPathsParameter,
-	aliases: ['-g', '--local-paths'],
+	aliases: ['--local-paths'],
 	type: 'array',
 	description: `(BETA) a glob pattern to select files to be uploaded
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-files-path
