@@ -30,7 +30,6 @@ export function getOutputFilePathAndName(
 			// as an existing file
 			return [outputDirname, outputBasename];
 		}
-		throw new Error(`The destination isn't a folder nor a file!`);
 	} catch (e) {
 		// the destination doesn't exist
 		const outputParentPathStats = fsStatSyncAndPathResolveWrapper.statSync(outputDirname);
@@ -40,4 +39,5 @@ export function getOutputFilePathAndName(
 		}
 		throw new Error(`The path ${outputDirname} is not a directory!`);
 	}
+	throw new Error(`The destination isn't a folder nor a file!`);
 }
