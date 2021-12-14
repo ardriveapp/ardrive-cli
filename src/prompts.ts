@@ -185,7 +185,16 @@ export async function getNewNameFromRenamePrompt(
 	while (!nameFromRename) {
 		const { newName } = await prompt();
 
-		// Repeat the prompt if name remains unchanged, or conflicts with another name
+		if (newName === undefined) {
+			throw new Error(conflictInterruptedError);
+		}
+
+		// Repeat the prompt if name is an empty string, remains unchanged, or conflicts with another name
+		if (newName === '') {
+			console.log('Please enter a new name...');
+			continue;
+		}
+
 		if (newName === conflictingName) {
 			console.log('That is the same file name, please choose a new name!');
 			continue;
