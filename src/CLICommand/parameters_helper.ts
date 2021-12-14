@@ -250,7 +250,7 @@ export class ParametersHelper {
 		parameterName: ParameterName,
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		mapFunc: (input: any) => T = (input: any) => input as T
-	): T {
+	): T | undefined {
 		const value = this.options[parameterName];
 		return value ? mapFunc(value) : value;
 	}
