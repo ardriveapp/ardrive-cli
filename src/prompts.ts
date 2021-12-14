@@ -18,10 +18,11 @@ export const fileToFileNameConflict: FileToFileNameConflictPrompt = async ({
 	hasSameLastModifiedDate,
 	namesWithinDestFolder: namesWithinFolder
 }) => {
+	console.log(''); // Add empty line for readability
 	const { resolution } = await prompts({
 		type: 'select',
 		name: 'resolution',
-		message: `\nDestination folder has a file to file name conflict!
+		message: `Destination folder has a file to file name conflict!
 		\nFile name: ${fileName}\nFile ID: ${fileId}\nThis file has a ${
 			hasSameLastModifiedDate ? 'MATCHING' : 'DIFFERENT'
 		} last modified date
@@ -51,10 +52,11 @@ export const fileToFolderNameConflict: FileToFolderConflictAskPrompt = async ({
 	folderName,
 	namesWithinDestFolder: namesWithinFolder
 }) => {
+	console.log(''); // Add empty line for readability
 	const { resolution } = await prompts({
 		type: 'select',
 		name: 'resolution',
-		message: `\nDestination folder has a file to folder name conflict!
+		message: `Destination folder has a file to folder name conflict!
 		\nFolder name: ${folderName}\nFolderID: ${folderId}
 		\nPlease select how to proceed:\n`,
 		choices: [promptChoices.uploadFileWithNewName, promptChoices.skipFileUpload]
@@ -78,10 +80,11 @@ export const folderToFileNameConflict: FolderToFileConflictAskPrompt = async ({
 	fileName,
 	namesWithinDestFolder: namesWithinFolder
 }) => {
+	console.log(''); // Add empty line for readability
 	const { resolution } = await prompts({
 		type: 'select',
 		name: 'resolution',
-		message: `\nDestination folder has a folder to file name conflict!
+		message: `Destination folder has a folder to file name conflict!
 		\nFile name: ${fileName}\nFile ID: ${fileId}
 		\nPlease select how to proceed:\n`,
 		choices: [promptChoices.createFolderWithNewName, promptChoices.skipFolderAndContents]
@@ -105,10 +108,11 @@ export const folderToFolderNameConflict: FolderToFolderConflictAskPrompt = async
 	folderName,
 	namesWithinDestFolder: namesWithinFolder
 }) => {
+	console.log(''); // Add empty line for readability
 	const { resolution } = await prompts({
 		type: 'select',
 		name: 'resolution',
-		message: `\nDestination folder has a folder to folder name conflict!
+		message: `Destination folder has a folder to folder name conflict!
 		\nFolder name: ${folderName}\nFolder ID: ${folderId}
 		\nPlease select how to proceed:\n`,
 		choices: [
