@@ -267,7 +267,6 @@ export class ParametersHelper {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		mapFunc: (input: any) => T = (input: any) => input as T
 	): T {
-		// FIXME: it could also return an array or a boolean!
 		const value = this.options[parameterName];
 		if (!value) {
 			throw new Error(`Required parameter ${parameterName} wasn't provided!`);
