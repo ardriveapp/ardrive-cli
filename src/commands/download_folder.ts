@@ -32,6 +32,7 @@ new CLICommand({
 			const ardrive = cliArDriveAnonymousFactory({});
 			await ardrive.downloadPublicFolder({ folderId, destFolderPath, customFolderName, maxDepth });
 		}
-		console.log(`Folder with ID "${folderId}" was successfully download to "${destFolderPath}"`);
+		const fullOutputPath = customFolderName ? `${destFolderPath}/${customFolderName}` : destFolderPath;
+		console.log(`Folder with ID "${folderId}" was successfully download to "${fullOutputPath}"`);
 	})
 });
