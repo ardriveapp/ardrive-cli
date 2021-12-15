@@ -5,17 +5,17 @@ import { CLIAction } from '../CLICommand/action';
 import {
 	DrivePrivacyParameters,
 	FolderIdParameter,
-	DestinationFolderPathParameter,
+	LocalPathParameter,
 	MaxDepthParameter
 } from '../parameter_declarations';
 
 new CLICommand({
 	name: 'download-folder',
-	parameters: [FolderIdParameter, DestinationFolderPathParameter, MaxDepthParameter, ...DrivePrivacyParameters],
+	parameters: [FolderIdParameter, LocalPathParameter, MaxDepthParameter, ...DrivePrivacyParameters],
 	action: new CLIAction(async (options) => {
 		const parameters = new ParametersHelper(options);
 		const folderId = parameters.getRequiredParameterValue(FolderIdParameter, EID);
-		const destFolderPath = parameters.getParameterValue(DestinationFolderPathParameter) || './';
+		const destFolderPath = parameters.getParameterValue(LocalPathParameter) || './';
 		const maxDepth = await parameters.getMaxDepth(Number.MAX_SAFE_INTEGER);
 
 		if (await parameters.getIsPrivate()) {
