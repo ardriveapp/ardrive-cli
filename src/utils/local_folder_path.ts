@@ -31,7 +31,6 @@ export function getOutputFolderPathAndName(
 			// and is a directory
 			return [resolvedOutputPath];
 		}
-		throw new Error(`The destination isn't a folder!`);
 	} catch (e) {
 		// the destination doesn't exist
 		const outputParentPathStats = fsStatSyncAndPathResolveWrapper.statSync(outputDirname);
@@ -41,4 +40,5 @@ export function getOutputFolderPathAndName(
 		}
 		throw e; // The ENOENT linux fs error
 	}
+	throw new Error(`The destination isn't a folder!`);
 }
