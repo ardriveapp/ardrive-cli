@@ -3,6 +3,10 @@ import { basename, dirname, resolve } from 'path';
 
 export type FilePathAndName = [string, string?];
 
+/**
+ * For testing purposes.
+ * This object is the default value of the last argument of getOutputFilePathAndName
+ */
 const fsStatSyncAndPathResolve = {
 	statSync,
 	resolve
