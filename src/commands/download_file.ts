@@ -2,18 +2,20 @@ import { EID } from 'ardrive-core-js';
 import { cliArDriveAnonymousFactory, cliArDriveFactory } from '../index';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
-import { DrivePrivacyParameters, FileIdParameter, LocalFilePathParameter } from '../parameter_declarations';
+import { DrivePrivacyParameters, FileIdParameter, LocalFilePathDownloadParameter } from '../parameter_declarations';
 import { getOutputFilePathAndName } from '../utils';
+import { join } from 'path';
 
 new CLICommand({
 	name: 'download-file',
-	parameters: [FileIdParameter, LocalFilePathParameter, ...DrivePrivacyParameters],
+	parameters: [FileIdParameter, LocalFilePathDownloadParameter, ...DrivePrivacyParameters],
 	action: new CLIAction(async (options) => {
 		const parameters = new ParametersHelper(options);
 		const fileId = parameters.getRequiredParameterValue(FileIdParameter, EID);
-		const destOutputPath = parameters.getParameterValue(LocalFilePathParameter) || './';
+		const destOutputPath = parameters.getParameterValue(LocalFilePathDownloadParameter) || './';
 
 		const [destFolderPath, defaultFileName] = getOutputFilePathAndName(destOutputPath);
+		let outputPath: string;
 
 		if (await parameters.getIsPrivate()) {
 			const wallet = await parameters.getRequiredWallet();
@@ -24,10 +26,18 @@ new CLICommand({
 			const driveId = await ardrive.getDriveIdForFileId(fileId);
 			const driveKey = await parameters.getDriveKey({ driveId: driveId });
 			await ardrive.downloadPrivateFile({ fileId, driveKey, destFolderPath, defaultFileName });
+			outputPath = join(
+				destFolderPath,
+				defaultFileName ? defaultFileName : (await ardrive.getPrivateFile({ fileId, driveKey })).name
+			);
 		} else {
 			const ardrive = cliArDriveAnonymousFactory({});
 			await ardrive.downloadPublicFile({ fileId, destFolderPath, defaultFileName });
+			outputPath = join(
+				destFolderPath,
+				defaultFileName ? defaultFileName : (await ardrive.getPublicFile({ fileId })).name
+			);
 		}
-		console.log(`File with ID "${fileId}" was successfully download to "${destOutputPath}"`);
+		console.log(`File with ID "${fileId}" was successfully downloaded to "${outputPath}"`);
 	})
 });
