@@ -99,7 +99,7 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         4. [Listing Contents of a Folder](#listing-contents-of-a-folder)
     6. [Working With Files](#working-with-files)
         1. [Uploading a Single File](#uploading-a-single-file)
-        2. [Download a Single File](#download-file)
+        2. [Download a Single File (BETA)](#download-file)
         3. [Uploading a Folder with Files](#bulk-upload)
         4. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
         5. [Uploading Manifests](#uploading-manifests)
@@ -698,7 +698,7 @@ NOTE: To upload to the root of a drive, specify its root folder ID as the parent
 ardrive drive-info -d "c7f87712-b54e-4491-bc96-1c5fa7b1da50" | jq -r '.rootFolderId'
 ```
 
-### Download a Single file<a id="download-file"></a>
+### Download a Single file (BETA)<a id="download-file"></a>
 
 By using the `download-file` command you can download a file on chain to a folder in your local storage
 
