@@ -235,7 +235,7 @@ Parameter.declare({
 Parameter.declare({
 	name: LocalFilePathDownloadParameter,
 	aliases: ['--local-path'],
-	description: `the path on the local filesystem for the file to be download`
+	description: `(OPTIONAL) the path on the local filesystem where the file should be downloaded. Defaults to current working directory.`
 });
 
 Parameter.declare({
