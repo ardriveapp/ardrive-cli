@@ -235,12 +235,7 @@ Parameter.declare({
 Parameter.declare({
 	name: LocalFilePathDownloadParameter,
 	aliases: ['--local-path'],
-	description: `the path on the local filesystem for the file to be download
-\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-file-path
-\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-files
-\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-paths
-\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-csv`,
-	forbiddenConjunctionParameters: [LocalFilePathParameter]
+	description: `the path on the local filesystem for the file to be download`
 });
 
 Parameter.declare({
