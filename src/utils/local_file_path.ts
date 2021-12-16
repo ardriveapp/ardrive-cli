@@ -43,5 +43,5 @@ export function getOutputFilePathAndName(
 		}
 		throw new Error(`The path ${outputDirname} is not a directory!`);
 	}
-	throw new Error(`The destination isn't a folder nor a file!`);
+	throw new Error(`The destination is neither a folder nor a file!`);
 }
