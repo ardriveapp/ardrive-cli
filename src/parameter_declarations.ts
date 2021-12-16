@@ -20,7 +20,7 @@ export const FolderIdParameter = 'folderId';
 export const FileIdParameter = 'fileId';
 export const ParentFolderIdParameter = 'parentFolderId';
 export const LocalFilePathParameter = 'localFilePath';
-export const LocalFilePathParameter = 'localPath';
+export const LocalFilePathDownloadParameter = 'localPath';
 export const DestinationFileNameParameter = 'destFileName';
 export const DestinationManifestNameParameter = 'destManifestName';
 export const LocalFilesParameter = 'localFiles';
@@ -233,7 +233,7 @@ Parameter.declare({
 });
 
 Parameter.declare({
-	name: LocalFilePathParameter,
+	name: LocalFilePathDownloadParameter,
 	aliases: ['--local-path'],
 	description: `the path on the local filesystem for the file to be download
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-file-path
