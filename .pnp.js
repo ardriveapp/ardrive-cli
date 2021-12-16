@@ -48,7 +48,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/source-map-support", "npm:0.5.4"],
             ["@typescript-eslint/eslint-plugin", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
             ["@typescript-eslint/parser", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
-            ["ardrive-core-js", "npm:1.2.0-alpha-0"],
+            ["ardrive-core-js", "npm:1.4.0-alpha-0"],
             ["arweave", "npm:1.10.18"],
             ["axios", "npm:0.21.1"],
             ["chai", "npm:4.3.4"],
@@ -1859,7 +1859,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/source-map-support", "npm:0.5.4"],
             ["@typescript-eslint/eslint-plugin", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
             ["@typescript-eslint/parser", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
-            ["ardrive-core-js", "npm:1.2.0-alpha-0"],
+            ["ardrive-core-js", "npm:1.4.0-alpha-0"],
             ["arweave", "npm:1.10.18"],
             ["axios", "npm:0.21.1"],
             ["chai", "npm:4.3.4"],
@@ -1885,10 +1885,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["ardrive-core-js", [
-        ["npm:1.2.0-alpha-0", {
-          "packageLocation": "./.yarn/cache/ardrive-core-js-npm-1.2.0-alpha-0-73fc1c52dd-77f164380b.zip/node_modules/ardrive-core-js/",
+        ["npm:1.4.0-alpha-0", {
+          "packageLocation": "./.yarn/cache/ardrive-core-js-npm-1.4.0-alpha-0-9b34ff1744-7e584e35f4.zip/node_modules/ardrive-core-js/",
           "packageDependencies": [
-            ["ardrive-core-js", "npm:1.2.0-alpha-0"],
+            ["ardrive-core-js", "npm:1.4.0-alpha-0"],
             ["arbundles", "npm:0.5.5"],
             ["arweave", "npm:1.10.18"],
             ["arweave-mnemonic-keys", "npm:0.0.9"],
