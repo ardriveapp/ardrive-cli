@@ -20,7 +20,7 @@ export const FolderIdParameter = 'folderId';
 export const FileIdParameter = 'fileId';
 export const ParentFolderIdParameter = 'parentFolderId';
 export const LocalFilePathParameter = 'localFilePath';
-export const LocalPathParameter = 'localPath';
+export const LocalFilePathDownloadParameter = 'localPath';
 export const DestinationFileNameParameter = 'destFileName';
 export const DestinationManifestNameParameter = 'destManifestName';
 export const LocalPathsCSVParameter = 'localPathsCsv';
@@ -58,7 +58,7 @@ export const AllParameters = [
 	GetAllRevisionsParameter,
 	LastTxParameter,
 	LocalPathsCSVParameter,
-	LocalPathParameter,
+	LocalFilePathDownloadParameter,
 	MaxDepthParameter,
 	NoVerifyParameter,
 	ParentFolderIdParameter,
@@ -233,14 +233,9 @@ Parameter.declare({
 });
 
 Parameter.declare({
-	name: LocalPathParameter,
+	name: LocalFilePathDownloadParameter,
 	aliases: ['--local-path'],
-	description: `the path on the local filesystem for the file that will be uploaded
-\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-file-path
-\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-files
-\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-paths
-\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-csv`,
-	forbiddenConjunctionParameters: [LocalFilePathParameter]
+	description: `(OPTIONAL) the path on the local filesystem where the file should be downloaded. Defaults to current working directory.`
 });
 
 Parameter.declare({
@@ -266,7 +261,7 @@ Parameter.declare({
 \t\t\t\t\t\t\t\t\t• --parent-folder-id used, otherwise
 \t\t\t\t\t\t\t• all parent folder IDs should reside in the same drive
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-file-path`,
-	forbiddenConjunctionParameters: [LocalPathParameter]
+	forbiddenConjunctionParameters: [LocalFilePathParameter]
 });
 
 Parameter.declare({

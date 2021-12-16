@@ -5,7 +5,7 @@ import {
 	DestinationFileNameParameter,
 	DrivePrivacyParameters,
 	DryRunParameter,
-	LocalPathParameter,
+	LocalFilePathParameter,
 	LocalPathsCSVParameter,
 	ParentFolderIdParameter,
 	WalletFileParameter
@@ -37,7 +37,7 @@ new CLICommand({
 	name: 'upload-file',
 	parameters: [
 		ParentFolderIdParameter,
-		LocalPathParameter,
+		LocalFilePathParameter,
 		DestinationFileNameParameter,
 		LocalPathsCSVParameter,
 		BoostParameter,
@@ -74,7 +74,7 @@ new CLICommand({
 			}
 
 			const parentFolderId: FolderID = parameters.getRequiredParameterValue(ParentFolderIdParameter, EID);
-			const localFilePath = parameters.getRequiredParameterValue(LocalPathParameter, wrapFileOrFolder);
+			const localFilePath = parameters.getRequiredParameterValue(LocalFilePathParameter, wrapFileOrFolder);
 			const singleParameter = {
 				parentFolderId: parentFolderId,
 				wrappedEntity: localFilePath,
