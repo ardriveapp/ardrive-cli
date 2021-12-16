@@ -49,7 +49,7 @@ describe('getOutputFilePathAndName function', () => {
 		fsStatSyncAndPathResolveWrapper.statSync.throws();
 	});
 
-	it('returns only the providen path if it is a directory', () => {
+	it('returns only the provided path if it is a directory', () => {
 		expect(getOutputFilePathAndName(PATH_EXISTING_FOLDER, fsStatSyncAndPathResolveWrapper)).to.deep.equal([
 			PATH_EXISTING_FOLDER
 		]);
