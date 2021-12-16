@@ -12,7 +12,7 @@ new CLICommand({
 	action: new CLIAction(async (options) => {
 		const parameters = new ParametersHelper(options);
 		const fileId = parameters.getRequiredParameterValue(FileIdParameter, EID);
-		const destOutputPath = parameters.getParameterValue(LocalFilePathDownloadParameter) || './';
+		const destOutputPath = parameters.getParameterValue(LocalFilePathDownloadParameter) || '.';
 
 		const [destFolderPath, defaultFileName] = getOutputFilePathAndName(destOutputPath);
 		let outputPath: string;
