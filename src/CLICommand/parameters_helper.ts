@@ -10,6 +10,7 @@ import {
 	WalletFileParameter,
 	PrivateParameter,
 	ReplaceParameter,
+	AskParameter,
 	SkipParameter,
 	BoostParameter
 } from '../parameter_declarations';
@@ -30,7 +31,8 @@ import {
 	FileNameConflictResolution,
 	replaceOnConflicts,
 	skipOnConflicts,
-	upsertOnConflicts
+	upsertOnConflicts,
+	askOnConflicts
 } from 'ardrive-core-js';
 import { JWKInterface } from 'arweave/node/lib/wallet';
 
@@ -234,9 +236,9 @@ export class ParametersHelper {
 			return skipOnConflicts;
 		}
 
-		// if (this.getParameterValue(AskParameter)) {
-		// 	return askOnConflicts;
-		// };
+		if (this.getParameterValue(AskParameter)) {
+			return askOnConflicts;
+		}
 
 		return upsertOnConflicts;
 	}
