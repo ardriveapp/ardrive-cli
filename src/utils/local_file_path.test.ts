@@ -73,7 +73,7 @@ describe('getOutputFilePathAndName function', () => {
 		expect(() => getOutputFilePathAndName(PATH_EXISTING_NON_FILE, fsStatSyncAndPathResolveWrapper)).to.throw();
 	});
 
-	it('throws if the path nor its parent exist', () => {
+	it('throws if neither the path nor its parent exist', () => {
 		expect(() => getOutputFilePathAndName(PATH_NONEXISTENT_FOLDER, fsStatSyncAndPathResolveWrapper)).to.throw();
 	});
 });
