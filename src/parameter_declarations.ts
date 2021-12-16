@@ -32,7 +32,7 @@ export const DryRunParameter = 'dryRun';
 export const SkipParameter = 'skip';
 export const ReplaceParameter = 'replace';
 export const UpsertParameter = 'upsert';
-// export const AskParameter = 'ask';
+export const AskParameter = 'ask';
 export const NoVerifyParameter = 'verify'; // commander maps --no-x style params to options.x and always includes in options
 
 // Aggregates for convenience
@@ -72,7 +72,7 @@ export const AllParameters = [
 ] as const;
 export type ParameterName = typeof AllParameters[number];
 
-export const ConflictResolutionParams = [SkipParameter, ReplaceParameter, UpsertParameter /* , AskParameter */];
+export const ConflictResolutionParams = [SkipParameter, ReplaceParameter, UpsertParameter, AskParameter];
 
 /**
  * Note: importing this file will declare all the above parameters
@@ -296,7 +296,7 @@ Parameter.declare({
 	aliases: ['--skip'],
 	description: '(OPTIONAL) Skip upload if there is a name conflict within destination folder',
 	type: 'boolean',
-	forbiddenConjunctionParameters: [ReplaceParameter, UpsertParameter]
+	forbiddenConjunctionParameters: [ReplaceParameter, UpsertParameter, AskParameter]
 });
 
 Parameter.declare({
@@ -304,7 +304,7 @@ Parameter.declare({
 	aliases: ['--replace'],
 	description: '(OPTIONAL) Create new file revisions if there is a name conflict within destination folder',
 	type: 'boolean',
-	forbiddenConjunctionParameters: [SkipParameter, UpsertParameter]
+	forbiddenConjunctionParameters: [SkipParameter, UpsertParameter, AskParameter]
 });
 
 Parameter.declare({
@@ -313,7 +313,15 @@ Parameter.declare({
 	description:
 		'(OPTIONAL) When there is a name conflict within the destination folder, only upload file if a modification is detected. Skip otherwise.',
 	type: 'boolean',
-	forbiddenConjunctionParameters: [SkipParameter, ReplaceParameter]
+	forbiddenConjunctionParameters: [SkipParameter, ReplaceParameter, AskParameter]
+});
+
+Parameter.declare({
+	name: AskParameter,
+	aliases: ['--ask'],
+	description: '(OPTIONAL) Show an interactive prompt to resolve name conflicts within the destination folder',
+	type: 'boolean',
+	forbiddenConjunctionParameters: [SkipParameter, ReplaceParameter, UpsertParameter]
 });
 
 Parameter.declare({
