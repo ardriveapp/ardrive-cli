@@ -20,7 +20,7 @@ export const FolderIdParameter = 'folderId';
 export const FileIdParameter = 'fileId';
 export const ParentFolderIdParameter = 'parentFolderId';
 export const LocalFilePathParameter = 'localFilePath';
-export const DestinationOutputPathParameter = 'destOutputPath'; // TODO: find a better name
+export const LocalPathParameter = 'localPath';
 export const DestinationFileNameParameter = 'destFileName';
 export const DestinationManifestNameParameter = 'destManifestName';
 export const LocalFilesParameter = 'localFiles';
@@ -233,14 +233,13 @@ Parameter.declare({
 });
 
 Parameter.declare({
-	name: DestinationOutputPathParameter,
-	aliases: ['-d', '--dest-output-path'],
-	description: `a destination path for the file. Uses same destination rules as cp, i.e.:
-\t\t\t\t\t\t\t-d /path/to/existing/folder (on-chain filename used in existing folder)
-\t\t\t\t\t\t\t-d /path/to/existing/file (on-chain filename ignored, local file overwritten)
-\t\t\t\t\t\t\t-d /path/to/existing/folder/nonexistent_thing (nonexistent_thing used as filename)
-\t\t\t\t\t\t\t-d /path/to/nonexistent/folder (error)
-`,
+	name: LocalPathParameter,
+	aliases: ['--local-path'],
+	description: `the path on the local filesystem for the file that will be uploaded
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-file-path
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-files
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-paths
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-csv`,
 	forbiddenConjunctionParameters: [LocalFilePathParameter]
 });
 
