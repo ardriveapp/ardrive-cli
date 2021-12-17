@@ -14,11 +14,11 @@ import { Wallet, JWKWallet, PrivateDriveKeyData } from 'ardrive-core-js';
 new CLICommand({
 	name: 'create-drive',
 	parameters: [
-		...DriveCreationPrivacyParameters,
-		DriveNameParameter,
-		BoostParameter,
 		DryRunParameter,
-		NoBundleParameter
+		DriveNameParameter,
+		...DriveCreationPrivacyParameters,
+		NoBundleParameter,
+		BoostParameter
 	],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
