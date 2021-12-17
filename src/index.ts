@@ -11,6 +11,7 @@ import {
 	ArDriveSettingsAnonymous,
 	WalletDAO
 } from 'ardrive-core-js';
+import { ArFSTagSettings } from 'ardrive-core-js/lib/arfs/arfs_tag_settings';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: CLI_APP_VERSION } = require('../package.json');
@@ -55,7 +56,7 @@ export const cliArDriveFactory = ({
 	communityOracle,
 	priceEstimator,
 	shouldBundle = true,
-	arFSTagSettings,
+	arFSTagSettings = new ArFSTagSettings({ appName, appVersion }),
 	uploadPlanner
 }: ArDriveSettings): ArDrive =>
 	arDriveFactory({
@@ -74,15 +75,7 @@ export const cliArDriveFactory = ({
 		uploadPlanner
 	});
 
-export const cliArDriveAnonymousFactory = ({
-	appName = CLI_APP_NAME,
-	appVersion = CLI_APP_VERSION,
-	arweave = cliArweave,
-	arFSTagSettings
-}: ArDriveSettingsAnonymous): ArDriveAnonymous =>
+export const cliArDriveAnonymousFactory = ({ arweave = cliArweave }: ArDriveSettingsAnonymous): ArDriveAnonymous =>
 	arDriveAnonymousFactory({
-		appName,
-		appVersion,
-		arweave,
-		arFSTagSettings
+		arweave
 	});
