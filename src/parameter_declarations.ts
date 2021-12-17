@@ -339,6 +339,6 @@ Parameter.declare({
 Parameter.declare({
 	name: NoBundleParameter,
 	aliases: ['--no-bundle'],
-	description: '(OPTIONAL) Do not pack into a bundle; send as separate v2 transactions',
+	description: '(OPTIONAL) Do not pack into a bundle; send as separate v2 transactions. NOT RECOMMENDED.',
 	type: 'boolean'
 });
