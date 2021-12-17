@@ -25,13 +25,13 @@ new CLICommand({
 		const wallet: Wallet = await parameters.getRequiredWallet();
 		const dryRun = !!parameters.getParameterValue(DryRunParameter);
 		const driveName = parameters.getRequiredParameterValue(DriveNameParameter);
-		const bundle = !!parameters.getParameterValue(NoBundleParameter);
+		const shouldBundle = !!parameters.getParameterValue(NoBundleParameter);
 
 		const ardrive = cliArDriveFactory({
 			wallet: wallet,
 			feeMultiple: parameters.getOptionalBoostSetting(),
 			dryRun,
-			bundle
+			shouldBundle
 		});
 		const createDriveResult = await (async function () {
 			if (await parameters.getIsPrivate()) {

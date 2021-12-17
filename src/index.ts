@@ -54,7 +54,9 @@ export const cliArDriveFactory = ({
 	arfsDao,
 	communityOracle,
 	priceEstimator,
-	bundle = true
+	shouldBundle = true,
+	arFSTagSettings,
+	uploadPlanner
 }: ArDriveSettings): ArDrive =>
 	arDriveFactory({
 		appName,
@@ -67,16 +69,20 @@ export const cliArDriveFactory = ({
 		arfsDao,
 		communityOracle,
 		priceEstimator,
-		bundle
+		shouldBundle,
+		arFSTagSettings,
+		uploadPlanner
 	});
 
 export const cliArDriveAnonymousFactory = ({
 	appName = CLI_APP_NAME,
 	appVersion = CLI_APP_VERSION,
-	arweave = cliArweave
+	arweave = cliArweave,
+	arFSTagSettings
 }: ArDriveSettingsAnonymous): ArDriveAnonymous =>
 	arDriveAnonymousFactory({
 		appName,
 		appVersion,
-		arweave
+		arweave,
+		arFSTagSettings
 	});
