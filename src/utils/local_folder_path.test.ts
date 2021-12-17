@@ -5,17 +5,12 @@ import { getOutputFolderPathAndName } from './local_folder_path';
 
 const NAME_EXSTING_FOLDER_NAME = 'EXISTING_folder';
 const NAME_EXISTING_FILE = 'EXISTING_file.txt';
-// const NAME_EXISTING_NON_FILE = 'EXISTING_socket_or_symbolic_link';
-// const NAME_NONEXISTENT_FILE = 'NONEXISTENT_crazy_file_with_cool_stuff.doc';
 const NAME_NONEXISTENT_FOLDER = 'NONEXISTENT_folder';
 
 const PATH_EXISTING_PARENT_FOLDER = '/my/existing';
 const PATH_EXISTING_FOLDER = joinPath(PATH_EXISTING_PARENT_FOLDER, NAME_EXSTING_FOLDER_NAME);
 const PATH_EXISTING_FILE = joinPath(PATH_EXISTING_PARENT_FOLDER, NAME_EXISTING_FILE);
 const PATH_UNEXISTENT_FOLDER = joinPath(PATH_EXISTING_PARENT_FOLDER, NAME_NONEXISTENT_FOLDER);
-// const PATH_EXISTING_NON_FILE = joinPath(PATH_EXISTING_PARENT_FOLDER, NAME_EXISTING_NON_FILE);
-
-// const PATH_NONEXISTENT_FILE = joinPath(PATH_EXISTING_FOLDER, NAME_NONEXISTENT_FILE);
 const PATH_NONEXISTENT_PATH = '/some/NONEXISTENT/path';
 
 const mockStatsFolder = {
@@ -27,11 +22,6 @@ const mockStatsFile = {
 	isDirectory: () => false,
 	isFile: () => true
 };
-
-// const mockStatsNotFileNorFolder = {
-// 	isDirectory: () => false,
-// 	isFile: () => false
-// };
 
 describe('getOutputFolderPathAndName function', () => {
 	const fsStatSyncAndPathResolveWrapper = {
@@ -47,7 +37,6 @@ describe('getOutputFolderPathAndName function', () => {
 		fsStatSyncAndPathResolveWrapper.statSync.withArgs(PATH_EXISTING_PARENT_FOLDER).returns(mockStatsFolder);
 		fsStatSyncAndPathResolveWrapper.statSync.withArgs(PATH_EXISTING_FOLDER).returns(mockStatsFolder);
 		fsStatSyncAndPathResolveWrapper.statSync.withArgs(PATH_EXISTING_FILE).returns(mockStatsFile);
-		// fsStatSyncAndPathResolveWrapper.statSync.withArgs(PATH_EXISTING_NON_FILE).returns(mockStatsNotFileNorFolder);
 		// the stub throws for the nonexistent paths
 		fsStatSyncAndPathResolveWrapper.statSync.throws();
 	});
