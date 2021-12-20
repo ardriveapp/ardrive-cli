@@ -13,4 +13,4 @@ myFiles=(
 for publicFile in ${myFiles[@]}; do
     yarn ardrive download-file -f $publicFile
 done
-exit 1
+exit 0

@@ -15,25 +15,26 @@ setup_file() {
 }
 
 @test 'Verifies "1 space test.zip" file exists' {
-    assert_exist "/home/node/ardrive-cli/bats_test/downloads/file-downloads/1 space test.zip"
+    assert_exist "$(pwd)/1 space test.zip"
 }
 @test 'Verifies "arconnect-archive-team_-_ardrive.html" file exists' {
-    assert_exist "/home/node/ardrive-cli/bats_test/downloads/file-downloads/arconnect-archive-team_-_ardrive.html"
+    assert_exist "$(pwd)/arconnect-archive-team_-_ardrive.html"
 }
 @test 'Verifies "13" file exists' {
-    assert_exist "/home/node/ardrive-cli/bats_test/downloads/file-downloads/13"
+    assert_exist "$(pwd)/13"
 }
 @test 'Verifies "Biochar-sample.pdf" file exists' {
-    assert_exist "/home/node/ardrive-cli/bats_test/downloads/file-downloads/Biochar-sample.pdf"
+    assert_exist "$(pwd)/Biochar-sample.pdf"
 }
 @test 'Verifies "Coffee_chart.jpg" file exists' {
-    assert_exist "/home/node/ardrive-cli/bats_test/downloads/file-downloads/Coffee_chart.jpg"
+    assert_exist "$(pwd)/Coffee_chart.jpg"
 }
 @test 'Verifies "samplee.mkv" file exists' {
-    assert_exist "/home/node/ardrive-cli/bats_test/downloads/file-downloads/samplee.mkv"
+    assert_exist "$(pwd)/samplee.mkv"
 }
 @test 'Verifies "test!_·$%d\%&·_.txt" file exists' {
-    #BATS parsing issue with that filename, always fails
+    #BATS parsing issue with that filename, always fails.
+    #TODO We need to figure this out for weird file names
     skip
-    assert_exist "/home/node/ardrive-cli/bats_test/downloads/file-downloads/test!_·\$%d\%&·_.txt"
+    assert_exist "$(pwd)/test!_·\$%d\%&·_.txt"
 }
