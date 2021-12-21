@@ -11,7 +11,8 @@ import {
 	ParentFolderIdParameter,
 	WalletFileParameter,
 	LocalPathParameter,
-	LocalCSVParameter
+	LocalCSVParameter,
+	NoBundleParameter
 } from '../parameter_declarations';
 import { fileUploadConflictPrompts, folderUploadConflictPrompts } from '../prompts';
 import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
@@ -129,10 +130,12 @@ new CLICommand({
 		...DrivePrivacyParameters,
 		LocalFilePathParameter_DEPRECATED,
 		LocalFilesParameter_DEPRECATED,
-		BoostParameter
+		BoostParameter,
+		NoBundleParameter
 	],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
+		const shouldBundle = !!parameters.getParameterValue(NoBundleParameter);
 
 		const filesToUpload: UploadPathParameter[] = await (async function (): Promise<UploadPathParameter[]> {
 			// Try to get the list of files to upload and their destinations, etc. from a CSV
@@ -160,7 +163,8 @@ new CLICommand({
 			const arDrive = cliArDriveFactory({
 				wallet: wallet,
 				feeMultiple: parameters.getOptionalBoostSetting(),
-				dryRun: !!options.dryRun
+				dryRun: !!options.dryRun,
+				shouldBundle
 			});
 
 			const results = await Promise.all(
