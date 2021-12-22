@@ -18,7 +18,7 @@ new CLICommand({
 		{
 			name: LocalFilePathDownloadParameter,
 			description:
-				'(OPTIONAL) the path on the local filesystem where the folder should be downloaded. Defaults to current working directory'
+				'(OPTIONAL) the path on the local filesystem where the folder should be created and into which its contents are then downloaded. By default, the folder is created in the current working directory.'
 		},
 		MaxDepthParameter,
 		...DrivePrivacyParameters
