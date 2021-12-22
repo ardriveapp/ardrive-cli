@@ -248,13 +248,9 @@ export class ParametersHelper {
 	 * @returns {string | undefined}
 	 * Returns the string value for the specific parameter; returns undefined if not set
 	 */
-	public getParameterValue<T = string>(
-		parameterName: ParameterName,
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		mapFunc: (input: any) => T = (input: any) => input as T
-	): T | undefined {
+	public getParameterValue(parameterName: ParameterName): string | undefined {
 		const value = this.options[parameterName];
-		return value ? mapFunc(value) : value;
+		return value;
 	}
 
 	/**
@@ -269,6 +265,7 @@ export class ParametersHelper {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		mapFunc: (input: any) => T = (input: any) => input as T
 	): T {
+		// FIXME: it could also return an array or a boolean!
 		const value = this.options[parameterName];
 		if (!value) {
 			throw new Error(`Required parameter ${parameterName} wasn't provided!`);

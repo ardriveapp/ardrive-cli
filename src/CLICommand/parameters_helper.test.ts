@@ -61,113 +61,44 @@ describe('ParametersHelper class', () => {
 		program = new Command() as CliApiObject;
 	});
 
-	describe('getParameterValue function', () => {
-		it('Actually reads the value from argv', () => {
-			Parameter.declare(singleValueParameter);
-			const cmd = declareCommandWithParams(program, [singleValueParameterName]);
-			CLICommand.parse(program, [...baseArgv, testCommandName, '--single-value-parameter', '1234567890']);
-			return cmd.action.then((options) => {
-				const parameters = new ParametersHelper(options);
-				return expect(parameters.getParameterValue(singleValueParameterName)).to.not.be.undefined;
-			});
-		});
-
-		it('Boolean parameter false', () => {
-			Parameter.declare(booleanParameter);
-			const cmd = declareCommandWithParams(program, [booleanParameterName]);
-			CLICommand.parse(program, [...baseArgv, testCommandName]);
-			return cmd.action.then((options) => {
-				const parameters = new ParametersHelper(options);
-				return expect(!!parameters.getParameterValue(booleanParameterName)).to.be.false;
-			});
-		});
-
-		it('Boolean parameter true', () => {
-			Parameter.declare(booleanParameter);
-			const cmd = declareCommandWithParams(program, [booleanParameterName]);
-			CLICommand.parse(program, [...baseArgv, testCommandName, '--boolean-parameter']);
-			return cmd.action.then((options) => {
-				const parameters = new ParametersHelper(options);
-				return expect(parameters.getParameterValue(booleanParameterName)).to.be.true;
-			});
-		});
-
-		it('Array parameter', () => {
-			const colorsArray = ['red', 'green', 'blue'];
-			Parameter.declare(arrayParameter);
-			const cmd = declareCommandWithParams(program, [arrayParameterName]);
-			CLICommand.parse(program, [...baseArgv, testCommandName, '--array-parameter', ...colorsArray]);
-			return cmd.action.then((options) => {
-				const parameters = new ParametersHelper(options);
-				return expect(parameters.getParameterValue<string[]>(arrayParameterName)).to.deep.equal(colorsArray);
-			});
-		});
-
-		it('Calls the provided value mapping function', () => {
-			Parameter.declare(singleValueParameter);
-			const cmd = declareCommandWithParams(program, [singleValueParameterName]);
-			CLICommand.parse(program, [...baseArgv, testCommandName, '--single-value-parameter', '1234567890']);
-			return cmd.action.then((options) => {
-				const parameters = new ParametersHelper(options);
-				return expect(parameters.getParameterValue(singleValueParameterName, Number)).to.equal(1234567890);
-			});
+	it('Actually reads the value from argv', () => {
+		Parameter.declare(singleValueParameter);
+		const cmd = declareCommandWithParams(program, [singleValueParameterName]);
+		CLICommand.parse(program, [...baseArgv, testCommandName, '--single-value-parameter', '1234567890']);
+		return cmd.action.then((options) => {
+			const parameters = new ParametersHelper(options);
+			return expect(parameters.getParameterValue(singleValueParameterName)).to.not.be.undefined;
 		});
 	});
 
-	describe('getRequiredParameterValue function', () => {
-		it('Actually reads the value from argv', () => {
-			Parameter.declare(singleValueParameter);
-			const cmd = declareCommandWithParams(program, [singleValueParameterName]);
-			CLICommand.parse(program, [...baseArgv, testCommandName, '--single-value-parameter', '1234567890']);
-			return cmd.action.then((options) => {
-				const parameters = new ParametersHelper(options);
-				return expect(parameters.getRequiredParameterValue(singleValueParameterName)).to.not.be.undefined;
-			});
+	it('Boolean parameter false', () => {
+		Parameter.declare(booleanParameter);
+		const cmd = declareCommandWithParams(program, [booleanParameterName]);
+		CLICommand.parse(program, [...baseArgv, testCommandName]);
+		return cmd.action.then((options) => {
+			const parameters = new ParametersHelper(options);
+			return expect(!!parameters.getParameterValue(booleanParameterName)).to.be.false;
 		});
+	});
 
-		it('Boolean parameter true', () => {
-			Parameter.declare(booleanParameter);
-			const cmd = declareCommandWithParams(program, [booleanParameterName]);
-			CLICommand.parse(program, [...baseArgv, testCommandName, '--boolean-parameter']);
-			return cmd.action.then((options) => {
-				const parameters = new ParametersHelper(options);
-				return expect(parameters.getRequiredParameterValue(booleanParameterName)).to.be.true;
-			});
+	it('Boolean parameter true', () => {
+		Parameter.declare(booleanParameter);
+		const cmd = declareCommandWithParams(program, [booleanParameterName]);
+		CLICommand.parse(program, [...baseArgv, testCommandName, '--boolean-parameter']);
+		return cmd.action.then((options) => {
+			const parameters = new ParametersHelper(options);
+			return expect(parameters.getParameterValue(booleanParameterName)).to.be.true;
 		});
+	});
 
-		it('Array parameter', () => {
-			const colorsArray = ['red', 'green', 'blue'];
-			Parameter.declare(arrayParameter);
-			const cmd = declareCommandWithParams(program, [arrayParameterName]);
-			CLICommand.parse(program, [...baseArgv, testCommandName, '--array-parameter', ...colorsArray]);
-			return cmd.action.then((options) => {
-				const parameters = new ParametersHelper(options);
-				return expect(parameters.getRequiredParameterValue<string[]>(arrayParameterName)).to.deep.equal(
-					colorsArray
-				);
-			});
-		});
-
-		it('Calls the provided value mapping function', () => {
-			Parameter.declare(singleValueParameter);
-			const cmd = declareCommandWithParams(program, [singleValueParameterName]);
-			CLICommand.parse(program, [...baseArgv, testCommandName, '--single-value-parameter', '1234567890']);
-			return cmd.action.then((options) => {
-				const parameters = new ParametersHelper(options);
-				return expect(parameters.getRequiredParameterValue(singleValueParameterName, Number)).to.equal(
-					1234567890
-				);
-			});
-		});
-
-		it('throws an exception when option is missing', () => {
-			Parameter.declare(booleanParameter);
-			const cmd = declareCommandWithParams(program, [booleanParameterName]);
-			CLICommand.parse(program, [...baseArgv, testCommandName]);
-			return cmd.action.then((options) => {
-				const parameters = new ParametersHelper(options);
-				return expect(() => parameters.getRequiredParameterValue(booleanParameterName)).to.throw;
-			});
+	it('Array parameter', () => {
+		const colorsArray = ['red', 'green', 'blue'];
+		Parameter.declare(arrayParameter);
+		const cmd = declareCommandWithParams(program, [arrayParameterName]);
+		CLICommand.parse(program, [...baseArgv, testCommandName, '--array-parameter', ...colorsArray]);
+		return cmd.action.then((options) => {
+			const parameters = new ParametersHelper(options);
+			return expect(parameters.getParameterValue(arrayParameterName)).to.deep.equal(colorsArray);
 		});
 	});
 
