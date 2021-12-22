@@ -8,7 +8,7 @@
 	},
 	"types": "./lib/index.d.ts",
 	"dependencies": {
-		"ardrive-core-js": "../ardrive-core-js_PE-821_incorrect_price_estimation",
+		"ardrive-core-js": "1.3.1-alpha-0",
 		"arweave": "^1.10.18",
 		"axios": "^0.21.1",
 		"commander": "^8.2.0",
