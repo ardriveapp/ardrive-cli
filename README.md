@@ -99,12 +99,13 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         4. [Listing Contents of a Folder](#listing-contents-of-a-folder)
     6. [Working With Files](#working-with-files)
         1. [Uploading a Single File](#uploading-a-single-file)
-        2. [Uploading a Folder with Files](#bulk-upload)
-        3. [Downloading a Folder with Files](#download-folder)
-        4. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
-        5. [Uploading Manifests](#uploading-manifests)
-        6. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
-        7. [Create New Drive and Upload Folder Pipeline Example](#create-upload-pipeline)
+        2. [Download a Single File (BETA)](#download-file)
+        3. [Uploading a Folder with Files](#bulk-upload)
+        4. [Downloading a Folder with Files](#download-folder)
+        5. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
+        6. [Uploading Manifests](#uploading-manifests)
+        7. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
+        8. [Create New Drive and Upload Folder Pipeline Example](#create-upload-pipeline)
     7. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -698,6 +699,20 @@ NOTE: To upload to the root of a drive, specify its root folder ID as the parent
 ardrive drive-info -d "c7f87712-b54e-4491-bc96-1c5fa7b1da50" | jq -r '.rootFolderId'
 ```
 
+### Download a Single file (BETA)<a id="download-file"></a>
+
+By using the `download-file` command you can download a file on chain to a folder in your local storage specified by --local-path (or to your current working directory if not specified):
+
+```shell
+ardrive download-file -w /path/to/wallet.json -file-id "ff450770-a9cb-46a5-9234-89cbd9796610" --local-path /my_ardrive_downloads/
+```
+
+Specify a filename in the --local-path if you'd like to use a different name than the one that's used in your drive:
+
+```shell
+ardrive download-file -w /path/to/wallet.json -file-id "ff450770-a9cb-46a5-9234-89cbd9796610" --local-path /my_ardrive_downloads/my_pic.png
+```
+
 ### Uploading a Folder with Files (Bulk Upload)<a id="bulk-upload"></a>
 
 Users can perform a bulk upload by using the upload-file command on a target folder. The command will reconstruct the folder hierarchy on local disk as ArFS folders on the permaweb and upload each file into their corresponding folders:
@@ -1068,8 +1083,8 @@ list-folder
 list-drive
 list-all-drives
 
+download-file
 download-folder
-
 
 Wallet Ops
 ===========
