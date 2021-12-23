@@ -6,10 +6,11 @@ import {
 	DrivePrivacyParameters,
 	DryRunParameter,
 	LocalFilePathParameter,
-	LocalFilesParameter,
+	LocalPathsCSVParameter,
 	ParentFolderIdParameter,
 	WalletFileParameter
 } from '../parameter_declarations';
+import { fileUploadConflictPrompts, folderUploadConflictPrompts } from '../prompts';
 import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { CLIAction } from '../CLICommand/action';
 import {
@@ -38,7 +39,7 @@ new CLICommand({
 		ParentFolderIdParameter,
 		LocalFilePathParameter,
 		DestinationFileNameParameter,
-		LocalFilesParameter,
+		LocalPathsCSVParameter,
 		BoostParameter,
 		DryRunParameter,
 		...ConflictResolutionParams,
@@ -47,7 +48,7 @@ new CLICommand({
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
 		const filesToUpload: UploadFileParameter[] = await (async function (): Promise<UploadFileParameter[]> {
-			const localFiles = parameters.getParameterValue(LocalFilesParameter);
+			const localFiles = parameters.getParameterValue(LocalPathsCSVParameter);
 			if (localFiles) {
 				const COLUMN_SEPARATOR = ',';
 				const ROW_SEPARATOR = '.';
@@ -70,10 +71,6 @@ new CLICommand({
 					};
 				});
 				return fileParameters;
-			}
-
-			if (!options.localFilePath) {
-				throw new Error('Must provide a local file path!');
 			}
 
 			const parentFolderId: FolderID = parameters.getRequiredParameterValue(ParentFolderIdParameter, EID);
@@ -120,7 +117,8 @@ new CLICommand({
 									wrappedFolder: wrappedEntity,
 									driveKey,
 									destParentFolderName: destinationFileName,
-									conflictResolution
+									conflictResolution,
+									prompts: folderUploadConflictPrompts
 								});
 							} else {
 								return arDrive.uploadPrivateFile({
@@ -128,7 +126,8 @@ new CLICommand({
 									wrappedFile: wrappedEntity,
 									driveKey,
 									destinationFileName,
-									conflictResolution
+									conflictResolution,
+									prompts: fileUploadConflictPrompts
 								});
 							}
 						} else {
@@ -137,14 +136,16 @@ new CLICommand({
 									parentFolderId,
 									wrappedFolder: wrappedEntity,
 									destParentFolderName: destinationFileName,
-									conflictResolution
+									conflictResolution,
+									prompts: folderUploadConflictPrompts
 								});
 							} else {
 								return arDrive.uploadPublicFile({
 									parentFolderId,
 									wrappedFile: wrappedEntity,
 									destinationFileName,
-									conflictResolution
+									conflictResolution,
+									prompts: fileUploadConflictPrompts
 								});
 							}
 						}

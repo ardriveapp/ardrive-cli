@@ -20,10 +20,10 @@ export const FolderIdParameter = 'folderId';
 export const FileIdParameter = 'fileId';
 export const ParentFolderIdParameter = 'parentFolderId';
 export const LocalFilePathParameter = 'localFilePath';
-export const DestinationFolderPathParameter = 'destFolderPath';
+export const DownloadLocalPathParameter = 'localPath';
 export const DestinationFileNameParameter = 'destFileName';
 export const DestinationManifestNameParameter = 'destManifestName';
-export const LocalFilesParameter = 'localFiles';
+export const LocalPathsCSVParameter = 'localPathsCsv';
 export const GetAllRevisionsParameter = 'getAllRevisions';
 export const AllParameter = 'all';
 export const MaxDepthParameter = 'maxDepth';
@@ -32,7 +32,7 @@ export const DryRunParameter = 'dryRun';
 export const SkipParameter = 'skip';
 export const ReplaceParameter = 'replace';
 export const UpsertParameter = 'upsert';
-// export const AskParameter = 'ask';
+export const AskParameter = 'ask';
 export const NoVerifyParameter = 'verify'; // commander maps --no-x style params to options.x and always includes in options
 
 // Aggregates for convenience
@@ -57,8 +57,8 @@ export const AllParameters = [
 	FolderNameParameter,
 	GetAllRevisionsParameter,
 	LastTxParameter,
-	LocalFilesParameter,
-	LocalFilePathParameter,
+	LocalPathsCSVParameter,
+	DownloadLocalPathParameter,
 	MaxDepthParameter,
 	NoVerifyParameter,
 	ParentFolderIdParameter,
@@ -72,7 +72,7 @@ export const AllParameters = [
 ] as const;
 export type ParameterName = typeof AllParameters[number];
 
-export const ConflictResolutionParams = [SkipParameter, ReplaceParameter, UpsertParameter /* , AskParameter */];
+export const ConflictResolutionParams = [SkipParameter, ReplaceParameter, UpsertParameter, AskParameter];
 
 /**
  * Note: importing this file will declare all the above parameters
@@ -233,10 +233,9 @@ Parameter.declare({
 });
 
 Parameter.declare({
-	name: DestinationFolderPathParameter,
-	aliases: ['-d', '--dest-folder-path'],
-	description: `the path on the local filesystem of the folder`,
-	forbiddenConjunctionParameters: [LocalFilePathParameter]
+	name: DownloadLocalPathParameter,
+	aliases: ['--local-path'],
+	description: `(OPTIONAL) the path on the local filesystem where the file should be downloaded. Defaults to current working directory.`
 });
 
 Parameter.declare({
@@ -252,8 +251,8 @@ Parameter.declare({
 });
 
 Parameter.declare({
-	name: LocalFilesParameter,
-	aliases: ['--local-files'],
+	name: LocalPathsCSVParameter,
+	aliases: ['--local-paths-csv'],
 	description: `(BETA) a path to a csv (tab delimited) file containing rows of data for the following columns:
 \t\t\t\t\t\t\t• CSV Columns:
 \t\t\t\t\t\t\t\t• local file path
@@ -292,7 +291,7 @@ Parameter.declare({
 	aliases: ['--skip'],
 	description: '(OPTIONAL) Skip upload if there is a name conflict within destination folder',
 	type: 'boolean',
-	forbiddenConjunctionParameters: [ReplaceParameter, UpsertParameter]
+	forbiddenConjunctionParameters: [ReplaceParameter, UpsertParameter, AskParameter]
 });
 
 Parameter.declare({
@@ -300,7 +299,7 @@ Parameter.declare({
 	aliases: ['--replace'],
 	description: '(OPTIONAL) Create new file revisions if there is a name conflict within destination folder',
 	type: 'boolean',
-	forbiddenConjunctionParameters: [SkipParameter, UpsertParameter]
+	forbiddenConjunctionParameters: [SkipParameter, UpsertParameter, AskParameter]
 });
 
 Parameter.declare({
@@ -309,7 +308,15 @@ Parameter.declare({
 	description:
 		'(OPTIONAL) When there is a name conflict within the destination folder, only upload file if a modification is detected. Skip otherwise.',
 	type: 'boolean',
-	forbiddenConjunctionParameters: [SkipParameter, ReplaceParameter]
+	forbiddenConjunctionParameters: [SkipParameter, ReplaceParameter, AskParameter]
+});
+
+Parameter.declare({
+	name: AskParameter,
+	aliases: ['--ask'],
+	description: '(OPTIONAL) Show an interactive prompt to resolve name conflicts within the destination folder',
+	type: 'boolean',
+	forbiddenConjunctionParameters: [SkipParameter, ReplaceParameter, UpsertParameter]
 });
 
 Parameter.declare({
