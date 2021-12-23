@@ -34,6 +34,7 @@ export const ReplaceParameter = 'replace';
 export const UpsertParameter = 'upsert';
 export const AskParameter = 'ask';
 export const NoVerifyParameter = 'verify'; // commander maps --no-x style params to options.x and always includes in options
+export const NoBundleParameter = 'bundle'; // commander maps --no-x style params to options.x and always includes in options
 export const LocalPathParameter = 'localPath';
 export const LocalPathsParameter = 'localPaths';
 export const LocalCSVParameter = 'localCsv';
@@ -65,6 +66,7 @@ export const AllParameters = [
 	LocalPathParameter,
 	LocalPathsParameter,
 	MaxDepthParameter,
+	NoBundleParameter,
 	NoVerifyParameter,
 	ParentFolderIdParameter,
 	PrivateParameter,
@@ -356,6 +358,13 @@ Parameter.declare({
 	aliases: ['--no-verify'],
 	description:
 		'(OPTIONAL) Derives a drive key for the given drive ID without verifying its correctness against the drive on chain.',
+	type: 'boolean'
+});
+
+Parameter.declare({
+	name: NoBundleParameter,
+	aliases: ['--no-bundle'],
+	description: '(OPTIONAL) Do not pack into a bundle; send as separate v2 transactions. NOT RECOMMENDED.',
 	type: 'boolean'
 });
 
