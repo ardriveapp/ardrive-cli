@@ -20,8 +20,7 @@ export const FolderIdParameter = 'folderId';
 export const FileIdParameter = 'fileId';
 export const ParentFolderIdParameter = 'parentFolderId';
 export const LocalFilePathParameter = 'localFilePath';
-export const LocalPathParameter = 'localPath';
-export const LocalFilePathDownloadParameter = 'localPath';
+export const DownloadLocalPathParameter = 'localPath';
 export const DestinationFileNameParameter = 'destFileName';
 export const DestinationManifestNameParameter = 'destManifestName';
 export const LocalPathsCSVParameter = 'localPathsCsv';
@@ -59,7 +58,7 @@ export const AllParameters = [
 	GetAllRevisionsParameter,
 	LastTxParameter,
 	LocalPathsCSVParameter,
-	LocalFilePathDownloadParameter,
+	DownloadLocalPathParameter,
 	MaxDepthParameter,
 	NoVerifyParameter,
 	ParentFolderIdParameter,
@@ -234,13 +233,7 @@ Parameter.declare({
 });
 
 Parameter.declare({
-	name: LocalFilePathDownloadParameter,
-	aliases: ['--local-path'],
-	description: `(OPTIONAL) the path on the local filesystem where the file should be downloaded. Defaults to current working directory.`
-});
-
-Parameter.declare({
-	name: LocalFilePathDownloadParameter,
+	name: DownloadLocalPathParameter,
 	aliases: ['--local-path'],
 	description: `(OPTIONAL) the path on the local filesystem where the file should be downloaded. Defaults to current working directory.`
 });
