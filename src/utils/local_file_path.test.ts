@@ -69,7 +69,7 @@ describe('getOutputFilePathAndName function', () => {
 		]);
 	});
 
-	it("throws if the path is neither a file nor a directory", () => {
+	it('throws if the path is neither a file nor a directory', () => {
 		expect(() => getOutputFilePathAndName(PATH_EXISTING_NON_FILE, fsStatSyncAndPathResolveWrapper)).to.throw();
 	});
 

@@ -19,12 +19,11 @@ export const ConfirmationsParameter = 'confirmations';
 export const FolderIdParameter = 'folderId';
 export const FileIdParameter = 'fileId';
 export const ParentFolderIdParameter = 'parentFolderId';
-export const LocalFilePathParameter = 'localFilePath';
-export const LocalPathParameter = 'localPath';
+export const LocalFilePathParameter_DEPRECATED = 'localFilePath';
 export const LocalFilePathDownloadParameter = 'localPath';
 export const DestinationFileNameParameter = 'destFileName';
 export const DestinationManifestNameParameter = 'destManifestName';
-export const LocalFilesParameter = 'localFiles';
+export const LocalFilesParameter_DEPRECATED = 'localFiles';
 export const GetAllRevisionsParameter = 'getAllRevisions';
 export const AllParameter = 'all';
 export const MaxDepthParameter = 'maxDepth';
@@ -35,6 +34,9 @@ export const ReplaceParameter = 'replace';
 export const UpsertParameter = 'upsert';
 export const AskParameter = 'ask';
 export const NoVerifyParameter = 'verify'; // commander maps --no-x style params to options.x and always includes in options
+export const LocalPathParameter = 'localPath';
+export const LocalPathsParameter = 'localPaths';
+export const LocalCSVParameter = 'localCsv';
 
 // Aggregates for convenience
 export const WalletTypeParameters = [WalletFileParameter, SeedPhraseParameter];
@@ -58,8 +60,10 @@ export const AllParameters = [
 	FolderNameParameter,
 	GetAllRevisionsParameter,
 	LastTxParameter,
-	LocalFilesParameter,
-	LocalFilePathParameter,
+	LocalFilePathParameter_DEPRECATED,
+	LocalFilesParameter_DEPRECATED,
+	LocalPathParameter,
+	LocalPathsParameter,
 	MaxDepthParameter,
 	NoVerifyParameter,
 	ParentFolderIdParameter,
@@ -228,9 +232,9 @@ Parameter.declare({
 });
 
 Parameter.declare({
-	name: LocalFilePathParameter,
+	name: LocalFilePathParameter_DEPRECATED,
 	aliases: ['-l', '--local-file-path'],
-	description: `the path on the local filesystem for the file that will be uploaded`
+	description: `(DEPRECATED) the path on the local filesystem for the file that will be uploaded`
 });
 
 Parameter.declare({
@@ -241,7 +245,7 @@ Parameter.declare({
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-files
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-paths
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-csv`,
-	forbiddenConjunctionParameters: [LocalFilePathParameter]
+	forbiddenConjunctionParameters: [LocalFilePathParameter_DEPRECATED, LocalPathsParameter, LocalCSVParameter]
 });
 
 Parameter.declare({
@@ -253,7 +257,8 @@ Parameter.declare({
 Parameter.declare({
 	name: DestinationFileNameParameter,
 	aliases: ['-d', '--dest-file-name'],
-	description: `(OPTIONAL) a destination file name to use when uploaded to ArDrive`
+	description: `(OPTIONAL) a destination file name to use when uploaded to ArDrive
+\t\t\t\t\t\t\t• Only valid for use with --local-path or --local-file-path`
 });
 
 Parameter.declare({
@@ -263,17 +268,29 @@ Parameter.declare({
 });
 
 Parameter.declare({
-	name: LocalFilesParameter,
+	name: LocalFilesParameter_DEPRECATED,
 	aliases: ['--local-files'],
-	description: `(BETA) a path to a csv (tab delimited) file containing rows of data for the following columns:
+	description: `(DEPRECATED) a path to a csv (tab delimited) file containing rows of data for the following columns:
 \t\t\t\t\t\t\t• CSV Columns:
 \t\t\t\t\t\t\t\t• local file path
 \t\t\t\t\t\t\t\t• destination file name (optional)
 \t\t\t\t\t\t\t\t• parent folder ID (optional)
 \t\t\t\t\t\t\t\t\t• --parent-folder-id used, otherwise
+\t\t\t\t\t\t\t\t• drive password (optional)
+\t\t\t\t\t\t\t\t• drive key (optional)
 \t\t\t\t\t\t\t• all parent folder IDs should reside in the same drive
-\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-file-path`,
-	forbiddenConjunctionParameters: [LocalFilePathParameter]
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-file-path
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-path
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-paths
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-csv
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --dest-file-name`,
+	forbiddenConjunctionParameters: [
+		LocalFilePathParameter_DEPRECATED,
+		LocalPathParameter,
+		LocalPathsParameter,
+		LocalCSVParameter,
+		DestinationFileNameParameter
+	]
 });
 
 Parameter.declare({
@@ -351,4 +368,65 @@ Parameter.declare({
 	description:
 		'(OPTIONAL) Derives a drive key for the given drive ID without verifying its correctness against the drive on chain.',
 	type: 'boolean'
+});
+
+Parameter.declare({
+	name: LocalPathParameter,
+	aliases: ['--local-path'],
+	description: `the path on the local filesystem for the file that will be uploaded
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-file-path
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-files
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-paths
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-csv`,
+	forbiddenConjunctionParameters: [
+		LocalFilePathParameter_DEPRECATED,
+		LocalFilesParameter_DEPRECATED,
+		LocalPathsParameter,
+		LocalCSVParameter
+	]
+});
+
+Parameter.declare({
+	name: LocalPathsParameter,
+	aliases: ['--local-paths'],
+	type: 'array',
+	description: `(BETA) a space-separated list of paths to files or folders to upload
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-file-path
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-files
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-path
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-csv
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --dest-file-name`,
+	forbiddenConjunctionParameters: [
+		LocalFilePathParameter_DEPRECATED,
+		LocalFilesParameter_DEPRECATED,
+		LocalPathParameter,
+		LocalCSVParameter,
+		DestinationFileNameParameter
+	]
+});
+
+Parameter.declare({
+	name: LocalCSVParameter,
+	aliases: ['--local-csv'],
+	description: `(BETA) a path to a csv (tab delimited) file containing rows of data for the following columns:
+\t\t\t\t\t\t\t• CSV Columns:
+\t\t\t\t\t\t\t\t• local file path
+\t\t\t\t\t\t\t\t• destination file name (optional)
+\t\t\t\t\t\t\t\t• parent folder ID (optional)
+\t\t\t\t\t\t\t\t\t• --parent-folder-id used, otherwise
+\t\t\t\t\t\t\t\t• drive password (optional)
+\t\t\t\t\t\t\t\t• drive key (optional)
+\t\t\t\t\t\t\t• all parent folder IDs should reside in the same drive
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-file-path
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-files
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-path
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-paths
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --dest-file-name`,
+	forbiddenConjunctionParameters: [
+		LocalFilePathParameter_DEPRECATED,
+		LocalFilesParameter_DEPRECATED,
+		LocalPathParameter,
+		LocalPathsParameter,
+		DestinationFileNameParameter
+	]
 });
