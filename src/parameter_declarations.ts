@@ -273,12 +273,14 @@ Parameter.declare({
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-file-path
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-path
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-paths
-\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-csv`,
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-csv
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --dest-file-name`,
 	forbiddenConjunctionParameters: [
 		LocalFilePathParameter_DEPRECATED,
 		LocalPathParameter,
 		LocalPathsParameter,
-		LocalCSVParameter
+		LocalCSVParameter,
+		DestinationFileNameParameter
 	]
 });
 
@@ -390,12 +392,14 @@ Parameter.declare({
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-file-path
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-files
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-path
-\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-csv`,
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-csv
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --dest-file-name`,
 	forbiddenConjunctionParameters: [
 		LocalFilePathParameter_DEPRECATED,
 		LocalFilesParameter_DEPRECATED,
 		LocalPathParameter,
-		LocalCSVParameter
+		LocalCSVParameter,
+		DestinationFileNameParameter
 	]
 });
 
@@ -414,11 +418,13 @@ Parameter.declare({
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-file-path
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-files
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-path
-\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-paths`,
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-paths
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --dest-file-name`,
 	forbiddenConjunctionParameters: [
 		LocalFilePathParameter_DEPRECATED,
 		LocalFilesParameter_DEPRECATED,
 		LocalPathParameter,
-		LocalPathsParameter
+		LocalPathsParameter,
+		DestinationFileNameParameter
 	]
 });

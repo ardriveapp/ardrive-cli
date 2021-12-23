@@ -15,26 +15,26 @@ setup_file() {
 }
 
 @test 'Verifies "1 space test.zip" file exists' {
-    assert_exist "$(pwd)/1 space test.zip"
+    assert_exist "/home/node/tmp/1 space test.zip"
 }
 @test 'Verifies "arconnect-archive-team_-_ardrive.html" file exists' {
-    assert_exist "$(pwd)/arconnect-archive-team_-_ardrive.html"
+    assert_exist "/home/node/tmp/arconnect-archive-team_-_ardrive.html"
 }
 @test 'Verifies "13" file exists' {
-    assert_exist "$(pwd)/13"
+    assert_exist "/home/node/tmp/13"
 }
 @test 'Verifies "Biochar-sample.pdf" file exists' {
-    assert_exist "$(pwd)/Biochar-sample.pdf"
+    assert_exist "/home/node/tmp/Biochar-sample.pdf"
 }
 @test 'Verifies "Coffee_chart.jpg" file exists' {
-    assert_exist "$(pwd)/Coffee_chart.jpg"
+    assert_exist "/home/node/tmp/Coffee_chart.jpg"
 }
 @test 'Verifies "samplee.mkv" file exists' {
-    assert_exist "$(pwd)/samplee.mkv"
+    assert_exist "/home/node/tmp/samplee.mkv"
 }
-@test 'Verifies "test!_·$%d\%&·_.txt" file exists' {
+@test 'Verifies File with rare chars exists' {
     #BATS parsing issue with that filename, always fails.
     #TODO We need to figure this out for weird file names
     skip
-    assert_exist "$(pwd)/test!_·\$%d\%&·_.txt"
+    assert_exist "/home/node/tmp/test!_·\$%d\%&·_.txt"
 }
