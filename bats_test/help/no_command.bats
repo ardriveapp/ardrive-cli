@@ -11,6 +11,7 @@ Commands:
   create-folder [options]
   create-manifest [options]
   create-tx [options]
+  download-file [options]
   drive-info [options]
   file-info [options]
   folder-info [options]
