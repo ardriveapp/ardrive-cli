@@ -21,6 +21,7 @@ export const FileIdParameter = 'fileId';
 export const ParentFolderIdParameter = 'parentFolderId';
 export const LocalFilePathParameter = 'localFilePath';
 export const LocalPathParameter = 'localPath';
+export const LocalFilePathDownloadParameter = 'localPath';
 export const DestinationFileNameParameter = 'destFileName';
 export const DestinationManifestNameParameter = 'destManifestName';
 export const LocalFilesParameter = 'localFiles';
@@ -241,6 +242,12 @@ Parameter.declare({
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-paths
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-csv`,
 	forbiddenConjunctionParameters: [LocalFilePathParameter]
+});
+
+Parameter.declare({
+	name: LocalFilePathDownloadParameter,
+	aliases: ['--local-path'],
+	description: `(OPTIONAL) the path on the local filesystem where the file should be downloaded. Defaults to current working directory.`
 });
 
 Parameter.declare({
