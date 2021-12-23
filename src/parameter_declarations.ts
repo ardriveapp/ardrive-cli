@@ -20,6 +20,7 @@ export const FolderIdParameter = 'folderId';
 export const FileIdParameter = 'fileId';
 export const ParentFolderIdParameter = 'parentFolderId';
 export const LocalFilePathParameter_DEPRECATED = 'localFilePath';
+export const LocalFilePathDownloadParameter = 'localPath';
 export const DestinationFileNameParameter = 'destFileName';
 export const DestinationManifestNameParameter = 'destManifestName';
 export const LocalFilesParameter_DEPRECATED = 'localFiles';
@@ -234,6 +235,12 @@ Parameter.declare({
 	name: LocalFilePathParameter_DEPRECATED,
 	aliases: ['-l', '--local-file-path'],
 	description: `(DEPRECATED) the path on the local filesystem for the file that will be uploaded`
+});
+
+Parameter.declare({
+	name: LocalFilePathDownloadParameter,
+	aliases: ['--local-path'],
+	description: `(OPTIONAL) the path on the local filesystem where the file should be downloaded. Defaults to current working directory.`
 });
 
 Parameter.declare({
