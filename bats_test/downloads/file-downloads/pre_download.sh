@@ -11,6 +11,6 @@ myFiles=(
 )
 
 for publicFile in ${myFiles[@]}; do
-    yarn ardrive download-file -f $publicFile
+    yarn ardrive download-file -f $publicFile --local-path /home/node/tmp
 done
 exit 0

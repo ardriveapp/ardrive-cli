@@ -26,7 +26,7 @@ ardrive create-drive --wallet-file /path/to/my/wallet.json --drive-name "Teenage
     }
 }
 
-ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0c58c11-430c-4383-8e54-4d864cc7e927" --local-file-path ./helloworld.txt --dest-file-name "ode_to_ardrive.txt"
+ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0c58c11-430c-4383-8e54-4d864cc7e927" --local-path ./helloworld.txt --dest-file-name "ode_to_ardrive.txt"
 {
     "created": [
         {
@@ -101,10 +101,10 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         1. [Uploading a Single File](#uploading-a-single-file)
         2. [Download a Single File (BETA)](#download-file)
         3. [Uploading a Folder with Files](#bulk-upload)
-        4. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
-        5. [Uploading Manifests](#uploading-manifests)
-        6. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
-        7. [Create New Drive and Upload Folder Pipeline Example](#create-upload-pipeline)
+        4. [Uploading Multiple Files](#multi-file-upload)
+        5. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
+        6. [Uploading Manifests](#uploading-manifests)
+        7. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
     7. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -535,7 +535,7 @@ Example output:
 }
 ```
 
-Note: Folders can also be created when supplying a folder for the --local-file-path during an upload-file command, however, the folder hierarchy on the local disk will be reconstructed on chain during the course of the recursive bulk upload.
+Note: Folders can also be created by supplying a folder as the --local-path of an upload-file command. In this case, the folder hierarchy on the local disk will be reconstructed on chain during the course of the recursive bulk upload.
 
 ### Moving Folders
 
@@ -660,7 +660,7 @@ To upload a file, you'll need a parent folder id, the file to upload's file path
 
 ```shell
 # Supply the parent folder ID to upload-file
-ardrive upload-file --local-file-path /path/to/file.txt  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
+ardrive upload-file --local-path /path/to/file.txt  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
 ```
 
 Example output:
@@ -717,7 +717,19 @@ ardrive download-file -w /path/to/wallet.json -file-id "ff450770-a9cb-46a5-9234-
 Users can perform a bulk upload by using the upload-file command on a target folder. The command will reconstruct the folder hierarchy on local disk as ArFS folders on the permaweb and upload each file into their corresponding folders:
 
 ```shell
-ardrive upload-file --local-file-path /path/to/folder  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
+ardrive upload-file --local-path /path/to/folder  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
+```
+
+### Uploading Multiple Files<a id="multi-file-upload"></a>
+
+To upload an arbitrary number of files or folders, pass a space-separated list of paths to `--local-paths`:
+
+```shell
+# Specifying a mixed set of file and folder paths
+yarn ardrive upload-file -w wallet.json -F "${PUBLIC_FOLDER_ID}" --local-paths ./image.png ~/backups/ ../another_file.txt
+
+# Example using glob expansion to upload all .json files in the current folder
+yarn ardrive upload-file -w wallet.json -F "${PUBLIC_FOLDER_ID}" --local-paths ./*.json
 ```
 
 ### Name Conflict Resolution on Upload
@@ -743,11 +755,11 @@ In the case that there is a FILE to FILE name conflict found, it will only updat
 To override the upsert behavior, use the `--replace` option to always make new revisions of a file or the `--skip` option to always skip the upload on name conflicts:
 
 ```shell
-ardrive upload-file --replace --local-file-path /path/to/file.txt  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
+ardrive upload-file --replace --local-path /path/to/file.txt  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
 ```
 
 ```shell
-ardrive upload-file --skip --local-file-path /path/to/file.txt  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
+ardrive upload-file --skip --local-path /path/to/file.txt  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
 ```
 
 Alternatively, the upload-file commands now also supports the `--ask` conflict resolution option. This setting will always provide an interactive prompt on name conflicts that allows users to decide how to resolve each conflict found:
@@ -915,20 +927,6 @@ In the return output, the top link will be a link to the deployed web app:
 
 This is effectively hosting a web app with ArDrive. Check out the ArDrive Price Calculator React App hosted as an [ArDrive Manifest][example-manifest-webpage].
 
-### Create New Drive and Upload Folder Pipeline Example<a id="create-upload-pipeline"></a>
-
-```shell
-# Use `tee` to store command json outputs for later review/backup/automation/etc.
-# Use `jq` to parse json output and retrieve the root folder ID for use in downstream command
-ardrive create-drive -w /path/to/wallet.json -n "My Public Archive" |
-tee create_drive_output.json |
-jq -r '.created[] | select(.type == "folder") | .entityId' |
-while read -r parentFolderId; do
-ardrive upload-file -w /path/to/wallet.json --local-file-path ./myarchives -F "$parentFolderId";
-done |
-tee upload_folder_output.json
-```
-
 ## Other Utility Operations
 
 ### Monitoring Transactions
@@ -984,7 +982,7 @@ ardrive get-mempool | jq 'length'
 
 ```shell
 # Increase the miner reward on your transactions by 50%
-ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0c58c11-430c-4383-8e54-4d864cc7e927" --local-file-path ./helloworld.txt --boost 1.5
+ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0c58c11-430c-4383-8e54-4d864cc7e927" --local-path ./helloworld.txt --boost 1.5
 ```
 
 #### Send AR Transactions From a Cold Wallet<a id="cold-tx"></a>
