@@ -949,20 +949,6 @@ In the return output, the top link will be a link to the deployed web app:
 
 This is effectively hosting a web app with ArDrive. Check out the ArDrive Price Calculator React App hosted as an [ArDrive Manifest][example-manifest-webpage].
 
-### Create New Drive and Upload Folder Pipeline Example<a id="create-upload-pipeline"></a>
-
-```shell
-# Use `tee` to store command json outputs for later review/backup/automation/etc.
-# Use `jq` to parse json output and retrieve the root folder ID for use in downstream command
-ardrive create-drive -w /path/to/wallet.json -n "My Public Archive" |
-tee create_drive_output.json |
-jq -r '.created[] | select(.type == "folder") | .entityId' |
-while read -r parentFolderId; do
-ardrive upload-file -w /path/to/wallet.json --local-path ./myarchives -F "$parentFolderId";
-done |
-tee upload_folder_output.json
-```
-
 ## Other Utility Operations
 
 ### Monitoring Transactions

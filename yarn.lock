@@ -1521,7 +1521,7 @@ __metadata:
     "@typescript-eslint/eslint-plugin": ^4.18.0
     "@typescript-eslint/parser": ^4.18.0
     ardrive-core-js: 1.4.0-alpha-3
-    arweave: ^1.10.18
+    arweave: 1.10.18
     axios: ^0.21.1
     chai: ^4.3.4
     commander: ^8.2.0
@@ -1636,7 +1636,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"arweave@npm:^1.10.0, arweave@npm:^1.10.15, arweave@npm:^1.10.18":
+"arweave@npm:1.10.18, arweave@npm:^1.10.0, arweave@npm:^1.10.15, arweave@npm:^1.10.18":
   version: 1.10.18
   resolution: "arweave@npm:1.10.18"
   dependencies:
