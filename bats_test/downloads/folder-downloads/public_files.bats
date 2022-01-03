@@ -23,5 +23,5 @@ setup_file() {
 }
 
 @test 'Verifies the "100bYtes.txt" file exists' {
-    assert_exist "/home/node/tmp/CaSe/100bYts.txt"
+    assert_exist "/home/node/tmp/CaSe/100bYtS.txt"
 }
