@@ -746,10 +746,19 @@ ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --max-depth 0
 
 The behaviors of `--local-path` are similar to those of `cp` and `mv` in Unix systems, e.g.:
 
--   `--local-path /existing_folder` --> folder downloaded to `/existing_folder/MyArDriveFolder`
--   `--local-path /existing_folder/MyArDriveFolder` --> folder downloaded to `/existing_folder/MyArDriveFolder/MyArDriveFolder`
--   `--local-path /existing_folder/non_existent_folder` --> folder downloaded to `/existing_folder/non_existent_folder`
--   `--local-path /existing_folder/non_existent_folder/non_existentFolder` --> ERROR
+```shell
+# folder downloaded to "/existing_folder/MyArDriveFolder"
+ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --local-path "/existing_folder"
+
+# folder downloaded to "/existing_folder/MyArDriveFolder/MyArDriveFolder" as "/existing_folder/MyArDriveFolder" already exists
+ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --local-path "/existing_folder/MyArDriveFolder"
+
+# folder downloaded to "/existing_folder/non_existent_folder"
+ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --local-path "/existing_folder/non_existent_folder"
+
+# ERROR!
+ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --local-path "/non_existent_folder_1/non_existent_folder_2"
+```
 
 ### Uploading Multiple Files<a id="multi-file-upload"></a>
 
