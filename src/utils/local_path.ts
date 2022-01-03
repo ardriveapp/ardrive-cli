@@ -73,7 +73,8 @@ export function getOutputFolderPathAndName(
 		if (outputParentPathStats.isDirectory()) {
 			return [outputDirname, outputBasename];
 		}
-		throw e; // The ENOENT linux fs error
+		// TODO: handle the recoverable error case for `ENAMETOOLONG`
+		throw new Error("The destination path doesn't exist"); // TODO: suggest to use the `--create-parents` flag
 	}
 	throw new Error(`The destination isn't a folder!`);
 }
