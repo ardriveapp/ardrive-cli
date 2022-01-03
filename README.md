@@ -724,23 +724,32 @@ ardrive upload-file --local-path /path/to/folder  --parent-folder-id "9af694f6-4
 
 ### Downloading a Folder with Files<a id="download-folder"></a>
 
-You can download a folder from ArDrive to your local machine with the `download-folder` command.
+You can download a folder from ArDrive to your local machine with the `download-folder` command. In the following examples, assume that a folder with ID "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" exists in your drive and is named "MyArDriveFolder".
 
 ```shell
+# Downloads "MyArDriveFolder" into the current working directory, i.e. ./MyArDriveFolder/
 ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6"
 ```
 
-By specifying the `--dest-folder-path` you can choose the parent folder where to download the folder on chain. When the parameter is missing, it defaults to the current working directory (`./`).
+By specifying the `--local-path` option, you can choose the local parent folder into which you the on-chain folder will be downloaded. When the parameter is omitted, its value defaults to the current working directory (i.e. `./`).
 
 ```shell
-ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --dest-folder-path /my_ardrive_downloads/
+# Downloads "MyArDriveFolder" into /my_ardrive_downloads/MyArDriveFolder
+ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --local-path /my_ardrive_downloads/
 ```
 
-The `--max-depth` parameter let's you choose a custom depth to download, it defaults to all. In the following example only the direct children will be download:
+The `--max-depth` parameter lets you to choose a custom folder depth to download. When omitted, the entire subtree of the folder will be downloaded. In the following example, only the immediate children of the folder will be downloaded:
 
 ```shell
-ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --max-depth 1
+ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --max-depth 0
 ```
+
+The behaviors of `--local-path` are similar to those of `cp` and `mv` in Unix systems, e.g.:
+
+-   `--local-path /existing_folder` --> folder downloaded to `/existing_folder/MyArDriveFolder`
+-   `--local-path /existing_folder/MyArDriveFolder` --> folder downloaded to `/existing_folder/MyArDriveFolder/MyArDriveFolder`
+-   `--local-path /existing_folder/non_existent_folder` --> folder downloaded to `/existing_folder/non_existent_folder`
+-   `--local-path /existing_folder/non_existent_folder/non_existentFolder` --> ERROR
 
 ### Uploading Multiple Files<a id="multi-file-upload"></a>
 
