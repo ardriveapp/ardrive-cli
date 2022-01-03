@@ -62,6 +62,7 @@ export function getOutputFolderPathAndName(
 		const outputPathStats = fsStatSyncAndPathResolveWrapper.statSync(resolvedOutputPath);
 		// the destination does exist
 		if (outputPathStats.isDirectory()) {
+				// TODO: check case sensitivity conflicts here
 			// and is a directory
 			return [resolvedOutputPath];
 		}
