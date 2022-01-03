@@ -49,6 +49,7 @@ export function getOutputFilePathAndName(
 /**
  * Resolves the path, verifies its existance and type to conditionally return its dir and file name
  * @param {string} destOutputPath - the path from where to extract the dir path and name
+ * @param fsStatSyncAndPathResolveWrapper - for testing purposes it wraps the fs methods
  * @returns {FilePathAndName} - the directory where to put the file and the file name (which is undefined when the provided destOutputPath is a directory)
  */
 export function getOutputFolderPathAndName(
@@ -62,7 +63,7 @@ export function getOutputFolderPathAndName(
 		const outputPathStats = fsStatSyncAndPathResolveWrapper.statSync(resolvedOutputPath);
 		// the destination does exist
 		if (outputPathStats.isDirectory()) {
-				// TODO: check case sensitivity conflicts here
+			// TODO: check case sensitivity conflicts here
 			// and is a directory
 			return [resolvedOutputPath];
 		}
