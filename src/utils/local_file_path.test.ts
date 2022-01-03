@@ -108,7 +108,7 @@ describe('local path resolver methods', () => {
 			]);
 		});
 
-		it('returns the parent path and the basename if the path in nonexistent but the parent is a directory', () => {
+		it('returns the parent path and the basename if the path is nonexistent but the parent is a directory', () => {
 			expect(getOutputFolderPathAndName(PATH_NONEXISTENT_FOLDER, fsStatSyncAndPathResolveWrapper)).to.deep.equal([
 				PATH_EXISTING_PARENT_FOLDER,
 				NAME_NONEXISTENT_FOLDER
