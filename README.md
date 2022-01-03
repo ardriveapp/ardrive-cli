@@ -724,7 +724,7 @@ ardrive upload-file --local-path /path/to/folder  --parent-folder-id "9af694f6-4
 
 ### Downloading a Folder with Files<a id="download-folder"></a>
 
-You can download a folder on chain with the `download-folder` command.
+You can download a folder from ArDrive to your local machine with the `download-folder` command.
 
 ```shell
 ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6"
