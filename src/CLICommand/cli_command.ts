@@ -2,6 +2,7 @@
 import { program } from 'commander';
 import { CLIAction } from './action';
 import { CliApiObject, ExitCode, ParsedParameters } from './cli';
+import { ERROR_EXIT_CODE } from './error_codes';
 import { Parameter, ParameterName, ParameterOverridenConfig } from './parameter';
 
 export type CommandName = string;
@@ -45,10 +46,15 @@ function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliA
 		}
 	});
 	command = command.action((options) => {
-		assertConjunctionParameters(commandDescriptor, options);
-		commandDescriptor.action.trigger(options).then((exitCode) => {
-			exitProgram(exitCode || 0);
-		});
+		try {
+			assertConjunctionParameters(commandDescriptor, options);
+			commandDescriptor.action.trigger(options).then((exitCode) => {
+				exitProgram(exitCode || 0);
+			});
+		} catch (e) {
+			console.error(`Error: ${e.message}`);
+			exitProgram(ERROR_EXIT_CODE);
+		}
 	});
 }
 

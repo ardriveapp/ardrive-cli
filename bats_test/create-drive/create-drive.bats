@@ -37,10 +37,10 @@ load '/home/node/packages/node_modules/bats-assert/load.bash'
     assert_line -n 3 '}'
 }
 
+# This test is commented out until there is a password variable for private use cases
+# @test "private create-drive output contains drive keys on created entities" {
+#     run -0 bash -c "yarn ardrive create-drive --dry-run -n 'Stub-Name' -w $WALLET  -p $PASSWORD | jq '.created[] .key'"
 
-@test "private create-drive output contains drive keys on created entities" {
-    run -0 bash -c "yarn ardrive create-drive --dry-run -n 'Stub-Name' -w $WALLET  -p mycoolpassword123 | jq '.created[] .key'"
-
-    [ "${lines[0]}" = "${lines[1]}" ]
-    assert_line -n 2 'null'
-}
+#     [ "${lines[0]}" = "${lines[1]}" ]
+#     assert_line -n 2 'null'
+# }
