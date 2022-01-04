@@ -731,7 +731,7 @@ You can download a folder from ArDrive to your local machine with the `download-
 ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6"
 ```
 
-By specifying the `--local-path` option, you can choose the local parent folder into which you the on-chain folder will be downloaded. When the parameter is omitted, its value defaults to the current working directory (i.e. `./`).
+By specifying the `--local-path` option, you can choose the local parent folder into which the on-chain folder will be downloaded. When the parameter is omitted, its value defaults to the current working directory (i.e. `./`).
 
 ```shell
 # Downloads "MyArDriveFolder" into /my_ardrive_downloads/MyArDriveFolder
