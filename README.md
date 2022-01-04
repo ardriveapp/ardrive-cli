@@ -106,7 +106,6 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         6. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
         7. [Uploading Manifests](#uploading-manifests)
         8. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
-        9. [Create New Drive and Upload Folder Pipeline Example](#create-upload-pipeline)
     7. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
