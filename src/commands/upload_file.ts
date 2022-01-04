@@ -5,7 +5,7 @@ import {
 	DestinationFileNameParameter,
 	DrivePrivacyParameters,
 	DryRunParameter,
-	NoBundleParameter,
+	ShouldBundleParameter,
 	LocalPathsParameter,
 	LocalFilePathParameter_DEPRECATED,
 	LocalFilesParameter_DEPRECATED,
@@ -128,7 +128,7 @@ new CLICommand({
 		DestinationFileNameParameter,
 		BoostParameter,
 		DryRunParameter,
-		NoBundleParameter,
+		ShouldBundleParameter,
 		...ConflictResolutionParams,
 		...DrivePrivacyParameters,
 		LocalFilePathParameter_DEPRECATED,
@@ -160,7 +160,7 @@ new CLICommand({
 			const wallet = parameters.getRequiredParameterValue(WalletFileParameter, readJWKFile);
 
 			const conflictResolution = parameters.getFileNameConflictResolution();
-			const shouldBundle = !!parameters.getParameterValue(NoBundleParameter);
+			const shouldBundle = !!parameters.getParameterValue(ShouldBundleParameter);
 
 			const arDrive = cliArDriveFactory({
 				wallet: wallet,
