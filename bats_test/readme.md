@@ -1,64 +1,33 @@
-# Writing BATS tests
+# BATS
+## Quick Guide
 
-Some guidelines on writing your own BATS tests
-## Globals
+To run a single file, just use
+``` bats <my-test-file.bats>```
 
-There are several global variables you can use to introspect on Bats tests:
+e.g.
 
-- $BATS_TEST_FILENAME is the fully expanded path to the Bats test file.
+```bats ../test_samples//testing_hooks/hooks_sample.bats```
 
-- $BATS_TEST_DIRNAME is the directory in which the Bats test file is located.
+Recursion is supported. To run every test inside a given folder:
 
-- $BATS_TEST_NAMES is an array of function names for each test case.
+``` bats -r ../test_samples/``` from ```~/ardrive-cli``` will run each sample
 
-- $BATS_TEST_NAME is the name of the function containing the current test case.
+To parallelize jobs just add ```-j <number of jobs>```
 
-- $BATS_TEST_DESCRIPTION is the description of the current test case.
+e.g. 2 jobs ```bats -r bats_test/ -j 2```
 
-- $BATS_TEST_NUMBER is the (1-based) index of the current test case in the test file.
+To change output format, ```-F``` plus formatter. 
 
-- $BATS_TMPDIR is the location to a directory that may be used to store temporary files.
+Supported ones are pretty (default),tap (default w/o term), tap13 (nicer), junit (XML)
 
-- $BATS_RUN_COMMAND string contains the command and command arguments passed to *run* 
-  
-Check every variable [here](https://bats-core.readthedocs.io/en/stable/writing-tests.html#special-variables)
-## Support libs
+## Useful links
 
-[Support](https://github.com/bats-core/bats-support#bats-support)
+Official BATS docs [here](https://bats-core.readthedocs.io/en/stable/index.html)
 
-[Files](https://github.com/bats-core/bats-file#index-of-all-functions)
+Docker examples on [test_samples](https://github.com/ardriveapp/ardrive-bats-docker/tree/production/test_samples) folder
 
-[Assertions](https://github.com/bats-core/bats-assert#usage)
-
-
-## Basic Commands
-
-### Log to console
-
-Always  ``` echo 'text' >&3 ```
-
-Only on failures ```echo 'text' ```
-
-### Assertions and running commands
-
-Use *run*. It will execute commands in a sub-shell. Can execute scripts as well.
-
-```
-@test "invoking foo with a nonexistent file prints an error" {
-  run -1 foo nonexistent_filename
-  [ "$output" = "foo: no such file 'nonexistent_filename'" ]
-}
-```
-
-```run``` alongside ```-1``` fails if status is not 1. We can replace that number for any number we want to check any exit code.
-
-```$output``` is how we check the complete input of a command
-
-``` [ "$output" = "<Check output form run here>" ]``` 
-
-```[ "${lines[0]}" = "Line output here" ]``` is how we check a specific line. In this case, line 0.
-
-Please check complete BATS docs [here](https://bats-core.readthedocs.io/en/stable/index.html)
-
-There are also many examples on [test_samples](https://github.com/ardriveapp/ardrive-bats-docker/tree/production/test_samples) folder
+[Network monitoring](./network_tools.md)
  
+[Wallet interactions](./wallets.md)
+
+[Writing tests](./writing_tests.md)
