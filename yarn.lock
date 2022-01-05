@@ -12,6 +12,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@alexsasharegan/simple-cache@npm:^3.3.3":
+  version: 3.3.3
+  resolution: "@alexsasharegan/simple-cache@npm:3.3.3"
+  dependencies:
+    safe-types: ^4.17.0
+  checksum: e36ce8368f74eb1ef3caf657d9baee7eaac1395d603730012ff48cbc6f502bf9b3bf594ada813a0fdfa5f58177e162058bb115f86e81a3bc3a7277f52b92e0ce
+  languageName: node
+  linkType: hard
+
 "@babel/code-frame@npm:7.12.11":
   version: 7.12.11
   resolution: "@babel/code-frame@npm:7.12.11"
@@ -1520,7 +1529,7 @@ __metadata:
     "@types/source-map-support": ^0
     "@typescript-eslint/eslint-plugin": ^4.18.0
     "@typescript-eslint/parser": ^4.18.0
-    ardrive-core-js: 1.5.0-alpha-0
+    ardrive-core-js: 1.5.0-alpha-2
     arweave: 1.10.18
     axios: ^0.21.1
     chai: ^4.3.4
@@ -1546,10 +1555,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"ardrive-core-js@npm:1.5.0-alpha-0":
-  version: 1.5.0-alpha-0
-  resolution: "ardrive-core-js@npm:1.5.0-alpha-0"
+"ardrive-core-js@npm:1.5.0-alpha-2":
+  version: 1.5.0-alpha-2
+  resolution: "ardrive-core-js@npm:1.5.0-alpha-2"
   dependencies:
+    "@alexsasharegan/simple-cache": ^3.3.3
     arbundles: ^0.5.5
     arweave: 1.10.18
     arweave-mnemonic-keys: ^0.0.9
@@ -1564,7 +1574,7 @@ __metadata:
     smartweave: ^0.4.45
     utf8: ^3.0.0
     uuid: ^8.3.2
-  checksum: 1cf214ab73de1f00c3d89def1004e9009a0d369bec205aa4613a0ce254c0e129cf40894ff42045af9c26e8c76678dc0d3a731a19bc5d0a7bb1396d017ac3c21c
+  checksum: 60ebe22b3694fd18ddf6301f672ee7ead3c317a9b8805ff1ca756bf6755736ef4d0fe9f4c83626ca812073fe035fb67dce79d47b70d95916232650f8a474d09c
   languageName: node
   linkType: hard
 
@@ -5488,6 +5498,13 @@ fsevents@~2.3.2:
   version: 5.1.2
   resolution: "safe-buffer@npm:5.1.2"
   checksum: 2708587c1b5e70a5e420714ceb59f30f5791c6e831d39812125a008eca63a4ac18578abd020a0776ea497ff03b4543f2b2a223a7b9073bf2d6c7af9ec6829218
+  languageName: node
+  linkType: hard
+
+"safe-types@npm:^4.17.0":
+  version: 4.27.0
+  resolution: "safe-types@npm:4.27.0"
+  checksum: 182ce7d1d4d970776d39a10108d1a466f457c5a9043986441d2f5380abf57c4a617a2a1ab2c411013335f8caf31ac94a0de991acd97c4bc5fb98493b367e4397
   languageName: node
   linkType: hard
 
