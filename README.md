@@ -699,20 +699,6 @@ NOTE: To upload to the root of a drive, specify its root folder ID as the parent
 ardrive drive-info -d "c7f87712-b54e-4491-bc96-1c5fa7b1da50" | jq -r '.rootFolderId'
 ```
 
-### Download a Single file (BETA)<a id="download-file"></a>
-
-By using the `download-file` command you can download a file on chain to a folder in your local storage specified by --local-path (or to your current working directory if not specified):
-
-```shell
-ardrive download-file -w /path/to/wallet.json -file-id "ff450770-a9cb-46a5-9234-89cbd9796610" --local-path /my_ardrive_downloads/
-```
-
-Specify a filename in the --local-path if you'd like to use a different name than the one that's used in your drive:
-
-```shell
-ardrive download-file -w /path/to/wallet.json -file-id "ff450770-a9cb-46a5-9234-89cbd9796610" --local-path /my_ardrive_downloads/my_pic.png
-```
-
 ### Uploading a Folder with Files (Bulk Upload)<a id="bulk-upload"></a>
 
 Users can perform a bulk upload by using the upload-file command on a target folder. The command will reconstruct the folder hierarchy on local disk as ArFS folders on the permaweb and upload each file into their corresponding folders:
@@ -733,31 +719,11 @@ yarn ardrive upload-file -w wallet.json -F "${PUBLIC_FOLDER_ID}" --local-paths .
 yarn ardrive upload-file -w wallet.json -F "${PUBLIC_FOLDER_ID}" --local-paths ./*.json
 ```
 
-### Downloading a Folder with Files<a id="download-folder"></a>
-
-You can download a folder on chain with the `download-folder` command.
-
-```shell
-ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6"
-```
-
-By specifying the `--dest-folder-path` you can choose the parent folder where to download the folder on chain. When the parameter is missing, it defaults to the current working directory (`./`).
-
-```shell
-ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --dest-folder-path /my_ardrive_downloads/
-```
-
-The `--max-depth` parameter let's you choose a custom depth to download, it defaults to all. In the following example only the direct children will be download:
-
-```shell
-ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --max-depth 1
-```
-
 ### Name Conflict Resolution on Upload
 
 By default, the `upload-file` command will use the upsert behavior if existing entities are encountered in the destination folder tree that would cause naming conflicts.
 
-Expect the behaviors from the following table for each of these resolution settings:
+Expect the behaviors from the following table for each resolution setting:
 
 | Source Type | Conflict at Dest | `skip` | `replace` | `upsert` (default) |
 | ----------- | ---------------- | ------ | --------- | ------------------ |
@@ -781,24 +747,6 @@ ardrive upload-file --replace --local-path /path/to/file.txt  --parent-folder-id
 
 ```shell
 ardrive upload-file --skip --local-path /path/to/file.txt  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
-```
-
-Alternatively, the upload-file commands now also supports the `--ask` conflict resolution option. This setting will always provide an interactive prompt on name conflicts that allows users to decide how to resolve each conflict found:
-
-```shell
-ardrive upload-file --ask --local-file-path /path/to/file.txt  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
-
-Destination folder has a file to file name conflict!
-
-File name: 2.png
-File ID: efbc0370-b69f-44d9-812c-0d272b019027
-This file has a DIFFERENT last modified date
-
-Please select how to proceed:
- › - Use arrow-keys. Return to submit.
-❯   Replace as new file revision
-    Upload with a different file name
-    Skip this file upload
 ```
 
 ### Fetching the Metadata of a File Entity
@@ -866,30 +814,6 @@ Creating a `.json` file of your manifest links output can be accomplished here w
 
 ```shell
 ardrive create-manifest -w /path/to/wallet -f "6c312b3e-4778-4a18-8243-f2b346f5e7cb"  | jq '{links}' > links.json
-```
-
-If you'd like to preview the contents of your manifest before uploading, you can perform a dry run and do some lightweight post processing to isolate the data:
-
-```shell
-ardrive create-manifest -w /path/to/wallet -f "6c312b3e-4778-4a18-8243-f2b346f5e7cb"  --dry-run | jq '{manifest}.manifest'
-```
-
-```json
-{
-    "manifest": "arweave/paths",
-    "version": "0.1.0",
-    "index": {
-        "path": "index.html"
-    },
-    "paths": {
-        "hello_world.txt": {
-            "id": "Y7GFF8r9y0MEU_oi1aZeD87vrmai97JdRQ2L0cbGJ68"
-        },
-        "index.html": {
-            "id": "pELonjVebHyBsdxVymvxbGTmHD96v9PuuUXj8GUHGoY"
-        }
-    }
-}
 ```
 
 The manifest data transaction is tagged with a unique content-type, `application/x.arweave-manifest+json`, which tells the gateway to treat this file as a manifest. The manifest file itself is a `.json` file that holds the paths (the data transaction ids) to each file within the specified folder.
@@ -1081,8 +1005,6 @@ list-folder
 list-drive
 list-all-drives
 
-download-file
-download-folder
 
 Wallet Ops
 ===========

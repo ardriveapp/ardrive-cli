@@ -13,7 +13,6 @@ import {
 	DestinationManifestNameParameter,
 	ConflictResolutionParams
 } from '../parameter_declarations';
-import { fileUploadConflictPrompts } from '../prompts';
 
 new CLICommand({
 	name: 'create-manifest',
@@ -48,8 +47,7 @@ new CLICommand({
 			folderId: folderId,
 			maxDepth,
 			destManifestName,
-			conflictResolution,
-			prompts: fileUploadConflictPrompts
+			conflictResolution
 		});
 
 		console.log(JSON.stringify(result, null, 4));

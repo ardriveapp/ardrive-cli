@@ -13,7 +13,6 @@ import {
 	LocalPathParameter,
 	LocalCSVParameter
 } from '../parameter_declarations';
-import { fileUploadConflictPrompts, folderUploadConflictPrompts } from '../prompts';
 import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { CLIAction } from '../CLICommand/action';
 import {
@@ -186,8 +185,7 @@ new CLICommand({
 									wrappedFolder: wrappedEntity,
 									driveKey,
 									destParentFolderName: destinationFileName,
-									conflictResolution,
-									prompts: folderUploadConflictPrompts
+									conflictResolution
 								});
 							} else {
 								return arDrive.uploadPrivateFile({
@@ -195,8 +193,7 @@ new CLICommand({
 									wrappedFile: wrappedEntity,
 									driveKey,
 									destinationFileName,
-									conflictResolution,
-									prompts: fileUploadConflictPrompts
+									conflictResolution
 								});
 							}
 						} else {
@@ -205,16 +202,14 @@ new CLICommand({
 									parentFolderId,
 									wrappedFolder: wrappedEntity,
 									destParentFolderName: destinationFileName,
-									conflictResolution,
-									prompts: folderUploadConflictPrompts
+									conflictResolution
 								});
 							} else {
 								return arDrive.uploadPublicFile({
 									parentFolderId,
 									wrappedFile: wrappedEntity,
 									destinationFileName,
-									conflictResolution,
-									prompts: fileUploadConflictPrompts
+									conflictResolution
 								});
 							}
 						}
