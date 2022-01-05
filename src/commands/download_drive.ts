@@ -2,18 +2,18 @@ import { EID } from 'ardrive-core-js';
 import { cliArDriveAnonymousFactory, cliArDriveFactory } from '../index';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
-import { DrivePrivacyParameters, DriveIdParameter, DownloadLocalPathParameter } from '../parameter_declarations';
+import { DrivePrivacyParameters, DriveIdParameter, LocalPathParameter } from '../parameter_declarations';
 import { getOutputFolderPathAndName } from '../utils';
 import { join as joinPath } from 'path';
 
 new CLICommand({
 	name: 'download-drive',
-	parameters: [DriveIdParameter, DownloadLocalPathParameter, ...DrivePrivacyParameters],
+	parameters: [DriveIdParameter, { name: LocalPathParameter, description: 'TODO' }, ...DrivePrivacyParameters],
 	action: new CLIAction(async (options) => {
 		const parameters = new ParametersHelper(options);
 		const driveId = parameters.getRequiredParameterValue(DriveIdParameter, EID);
 		const maxDepth = await parameters.getMaxDepth(Number.MAX_SAFE_INTEGER);
-		const destOutputPath = parameters.getParameterValue(DownloadLocalPathParameter) || '.';
+		const destOutputPath = parameters.getParameterValue(LocalPathParameter) || '.';
 		const [destFolderPath, customFolderName] = getOutputFolderPathAndName(destOutputPath);
 		let outputPath: string;
 
