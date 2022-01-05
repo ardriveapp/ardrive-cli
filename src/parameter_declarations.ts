@@ -20,7 +20,6 @@ export const FolderIdParameter = 'folderId';
 export const FileIdParameter = 'fileId';
 export const ParentFolderIdParameter = 'parentFolderId';
 export const LocalFilePathParameter_DEPRECATED = 'localFilePath';
-export const LocalFilePathDownloadParameter = 'localPath';
 export const DestinationFileNameParameter = 'destFileName';
 export const DestinationManifestNameParameter = 'destManifestName';
 export const LocalFilesParameter_DEPRECATED = 'localFiles';
@@ -240,7 +239,7 @@ Parameter.declare({
 });
 
 Parameter.declare({
-	name: LocalFilePathDownloadParameter,
+	name: LocalPathParameter,
 	aliases: ['--local-path'],
 	description: `(OPTIONAL) the path on the local filesystem where the file should be downloaded. Defaults to current working directory.`
 });
