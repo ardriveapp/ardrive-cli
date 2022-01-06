@@ -6,7 +6,7 @@ To run a single file, just use
 
 e.g.
 
-```bats ../test_samples//testing_hooks/hooks_sample.bats```
+```bats ../test_samples/testing_hooks/hooks_sample.bats```
 
 Recursion is supported. To run every test inside a given folder:
 
