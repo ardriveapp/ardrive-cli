@@ -8,7 +8,15 @@ import { join as joinPath } from 'path';
 
 new CLICommand({
 	name: 'download-drive',
-	parameters: [DriveIdParameter, { name: LocalPathParameter, description: 'TODO' }, ...DrivePrivacyParameters],
+	parameters: [
+		DriveIdParameter,
+		{
+			name: LocalPathParameter,
+			description:
+				'(OPTIONAL) the path on the local filesystem where the folder should be created and into which the contents of the drive are then downloaded. By default, the folder is created in the current working directory.'
+		},
+		...DrivePrivacyParameters
+	],
 	action: new CLIAction(async (options) => {
 		const parameters = new ParametersHelper(options);
 		const driveId = parameters.getRequiredParameterValue(DriveIdParameter, EID);
