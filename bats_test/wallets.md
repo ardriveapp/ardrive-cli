@@ -1,7 +1,4 @@
 # Interact with a wallet
-
-
-
 ## Automatically load wallet entities
 
 ### On a detached setup
