@@ -12,6 +12,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@alexsasharegan/simple-cache@npm:^3.3.3":
+  version: 3.3.3
+  resolution: "@alexsasharegan/simple-cache@npm:3.3.3"
+  dependencies:
+    safe-types: ^4.17.0
+  checksum: e36ce8368f74eb1ef3caf657d9baee7eaac1395d603730012ff48cbc6f502bf9b3bf594ada813a0fdfa5f58177e162058bb115f86e81a3bc3a7277f52b92e0ce
+  languageName: node
+  linkType: hard
+
 "@babel/code-frame@npm:7.12.11":
   version: 7.12.11
   resolution: "@babel/code-frame@npm:7.12.11"
@@ -1520,7 +1529,7 @@ __metadata:
     "@types/source-map-support": ^0
     "@typescript-eslint/eslint-plugin": ^4.18.0
     "@typescript-eslint/parser": ^4.18.0
-    ardrive-core-js: 1.4.0
+    ardrive-core-js: 1.5.0-alpha-3
     arweave: 1.10.18
     axios: ^0.21.1
     chai: ^4.3.4
@@ -1546,12 +1555,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"ardrive-core-js@npm:1.4.0":
-  version: 1.4.0
-  resolution: "ardrive-core-js@npm:1.4.0"
+"ardrive-core-js@npm:1.5.0-alpha-3":
+  version: 1.5.0-alpha-3
+  resolution: "ardrive-core-js@npm:1.5.0-alpha-3"
   dependencies:
+    "@alexsasharegan/simple-cache": ^3.3.3
     arbundles: ^0.5.5
-    arweave: ^1.10.18
+    arweave: 1.10.18
     arweave-mnemonic-keys: ^0.0.9
     axios: ^0.21.1
     base64-js: ^1.5.1
@@ -1564,7 +1574,7 @@ __metadata:
     smartweave: ^0.4.45
     utf8: ^3.0.0
     uuid: ^8.3.2
-  checksum: 2d4a19e958655c6c89d104b4acf6fce27f48c5c6825812b2adba3ab61ee41d04e5299070b04c57eda54694af9109d9fbbd8e204207a94751bc43d25d7444359a
+  checksum: 13f0275014d4e58f9d6be0cae9025529ae6948d17a86eaa1350f8cc237f4863e213287429adceeb99afa4e9ee9a4adbca3df9666960fe6853566769a660f046a
   languageName: node
   linkType: hard
 
@@ -1636,7 +1646,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"arweave@npm:1.10.18, arweave@npm:^1.10.0, arweave@npm:^1.10.15, arweave@npm:^1.10.18":
+"arweave@npm:1.10.18, arweave@npm:^1.10.0, arweave@npm:^1.10.15":
   version: 1.10.18
   resolution: "arweave@npm:1.10.18"
   dependencies:
@@ -5488,6 +5498,13 @@ fsevents@~2.3.2:
   version: 5.1.2
   resolution: "safe-buffer@npm:5.1.2"
   checksum: 2708587c1b5e70a5e420714ceb59f30f5791c6e831d39812125a008eca63a4ac18578abd020a0776ea497ff03b4543f2b2a223a7b9073bf2d6c7af9ec6829218
+  languageName: node
+  linkType: hard
+
+"safe-types@npm:^4.17.0":
+  version: 4.27.0
+  resolution: "safe-types@npm:4.27.0"
+  checksum: 182ce7d1d4d970776d39a10108d1a466f457c5a9043986441d2f5380abf57c4a617a2a1ab2c411013335f8caf31ac94a0de991acd97c4bc5fb98493b367e4397
   languageName: node
   linkType: hard
 
