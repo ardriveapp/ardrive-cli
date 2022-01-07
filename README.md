@@ -729,7 +729,7 @@ To download the whole drive you can use the `download-drive` command.
 ardrive download-drive -d "c0c8ba1c-efc5-420d-a07c-a755dc67f6b2"
 ```
 
-This is equivalent to run the `download-folder` command against the root folder of the drive. So the same behavior is expected.
+This is equivalent to running the `download-folder` command against the root folder of the drive.
 
 ### Uploading Multiple Files<a id="multi-file-upload"></a>
 
