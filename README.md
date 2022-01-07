@@ -1072,6 +1072,7 @@ list-drive
 list-all-drives
 
 download-file
+download-drive
 
 Wallet Ops
 ===========
