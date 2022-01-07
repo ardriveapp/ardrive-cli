@@ -5,7 +5,7 @@ import { CLIAction } from '../CLICommand/action';
 import {
 	DrivePrivacyParameters,
 	FolderIdParameter,
-	DownloadLocalPathParameter,
+	LocalPathParameter,
 	MaxDepthParameter
 } from '../parameter_declarations';
 import { getOutputFolderPathAndName } from '../utils';
@@ -16,7 +16,7 @@ new CLICommand({
 	parameters: [
 		FolderIdParameter,
 		{
-			name: DownloadLocalPathParameter,
+			name: LocalPathParameter,
 			description:
 				'(OPTIONAL) the path on the local filesystem where the folder should be created and into which its contents are then downloaded. By default, the folder is created in the current working directory.'
 		},
@@ -27,7 +27,7 @@ new CLICommand({
 		const parameters = new ParametersHelper(options);
 		const folderId = parameters.getRequiredParameterValue(FolderIdParameter, EID);
 		const maxDepth = await parameters.getMaxDepth(Number.MAX_SAFE_INTEGER);
-		const destOutputPath = parameters.getParameterValue(DownloadLocalPathParameter) || '.';
+		const destOutputPath = parameters.getParameterValue(LocalPathParameter) || '.';
 		const [destFolderPath, customFolderName] = getOutputFolderPathAndName(destOutputPath);
 		let outputPath: string;
 
