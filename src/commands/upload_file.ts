@@ -14,7 +14,7 @@ import {
 	LocalPathParameter,
 	LocalCSVParameter
 } from '../parameter_declarations';
-import { fileUploadConflictPrompts, folderUploadConflictPrompts } from '../prompts';
+import { folderUploadConflictPrompts } from '../prompts';
 import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { CLIAction } from '../CLICommand/action';
 import {
@@ -26,7 +26,7 @@ import {
 	wrapFileOrFolder,
 	EID,
 	readJWKFile,
-	isFolder
+	ArDriveUploadOrder
 } from 'ardrive-core-js';
 import { cliArDriveFactory } from '..';
 import * as fs from 'fs';
@@ -169,66 +169,29 @@ new CLICommand({
 				shouldBundle
 			});
 
-			const results = await Promise.all(
-				filesToUpload.map(async (fileToUpload) => {
-					const {
-						parentFolderId,
-						wrappedEntity,
-						destinationFileName,
-						drivePassword,
-						driveKey: fileDriveKey
-					} = fileToUpload;
+			const uploadOrders: ArDriveUploadOrder[] = await Promise.all(
+				filesToUpload.map(
+					async ({ parentFolderId, wrappedEntity, destinationFileName, driveKey, drivePassword }) => {
+						driveKey ??= (await parameters.getIsPrivate())
+							? await parameters.getDriveKey({
+									driveId: await arDrive.getDriveIdForFolderId(parentFolderId),
+									drivePassword,
+									useCache: true
+							  })
+							: undefined;
 
-					return await (async () => {
-						if (await parameters.getIsPrivate()) {
-							const driveId = await arDrive.getDriveIdForFolderId(parentFolderId);
-							const driveKey =
-								fileDriveKey ??
-								(await parameters.getDriveKey({ driveId, drivePassword, useCache: true }));
-
-							if (isFolder(wrappedEntity)) {
-								return arDrive.createPrivateFolderAndUploadChildren({
-									parentFolderId,
-									wrappedFolder: wrappedEntity,
-									driveKey,
-									destParentFolderName: destinationFileName,
-									conflictResolution,
-									prompts: folderUploadConflictPrompts
-								});
-							} else {
-								return arDrive.uploadPrivateFile({
-									parentFolderId,
-									wrappedFile: wrappedEntity,
-									driveKey,
-									destinationFileName,
-									conflictResolution,
-									prompts: fileUploadConflictPrompts
-								});
-							}
-						} else {
-							if (isFolder(wrappedEntity)) {
-								return arDrive.createPublicFolderAndUploadChildren({
-									parentFolderId,
-									wrappedFolder: wrappedEntity,
-									destParentFolderName: destinationFileName,
-									conflictResolution,
-									prompts: folderUploadConflictPrompts
-								});
-							} else {
-								return arDrive.uploadPublicFile({
-									parentFolderId,
-									wrappedFile: wrappedEntity,
-									destinationFileName,
-									conflictResolution,
-									prompts: fileUploadConflictPrompts
-								});
-							}
-						}
-					})();
-				})
+						return { wrappedEntity, driveKey, destFolderId: parentFolderId, destName: destinationFileName };
+					}
+				)
 			);
 
-			console.log(JSON.stringify(formatResults(results), null, 4));
+			const results = await arDrive.uploadAllEntities({
+				entitiesToUpload: uploadOrders,
+				conflictResolution,
+				prompts: folderUploadConflictPrompts
+			});
+
+			console.log(JSON.stringify(results, null, 4));
 			return SUCCESS_EXIT_CODE;
 		}
 
