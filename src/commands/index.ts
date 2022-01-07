@@ -6,6 +6,7 @@ import './create_manifest';
 import './create_tx';
 import './download_drive';
 import './download_file';
+import './download_folder';
 import './drive_info';
 import './file_info';
 import './folder_info';
@@ -26,3 +27,5 @@ import './send_ar';
 import './send_tx';
 import './tx_status';
 import './upload_file';
+
+// Please keep this list in alphabetical order. Thank you <3

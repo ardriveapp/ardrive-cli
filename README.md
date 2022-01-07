@@ -101,11 +101,12 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         1. [Uploading a Single File](#uploading-a-single-file)
         2. [Download a Single File (BETA)](#download-file)
         3. [Uploading a Folder with Files](#bulk-upload)
-        4. [Downloading a Drive](#download-drive)
-        5. [Uploading Multiple Files](#multi-file-upload)
-        6. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
-        7. [Uploading Manifests](#uploading-manifests)
-        8. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
+        4. [Downloading a Folder with Files](#download-folder)
+        5. [Downloading a Drive](#download-drive)
+        6. [Uploading Multiple Files](#multi-file-upload)
+        7. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
+        8. [Uploading Manifests](#uploading-manifests)
+        9. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
     7. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -721,7 +722,45 @@ Users can perform a bulk upload by using the upload-file command on a target fol
 ardrive upload-file --local-path /path/to/folder --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
 ```
 
-### Downloading a Drive
+### Downloading a Folder with Files<a id="download-folder"></a>
+
+You can download a folder from ArDrive to your local machine with the `download-folder` command. In the following examples, assume that a folder with ID "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" exists in your drive and is named "MyArDriveFolder".
+
+```shell
+# Downloads "MyArDriveFolder" into the current working directory, i.e. ./MyArDriveFolder/
+ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6"
+```
+
+By specifying the `--local-path` option, you can choose the local parent folder into which the on-chain folder will be downloaded. When the parameter is omitted, its value defaults to the current working directory (i.e. `./`).
+
+```shell
+# Downloads "MyArDriveFolder" into /my_ardrive_downloads/MyArDriveFolder
+ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --local-path /my_ardrive_downloads/
+```
+
+The `--max-depth` parameter lets you to choose a custom folder depth to download. When omitted, the entire subtree of the folder will be downloaded. In the following example, only the immediate children of the folder will be downloaded:
+
+```shell
+ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --max-depth 0
+```
+
+The behaviors of `--local-path` are similar to those of `cp` and `mv` in Unix systems, e.g.:
+
+```shell
+# folder downloaded to "/existing_folder/MyArDriveFolder"
+ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --local-path "/existing_folder"
+
+# folder downloaded to "/existing_folder/MyArDriveFolder/MyArDriveFolder" as "/existing_folder/MyArDriveFolder" already exists
+ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --local-path "/existing_folder/MyArDriveFolder"
+
+# folder downloaded to "/existing_folder/non_existent_folder"
+ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --local-path "/existing_folder/non_existent_folder"
+
+# ERROR!
+ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --local-path "/non_existent_folder_1/non_existent_folder_2"
+```
+
+### Downloading a Drive<a id="download-drive">
 
 To download the whole drive you can use the `download-drive` command.
 
@@ -1072,6 +1111,7 @@ list-drive
 list-all-drives
 
 download-file
+download-folder
 download-drive
 
 Wallet Ops
