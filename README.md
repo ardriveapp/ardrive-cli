@@ -101,10 +101,11 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         1. [Uploading a Single File](#uploading-a-single-file)
         2. [Download a Single File (BETA)](#download-file)
         3. [Uploading a Folder with Files](#bulk-upload)
-        4. [Uploading Multiple Files](#multi-file-upload)
-        5. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
-        6. [Uploading Manifests](#uploading-manifests)
-        7. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
+        4. [Downloading a Drive](#download-drive)
+        5. [Uploading Multiple Files](#multi-file-upload)
+        6. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
+        7. [Uploading Manifests](#uploading-manifests)
+        8. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
     7. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -717,8 +718,18 @@ ardrive download-file -w /path/to/wallet.json -file-id "ff450770-a9cb-46a5-9234-
 Users can perform a bulk upload by using the upload-file command on a target folder. The command will reconstruct the folder hierarchy on local disk as ArFS folders on the permaweb and upload each file into their corresponding folders:
 
 ```shell
-ardrive upload-file --local-path /path/to/folder  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
+ardrive upload-file --local-path /path/to/folder --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
 ```
+
+### Downloading a Drive
+
+To download the whole drive you can use the `download-drive` command.
+
+```shell
+ardrive download-drive -d "c0c8ba1c-efc5-420d-a07c-a755dc67f6b2"
+```
+
+This is equivalent to run the `download-folder` command against the root folder of the drive. So the same behavior is expected.
 
 ### Uploading Multiple Files<a id="multi-file-upload"></a>
 
