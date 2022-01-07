@@ -241,7 +241,12 @@ Parameter.declare({
 Parameter.declare({
 	name: LocalPathParameter,
 	aliases: ['--local-path'],
-	description: `(OPTIONAL) the path on the local filesystem where the file should be downloaded. Defaults to current working directory.`
+	description: `the path on the local filesystem for the file that will be uploaded
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-file-path
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-files
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-paths
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-csv`,
+	forbiddenConjunctionParameters: [LocalFilePathParameter_DEPRECATED, LocalPathsParameter, LocalCSVParameter]
 });
 
 Parameter.declare({

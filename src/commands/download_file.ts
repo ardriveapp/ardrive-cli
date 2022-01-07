@@ -8,7 +8,15 @@ import { join } from 'path';
 
 new CLICommand({
 	name: 'download-file',
-	parameters: [FileIdParameter, LocalPathParameter, ...DrivePrivacyParameters],
+	parameters: [
+		FileIdParameter,
+		{
+			name: LocalPathParameter,
+			description:
+				'(OPTIONAL) the path on the local filesystem where the file should be downloaded. Defaults to current working directory.'
+		},
+		...DrivePrivacyParameters
+	],
 	action: new CLIAction(async (options) => {
 		const parameters = new ParametersHelper(options);
 		const fileId = parameters.getRequiredParameterValue(FileIdParameter, EID);
