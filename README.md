@@ -102,9 +102,10 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         2. [Download a Single File (BETA)](#download-file)
         3. [Uploading a Folder with Files](#bulk-upload)
         4. [Uploading Multiple Files](#multi-file-upload)
-        5. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
-        6. [Uploading Manifests](#uploading-manifests)
-        7. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
+        5. [Moving Files](#moving-files)
+        6. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
+        7. [Uploading Manifests](#uploading-manifests)
+        8. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
     7. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -730,6 +731,13 @@ yarn ardrive upload-file -w wallet.json -F "${PUBLIC_FOLDER_ID}" --local-paths .
 
 # Example using glob expansion to upload all .json files in the current folder
 yarn ardrive upload-file -w wallet.json -F "${PUBLIC_FOLDER_ID}" --local-paths ./*.json
+
+### Moving Files<a id="moving-files"></a>
+
+To move an existing file you have to specify its entity ID and the entity ID of the folder you want to use as its new parent.
+
+```shell
+ardrive move-file -f "${MY_FILE_ID}" -F "${THE_NEW_PARENT_FOLDER_ID}"
 ```
 
 ### Name Conflict Resolution on Upload
