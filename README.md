@@ -102,8 +102,8 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         2. [Download a Single File (BETA)](#download-file)
         3. [Uploading a Folder with Files](#bulk-upload)
         4. [Uploading Multiple Files](#multi-file-upload)
-        5. [Moving Files](#moving-files)
-        6. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
+        5. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
+        6. [Moving Files](#moving-files)
         7. [Uploading Manifests](#uploading-manifests)
         8. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
     7. [Other Utility Operations](#other-utility-operations)
@@ -733,14 +733,6 @@ ardrive upload-file -w wallet.json -F "${PUBLIC_FOLDER_ID}" --local-paths ./imag
 ardrive upload-file -w wallet.json -F "${PUBLIC_FOLDER_ID}" --local-paths ./*.json
 ```
 
-### Moving Files<a id="moving-files"></a>
-
-To move an existing file you have to specify its entity ID and the entity ID of the folder you want to use as its new parent.
-
-```shell
-ardrive move-file -f "${MY_FILE_ID}" -F "${THE_NEW_PARENT_FOLDER_ID}"
-```
-
 ### Name Conflict Resolution on Upload
 
 By default, the `upload-file` command will use the upsert behavior if existing entities are encountered in the destination folder tree that would cause naming conflicts.
@@ -818,6 +810,14 @@ Example output:
     "dataTxId": "Jz0WsWyAGVc0aE3UzACo-YJqG8OPrN3UucmDdt8Fbjc",
     "dataContentType": "image/png"
 }
+```
+
+### Moving Files<a id="moving-files"></a>
+
+To move an existing file you have to specify its entity ID and the entity ID of the folder you want to use as its new parent. This command will create a new Metadata transaction updating the `Parent-Folder-Id` tag.
+
+```shell
+ardrive move-file -f "${MY_FILE_ID}" -F "${THE_NEW_PARENT_FOLDER_ID}"
 ```
 
 ### Uploading Manifests
