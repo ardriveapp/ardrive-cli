@@ -21,15 +21,15 @@ MY_DRIVE_ID="dedace8e-9d10-455f-ac47-25336fd3117b"
     assert_output "Error: ENOENT: no such file or directory, stat '/non/existent'"
 }
 
-@test "Errors out if the path exists as a non-file" {
+@test "Errors out if the path exists as a non-folder" {
     cd "${DIR}"
-    mkfifo "${DIR}/existing_fifo"
-    run -1 download_drive "${MY_DRIVE_ID}" "${DIR}/existing_fifo"
+    touch "${DIR}/existing_file.txt"
+    run -1 download_drive "${MY_DRIVE_ID}" "${DIR}/existing_file.txt"
 
     assert_output "Error: The destination isn't a folder!"
 }
 
-@test 'Errors out if the folder ID is omitted' {
+@test 'Errors out if the drive ID is omitted' {
     cd "${DIR}"
     run download_drive
 
@@ -38,7 +38,7 @@ MY_DRIVE_ID="dedace8e-9d10-455f-ac47-25336fd3117b"
     assert_output "error: required option '-d --drive-id <driveId>' not specified"
 }
 
-@test 'Errors out if the folder ID is invalid' {
+@test 'Errors out if the drive ID is invalid' {
     INVALID_DRIVE_ID="edace8e-9d10-455f-ac47-25336fd3117b"
     cd "${DIR}"
     run -1 download_drive "${INVALID_DRIVE_ID}"
@@ -46,7 +46,7 @@ MY_DRIVE_ID="dedace8e-9d10-455f-ac47-25336fd3117b"
     assert_output "Error: Invalid entity ID 'edace8e-9d10-455f-ac47-25336fd3117b'!'"
 }
 
-@test 'Errors out if the folder ID does not exist' {
+@test 'Errors out if the drive ID does not exist' {
     NON_EXISTANT_DRIVE_ID="00000000-0000-0000-0000-000000000000"
     cd "${DIR}"
     run -1 download_drive "${NON_EXISTANT_DRIVE_ID}"
