@@ -814,7 +814,7 @@ Example output:
 
 ### Moving Files<a id="moving-files"></a>
 
-To move an existing file you have to specify its entity ID and the entity ID of the folder you want to use as its new parent. This command will create a new Metadata transaction updating the `Parent-Folder-Id` tag.
+Files can be moved from one folder to another within the same drive. Moving a file is simply the process of uploading a new file metadata revision with an updated File ID <> Parent Folder ID relationship. The following command will move a file from its current location in a public drive to a new parent folder in that drive:
 
 ```shell
 ardrive move-file -f "${MY_FILE_ID}" -F "${THE_NEW_PARENT_FOLDER_ID}"
