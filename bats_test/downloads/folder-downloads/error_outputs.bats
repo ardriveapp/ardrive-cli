@@ -45,7 +45,7 @@ MY_FOLDER_ID="dedace8e-9d10-455f-ac47-25336fd3117b"
     cd "${DIR}"
     run -1 download_folder "${INVALID_FOLDER_ID}"
 
-    [ "${output}" == "Error: Invalid entity ID 'abcdefghijklmnñopqrstuvwxyz'!'" ]
+    [ "${output}" == "Error: Invalid entity ID 'edace8e-9d10-455f-ac47-25336fd3117b'!'" ]
 }
 
 @test 'Errors out if the folder ID does not exist' {
@@ -53,5 +53,5 @@ MY_FOLDER_ID="dedace8e-9d10-455f-ac47-25336fd3117b"
     cd "${DIR}"
     run -1 download_folder "${NON_EXISTANT_FOLDER_ID}"
 
-    [ "${output}" == "Error: Entity with Folder-Id 00000000-0000-0000-0000-000000000000 not found" ]
+    [ "${output}" == "Error: Entity with Folder-Id 00000000-0000-0000-0000-000000000000 not found!" ]
 }
