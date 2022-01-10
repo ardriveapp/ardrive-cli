@@ -16,19 +16,17 @@ MY_FOLDER_ID="dedace8e-9d10-455f-ac47-25336fd3117b"
 
 @test "Errors out if the path is non-existent" {
     cd "${DIR}"
-    run download_folder "${MY_FOLDER_ID}" "/non/existent/path"
+    run -1 download_folder "${MY_FOLDER_ID}" "/non/existent/path"
 
-    [ "${status}" -eq 1 ]
-    [ "${output}" == "Error: ENOENT: no such file or directory, stat '/non/existent'" ]
+    assert_output "Error: ENOENT: no such file or directory, stat '/non/existent'"
 }
 
-@test "Errors out if the path exists as a non-file" {
+@test "Errors out if the path exists as a non-folder" {
     cd "${DIR}"
-    mkfifo "${DIR}/some_fifo"
-    run download_folder "${MY_FOLDER_ID}" "${DIR}/some_fifo"
+    touch "${DIR}/existing_file.txt"
+    run -1 download_folder "${MY_FOLDER_ID}" "${DIR}/existing_file.txt"
 
-    [ "${status}" -eq 1 ]
-    [ "${output}" == "Error: The destination isn't a folder!" ]
+    assert_output "Error: The destination isn't a folder!"
 }
 
 @test 'Errors out if the folder ID is omitted' {
@@ -37,7 +35,7 @@ MY_FOLDER_ID="dedace8e-9d10-455f-ac47-25336fd3117b"
 
     # FIXME: it should return error code 1
     # [ "${status}" -eq 1 ]
-    [ "${output}" == "error: required option '-f --folder-id <folderId>' not specified" ]
+    assert_output "error: required option '-f --folder-id <folderId>' not specified"
 }
 
 @test 'Errors out if the folder ID is invalid' {
@@ -45,7 +43,7 @@ MY_FOLDER_ID="dedace8e-9d10-455f-ac47-25336fd3117b"
     cd "${DIR}"
     run -1 download_folder "${INVALID_FOLDER_ID}"
 
-    [ "${output}" == "Error: Invalid entity ID 'edace8e-9d10-455f-ac47-25336fd3117b'!'" ]
+    assert_output "Error: Invalid entity ID 'edace8e-9d10-455f-ac47-25336fd3117b'!'"
 }
 
 @test 'Errors out if the folder ID does not exist' {
@@ -53,5 +51,5 @@ MY_FOLDER_ID="dedace8e-9d10-455f-ac47-25336fd3117b"
     cd "${DIR}"
     run -1 download_folder "${NON_EXISTANT_FOLDER_ID}"
 
-    [ "${output}" == "Error: Entity with Folder-Id 00000000-0000-0000-0000-000000000000 not found!" ]
+    assert_output "Error: Entity with Folder-Id ${NON_EXISTANT_FOLDER_ID} not found!"
 }
