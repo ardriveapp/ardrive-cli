@@ -727,10 +727,11 @@ To upload an arbitrary number of files or folders, pass a space-separated list o
 
 ```shell
 # Specifying a mixed set of file and folder paths
-yarn ardrive upload-file -w wallet.json -F "${PUBLIC_FOLDER_ID}" --local-paths ./image.png ~/backups/ ../another_file.txt
+ardrive upload-file -w wallet.json -F "${PUBLIC_FOLDER_ID}" --local-paths ./image.png ~/backups/ ../another_file.txt
 
 # Example using glob expansion to upload all .json files in the current folder
-yarn ardrive upload-file -w wallet.json -F "${PUBLIC_FOLDER_ID}" --local-paths ./*.json
+ardrive upload-file -w wallet.json -F "${PUBLIC_FOLDER_ID}" --local-paths ./*.json
+```
 
 ### Moving Files<a id="moving-files"></a>
 
@@ -954,7 +955,7 @@ Monitor any Arweave transaction's status via its transaction ID by performing:
 
 ```shell
 # Peek at the status:
-yarn ardrive tx-status -t "ekSMckikdRJ8RGIkFa-X3xq3427tvM7J9adv8HP3Bzs"
+ardrive tx-status -t "ekSMckikdRJ8RGIkFa-X3xq3427tvM7J9adv8HP3Bzs"
 ```
 
 Example output:
@@ -965,7 +966,7 @@ ekSMckikdRJ8RGIkFa-X3xq3427tvM7J9adv8HP3Bzs: Mined at block height 775810 with 2
 
 ```shell
 # Reprint the status every 10 seconds:
-watch -n 10 yarn ardrive tx-status -t "ekSMckikdRJ8RGIkFa-X3xq3427tvM7J9adv8HP3Bzs"
+watch -n 10 ardrive tx-status -t "ekSMckikdRJ8RGIkFa-X3xq3427tvM7J9adv8HP3Bzs"
 ```
 
 ### Dealing With Network Congestion
