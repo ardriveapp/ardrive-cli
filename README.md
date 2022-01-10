@@ -817,7 +817,7 @@ Example output:
 Files can be moved from one folder to another within the same drive. Moving a file is simply the process of uploading a new file metadata revision with an updated File ID <> Parent Folder ID relationship. The following command will move a file from its current location in a public drive to a new parent folder in that drive:
 
 ```shell
-ardrive move-file -f "e5ebc14c-5b2d-4462-8f59-7f4a62e7770f" -F "a2c8a0cb-0ca7-4dbb-8bf8-93f75f308e63"
+ardrive move-file --file-id "e5ebc14c-5b2d-4462-8f59-7f4a62e7770f" --parent-folder-id "a2c8a0cb-0ca7-4dbb-8bf8-93f75f308e63"
 ```
 
 ### Uploading Manifests
