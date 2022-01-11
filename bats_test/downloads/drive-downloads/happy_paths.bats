@@ -38,7 +38,7 @@ setup() {
     assert_file_exist "${DIR}/Files With a Variety of Extensions Public/CaSe/100bYtS.txt"
 }
 
-@test "Downloads the root folder of the drive into the dirname of the path if it's a non-existent item inside a valid directory" {
+@test "Download drive to a custom folder using a custom depth of 0" {
     cd "${DIR}"
     run -0 download_public_drive "${MY_DRIVE_ID}" "${DIR}/MyCustomFolderName" "0"
 
