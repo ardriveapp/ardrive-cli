@@ -27,7 +27,8 @@ download_private_drive() {
         $([ "${MAX_DEPTH}" != "" ] && echo "--max-depth=${MAX_DEPTH}") \
         $(
             [ "${UNSAFE_PASSWORD}" != "" ] && echo "--unsafe-drive-password=${UNSAFE_PASSWORD}" || 
-            [ "${DRIVE_KEY}" != "" ] && echo "--drive-key=${DRIVE_KEY}" || echo "-P"
+            [ "${DRIVE_KEY}" != "" ] && echo "--drive-key=${DRIVE_KEY}" ||
+            echo "-P"
         )"
 
     ${ARDRIVE_CMD}
