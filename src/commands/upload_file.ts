@@ -26,7 +26,7 @@ import {
 	wrapFileOrFolder,
 	EID,
 	readJWKFile,
-	ArDriveUploadOrder
+	ArDriveUploadStats
 } from 'ardrive-core-js';
 import { cliArDriveFactory } from '..';
 import * as fs from 'fs';
@@ -169,7 +169,7 @@ new CLICommand({
 				shouldBundle
 			});
 
-			const uploadOrders: ArDriveUploadOrder[] = await Promise.all(
+			const uploadOrders: ArDriveUploadStats[] = await Promise.all(
 				filesToUpload.map(
 					async ({ parentFolderId, wrappedEntity, destinationFileName, driveKey, drivePassword }) => {
 						driveKey ??= (await parameters.getIsPrivate())
