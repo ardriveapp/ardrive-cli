@@ -104,8 +104,9 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         4. [Downloading a Folder with Files](#download-folder)
         5. [Uploading Multiple Files](#multi-file-upload)
         6. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
-        7. [Uploading Manifests](#uploading-manifests)
-        8. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
+        7. [Moving Files](#moving-files)
+        8. [Uploading Manifests](#uploading-manifests)
+        9. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
     7. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -765,10 +766,10 @@ To upload an arbitrary number of files or folders, pass a space-separated list o
 
 ```shell
 # Specifying a mixed set of file and folder paths
-yarn ardrive upload-file -w wallet.json -F "${PUBLIC_FOLDER_ID}" --local-paths ./image.png ~/backups/ ../another_file.txt
+ardrive upload-file -w wallet.json -F "6939b9e0-cc98-42cb-bae0-5888eca78885" --local-paths ./image.png ~/backups/ ../another_file.txt
 
 # Example using glob expansion to upload all .json files in the current folder
-yarn ardrive upload-file -w wallet.json -F "${PUBLIC_FOLDER_ID}" --local-paths ./*.json
+ardrive upload-file -w wallet.json -F "6939b9e0-cc98-42cb-bae0-5888eca78885" --local-paths ./*.json
 ```
 
 ### Name Conflict Resolution on Upload
@@ -848,6 +849,14 @@ Example output:
     "dataTxId": "Jz0WsWyAGVc0aE3UzACo-YJqG8OPrN3UucmDdt8Fbjc",
     "dataContentType": "image/png"
 }
+```
+
+### Moving Files<a id="moving-files"></a>
+
+Files can be moved from one folder to another within the same drive. Moving a file is simply the process of uploading a new file metadata revision with an updated File ID <> Parent Folder ID relationship. The following command will move a file from its current location in a public drive to a new parent folder in that drive:
+
+```shell
+ardrive move-file --file-id "e5ebc14c-5b2d-4462-8f59-7f4a62e7770f" --parent-folder-id "a2c8a0cb-0ca7-4dbb-8bf8-93f75f308e63"
 ```
 
 ### Uploading Manifests
@@ -985,7 +994,7 @@ Monitor any Arweave transaction's status via its transaction ID by performing:
 
 ```shell
 # Peek at the status:
-yarn ardrive tx-status -t "ekSMckikdRJ8RGIkFa-X3xq3427tvM7J9adv8HP3Bzs"
+ardrive tx-status -t "ekSMckikdRJ8RGIkFa-X3xq3427tvM7J9adv8HP3Bzs"
 ```
 
 Example output:
@@ -996,7 +1005,7 @@ ekSMckikdRJ8RGIkFa-X3xq3427tvM7J9adv8HP3Bzs: Mined at block height 775810 with 2
 
 ```shell
 # Reprint the status every 10 seconds:
-watch -n 10 yarn ardrive tx-status -t "ekSMckikdRJ8RGIkFa-X3xq3427tvM7J9adv8HP3Bzs"
+watch -n 10 ardrive tx-status -t "ekSMckikdRJ8RGIkFa-X3xq3427tvM7J9adv8HP3Bzs"
 ```
 
 ### Dealing With Network Congestion
