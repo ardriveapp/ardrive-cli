@@ -19,25 +19,21 @@ setup() {
 }
 
 @test 'Max depth defaults to the maximum when omitted' {
+    FOLDER_ID_WITH_LARGE_DEPTH="bb48af83-191c-4e7a-8cef-260430b10d83"
     cd "${DIR}"
-    run -0 download_folder "${MY_FOLDER_ID}" "${DIR}"
+    run download_folder "${FOLDER_ID_WITH_LARGE_DEPTH}" "${DIR}"
 
-    assert_dir_exist "${DIR}/Files With a Variety of Extensions Public"
-    assert_dir_exist "${DIR}/Files With a Variety of Extensions Public/CaSe"
+    # The root of the sub-tree
+    assert_dir_exist "${DIR}/upMe"
 
-    assert_file_exist "${DIR}/Files With a Variety of Extensions Public/1 space test.zip"
-    assert_file_exist "${DIR}/Files With a Variety of Extensions Public/1234567890-asdfzxcvb1234567890-asdfzxcvb1234567890-asdfzxcvb1234567890-asdfzxcvb1234567890-asdfzxcvb.txt"
-    assert_file_exist "${DIR}/Files With a Variety of Extensions Public/13"
-    assert_file_exist "${DIR}/Files With a Variety of Extensions Public/arconnect-archive-team_-_ardrive.html"
-    assert_file_exist "${DIR}/Files With a Variety of Extensions Public/Biochar-sample.pdf"
-    assert_file_exist "${DIR}/Files With a Variety of Extensions Public/Coffee_chart.jpg"
-    assert_file_exist "${DIR}/Files With a Variety of Extensions Public/samplee.mkv"
+    # Bundled item
+    assert_file_exist "${DIR}/upMe/bundled/bund1/bund2/bund3/bund4/1234567890-asdfzxcvb1234567890-asdfzxcvb1234567890-asdfzxcvb1234567890-asdfzxcvb1234567890-asdfzxcvb.txt"
 
-    assert_file_exist "${DIR}/Files With a Variety of Extensions Public/CaSe/100byts.txt"
-    assert_file_exist "${DIR}/Files With a Variety of Extensions Public/CaSe/100bYtS.txt"
+    # Non bundled item
+    assert_file_exist "${DIR}/upMe/upMe/215432^#!%3241@^SDa (1)/test-lvl1-file.txt"
 
-    # Skipped to avoid the wrong path error
-    # assert_file_exist "${DIR}/Files With a Variety of Extensions Public/test!_·$%d_%&·_.txt"
+    # A folder
+    assert_dir_exist "${DIR}/upMe/upMe/215432^#!%3241@^SDa (1)/215432^#!%3241@^SDa/22"
 }
 
 @test 'Custom Max depth value of zero' {
