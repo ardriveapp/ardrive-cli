@@ -11,8 +11,6 @@ setup_file() {
     run $DIR/create-file.sh
     echo "##### Created 10 chunk test file" >>/home/node/bats.log
 
-
-
     run $DIR/create-folder.sh
     echo "##### Created bulk test folder" >>/home/node/bats.log
 
@@ -23,8 +21,6 @@ setup_file() {
 
 
 @test "upload-file creates a bundled transaction by default" {
-   echo $res
-   
     run -0 bash -c "yarn ardrive upload-file --dry-run --local-path '/home/node/10Chunks.txt' -F $PUB_FOLD_ID -w $WALLET | jq '.created[] .type'"
 
     assert_line -n 0 '"file"'
@@ -34,7 +30,6 @@ setup_file() {
 }
 
 @test "upload-file creates v2 transactions when --no-bundle is specified" {
-   echo $res
     run -0 bash -c "yarn ardrive upload-file --no-bundle --dry-run --local-path '/home/node/10Chunks.txt' -F $PUB_FOLD_ID -w $WALLET | jq '.created[] .type'"
 
     assert_line -n 0 '"file"'
@@ -64,6 +59,18 @@ setup_file() {
     assert_line -n 7 ''
 }
 
+@test "upload-file used on a bulk folder with --no-bundle returns the expected results" {
+    run -0 bash -c "yarn ardrive upload-file --no-bundle --dry-run --local-path '/home/node/root_folder' -F $PUB_FOLD_ID -w $WALLET | jq '.created[] .type'"
+
+    assert_line -n 0 '"folder"'
+    assert_line -n 1 '"folder"'
+    assert_line -n 2 '"folder"'
+    assert_line -n 3 '"file"'
+    assert_line -n 4 '"file"'
+    assert_line -n 5 '"file"'
+    assert_line -n 7 ''
+}
+
 @test "upload-file creates v2 transactions with 2 files --local-paths and --no-bundle" {
     run -0 bash -c "yarn ardrive upload-file --no-bundle --dry-run --local-paths '/home/node/10Chunks.txt' '/home/node/10Chunks.txt' -F $PUB_FOLD_ID -w $WALLET | jq '.created[] .type'"
 
@@ -76,6 +83,14 @@ setup_file() {
     run -0 bash -c "yarn ardrive upload-file --dry-run --local-path '/home/node/10Chunks.txt' -F $PUB_FOLD_ID -w $WALLET | jq -r '.fees | keys | .[]'"
 
     assert_line -n 0 --regexp '^(\w|-){43}$'
+    assert_line -n 1 ''
+}
+
+@test "upload bulk folder bundled produces one fee" {
+    run -0 bash -c "yarn ardrive upload-file --dry-run --local-path '/home/node/root_folder' -F $PUB_FOLD_ID -w $WALLET | jq -r '.fees | keys | .[]'"
+
+    assert_line -n 0 --regexp '^(\w|-){43}$'
+    assert_line -n 1 ''
 }
 
 @test "upload file as v2 transactions produces two fees" {
@@ -83,4 +98,20 @@ setup_file() {
 
     assert_line -n 0 --regexp '^(\w|-){43}$'
     assert_line -n 1 --regexp '^(\w|-){43}$'
+    assert_line -n 2 ''
+}
+
+@test "upload bulk folder as v2 tx produces nine fees" {
+    run -0 bash -c "yarn ardrive upload-file --no-bundle --dry-run --local-path '/home/node/root_folder' -F $PUB_FOLD_ID -w $WALLET | jq -r '.fees | keys | .[]'"
+
+    assert_line -n 0 --regexp '^(\w|-){43}$'
+    assert_line -n 1 --regexp '^(\w|-){43}$'
+    assert_line -n 2 --regexp '^(\w|-){43}$'
+    assert_line -n 3 --regexp '^(\w|-){43}$'
+    assert_line -n 4 --regexp '^(\w|-){43}$'
+    assert_line -n 5 --regexp '^(\w|-){43}$'
+    assert_line -n 6 --regexp '^(\w|-){43}$'
+    assert_line -n 7 --regexp '^(\w|-){43}$'
+    assert_line -n 8 --regexp '^(\w|-){43}$'
+    assert_line -n 9 ''
 }
