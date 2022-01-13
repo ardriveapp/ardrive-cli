@@ -2,7 +2,12 @@ import { EID } from 'ardrive-core-js';
 import { cliArDriveAnonymousFactory, cliArDriveFactory } from '../index';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
-import { DrivePrivacyParameters, DriveIdParameter, LocalPathParameter } from '../parameter_declarations';
+import {
+	DrivePrivacyParameters,
+	DriveIdParameter,
+	LocalPathParameter,
+	MaxDepthParameter
+} from '../parameter_declarations';
 import { getOutputFolderPathAndName } from '../utils';
 import { join as joinPath } from 'path';
 
@@ -15,6 +20,7 @@ new CLICommand({
 			description:
 				'(OPTIONAL) the path on the local filesystem where the folder should be created and into which the contents of the drive are then downloaded. By default, the folder is created in the current working directory.'
 		},
+		MaxDepthParameter,
 		...DrivePrivacyParameters
 	],
 	action: new CLIAction(async (options) => {
