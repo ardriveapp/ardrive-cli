@@ -169,7 +169,7 @@ new CLICommand({
 				shouldBundle
 			});
 
-			const uploadOrders: ArDriveUploadStats[] = await Promise.all(
+			const uploadStats: ArDriveUploadStats[] = await Promise.all(
 				filesToUpload.map(
 					async ({ parentFolderId, wrappedEntity, destinationFileName, driveKey, drivePassword }) => {
 						driveKey ??= (await parameters.getIsPrivate())
@@ -186,7 +186,7 @@ new CLICommand({
 			);
 
 			const results = await arDrive.uploadAllEntities({
-				entitiesToUpload: uploadOrders,
+				entitiesToUpload: uploadStats,
 				conflictResolution,
 				prompts: folderUploadConflictPrompts
 			});
