@@ -14,4 +14,4 @@ mkdir child_folder
 cd child_folder
 yes "20 chunk test"  | head -c 5242880 > 20Chunk.txt
 
-# exit 0
+exit 0
