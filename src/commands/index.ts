@@ -21,6 +21,7 @@ import './list_drive';
 import './list_folder';
 import './move_file';
 import './move_folder';
+import './rename_file';
 import './send_ar';
 import './send_tx';
 import './tx_status';
