@@ -101,10 +101,13 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         1. [Uploading a Single File](#uploading-a-single-file)
         2. [Download a Single File (BETA)](#download-file)
         3. [Uploading a Folder with Files](#bulk-upload)
-        4. [Uploading Multiple Files](#multi-file-upload)
-        5. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
-        6. [Uploading Manifests](#uploading-manifests)
-        7. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
+        4. [Downloading a Folder with Files](#download-folder)
+        5. [Downloading a Drive](#download-drive)
+        6. [Uploading Multiple Files](#multi-file-upload)
+        7. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
+        8. [Moving Files](#moving-files)
+        9. [Uploading Manifests](#uploading-manifests)
+        10. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
     7. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -717,8 +720,56 @@ ardrive download-file -w /path/to/wallet.json -file-id "ff450770-a9cb-46a5-9234-
 Users can perform a bulk upload by using the upload-file command on a target folder. The command will reconstruct the folder hierarchy on local disk as ArFS folders on the permaweb and upload each file into their corresponding folders:
 
 ```shell
-ardrive upload-file --local-path /path/to/folder  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
+ardrive upload-file --local-path /path/to/folder --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
 ```
+
+### Downloading a Folder with Files<a id="download-folder"></a>
+
+You can download a folder from ArDrive to your local machine with the `download-folder` command. In the following examples, assume that a folder with ID "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" exists in your drive and is named "MyArDriveFolder".
+
+```shell
+# Downloads "MyArDriveFolder" into the current working directory, i.e. ./MyArDriveFolder/
+ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6"
+```
+
+By specifying the `--local-path` option, you can choose the local parent folder into which the on-chain folder will be downloaded. When the parameter is omitted, its value defaults to the current working directory (i.e. `./`).
+
+```shell
+# Downloads "MyArDriveFolder" into /my_ardrive_downloads/MyArDriveFolder
+ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --local-path /my_ardrive_downloads/
+```
+
+The `--max-depth` parameter lets you to choose a custom folder depth to download. When omitted, the entire subtree of the folder will be downloaded. In the following example, only the immediate children of the folder will be downloaded:
+
+```shell
+ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --max-depth 0
+```
+
+The behaviors of `--local-path` are similar to those of `cp` and `mv` in Unix systems, e.g.:
+
+```shell
+# folder downloaded to "/existing_folder/MyArDriveFolder"
+ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --local-path "/existing_folder"
+
+# folder downloaded to "/existing_folder/MyArDriveFolder/MyArDriveFolder" as "/existing_folder/MyArDriveFolder" already exists
+ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --local-path "/existing_folder/MyArDriveFolder"
+
+# folder downloaded to "/existing_folder/non_existent_folder"
+ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --local-path "/existing_folder/non_existent_folder"
+
+# ERROR!
+ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --local-path "/non_existent_folder_1/non_existent_folder_2"
+```
+
+### Downloading a Drive<a id="download-drive">
+
+To download the whole drive you can use the `download-drive` command.
+
+```shell
+ardrive download-drive -d "c0c8ba1c-efc5-420d-a07c-a755dc67f6b2"
+```
+
+This is equivalent to running the `download-folder` command against the root folder of the drive.
 
 ### Uploading Multiple Files<a id="multi-file-upload"></a>
 
@@ -726,10 +777,10 @@ To upload an arbitrary number of files or folders, pass a space-separated list o
 
 ```shell
 # Specifying a mixed set of file and folder paths
-yarn ardrive upload-file -w wallet.json -F "${PUBLIC_FOLDER_ID}" --local-paths ./image.png ~/backups/ ../another_file.txt
+ardrive upload-file -w wallet.json -F "6939b9e0-cc98-42cb-bae0-5888eca78885" --local-paths ./image.png ~/backups/ ../another_file.txt
 
 # Example using glob expansion to upload all .json files in the current folder
-yarn ardrive upload-file -w wallet.json -F "${PUBLIC_FOLDER_ID}" --local-paths ./*.json
+ardrive upload-file -w wallet.json -F "6939b9e0-cc98-42cb-bae0-5888eca78885" --local-paths ./*.json
 ```
 
 ### Name Conflict Resolution on Upload
@@ -809,6 +860,14 @@ Example output:
     "dataTxId": "Jz0WsWyAGVc0aE3UzACo-YJqG8OPrN3UucmDdt8Fbjc",
     "dataContentType": "image/png"
 }
+```
+
+### Moving Files<a id="moving-files"></a>
+
+Files can be moved from one folder to another within the same drive. Moving a file is simply the process of uploading a new file metadata revision with an updated File ID <> Parent Folder ID relationship. The following command will move a file from its current location in a public drive to a new parent folder in that drive:
+
+```shell
+ardrive move-file --file-id "e5ebc14c-5b2d-4462-8f59-7f4a62e7770f" --parent-folder-id "a2c8a0cb-0ca7-4dbb-8bf8-93f75f308e63"
 ```
 
 ### Uploading Manifests
@@ -946,7 +1005,7 @@ Monitor any Arweave transaction's status via its transaction ID by performing:
 
 ```shell
 # Peek at the status:
-yarn ardrive tx-status -t "ekSMckikdRJ8RGIkFa-X3xq3427tvM7J9adv8HP3Bzs"
+ardrive tx-status -t "ekSMckikdRJ8RGIkFa-X3xq3427tvM7J9adv8HP3Bzs"
 ```
 
 Example output:
@@ -957,7 +1016,7 @@ ekSMckikdRJ8RGIkFa-X3xq3427tvM7J9adv8HP3Bzs: Mined at block height 775810 with 2
 
 ```shell
 # Reprint the status every 10 seconds:
-watch -n 10 yarn ardrive tx-status -t "ekSMckikdRJ8RGIkFa-X3xq3427tvM7J9adv8HP3Bzs"
+watch -n 10 ardrive tx-status -t "ekSMckikdRJ8RGIkFa-X3xq3427tvM7J9adv8HP3Bzs"
 ```
 
 ### Dealing With Network Congestion
@@ -1061,6 +1120,8 @@ list-drive
 list-all-drives
 
 download-file
+download-folder
+download-drive
 
 Wallet Ops
 ===========

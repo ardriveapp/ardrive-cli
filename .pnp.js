@@ -48,7 +48,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/source-map-support", "npm:0.5.4"],
             ["@typescript-eslint/eslint-plugin", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
             ["@typescript-eslint/parser", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
-            ["ardrive-core-js", "npm:1.4.0"],
+            ["ardrive-core-js", "npm:1.5.0"],
             ["arweave", "npm:1.10.18"],
             ["axios", "npm:0.21.1"],
             ["chai", "npm:4.3.4"],
@@ -78,6 +78,16 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/@akiroz-size-chunker-stream-npm-0.0.1-9f99cfc30c-1609e171c3.zip/node_modules/@akiroz/size-chunker-stream/",
           "packageDependencies": [
             ["@akiroz/size-chunker-stream", "npm:0.0.1"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["@alexsasharegan/simple-cache", [
+        ["npm:3.3.3", {
+          "packageLocation": "./.yarn/cache/@alexsasharegan-simple-cache-npm-3.3.3-79599548bf-e36ce8368f.zip/node_modules/@alexsasharegan/simple-cache/",
+          "packageDependencies": [
+            ["@alexsasharegan/simple-cache", "npm:3.3.3"],
+            ["safe-types", "npm:4.27.0"]
           ],
           "linkType": "HARD",
         }]
@@ -1859,7 +1869,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/source-map-support", "npm:0.5.4"],
             ["@typescript-eslint/eslint-plugin", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
             ["@typescript-eslint/parser", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
-            ["ardrive-core-js", "npm:1.4.0"],
+            ["ardrive-core-js", "npm:1.5.0"],
             ["arweave", "npm:1.10.18"],
             ["axios", "npm:0.21.1"],
             ["chai", "npm:4.3.4"],
@@ -1885,10 +1895,11 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["ardrive-core-js", [
-        ["npm:1.4.0", {
-          "packageLocation": "./.yarn/cache/ardrive-core-js-npm-1.4.0-0740f9f68d-2d4a19e958.zip/node_modules/ardrive-core-js/",
+        ["npm:1.5.0", {
+          "packageLocation": "./.yarn/cache/ardrive-core-js-npm-1.5.0-ffc0f9c4ae-f1b2f7b313.zip/node_modules/ardrive-core-js/",
           "packageDependencies": [
-            ["ardrive-core-js", "npm:1.4.0"],
+            ["ardrive-core-js", "npm:1.5.0"],
+            ["@alexsasharegan/simple-cache", "npm:3.3.3"],
             ["arbundles", "npm:0.5.5"],
             ["arweave", "npm:1.10.18"],
             ["arweave-mnemonic-keys", "npm:0.0.9"],
@@ -6390,6 +6401,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/safe-buffer-npm-5.2.1-3481c8aa9b-0bb57f0d8f.zip/node_modules/safe-buffer/",
           "packageDependencies": [
             ["safe-buffer", "npm:5.2.1"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["safe-types", [
+        ["npm:4.27.0", {
+          "packageLocation": "./.yarn/cache/safe-types-npm-4.27.0-a1be85b591-182ce7d1d4.zip/node_modules/safe-types/",
+          "packageDependencies": [
+            ["safe-types", "npm:4.27.0"]
           ],
           "linkType": "HARD",
         }]
