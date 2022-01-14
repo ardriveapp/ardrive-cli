@@ -102,11 +102,12 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         2. [Download a Single File (BETA)](#download-file)
         3. [Uploading a Folder with Files](#bulk-upload)
         4. [Downloading a Folder with Files](#download-folder)
-        5. [Uploading Multiple Files](#multi-file-upload)
-        6. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
-        7. [Moving Files](#moving-files)
-        8. [Uploading Manifests](#uploading-manifests)
-        9. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
+        5. [Downloading a Drive](#download-drive)
+        6. [Uploading Multiple Files](#multi-file-upload)
+        7. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
+        8. [Moving Files](#moving-files)
+        9. [Uploading Manifests](#uploading-manifests)
+        10. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
     7. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -719,7 +720,7 @@ ardrive download-file -w /path/to/wallet.json -file-id "ff450770-a9cb-46a5-9234-
 Users can perform a bulk upload by using the upload-file command on a target folder. The command will reconstruct the folder hierarchy on local disk as ArFS folders on the permaweb and upload each file into their corresponding folders:
 
 ```shell
-ardrive upload-file --local-path /path/to/folder  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
+ardrive upload-file --local-path /path/to/folder --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
 ```
 
 ### Downloading a Folder with Files<a id="download-folder"></a>
@@ -759,6 +760,16 @@ ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --local-path "
 # ERROR!
 ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --local-path "/non_existent_folder_1/non_existent_folder_2"
 ```
+
+### Downloading a Drive<a id="download-drive">
+
+To download the whole drive you can use the `download-drive` command.
+
+```shell
+ardrive download-drive -d "c0c8ba1c-efc5-420d-a07c-a755dc67f6b2"
+```
+
+This is equivalent to running the `download-folder` command against the root folder of the drive.
 
 ### Uploading Multiple Files<a id="multi-file-upload"></a>
 
@@ -1110,6 +1121,7 @@ list-all-drives
 
 download-file
 download-folder
+download-drive
 
 Wallet Ops
 ===========

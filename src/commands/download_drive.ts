@@ -4,7 +4,7 @@ import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
 import {
 	DrivePrivacyParameters,
-	FolderIdParameter,
+	DriveIdParameter,
 	LocalPathParameter,
 	MaxDepthParameter
 } from '../parameter_declarations';
@@ -12,20 +12,20 @@ import { getOutputFolderPathAndName } from '../utils';
 import { join as joinPath } from 'path';
 
 new CLICommand({
-	name: 'download-folder',
+	name: 'download-drive',
 	parameters: [
-		FolderIdParameter,
+		DriveIdParameter,
 		{
 			name: LocalPathParameter,
 			description:
-				'(OPTIONAL) the path on the local filesystem where the folder should be created and into which its contents are then downloaded. By default, the folder is created in the current working directory.'
+				'(OPTIONAL) the path on the local filesystem where the folder should be created and into which the contents of the drive are then downloaded. By default, the folder is created in the current working directory.'
 		},
 		MaxDepthParameter,
 		...DrivePrivacyParameters
 	],
 	action: new CLIAction(async (options) => {
 		const parameters = new ParametersHelper(options);
-		const folderId = parameters.getRequiredParameterValue(FolderIdParameter, EID);
+		const driveId = parameters.getRequiredParameterValue(DriveIdParameter, EID);
 		const maxDepth = await parameters.getMaxDepth(Number.MAX_SAFE_INTEGER);
 		const destOutputPath = parameters.getParameterValue(LocalPathParameter) || '.';
 		const [destFolderPath, customFolderName] = getOutputFolderPathAndName(destOutputPath);
@@ -36,10 +36,9 @@ new CLICommand({
 			const ardrive = cliArDriveFactory({
 				wallet
 			});
-			const driveId = await ardrive.getDriveIdForFolderId(folderId);
-			const driveKey = await parameters.getDriveKey({ driveId: driveId });
-			await ardrive.downloadPrivateFolder({
-				folderId,
+			const driveKey = await parameters.getDriveKey({ driveId });
+			await ardrive.downloadPrivateDrive({
+				driveId,
 				driveKey,
 				destFolderPath,
 				customFolderName,
@@ -47,16 +46,16 @@ new CLICommand({
 			});
 			outputPath = joinPath(
 				destFolderPath,
-				customFolderName ? customFolderName : (await ardrive.getPrivateFolder({ folderId, driveKey })).name
+				customFolderName ? customFolderName : (await ardrive.getPrivateDrive({ driveId, driveKey })).name
 			);
 		} else {
 			const ardrive = cliArDriveAnonymousFactory({});
-			await ardrive.downloadPublicFolder({ folderId, destFolderPath, customFolderName, maxDepth });
+			await ardrive.downloadPublicDrive({ driveId, destFolderPath, customFolderName, maxDepth });
 			outputPath = joinPath(
 				destFolderPath,
-				customFolderName ? customFolderName : (await ardrive.getPublicFolder({ folderId })).name
+				customFolderName ? customFolderName : (await ardrive.getPublicDrive({ driveId })).name
 			);
 		}
-		console.log(`Folder with ID "${folderId}" was successfully downloaded to "${outputPath}"`);
+		console.log(`Drive with ID "${driveId}" was successfully downloaded to "${outputPath}"`);
 	})
 });

@@ -4,6 +4,7 @@ import './create_drive';
 import './create_folder';
 import './create_manifest';
 import './create_tx';
+import './download_drive';
 import './download_file';
 import './download_folder';
 import './drive_info';
