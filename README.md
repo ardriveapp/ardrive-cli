@@ -25,7 +25,7 @@ ardrive create-drive --wallet-file /path/to/my/wallet.json --drive-name "Teenage
     ],
     "tips": [],
     "fees": {
-          "Vj2x4IBEAezBvhj5RgtA247W_q3S10suI6l0E30GPoE": "44579472"
+        "Vj2x4IBEAezBvhj5RgtA247W_q3S10suI6l0E30GPoE": "44579472"
     }
 }
 
@@ -53,7 +53,7 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         }
     ],
     "fees": {
-        "qjdHiQoWlSjCvhj5RgtA247W_q3S10suI6l0E30GPoE": 44579472,
+        "qjdHiQoWlSjCvhj5RgtA247W_q3S10suI6l0E30GPoE": 44579472
     }
 }
 ```
