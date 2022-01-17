@@ -17,12 +17,15 @@ ardrive create-drive --wallet-file /path/to/my/wallet.json --drive-name "Teenage
             "type": "folder",
             "metadataTxId": "VljnttwUxRStnVuPYakF9e2whjhYJVWB0nSxD5dVyJ8",
             "entityId": "f0c58c11-430c-4383-8e54-4d864cc7e927"
+        },
+        {
+            "type": "bundle",
+            "bundleTxId": "Vj2x4IBEAezBvhj5RgtA247W_q3S10suI6l0E30GPoE"
         }
     ],
     "tips": [],
     "fees": {
-        "giv2R8Xj0bbe6l5taBTQJk_38zwIrMH_g1-knSCisjU": 1415103,
-        "VljnttwUxRStnVuPYakF9e2whjhYJVWB0nSxD5dVyJ8": 1391904
+          "Vj2x4IBEAezBvhj5RgtA247W_q3S10suI6l0E30GPoE": "44579472"
     }
 }
 
@@ -34,11 +37,15 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
             "metadataTxId": "EvE06MmE9IKeUzFMnxSgY1M5tJX4uHU64-n8Pf_lZfU",
             "dataTxId": "tSMcfvAQu_tKLUkdvRRbqdX93oAf3h6c9eJsSj8mXL4",
             "entityId": "bd2ce978-6ede-4b0d-8f79-2d7bc235a0e0"
+        },
+        {
+            "type": "bundle",
+            "bundleTxId": "qjdHiQoWlSjCvhj5RgtA247W_q3S10suI6l0E30GPoE"
         }
     ],
     "tips": [
         {
-            "txId": "FidEhcZtmDtvQxWrnVJlKnj_ZkwxYXvn7wjbUpasRKo",
+            "txId": "qjdHiQoWlSjCvhj5RgtA247W_q3S10suI6l0E30GPoE",
             "recipient": {
                 "address": "i325n3L2UvgcavEM8UnFfY0OWBiyf2RrbNsLStPI73o"
             },
@@ -46,9 +53,7 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         }
     ],
     "fees": {
-        "tSMcfvAQu_tKLUkdvRRbqdX93oAf3h6c9eJsSj8mXL4": 1384601,
-        "EvE06MmE9IKeUzFMnxSgY1M5tJX4uHU64-n8Pf_lZfU": 1447752,
-        "FidEhcZtmDtvQxWrnVJlKnj_ZkwxYXvn7wjbUpasRKo": 1379016
+        "qjdHiQoWlSjCvhj5RgtA247W_q3S10suI6l0E30GPoE": 44579472,
     }
 }
 ```
@@ -674,6 +679,10 @@ Example output:
             "metadataTxId": "YfdDXUyerPCpBbGTm_gv_x5hR3tu5fnz8bM-jPL__JE",
             "dataTxId": "l4iNWyBapfAIj7OU-nB8z9XrBhawyqzs5O9qhk-3EnI",
             "entityId": "6613395a-cf19-4420-846a-f88b7b765c05"
+        },
+        {
+            "type": "bundle",
+            "bundleTxId": "1zwdfZAIV8E26YjBs2ZQ4xjjP_1ewalvRgD_GyYw7f8"
         }
     ],
     "tips": [
@@ -686,9 +695,7 @@ Example output:
         }
     ],
     "fees": {
-        "l4iNWyBapfAIj7OU-nB8z9XrBhawyqzs5O9qhk-3EnI": 1369131,
-        "YfdDXUyerPCpBbGTm_gv_x5hR3tu5fnz8bM-jPL__JE": 1432001,
-        "1zwdfZAIV8E26YjBs2ZQ4xjjP_1ewalvRgD_GyYw7f8": 1363608
+        "1zwdfZAIV8E26YjBs2ZQ4xjjP_1ewalvRgD_GyYw7f8": 42819829
     }
 }
 ```
