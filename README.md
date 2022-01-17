@@ -107,10 +107,13 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         2. [Download a Single File (BETA)](#download-file)
         3. [Uploading a Folder with Files](#bulk-upload)
         4. [Uploading Multiple Files](#multi-file-upload)
-        5. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
-        6. [Moving Files](#moving-files)
-        7. [Uploading Manifests](#uploading-manifests)
-        8. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
+        5. [Understanding Bundled Transactions vs V2 Transactions](#bundle-vs-v2)
+        6. [Bundled Transactions Impact on Upsert Option and List Commands](#bundle-impact)
+        7. [Uploading as a V2 Transaction](#upload-as-v2)
+        8. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
+        9. [Moving Files](#moving-files)
+        10. [Uploading Manifests](#uploading-manifests)
+        11. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
     7. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -740,7 +743,7 @@ ardrive upload-file -w wallet.json -F "6939b9e0-cc98-42cb-bae0-5888eca78885" --l
 ardrive upload-file -w wallet.json -F "6939b9e0-cc98-42cb-bae0-5888eca78885" --local-paths ./*.json
 ```
 
-### Name Conflict Resolution on Upload
+### Name Conflict Resolution on Upload<a id="conflict-resolution"></a>
 
 By default, the `upload-file` command will use the upsert behavior if existing entities are encountered in the destination folder tree that would cause naming conflicts.
 
@@ -788,7 +791,7 @@ Please select how to proceed:
     Skip this file upload
 ```
 
-### Understanding Bundled Transactions vs V2 Transactions
+### Understanding Bundled Transactions vs V2 Transactions<a id="bundle-vs-v2"></a>
 
 The ArDrive CLI currently uses two different methods for uploading transactions to Arweave, v2 transactions and Direct to Network (D2N) bundled transactions. By default, the CLI will send a D2N bundle transaction for any action that would result in multiple transactions. This includes `upload-file` and `create-drive`.
 
@@ -798,7 +801,7 @@ D2N bundled transactions follow the ANS-104 standard in order to pack multiple t
 
 Bundles do come with their own limitations. Currently, any file data that is larger than 500 MiB will not be bundled and will instead be uploaded as a v2. Also, bundles will never contain more than 500 data items. These limitations have been chosen to avoid unpacking issues seen at the gateway.
 
-### Bundled Transactions Impact on Upsert Option and List Commands
+### Bundled Transactions Impact on Upsert Option and List Commands<a id="bundle-impact"></a>
 
 Another major limitation to bundled transactions is how long they can take to be unpacked by the gateway and become available via a GQL query. With v2 transactions, the gateway will typically optimistically index within seconds. But with all bundled transactions, they must first be unpacked to be indexed. The length of this process can greatly vary, but typically takes between 15-60 minutes.
 
@@ -808,7 +811,7 @@ This is specifically concerning when it comes to the `--upsert` flag on `upload-
 
 During a file upload, the CLI will gather information within the destination folder to determine whether there are naming conflicts or whether we should skip the file for the `--upsert` behavior. Because the bundle takes time to unpack, upsert will not find files that are not yet indexed. This can lead to unintentionally re-uploading the same files. Because of this, we recommend closely tracking your bundle or having the patience to check in after ~60 mins before trying an upsert.
 
-### Uploading as a V2 Transaction (NOT RECOMMENDED)
+### Uploading as a V2 Transaction (NOT RECOMMENDED)<a id="upload-as-v2"></a>
 
 While not recommended, the CLI does provide the option to forcibly send all transactions as v2 transactions rather than attempting to bundle. To do this, simply add the `--no-bundle` flag to your `upload-file` or `create-drive` command:
 
