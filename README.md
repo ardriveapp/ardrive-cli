@@ -793,23 +793,25 @@ Please select how to proceed:
 
 ### Understanding Bundled Transactions vs V2 Transactions<a id="bundle-vs-v2"></a>
 
-The ArDrive CLI currently uses two different methods for uploading transactions to Arweave, v2 transactions and Direct to Network (D2N) bundled transactions. By default, the CLI will send a D2N bundle transaction for any action that would result in multiple transactions. This includes `upload-file` and `create-drive`.
+The ArDrive CLI currently uses two different methods for uploading transactions to the Arweave network: v2 transactions and Direct to Network (D2N) bundled transactions. By default, the CLI will send a D2N bundled transaction for any action that would result in multiple transactions. This includes `upload-file` and `create-drive`.
 
-V2 transactions are standard transactions that get uploaded directly to Arweave. This transaction can optionally contain file data or contain an AR transfer.
+V2 transactions are standard transactions that get uploaded directly to the Arweave network as they are. This transaction can optionally contain file data or contain an AR transfer.
 
-D2N bundled transactions follow the ANS-104 standard in order to pack multiple transactions together as one single transaction. Each file data or metadata transaction gets built into a `DataItem` and then packed together as a bundle. By bundling these together, the reward of the transaction is increased which greatly improves likelihood of transactions getting mined.
+D2N bundled transactions follow the ANS-104 standard and will pack multiple transactions together as one single transaction. Each file data or metadata transaction gets built into a `DataItem` and then packed together as a bundle. By bundling these together, the reward of the transaction is increased which greatly improves likelihood of transactions getting mined in the event of network congestion.
 
-Bundles do come with their own limitations. Currently, any file data that is larger than 500 MiB will not be bundled and will instead be uploaded as a v2. Also, bundles will never contain more than 500 data items. These limitations have been chosen to avoid unpacking issues seen at the gateway.
+Bundles do however come with their own limitations. Currently, any file data that is larger than 500 MiB will not be bundled and will instead be uploaded as a v2. Also, bundles will never contain more than 500 data items. These limitations have been chosen to avoid unpacking issues experienced at the gateway.
 
 ### Bundled Transactions Impact on Upsert Option and List Commands<a id="bundle-impact"></a>
 
-Another major limitation to bundled transactions is how long they can take to be unpacked by the gateway and become available via a GQL query. With v2 transactions, the gateway will typically optimistically index within seconds. But with all bundled transactions, they must first be unpacked to be indexed. The length of this process can greatly vary, but typically takes between 15-60 minutes.
+Another major limitation for bundled transactions is how long they can take to be unpacked by the gateway and become available using a GQL query. With v2 transactions, the gateway will typically optimistically index within a few seconds. But with bundled transactions, they must first be unpacked in order to be indexed. The length of this process will fluctuate based on current gateway health and conditions, but it typically takes between 15-60 minutes.
 
-Unfortunately, this does have a negative impact on the CLI's user experience in it's current state. As a one time executable node program, the CLI will have no knowledge that your ArFS entities inside of bundled transactions exist until they are available from the gateway via a GQL query.
+Unfortunately, this has a negative impact on the CLI's user experience in it's current state. As a one time executable node program with no persistence layer, the CLI will have no knowledge that your ArFS entities inside of bundled transactions exist until they are available from the gateway via a GQL query.
 
 This is specifically concerning when it comes to the `--upsert` flag on `upload-file` and any of the getter commands: `file-info`, `folder-info`, `drive-info`, `list-folder`, `list-drive`. These getter commands will not be able to retrieve the information for a transaction until it becomes unpacked and indexed by the gateway.
 
-During a file upload, the CLI will gather information within the destination folder to determine whether there are naming conflicts or whether we should skip the file for the `--upsert` behavior. Because the bundle takes time to unpack, upsert will not find files that are not yet indexed. This can lead to unintentionally re-uploading the same files. Because of this, we recommend closely tracking your bundle or having the patience to check in after ~60 mins before trying an upsert.
+During a file upload, the CLI will gather information within the destination folder to determine whether there are naming conflicts or whether we should skip the file for the `--upsert` behavior. Because the bundle takes time to unpack, upsert will not find files that are not yet indexed. This can lead to unintentionally re-uploading the same files.
+
+Because of this, we recommend closely tracking your bundle or having the patience to check in after ~60 mins before relying on the `--upsert` on upload functionality.
 
 ### Uploading as a V2 Transaction (NOT RECOMMENDED)<a id="upload-as-v2"></a>
 
