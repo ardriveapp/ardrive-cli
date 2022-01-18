@@ -1,1 +1,1 @@
-export * from './local_file_path';
+export * from './local_path';
