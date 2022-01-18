@@ -108,13 +108,12 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         3. [Uploading a Folder with Files](#bulk-upload)
         4. [Uploading Multiple Files](#multi-file-upload)
         5. [Name Conflict Resolution on Upload](#conflict-resolution)
-        6. [Understanding Bundled Transactions vs V2 Transactions](#bundle-vs-v2)
-        7. [Bundled Transactions Impact on Upsert Option and List Commands](#bundle-impact)
-        8. [Uploading as a V2 Transaction](#upload-as-v2)
-        9. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
-        10. [Moving Files](#moving-files)
-        11. [Uploading Manifests](#uploading-manifests)
-        12. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
+        6. [Understanding Bundled Transactions vs V2 Transactions](#bundles)
+        7. [Uploading as a V2 Transaction](#no-bundle)
+        8. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
+        9. [Moving Files](#moving-files)
+        10. [Uploading Manifests](#uploading-manifests)
+        11. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
     7. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -792,31 +791,20 @@ Please select how to proceed:
     Skip this file upload
 ```
 
-### Understanding Bundled Transactions vs V2 Transactions<a id="bundle-vs-v2"></a>
+### Understanding Bundled Transactions<a id="bundles"></a>
 
-The ArDrive CLI currently uses two different methods for uploading transactions to the Arweave network: v2 transactions and Direct to Network (D2N) bundled transactions. By default, the CLI will send a D2N bundled transaction for any action that would result in multiple transactions. This bundling functionality is currently used on the `upload-file` and `create-drive` commands.
+The ArDrive CLI currently uses two different methods for uploading transactions to the Arweave network: standard transactions and Direct to Network (D2N) bundled transactions. By default, the CLI will send a D2N bundled transaction for any action that would result in multiple transactions. This bundling functionality is currently used on the `upload-file` and `create-drive` commands.
 
-V2 transactions are standard transactions that get uploaded directly to the Arweave network as they are. This transaction can optionally contain data or contain an AR wallet to wallet transfer.
+D2N bundled transactions come with several benefits and implications:
 
-D2N bundled transactions follow the ANS-104 standard and will pack multiple transactions together as one single bundled transaction. To do this, each file data or metadata transaction gets built into a `DataItem` and then packed together as a bundle. By bundling these together, the reward of the overall transaction is increased which greatly improves likelihood of transactions getting mined -- especially during periods of network congestion.
+-   Bundling saves AR and enhances ArFS reliability by sending associated ArFS transactions up as one atomic bundle.
+-   Bundled transactions are treated as a single data transaction by the Arweave network, but can be presented as separate transactions by the Arweave Gateway once they have been "unbundled".
+-   Un-bundling can take anywhere from a few minutes up to an hour. During that time, the files in the bundle will neither appear in list- commands nor be downloadable. Similarly, they will not appear in the web app after syncs until un-bundling is complete. **This can negatively affect the accuracy of upsert operations**, so it's best to wait before retrying bulk uploads.
+-   Bundling reliability on the gateway side degrades once bundles reach either 500 data items (or ~250 files) or 500 MiB, so the CLI will create and upload multiple bundles as necessary, or will send files that are simply too large for reliable bundling as unbundled txs.
 
-Bundles do however come with their own limitations. Currently, any file data that is larger than 500 MiB will not be bundled and will instead be uploaded as a v2. Also, bundles will never contain more than 500 data items. These limitations have been chosen to avoid unpacking issues experienced at the gateway.
+### Uploading a Non-Bundled Transaction (NOT RECOMMENDED)<a id="no-bundle"></a>
 
-### Bundled Transactions Impact on Upsert Option and List Commands<a id="bundle-impact"></a>
-
-Another major limitation for bundled transactions is how long they can take to be unpacked by the gateway and become available using a GQL query. With v2 transactions, the gateway will typically optimistically index within a few seconds. But with bundled transactions, they must first be unpacked in order to be indexed. The length of this process will greatly fluctuate based on current gateway health and conditions, but it typically takes between 10-60 minutes.
-
-Unfortunately, this has a negative impact on the CLI's user experience in it's current state. As a one time executable node program with no persistence layer, the CLI will have no knowledge that your ArFS entities inside of bundled transactions exist until they are available from the gateway via a GQL query.
-
-This is specifically concerning when it comes to the `--upsert` flag on `upload-file` and any of the getter commands: `file-info`, `folder-info`, `drive-info`, `list-folder`, `list-drive`. These getter commands will not be able to retrieve the information for a transaction until it becomes unpacked and indexed by the gateway.
-
-During a file upload, the CLI will gather information within the destination folder to determine whether there are naming conflicts or whether we should skip the file for the `--upsert` behavior. Because the bundle takes time to unpack, upsert will not find files that are not yet indexed. This can lead to unintentionally re-uploading the same files.
-
-Because of these issues, we recommend closely tracking your bundle or having the patience to check in after ~60 mins before relying on the `--upsert` on upload functionality.
-
-### Uploading as a V2 Transaction (NOT RECOMMENDED)<a id="upload-as-v2"></a>
-
-While not recommended, the CLI does provide the option to forcibly send all transactions as v2 transactions rather than attempting to bundle. To do this, simply add the `--no-bundle` flag to your `upload-file` or `create-drive` command:
+While not recommended, the CLI does provide the option to forcibly send all transactions as standard transactions rather than attempting to bundle them together. To do this, simply add the `--no-bundle` flag to the `upload-file` or `create-drive` command:
 
 ```shell
 ardrive upload-file --no-bundle --local-path /path/to/file --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
