@@ -33,7 +33,7 @@ export const ReplaceParameter = 'replace';
 export const UpsertParameter = 'upsert';
 export const AskParameter = 'ask';
 export const NoVerifyParameter = 'verify'; // commander maps --no-x style params to options.x and always includes in options
-export const NoBundleParameter = 'bundle'; // commander maps --no-x style params to options.x and always includes in options
+export const ShouldBundleParameter = 'bundle'; // commander maps --no-x style params to options.x and always includes in options
 export const LocalPathParameter = 'localPath';
 export const LocalPathsParameter = 'localPaths';
 export const LocalCSVParameter = 'localCsv';
@@ -65,7 +65,7 @@ export const AllParameters = [
 	LocalPathParameter,
 	LocalPathsParameter,
 	MaxDepthParameter,
-	NoBundleParameter,
+	ShouldBundleParameter,
 	NoVerifyParameter,
 	ParentFolderIdParameter,
 	PrivateParameter,
@@ -366,7 +366,7 @@ Parameter.declare({
 });
 
 Parameter.declare({
-	name: NoBundleParameter,
+	name: ShouldBundleParameter,
 	aliases: ['--no-bundle'],
 	description: '(OPTIONAL) Do not pack into a bundle; send as separate v2 transactions. NOT RECOMMENDED.',
 	type: 'boolean'
