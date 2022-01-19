@@ -12,7 +12,8 @@ import {
 	ParentFolderIdParameter,
 	WalletFileParameter,
 	LocalPathParameter,
-	LocalCSVParameter
+	LocalCSVParameter,
+	CustomContentTypeParameter
 } from '../parameter_declarations';
 import { folderUploadConflictPrompts } from '../prompts';
 import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
@@ -37,6 +38,7 @@ interface UploadPathParameter {
 	destinationFileName?: string;
 	drivePassword?: string;
 	driveKey?: DriveKey;
+	customContentType?: string;
 }
 
 type FilePath = string;
@@ -54,7 +56,10 @@ function getFilesFromCSV(parameters: ParametersHelper): UploadPathParameter[] | 
 	const csvRows = localCSVFileData.split(ROW_SEPARATOR);
 	const fileParameters: UploadPathParameter[] = csvRows.map((row: string) => {
 		const csvFields = row.split(COLUMN_SEPARATOR).map((f: string) => f.trim());
-		const [localFilePath, destinationFileName, _parentFolderId, drivePassword, _driveKey] = csvFields;
+		// eslint-disable-next-line prettier/prettier
+		const [localFilePath, destinationFileName, _parentFolderId, drivePassword, _driveKey, _customContentType] =
+			// eslint-disable-next-line prettier/prettier
+			csvFields;
 
 		// TODO: Make CSV uploads more bulk performant
 		const wrappedEntity = wrapFileOrFolder(localFilePath);
@@ -63,12 +68,15 @@ function getFilesFromCSV(parameters: ParametersHelper): UploadPathParameter[] | 
 		);
 		const driveKey = _driveKey ? Buffer.from(_driveKey) : undefined;
 
+		const customContentType = _customContentType ?? parameters.getParameterValue(CustomContentTypeParameter);
+
 		return {
 			parentFolderId,
 			wrappedEntity,
 			destinationFileName,
 			drivePassword: drivePassword ? drivePassword : undefined,
-			driveKey
+			driveKey,
+			customContentType
 		};
 	});
 
@@ -131,9 +139,9 @@ new CLICommand({
 		ShouldBundleParameter,
 		...ConflictResolutionParams,
 		...DrivePrivacyParameters,
+		CustomContentTypeParameter,
 		LocalFilePathParameter_DEPRECATED,
-		LocalFilesParameter_DEPRECATED,
-		BoostParameter
+		LocalFilesParameter_DEPRECATED
 	],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
@@ -171,7 +179,14 @@ new CLICommand({
 
 			const uploadStats: ArDriveUploadStats[] = await Promise.all(
 				filesToUpload.map(
-					async ({ parentFolderId, wrappedEntity, destinationFileName, driveKey, drivePassword }) => {
+					async ({
+						parentFolderId,
+						wrappedEntity,
+						destinationFileName,
+						driveKey,
+						drivePassword,
+						customContentType
+					}) => {
 						driveKey ??= (await parameters.getIsPrivate())
 							? await parameters.getDriveKey({
 									driveId: await arDrive.getDriveIdForFolderId(parentFolderId),
@@ -180,7 +195,15 @@ new CLICommand({
 							  })
 							: undefined;
 
-						return { wrappedEntity, driveKey, destFolderId: parentFolderId, destName: destinationFileName };
+						customContentType ??= parameters.getParameterValue(CustomContentTypeParameter);
+
+						return {
+							wrappedEntity,
+							driveKey,
+							destFolderId: parentFolderId,
+							destName: destinationFileName,
+							customContentType
+						};
 					}
 				)
 			);
