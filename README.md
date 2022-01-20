@@ -53,7 +53,7 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         }
     ],
     "fees": {
-        "qjdHiQoWlSjCvhj5RgtA247W_q3S10suI6l0E30GPoE": 44579472,
+        "qjdHiQoWlSjCvhj5RgtA247W_q3S10suI6l0E30GPoE": 44579472
     }
 }
 ```
@@ -106,11 +106,16 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         1. [Uploading a Single File](#uploading-a-single-file)
         2. [Download a Single File (BETA)](#download-file)
         3. [Uploading a Folder with Files](#bulk-upload)
-        4. [Uploading Multiple Files](#multi-file-upload)
-        5. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
-        6. [Moving Files](#moving-files)
-        7. [Uploading Manifests](#uploading-manifests)
-        8. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
+        4. [Downloading a Folder with Files](#download-folder)
+        5. [Downloading a Drive](#download-drive)
+        6. [Uploading Multiple Files](#multi-file-upload)
+        7. [Name Conflict Resolution on Upload](#conflict-resolution)
+        8. [Understanding Bundled Transactions](#bundles)
+        9. [Uploading a Non-Bundled Transaction](#no-bundle)
+        10. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
+        11. [Moving Files](#moving-files)
+        12. [Uploading Manifests](#uploading-manifests)
+        13. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
     7. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -725,8 +730,56 @@ ardrive download-file -w /path/to/wallet.json -file-id "ff450770-a9cb-46a5-9234-
 Users can perform a bulk upload by using the upload-file command on a target folder. The command will reconstruct the folder hierarchy on local disk as ArFS folders on the permaweb and upload each file into their corresponding folders:
 
 ```shell
-ardrive upload-file --local-path /path/to/folder  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
+ardrive upload-file --local-path /path/to/folder --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
 ```
+
+### Downloading a Folder with Files<a id="download-folder"></a>
+
+You can download a folder from ArDrive to your local machine with the `download-folder` command. In the following examples, assume that a folder with ID "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" exists in your drive and is named "MyArDriveFolder".
+
+```shell
+# Downloads "MyArDriveFolder" into the current working directory, i.e. ./MyArDriveFolder/
+ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6"
+```
+
+By specifying the `--local-path` option, you can choose the local parent folder into which the on-chain folder will be downloaded. When the parameter is omitted, its value defaults to the current working directory (i.e. `./`).
+
+```shell
+# Downloads "MyArDriveFolder" into /my_ardrive_downloads/MyArDriveFolder
+ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --local-path /my_ardrive_downloads/
+```
+
+The `--max-depth` parameter lets you to choose a custom folder depth to download. When omitted, the entire subtree of the folder will be downloaded. In the following example, only the immediate children of the folder will be downloaded:
+
+```shell
+ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --max-depth 0
+```
+
+The behaviors of `--local-path` are similar to those of `cp` and `mv` in Unix systems, e.g.:
+
+```shell
+# folder downloaded to "/existing_folder/MyArDriveFolder"
+ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --local-path "/existing_folder"
+
+# folder downloaded to "/existing_folder/MyArDriveFolder/MyArDriveFolder" as "/existing_folder/MyArDriveFolder" already exists
+ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --local-path "/existing_folder/MyArDriveFolder"
+
+# folder downloaded to "/existing_folder/non_existent_folder"
+ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --local-path "/existing_folder/non_existent_folder"
+
+# ERROR!
+ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --local-path "/non_existent_folder_1/non_existent_folder_2"
+```
+
+### Downloading a Drive<a id="download-drive">
+
+To download the whole drive you can use the `download-drive` command.
+
+```shell
+ardrive download-drive -d "c0c8ba1c-efc5-420d-a07c-a755dc67f6b2"
+```
+
+This is equivalent to running the `download-folder` command against the root folder of the drive.
 
 ### Uploading Multiple Files<a id="multi-file-upload"></a>
 
@@ -740,7 +793,7 @@ ardrive upload-file -w wallet.json -F "6939b9e0-cc98-42cb-bae0-5888eca78885" --l
 ardrive upload-file -w wallet.json -F "6939b9e0-cc98-42cb-bae0-5888eca78885" --local-paths ./*.json
 ```
 
-### Name Conflict Resolution on Upload
+### Name Conflict Resolution on Upload<a id="conflict-resolution"></a>
 
 By default, the `upload-file` command will use the upsert behavior if existing entities are encountered in the destination folder tree that would cause naming conflicts.
 
@@ -786,6 +839,25 @@ Please select how to proceed:
 ❯   Replace as new file revision
     Upload with a different file name
     Skip this file upload
+```
+
+### Understanding Bundled Transactions<a id="bundles"></a>
+
+The ArDrive CLI currently uses two different methods for uploading transactions to the Arweave network: standard transactions and Direct to Network (D2N) bundled transactions. By default, the CLI will send a D2N bundled transaction for any action that would result in multiple transactions. This bundling functionality is currently used on the `upload-file` and `create-drive` commands.
+
+D2N bundled transactions come with several benefits and implications:
+
+-   Bundling saves AR and enhances ArFS reliability by sending associated ArFS transactions up as one atomic bundle.
+-   Bundled transactions are treated as a single data transaction by the Arweave network, but can be presented as separate transactions by the Arweave Gateway once they have been "unbundled".
+-   Un-bundling can take anywhere from a few minutes up to an hour. During that time, the files in the bundle will neither appear in list- commands nor be downloadable. Similarly, they will not appear in the web app after syncs until un-bundling is complete. **This can negatively affect the accuracy of upsert operations**, so it's best to wait before retrying bulk uploads.
+-   Bundling reliability on the gateway side degrades once bundles reach either 500 data items (or ~250 files) or 500 MiB, so the CLI will create and upload multiple bundles as necessary, or will send files that are simply too large for reliable bundling as unbundled txs.
+
+### Uploading a Non-Bundled Transaction (NOT RECOMMENDED)<a id="no-bundle"></a>
+
+While not recommended, the CLI does provide the option to forcibly send all transactions as standard transactions rather than attempting to bundle them together. To do this, simply add the `--no-bundle` flag to the `upload-file` or `create-drive` command:
+
+```shell
+ardrive upload-file --no-bundle --local-path /path/to/file --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
 ```
 
 ### Fetching the Metadata of a File Entity
@@ -1077,6 +1149,8 @@ list-drive
 list-all-drives
 
 download-file
+download-folder
+download-drive
 
 Wallet Ops
 ===========
