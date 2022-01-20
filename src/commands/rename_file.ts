@@ -22,7 +22,6 @@ new CLICommand({
 		const newName = parameters.getRequiredParameterValue(FileNameParameter);
 
 		const wallet: Wallet = await parameters.getRequiredWallet();
-		const owner = await wallet.getAddress();
 		const ardrive = cliArDriveFactory({
 			wallet: wallet,
 			feeMultiple: parameters.getOptionalBoostSetting(),
@@ -33,26 +32,16 @@ new CLICommand({
 			if (await parameters.getIsPrivate()) {
 				const driveId = await ardrive.getDriveIdForFileId(fileId);
 				const driveKey = await parameters.getDriveKey({ driveId });
-				const file = await ardrive.getPrivateFile({
-					fileId,
-					driveKey,
-					owner
-				});
 
 				return ardrive.renamePrivateFile({
-					file,
+					fileId,
 					newName,
-					metaDataRewardSettings: { feeMultiple: parameters.getOptionalBoostSetting() },
-					owner,
 					driveKey
 				});
 			} else {
-				const file = await ardrive.getPublicFile({ fileId });
 				return ardrive.renamePublicFile({
-					file,
-					newName,
-					metaDataRewardSettings: { feeMultiple: parameters.getOptionalBoostSetting() },
-					owner
+					fileId,
+					newName
 				});
 			}
 		})();
