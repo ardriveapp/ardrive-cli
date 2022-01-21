@@ -86,9 +86,9 @@ function getFileList(parameters: ParametersHelper, parentFolderId: FolderID): Up
 	if (!localPaths) {
 		return undefined;
 	}
+	const customContentType = parameters.getParameterValue(CustomContentTypeParameter);
 
 	const localPathsToUpload = localPaths.map((filePath: FilePath) => {
-		const customContentType = parameters.getParameterValue(CustomContentTypeParameter);
 		const wrappedEntity = wrapFileOrFolder(filePath, customContentType);
 
 		return {
