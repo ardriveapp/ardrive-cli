@@ -10,6 +10,4 @@ rename_invalid_names() {
     echo "$(rename_file "${PUBLIC_FILE_ID}" "trailing spaces.png ")"
     echo "$(rename_file "${PUBLIC_FILE_ID}" "trailing dots.doc.")"
     echo "$(rename_file "${PUBLIC_FILE_ID}" "reserved characters :*.txt")"
-    
-    exit $?
 }
