@@ -7,9 +7,13 @@ load '/home/node/packages/node_modules/bats-file/load.bash'
 # Assertions.  DEPENDS on SUPPORT lib.
 load '/home/node/packages/node_modules/bats-assert/load.bash'
 
+# The function which builds and runs the command
 load './rename_command.sh'
+# A function which triggers the rename with invalid names. DEPENDS on rename_command.sh
 load './rename_invalid_names.sh'
+# A function which triggers a rename with an already in use name. DEPENDS on rename_command.sh
 load './rename_colliding.sh'
+# A function which triggers a rename with exactly the same name. DEPENDS on rename_command.sh
 load './rename_same_name.sh'
 
 DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")" >/dev/null 2>&1 && pwd)"
@@ -20,7 +24,9 @@ setup_file() {
 
 @test 'Errors out if the name is invalid' {
     run rename_invalid_names
-    echo OUTPUT ${output} >&3
+
+    # Note 1: The above function runs the command with multiple invalid examples, so we get multiple lines logged in this case
+    # Note 2: We don't assert for the exit code (a.k.a. "${status}") here because of `Note 1`, so we assert the error by reading the output
 
     assert_line -n 0 "Error: The file name cannot start with spaces"
     assert_line -n 1 "Error: The file name cannot have trailing dots or spaces"
