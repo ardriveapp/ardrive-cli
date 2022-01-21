@@ -38,7 +38,6 @@ interface UploadPathParameter {
 	destinationFileName?: string;
 	drivePassword?: string;
 	driveKey?: DriveKey;
-	customContentType?: string;
 }
 
 type FilePath = string;
@@ -61,22 +60,21 @@ function getFilesFromCSV(parameters: ParametersHelper): UploadPathParameter[] | 
 			// eslint-disable-next-line prettier/prettier
 			csvFields;
 
+		const customContentType = _customContentType ?? parameters.getParameterValue(CustomContentTypeParameter);
+
 		// TODO: Make CSV uploads more bulk performant
-		const wrappedEntity = wrapFileOrFolder(localFilePath);
+		const wrappedEntity = wrapFileOrFolder(localFilePath, customContentType);
 		const parentFolderId = EID(
 			_parentFolderId ? _parentFolderId : parameters.getRequiredParameterValue(ParentFolderIdParameter)
 		);
 		const driveKey = _driveKey ? Buffer.from(_driveKey) : undefined;
-
-		const customContentType = _customContentType ?? parameters.getParameterValue(CustomContentTypeParameter);
 
 		return {
 			parentFolderId,
 			wrappedEntity,
 			destinationFileName,
 			drivePassword: drivePassword ? drivePassword : undefined,
-			driveKey,
-			customContentType
+			driveKey
 		};
 	});
 
@@ -90,7 +88,8 @@ function getFileList(parameters: ParametersHelper, parentFolderId: FolderID): Up
 	}
 
 	const localPathsToUpload = localPaths.map((filePath: FilePath) => {
-		const wrappedEntity = wrapFileOrFolder(filePath);
+		const customContentType = parameters.getParameterValue(CustomContentTypeParameter);
+		const wrappedEntity = wrapFileOrFolder(filePath, customContentType);
 
 		return {
 			parentFolderId,
@@ -104,11 +103,15 @@ function getFileList(parameters: ParametersHelper, parentFolderId: FolderID): Up
 function getSingleFile(parameters: ParametersHelper, parentFolderId: FolderID): UploadPathParameter[] {
 	// NOTE: Single file is the last possible use case. Throw exception if the parameter isn't found.
 	const localFilePath =
-		parameters.getParameterValue(LocalFilePathParameter_DEPRECATED, wrapFileOrFolder) ??
-		parameters.getRequiredParameterValue(LocalPathParameter, wrapFileOrFolder);
+		parameters.getParameterValue(LocalFilePathParameter_DEPRECATED) ??
+		parameters.getRequiredParameterValue<string>(LocalPathParameter);
+
+	const customContentType = parameters.getParameterValue(CustomContentTypeParameter);
+
+	const wrappedEntity = wrapFileOrFolder(localFilePath, customContentType);
 	const singleParameter = {
 		parentFolderId: parentFolderId,
-		wrappedEntity: localFilePath,
+		wrappedEntity,
 		destinationFileName: parameters.getParameterValue(DestinationFileNameParameter)
 	};
 
@@ -179,14 +182,7 @@ new CLICommand({
 
 			const uploadStats: ArDriveUploadStats[] = await Promise.all(
 				filesToUpload.map(
-					async ({
-						parentFolderId,
-						wrappedEntity,
-						destinationFileName,
-						driveKey,
-						drivePassword,
-						customContentType
-					}) => {
+					async ({ parentFolderId, wrappedEntity, destinationFileName, driveKey, drivePassword }) => {
 						driveKey ??= (await parameters.getIsPrivate())
 							? await parameters.getDriveKey({
 									driveId: await arDrive.getDriveIdForFolderId(parentFolderId),
@@ -195,14 +191,11 @@ new CLICommand({
 							  })
 							: undefined;
 
-						customContentType ??= parameters.getParameterValue(CustomContentTypeParameter);
-
 						return {
 							wrappedEntity,
 							driveKey,
 							destFolderId: parentFolderId,
-							destName: destinationFileName,
-							customContentType
+							destName: destinationFileName
 						};
 					}
 				)
