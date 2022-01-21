@@ -1021,21 +1021,23 @@ This is effectively hosting a web app with ArDrive. Check out the ArDrive Price 
 
 ### Uploading With a Custom Content Type<a id="custom-content-type"></a>
 
-Each file uploaded to the Arweave network receives a `"Content-Type"` GraphQL tag containing the MIME type for the file that the gateway will use to determine how to serve the file's data transaction at the `arweave.net/{tx id}` endpoint. By default, the CLI will attempt to derive this content type from the file extension of the provided file. In most cases, the content type that is derived will be correct and the gateway will properly serve the file.
+Each file uploaded to the Arweave network receives a `"Content-Type"` GraphQL tag that contains the MIME type for the file. The gateway will use this content type to determine how to serve that file's data transaction at the `arweave.net/{data tx id}` endpoint.
 
-The CLI also provides the option for users to upload files with a custom content type with the `--content-type` flag:
+By default, the CLI will attempt to derive this content type from the file extension of the provided file. In most cases, the content type that is derived will be correct and the gateway will properly serve the file.
+
+The CLI also provides the option for users to upload files with a custom content type using the `--content-type` flag:
 
 ```shell
 ardrive upload-file --content-type "application/json"  --local-path /path/to/file --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
 ```
 
-It is currently possible to set this value to any given string, but the gateway will still only serve valid content types. Check out this list of commonly used MIME types to ensure you're providing a valid string: [Common MIME types][mozilla-mime-types].
+It is currently possible to set this value to any given string, but the gateway will still only serve valid content types. Check out this list of commonly used MIME types to ensure you're providing a valid content type: [Common MIME types][mozilla-mime-types].
 
-Note: In the cases of multi-file uploads and recursive folder uploads, setting this `--content-type` flag will set the provided custom content type on EVERY file entity within a given upload.
+Note: In the case of multi-file uploads or recursive folder uploads, setting this `--content-type` flag will set the provided custom content type on EVERY file entity within a given upload.
 
 ### Uploading a Custom Manifest<a id="custom-manifest"></a>
 
-Using the custom content type feature, it is possible to for users to upload their own custom manifests. The Arweave gateways use this special content type in order to identify an uploaded file as a manifest:
+Using the custom content type feature, it is possible for users to upload their own custom manifests. The Arweave gateways use this special content type in order to identify an uploaded file as a manifest:
 
 ```shell
 application/x.arweave-manifest+json
@@ -1047,13 +1049,13 @@ In addition to this content type, the manifest must also adhere to the [correct 
 ardrive create-manifest -w /path/to/wallet -f "6c312b3e-4778-4a18-8243-f2b346f5e7cb"  --dry-run | jq '{manifest}.manifest' > my-custom-manifest.json
 ```
 
-After editing the generated manifest to the user's specifications, simply perform an `upload-file` command with the custom Arweave manifest content type to any PUBLIC folder:
+After editing the generated manifest, simply perform an `upload-file` command with the custom Arweave manifest content type to any PUBLIC folder:
 
 ```shell
 ardrive upload-file --content-type "application/x.arweave-manifest+json" --local-path my-custom-manifest.json --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
 ```
 
-The returned `dataTxId` field on the created `file` entity will be where the manifest can be found on Arweave, just as explained in the [manifest sections](#uploading-manifests) above:
+The returned `dataTxId` field on the created `file` entity will be the endpoint that the manifest can be found on Arweave, just as explained in the [manifest sections](#uploading-manifests) above:
 
 ```shell
 https://arweave.net/{dataTxId}
