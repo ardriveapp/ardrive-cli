@@ -17,7 +17,7 @@ new CLICommand({
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
 
-		const dryRun = !!parameters.getParameterValue(DryRunParameter);
+		const dryRun = parameters.isDryRun();
 		const fileId = parameters.getRequiredParameterValue(FileIdParameter, EID);
 		const newParentFolderId = parameters.getRequiredParameterValue(ParentFolderIdParameter, EID);
 
