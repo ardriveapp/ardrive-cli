@@ -100,14 +100,15 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
     6. [Working With Files](#working-with-files)
         1. [Uploading a Single File](#uploading-a-single-file)
         2. [Download a Single File (BETA)](#download-file)
-        3. [Uploading a Folder with Files](#bulk-upload)
-        4. [Downloading a Folder with Files](#download-folder)
-        5. [Downloading a Drive](#download-drive)
-        6. [Uploading Multiple Files](#multi-file-upload)
-        7. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
-        8. [Moving Files](#moving-files)
-        9. [Uploading Manifests](#uploading-manifests)
-        10. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
+        3. [Rename a Single File](#rename-file)
+        4. [Uploading a Folder with Files](#bulk-upload)
+        5. [Downloading a Folder with Files](#download-folder)
+        6. [Downloading a Drive](#download-drive)
+        7. [Uploading Multiple Files](#multi-file-upload)
+        8. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
+        9. [Moving Files](#moving-files)
+        10. [Uploading Manifests](#uploading-manifests)
+        11. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
     7. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -713,6 +714,14 @@ Specify a filename in the --local-path if you'd like to use a different name tha
 
 ```shell
 ardrive download-file -w /path/to/wallet.json -file-id "ff450770-a9cb-46a5-9234-89cbd9796610" --local-path /my_ardrive_downloads/my_pic.png
+```
+
+### Rename a Single File<a id="rename-file"></a>
+
+To rename an on-chain file you can make use of the `rename-file` command. The required parameters are the file ID and the new name, as well as the owner wallet or seed phrase.
+
+```shell
+ardrive rename-file --file-id "290a3f9a-37b2-4f0f-a899-6fac983833b3" --file-name "My custom file name.txt" --wallet-file "wallet.json"
 ```
 
 ### Uploading a Folder with Files (Bulk Upload)<a id="bulk-upload"></a>
