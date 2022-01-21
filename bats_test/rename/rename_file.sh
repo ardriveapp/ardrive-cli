@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Utility function to build and exec the rename-file command
+
 rename_file() {
     FILE_ID="${1}"
     NEW_NAME="${2}"
