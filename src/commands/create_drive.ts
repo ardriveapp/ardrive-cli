@@ -4,7 +4,7 @@ import {
 	DriveCreationPrivacyParameters,
 	DriveNameParameter,
 	DryRunParameter,
-	NoBundleParameter
+	ShouldBundleParameter
 } from '../parameter_declarations';
 import { cliArDriveFactory } from '..';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
@@ -17,7 +17,7 @@ new CLICommand({
 		DryRunParameter,
 		DriveNameParameter,
 		...DriveCreationPrivacyParameters,
-		NoBundleParameter,
+		ShouldBundleParameter,
 		BoostParameter
 	],
 	action: new CLIAction(async function action(options) {
@@ -25,7 +25,7 @@ new CLICommand({
 		const wallet: Wallet = await parameters.getRequiredWallet();
 		const dryRun = !!parameters.getParameterValue(DryRunParameter);
 		const driveName = parameters.getRequiredParameterValue(DriveNameParameter);
-		const shouldBundle = !!parameters.getParameterValue(NoBundleParameter);
+		const shouldBundle = !!parameters.getParameterValue(ShouldBundleParameter);
 
 		const ardrive = cliArDriveFactory({
 			wallet: wallet,
