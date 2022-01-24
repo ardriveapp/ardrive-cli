@@ -50,18 +50,14 @@ setup_file() {
 }
 
 @test "upload bundled file produces one fee" {
-    run -0 bash -c "yarn ardrive upload-file --dry-run --local-path '/home/node/10Chunks.txt' -F $PUB_FOLD_ID -w $WALLET | jq '.fees'"
+    run -0 bash -c "yarn ardrive upload-file --dry-run --local-path '/home/node/10Chunks.txt' -F $PUB_FOLD_ID -w $WALLET | jq -r '.fees | keys | .[]'"
 
-    assert_line -n 0 '{'
-    assert_line -n 1 --regexp '(\s){0,}("){1}(\w|-){43}("){1}'
-    assert_line -n 2 '}'   
+    assert_line -n 0 --regexp '^(\w|-){43}$'
 }
 
 @test "upload file as v2 transactions produces two fees" {
-    run -0 bash -c "yarn ardrive upload-file --no-bundle --dry-run --local-path '/home/node/10Chunks.txt' -F $PUB_FOLD_ID -w $WALLET | jq '.fees'"
+    run -0 bash -c "yarn ardrive upload-file --no-bundle --dry-run --local-path '/home/node/10Chunks.txt' -F $PUB_FOLD_ID -w $WALLET | jq -r '.fees | keys | .[]'"
 
-    assert_line -n 0 '{'
-    assert_line -n 1 --regexp '(\s){0,}("){1}(\w|-){43}("){1}'
-    assert_line -n 2 --regexp '(\s){0,}("){1}(\w|-){43}("){1}'
-    assert_line -n 3 '}'
+    assert_line -n 0 --regexp '^(\w|-){43}$'
+    assert_line -n 1 --regexp '^(\w|-){43}$'
 }
