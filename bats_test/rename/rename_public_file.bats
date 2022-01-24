@@ -47,21 +47,19 @@ setup_file() {
 }
 
 @test 'Succeeds when a healthy input is given' {
-    # File ID at Drive with ID: c0c8ba1c-efc5-420d-a07c-a755dc67f6b2
-    PUBLIC_FILE_ID="290a3f9a-37b2-4f0f-a899-6fac983833b3"
-    run -0 rename_file ${PUBLIC_FILE_ID} "ArFS Standard compilant name.txt"
+    run -0 rename_file ${PUB_FILE_ID} "ArFS Standard compilant name.txt"
 
     assert_line -n 0 '{'
     assert_line -n 1 '    "created": ['
     assert_line -n 2 '        {'
     assert_line -n 3 '            "type": "file",'
-    assert_line -n 4 '            "entityId": "290a3f9a-37b2-4f0f-a899-6fac983833b3",'
-    assert_line -n 5 --regexp '^            "metadataTxId": ".*"$'
+    assert_line -n 4 "            \"entityId\": \"${PUB_FILE_ID}\","
+    assert_line -n 5 --regexp '^            "metadataTxId": "(\w|-)+"$'
     assert_line -n 6 '        }'
     assert_line -n 7 '    ],'
     assert_line -n 8 '    "tips": [],'
     assert_line -n 9 '    "fees": {'
-    assert_line -n 10 --regexp '^        ".*": "48400569"$'
+    assert_line -n 10 --regexp '^        "(\w|-)+": "[0-9]+"$'
     assert_line -n 11 '    }'
     assert_line -n 12 '}'
 }
