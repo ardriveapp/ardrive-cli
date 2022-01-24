@@ -1,19 +1,32 @@
 # Interact with a wallet
 ## Automatically load wallet entities
 
-### On a detached setup
+We need a wallet with BOTH a balance and a pre-existent Public Drive containing at least a file. 
 
-We need a wallet with BOTH a balance and a pre-existent Public Drive. 
+The method listed below will **only** work on a terminal in your host system
 
-The method listed below will **only** work with a [detached setup](https://github.com/ardriveapp/ardrive-bats-docker/tree/production#detached)
-
-Using this command will not only copy our wallet inside the container, but also automatically load the public IDs for both a Drive and a Folder within the wallet into the following variables:
+Using this command will not only copy our wallet inside the container, but also automatically load values for a Drive a Folder and a file within the wallet into the following variables:
 
 ```$PUB_DRIVE_ID```
 
-```$PUB_FOLD_ID```
+```$PUB_FILE_ID```
 
-Just copy and paste this command replacing the wallet path with yours.
+```$PUB_FILE_SIZE``` (in bytes)
+
+```$PUB_FILE_NAME```
+
+```$ROOT_FOLDER_ID```
+
+```$PARENT_FOLDER_ID``` (parent of PUB_FILE_IDs)
+
+
+Just copy and paste this command (again, on your host terminal) replacing the wallet path with yours:
+
+```docker exec -i ardrive-cli-bats bash -c 'cat > /home/node/tmp/wallet.json' < [path to my wallet file]```
+
+Then, switch to *ardrive-cli-bats* docker and run ```exec $SHELL```
+
+To copy a wallet AND automatically get a SHELL with everything loaded, use this command instead:
 
 ```docker exec -i ardrive-cli-bats bash -c 'cat > /home/node/tmp/wallet.json' < [path to my wallet file] && docker exec -ti ardrive-cli-bats bash -c 'exec $SHELL -l'```
 
