@@ -72,7 +72,7 @@ setup_file() {
 }
 
 @test "Duplicate name uploads a new file with --upsert" {
-    run bash -c "touch $PUB_FILE_NAME"
+    run bash -c "touch '$PUB_FILE_NAME'"
     run -0 bash -c "yarn ardrive upload-file --dry-run --local-path ./'$PUB_FILE_NAME' -F $PARENT_FOLDER_ID -w $WALLET --upsert | jq -r '.created | .[] | .type'"
 
     assert_line -n 0 "file"
