@@ -15,7 +15,7 @@ for publicDrive in ${pubDriveList[@]}; do
     aux="$(yarn ardrive list-drive -d $publicDrive)"
     numberFiles="$(echo $aux | jq -r '[.[] | select(.entityType == "file")] | length')"
     if [[ $? -ne 0 ]]; then
-        printf "Error loading entities. Check your wallet \n"
+        printf "Error loading entities. Please check your wallet! \n"
         exit 1
     fi
     if [ "$numberFiles" != "0" ]; then
