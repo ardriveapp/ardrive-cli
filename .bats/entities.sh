@@ -18,7 +18,7 @@ for publicDrive in ${pubDriveList[@]}; do
         printf "Error loading entities. Please check your wallet! \n"
         exit 1
     fi
-    if [ "$numberFiles" -ne "2" ]; then
+    if [ "$numberFiles" -ge "2" ]; then
         fileID="$(echo $aux | jq -r '[.[] | select(.entityType == "file")][0] | .entityId')"
         fileSize="$(echo $aux | jq -r '[.[] | select(.entityType == "file")][0] | .size')"
         fileName="$(echo $aux | jq -r '[.[] | select(.entityType == "file")][0] | .name')"
