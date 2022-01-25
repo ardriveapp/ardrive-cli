@@ -63,15 +63,18 @@ setup_file() {
 
 @test "Duplicate name uploads nothing with --skip" {
     #We don't care about deleting this. Lives on Docker FS only
-    run bash -c "touch $PUB_FILE_NAME"
-    run -0 bash -c "yarn ardrive upload-file --dry-run --local-path ./$PUB_FILE_NAME -F $PARENT_FOLDER_ID -w $WALLET --skip | jq -r '.created | length'"
+    #We use quotes to escape possible spaces
+    run bash -c "touch '$PUB_FILE_NAME'"
+    #Again we use quotes to escape spaces
+    run -0 bash -c "yarn ardrive upload-file --dry-run --local-path ./'$PUB_FILE_NAME' -F $PARENT_FOLDER_ID -w $WALLET --skip | jq -r '.created | length'"
 
     assert_output 0
 }
 
 @test "Duplicate name uploads a new file with --upsert" {
     run bash -c "touch $PUB_FILE_NAME"
-    run -0 bash -c "yarn ardrive upload-file --dry-run --local-path ./$PUB_FILE_NAME -F $PARENT_FOLDER_ID -w $WALLET --upsert | jq -r '.created | .[] | .type'"
+    run -0 bash -c "yarn ardrive upload-file --dry-run --local-path ./'$PUB_FILE_NAME' -F $PARENT_FOLDER_ID -w $WALLET --upsert | jq -r '.created | .[] | .type'"
 
-    assert_output "file"
+    assert_line -n 0 "file"
+    assert_line -n 1 "bundle"
 }
