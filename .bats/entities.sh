@@ -14,16 +14,12 @@ allDriveIDs="$(echo $cache | jq -rc '.[] | select(.drivePrivacy == "public") | .
 found=0
 for publicDriveId in ${allDriveIDs[@]}; do
     driveContent="$(yarn ardrive list-drive -d $publicDriveId)"
-    # numberFiles="$(echo $driveContent | jq -r '[.[] | select(.entityType == "file")] | length')"
     allFolderIDs="$(echo $driveContent | jq -rc '.[] | select(.entityType == "folder") | .entityId')"
 
     for someFolderId in ${allFolderIDs[@]}; do
         childFileIDs=($(echo $driveContent | jq -rc ".[] | select((.entityType == \"file\") and .parentFolderId == \"${someFolderId}\") | .entityId"))
         childFolderIDs=($(echo $driveContent | jq -rc ".[] | select((.entityType == \"folder\") and .parentFolderId == \"${someFolderId}\") | .entityId"))
 
-        printf "Iterating folder with ID: ${someFolderId} which cointains ${#childFileIDs[@]} files and ${#childFolderIDs[@]} folders\n"
-        printf "chilfFiles=${childFileIDs[@]}\n"
-        printf "chilfFolders=${childFolderIDs[@]}\n"
         if [ "${#childFileIDs[@]}" -ge "2" ] && [ "${#childFolderIDs[@]}" -ge "1" ]; then
             parentFolderId="${someFolderId}"
             # The folder contains at least two files and one folder
