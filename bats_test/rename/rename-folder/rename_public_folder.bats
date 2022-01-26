@@ -36,14 +36,20 @@ setup_file() {
 
 @test 'Errors out if the rename would end up in a name collision' {
     run -1 rename_colliding_name
-    
+
     assert_output "Error: There already is an entity named that way"
 }
 
 @test 'Errors out if renaming would end up having no effect' {
     run -1 rename_same_name
-    
-    assert_output "Error: To rename a folder, the new name must be different"
+
+    assert_output --regexp "^Error: New folder name '.+' must be different from the current folder name!$"
+}
+
+@test 'Errors out if attempting to rename a root folder' {
+    run -1 rename_folder "${ROOT_FOLDER_ID}" "My root folder"
+
+    assert_output --regexp "^Error: The root folder with ID '.+' cannot be renamed as it shares its name with its parent drive. Consider renaming the drive instead.$"
 }
 
 @test 'Succeeds when a healthy input is given' {
