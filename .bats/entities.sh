@@ -8,29 +8,61 @@ cd $HOME/ardrive-cli/
 cache="$(yarn ardrive list-all-drives -w $WALLET)"
 
 # RAW, one line, no brackets and no quotes
-pubDriveList="$(echo $cache | jq -rc '.[] | select(.drivePrivacy == "public") | .driveId')"
+allDriveIDs="$(echo $cache | jq -rc '.[] | select(.drivePrivacy == "public") | .driveId')"
 
 #Iterates over list of driveIDs from wallet.
-for publicDrive in ${pubDriveList[@]}; do
-    aux="$(yarn ardrive list-drive -d $publicDrive)"
-    numberFiles="$(echo $aux | jq -r '[.[] | select(.entityType == "file")] | length')"
-    if [ "$numberFiles" -ge "2" ]; then
-        fileID="$(echo $aux | jq -r '[.[] | select(.entityType == "file")][0] | .entityId')"
-        fileSize="$(echo $aux | jq -r '[.[] | select(.entityType == "file")][0] | .size')"
-        fileName="$(echo $aux | jq -r '[.[] | select(.entityType == "file")][0] | .name')"
-        fileNameAlt="$(echo $aux | jq -r '[.[] | select(.entityType == "file")][1] | .name')"
-        folderID="$(echo $aux | jq -r '[.[] | select(.entityType == "file")][0] | .parentFolderId')"
-        rootID="$(echo $aux | jq -r '[.[] | select(.parentFolderId == "root folder")][0] | .entityId')"
-        driveID="$(echo $aux | jq -r '[.[] | select(.entityType == "file")][0] | .driveId')"
+found=0
+for publicDriveId in ${allDriveIDs[@]}; do
+    driveContent="$(yarn ardrive list-drive -d $publicDriveId)"
+    # numberFiles="$(echo $driveContent | jq -r '[.[] | select(.entityType == "file")] | length')"
+    allFolderIDs="$(echo $driveContent | jq -rc '.[] | select(.entityType == "folder") | .entityId')"
+
+    for someFolderId in ${allFolderIDs[@]}; do
+        childFileIDs=($(echo $driveContent | jq -rc ".[] | select((.entityType == \"file\") and .parentFolderId == \"${someFolderId}\") | .entityId"))
+        childFolderIDs=($(echo $driveContent | jq -rc ".[] | select((.entityType == \"folder\") and .parentFolderId == \"${someFolderId}\") | .entityId"))
+
+        printf "Iterating folder with ID: ${someFolderId} which cointains ${#childFileIDs[@]} files and ${#childFolderIDs[@]} folders\n"
+        printf "chilfFiles=${childFileIDs[@]}\n"
+        printf "chilfFolders=${childFolderIDs[@]}\n"
+        if [ "${#childFileIDs[@]}" -ge "2" ] && [ "${#childFolderIDs[@]}" -ge "1" ]; then
+            parentFolderId="${someFolderId}"
+            # The folder contains at least two files and one folder
+
+            folderID="${childFolderIDs[0]}"
+            folderName="$(echo $driveContent | jq -r "[.[] | select((.entityType == \"folder\") and .entityId == \"${folderID}\")][0] | .name")"
+            rootID="$(echo $driveContent | jq -r '[.[] | select(.parentFolderId == "root folder")][0] | .entityId')"
+            driveID="${publicDriveId}"
+            fileID="${childFileIDs[0]}"
+            fileSize="$(echo $driveContent | jq -r "[.[] | select((.entityType == \"file\") and .parentFolderId == \"${parentFolderId}\")][0] | .size")"
+            fileName="$(echo $driveContent | jq -r "[.[] | select((.entityType == \"file\") and .parentFolderId == \"${parentFolderId}\")][0] | .name")"
+            fileNameAlt="$(echo $driveContent | jq -r "[.[] | select((.entityType == \"file\") and .parentFolderId == \"${parentFolderId}\")][1] | .name")"
+
+            # escape condition found
+            found=1 
+        fi
+
+        if [ "${found}" -eq "1" ]; then
+            break
+        fi
+    done
+
+    if [ "${found}" -eq "1" ]; then
         break
     fi
 done
+
+if [ "${found}" -eq "0" ]; then
+    printf "NO ENTITIES FOUND!\n"
+    exit 1
+fi
 
 export PUB_FILE_ID="$fileID"
 export PUB_FILE_SIZE="$fileSize" #in bytes
 export PUB_FILE_NAME="$fileName"
 export PUB_FILE_NAME_ALT="$fileNameAlt"
-export PARENT_FOLDER_ID="$folderID"
+export PARENT_FOLDER_ID="$parentFolderId"
+export FOLDER_ID="$folderID"
+export FOLDER_NAME="$folderName"
 export ROOT_FOLDER_ID="$rootID"
 export PUB_DRIVE_ID="$driveID"
 
