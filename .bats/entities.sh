@@ -14,6 +14,10 @@ allDriveIDs="$(echo $cache | jq -rc '.[] | select(.drivePrivacy == "public") | .
 found=0
 for publicDriveId in ${allDriveIDs[@]}; do
     driveContent="$(yarn ardrive list-drive -d $publicDriveId)"
+    if [[ $? -ne 0 ]]; then
+        printf "Error loading entities. Please check your wallet! \n"
+        exit 1
+    fi
     allFolderIDs="$(echo $driveContent | jq -rc '.[] | select(.entityType == "folder") | .entityId')"
 
     for someFolderId in ${allFolderIDs[@]}; do
@@ -61,6 +65,4 @@ export FOLDER_ID="$folderID"
 export FOLDER_NAME="$folderName"
 export ROOT_FOLDER_ID="$rootID"
 export PUB_DRIVE_ID="$driveID"
-
-# To remain compatible with previous behavior
-export PUB_FOLD_ID="$rootID"
+export PUB_FOLD_ID="$rootID" # To remain compatible with previous behavior
