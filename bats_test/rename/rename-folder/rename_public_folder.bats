@@ -9,11 +9,11 @@ load '/home/node/packages/node_modules/bats-assert/load.bash'
 
 # The function which builds and runs the command
 load './rename_folder.sh'
-# A function which triggers the rename with invalid names. DEPENDS on rename_file.sh
+# A function which triggers the rename with invalid names. DEPENDS on rename_folder.sh
 load './rename_invalid_names.sh'
-# A function which triggers a rename with an already in use name. DEPENDS on rename_file.sh
+# A function which triggers a rename with an already in use name. DEPENDS on rename_folder.sh
 load './rename_colliding_name.sh'
-# A function which triggers a rename with exactly the same name. DEPENDS on rename_file.sh
+# A function which triggers a rename with exactly the same name. DEPENDS on rename_folder.sh
 load './rename_same_name.sh'
 
 DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")" >/dev/null 2>&1 && pwd)"
