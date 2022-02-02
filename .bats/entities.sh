@@ -53,6 +53,7 @@ for publicDriveId in ${allDriveIDs[@]}; do
             # Root folder and drive IDs
             rootID="$(echo $driveContent | jq -r '[.[] | select(.parentFolderId == "root folder")][0] | .entityId')"
             driveID="${publicDriveId}"
+            driveName="$(echo $driveContent | jq -r "[.[] | select((.entityType == \"folder\") and .entityId == \"${rootID}\")][0] | .name")"
 
             # escape condition found
             found=1
@@ -85,4 +86,5 @@ export FOLDER_ID="$folderID"
 export FOLDER_NAME="$folderName"
 export ROOT_FOLDER_ID="$rootID"
 export PUB_DRIVE_ID="$driveID"
+export PUB_DRIVE_NAME="$driveName"
 export PUB_FOLD_ID="$rootID" # To remain compatible with the previous behavior
