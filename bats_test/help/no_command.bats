@@ -30,6 +30,7 @@ Commands:
   list-folder [options]
   move-file [options]
   move-folder [options]
+  rename-drive [options]
   rename-file [options]
   rename-folder [options]
   send-ar [options]
