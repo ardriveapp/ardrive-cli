@@ -36,8 +36,14 @@ setup_file() {
     assert_line -n 1 ''
 }
 
+@test "upload-file throws an error if multiple files are sent up with the same name" {
+    run bash -c "yarn ardrive upload-file --dry-run --local-paths '/home/node/1Chunk.txt' '/home/node/1Chunk.txt' -F $PUB_FOLD_ID -w $WALLET"
+
+    assert_output "Error: Upload cannot contain multiple destination names to the same destination folder!"
+}
+
 @test "upload-file creates 1 bundled transaction with 2 files and --local-paths" {
-    run -0 bash -c "yarn ardrive upload-file --dry-run --local-paths '/home/node/10Chunks.txt' '/home/node/10Chunks.txt' -F $PUB_FOLD_ID -w $WALLET | jq '.created[] .type'"
+    run -0 bash -c "yarn ardrive upload-file --dry-run --local-paths '/home/node/10Chunks.txt' '/home/node/1Chunk.txt' -F $PUB_FOLD_ID -w $WALLET | jq '.created[] .type'"
 
     assert_line -n 0 '"file"'
     assert_line -n 1 '"file"'
@@ -72,7 +78,7 @@ setup_file() {
 }
 
 @test "upload-file creates v2 transactions with 2 files --local-paths and --no-bundle" {
-    run -0 bash -c "yarn ardrive upload-file --no-bundle --dry-run --local-paths '/home/node/10Chunks.txt' '/home/node/10Chunks.txt' -F $PUB_FOLD_ID -w $WALLET | jq '.created[] .type'"
+    run -0 bash -c "yarn ardrive upload-file --no-bundle --dry-run --local-paths '/home/node/10Chunks.txt' '/home/node/1Chunk.txt' -F $PUB_FOLD_ID -w $WALLET | jq '.created[] .type'"
 
     assert_line -n 0 '"file"'
     assert_line -n 1 '"file"'
