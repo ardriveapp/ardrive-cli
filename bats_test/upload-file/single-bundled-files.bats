@@ -9,7 +9,7 @@ DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")" >/dev/null 2>&1 && pwd)"
 
 setup_file() {
     run $DIR/create-file.sh
-    echo "##### Created 10 chunk test file" >>/home/node/bats.log
+    echo "##### Created test files" >>/home/node/bats.log
 
     run $DIR/create-folder.sh
     echo "##### Created bulk test folder" >>/home/node/bats.log
@@ -114,4 +114,22 @@ setup_file() {
     assert_line -n 7 --regexp '^(\w|-){43}$'
     assert_line -n 8 --regexp '^(\w|-){43}$'
     assert_line -n 9 ''
+}
+
+@test "Duplicate name uploads nothing with --skip" {
+    #We don't care about deleting this. Lives on Docker FS only
+    #We use quotes to escape possible spaces
+    run bash -c "touch '$PUB_FILE_NAME'"
+    #Again we use quotes to escape spaces
+    run -0 bash -c "yarn ardrive upload-file --dry-run --local-path ./'$PUB_FILE_NAME' -F $PARENT_FOLDER_ID -w $WALLET --skip | jq -r '.created | length'"
+
+    assert_output 0
+}
+
+@test "Duplicate name uploads a new file with --upsert" {
+    run bash -c "touch '$PUB_FILE_NAME'"
+    run -0 bash -c "yarn ardrive upload-file --dry-run --local-path ./'$PUB_FILE_NAME' -F $PARENT_FOLDER_ID -w $WALLET --upsert | jq -r '.created | .[] | .type'"
+
+    assert_line -n 0 "file"
+    assert_line -n 1 "bundle"
 }
