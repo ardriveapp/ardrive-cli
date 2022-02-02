@@ -14,7 +14,7 @@ import {
 	LocalPathParameter,
 	LocalCSVParameter
 } from '../parameter_declarations';
-import { folderUploadConflictPrompts } from '../prompts';
+import { fileAndFolderUploadConflictPrompts } from '../prompts';
 import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { CLIAction } from '../CLICommand/action';
 import {
@@ -188,7 +188,7 @@ new CLICommand({
 			const results = await arDrive.uploadAllEntities({
 				entitiesToUpload: uploadStats,
 				conflictResolution,
-				prompts: folderUploadConflictPrompts
+				prompts: fileAndFolderUploadConflictPrompts
 			});
 
 			console.log(JSON.stringify(results, null, 4));
