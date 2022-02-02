@@ -9,7 +9,7 @@ DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")" >/dev/null 2>&1 && pwd)"
 
 setup_file() {
     run $DIR/create-file.sh
-    echo "##### Created 10 chunk test file" >>/home/node/bats.log
+    echo "##### Created test files" >>/home/node/bats.log
 
     run $DIR/create-folder.sh
     echo "##### Created bulk test folder" >>/home/node/bats.log
@@ -36,8 +36,14 @@ setup_file() {
     assert_line -n 1 ''
 }
 
+@test "upload-file throws an error if multiple files are sent up with the same name" {
+    run bash -c "yarn ardrive upload-file --dry-run --local-paths '/home/node/1Chunk.txt' '/home/node/1Chunk.txt' -F $PUB_FOLD_ID -w $WALLET"
+
+    assert_output "Error: Upload cannot contain multiple destination names to the same destination folder!"
+}
+
 @test "upload-file creates 1 bundled transaction with 2 files and --local-paths" {
-    run -0 bash -c "yarn ardrive upload-file --dry-run --local-paths '/home/node/10Chunks.txt' '/home/node/10Chunks.txt' -F $PUB_FOLD_ID -w $WALLET | jq '.created[] .type'"
+    run -0 bash -c "yarn ardrive upload-file --dry-run --local-paths '/home/node/10Chunks.txt' '/home/node/1Chunk.txt' -F $PUB_FOLD_ID -w $WALLET | jq '.created[] .type'"
 
     assert_line -n 0 '"file"'
     assert_line -n 1 '"file"'
@@ -72,7 +78,7 @@ setup_file() {
 }
 
 @test "upload-file creates v2 transactions with 2 files --local-paths and --no-bundle" {
-    run -0 bash -c "yarn ardrive upload-file --no-bundle --dry-run --local-paths '/home/node/10Chunks.txt' '/home/node/10Chunks.txt' -F $PUB_FOLD_ID -w $WALLET | jq '.created[] .type'"
+    run -0 bash -c "yarn ardrive upload-file --no-bundle --dry-run --local-paths '/home/node/10Chunks.txt' '/home/node/1Chunk.txt' -F $PUB_FOLD_ID -w $WALLET | jq '.created[] .type'"
 
     assert_line -n 0 '"file"'
     assert_line -n 1 '"file"'
@@ -114,4 +120,22 @@ setup_file() {
     assert_line -n 7 --regexp '^(\w|-){43}$'
     assert_line -n 8 --regexp '^(\w|-){43}$'
     assert_line -n 9 ''
+}
+
+@test "Duplicate name uploads nothing with --skip" {
+    #We don't care about deleting this. Lives on Docker FS only
+    #We use quotes to escape possible spaces
+    run bash -c "touch '$PUB_FILE_NAME'"
+    #Again we use quotes to escape spaces
+    run -0 bash -c "yarn ardrive upload-file --dry-run --local-path ./'$PUB_FILE_NAME' -F $PARENT_FOLDER_ID -w $WALLET --skip | jq -r '.created | length'"
+
+    assert_output 0
+}
+
+@test "Duplicate name uploads a new file with --upsert" {
+    run bash -c "touch '$PUB_FILE_NAME'"
+    run -0 bash -c "yarn ardrive upload-file --dry-run --local-path ./'$PUB_FILE_NAME' -F $PARENT_FOLDER_ID -w $WALLET --upsert | jq -r '.created | .[] | .type'"
+
+    assert_line -n 0 "file"
+    assert_line -n 1 "bundle"
 }
