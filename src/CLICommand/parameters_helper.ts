@@ -12,7 +12,8 @@ import {
 	ReplaceParameter,
 	AskParameter,
 	SkipParameter,
-	BoostParameter
+	BoostParameter,
+	GatewayParameter
 } from '../parameter_declarations';
 import { cliWalletDao } from '..';
 import passwordPrompt from 'prompts';
@@ -38,6 +39,9 @@ import { JWKInterface } from 'arweave/node/lib/wallet';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ParameterOptions = any;
+
+const DEFAULT_GATEWAY = 'https://arweave.net:443';
+const ARWEAVE_GATEWAY_ENV_VAR = 'ARWEAVE_GATEWAY';
 
 interface GetDriveKeyParams {
 	driveId: DriveID;
@@ -274,5 +278,36 @@ export class ParametersHelper {
 			throw new Error(`Required parameter ${parameterName} wasn't provided!`);
 		}
 		return mapFunc(value);
+	}
+
+	// Parse user input through `URL` constructor. This will throw an error on any
+	// provided url that does not have a `protocol` and `host` or is otherwise invalid
+	public getGateway(): URL {
+		const userProvidedURL = (() => {
+			// Use optional --gateway supplied parameter as first choice
+			const gatewayFromParam = this.getParameterValue(GatewayParameter);
+			if (gatewayFromParam) {
+				return new URL(gatewayFromParam);
+			}
+
+			// Then check for an ENV provided gateway
+			const envGateway = process.env[ARWEAVE_GATEWAY_ENV_VAR];
+			if (envGateway) {
+				return new URL(envGateway);
+			}
+
+			return undefined;
+		})();
+
+		if (!userProvidedURL) {
+			// Return default CLI Arweave if no gateway can be derived from the user
+			return new URL(DEFAULT_GATEWAY);
+		}
+
+		if (userProvidedURL.hostname === '') {
+			// Ensure a valid host name was provided to be used in Arweave.init()
+			throw new TypeError(`Host name could not be determined from provided URL: ${userProvidedURL.href}`);
+		}
+		return userProvidedURL;
 	}
 }
