@@ -1,5 +1,5 @@
 import { AR, ADDR } from 'ardrive-core-js';
-import { cliWalletDao, CLI_APP_NAME, CLI_APP_VERSION } from '..';
+import { CLI_APP_NAME, CLI_APP_VERSION, customArweaveCliWalletDAO } from '..';
 import { CLICommand } from '../CLICommand';
 import { ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
@@ -9,8 +9,10 @@ import {
 	BoostParameter,
 	DestinationAddressParameter,
 	DryRunParameter,
+	GatewayParameter,
 	WalletTypeParameters
 } from '../parameter_declarations';
+import { getArweaveFromURL } from '../utils/get_arweave_for_url';
 
 new CLICommand({
 	name: 'send-ar',
@@ -19,7 +21,8 @@ new CLICommand({
 		DestinationAddressParameter,
 		BoostParameter,
 		DryRunParameter,
-		...WalletTypeParameters
+		...WalletTypeParameters,
+		GatewayParameter
 	],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
@@ -28,13 +31,18 @@ new CLICommand({
 		const wallet = await parameters.getRequiredWallet();
 		const walletAddress = await wallet.getAddress();
 		const boost = parameters.getOptionalBoostSetting();
+
 		console.log(`Source address: ${walletAddress}`);
 		console.log(`AR amount sent: ${arAmount.toString()}`);
 		console.log(`Destination address: ${destAddress}`);
+
 		const rewardSetting = boost ? { feeMultiple: boost } : undefined;
 		const dryRun = !!parameters.getParameterValue(DryRunParameter);
+		const arweave = getArweaveFromURL(parameters.getGateway());
 
-		const arTransferResult = await cliWalletDao.sendARToAddress(
+		const walletDAO = customArweaveCliWalletDAO(arweave);
+
+		const arTransferResult = await walletDAO.sendARToAddress(
 			arAmount,
 			wallet,
 			destAddress,

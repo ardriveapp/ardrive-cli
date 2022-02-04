@@ -4,12 +4,14 @@ import {
 	FolderNameParameter,
 	DryRunParameter,
 	ParentFolderIdParameter,
-	DrivePrivacyParameters
+	DrivePrivacyParameters,
+	GatewayParameter
 } from '../parameter_declarations';
 import { cliArDriveFactory } from '..';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { CLIAction } from '../CLICommand/action';
 import { Wallet, EID } from 'ardrive-core-js';
+import { getArweaveFromURL } from '../utils/get_arweave_for_url';
 
 new CLICommand({
 	name: 'create-folder',
@@ -18,17 +20,20 @@ new CLICommand({
 		FolderNameParameter,
 		BoostParameter,
 		DryRunParameter,
-		...DrivePrivacyParameters
+		...DrivePrivacyParameters,
+		GatewayParameter
 	],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
 		const wallet: Wallet = await parameters.getRequiredWallet();
 		const dryRun = !!parameters.getParameterValue(DryRunParameter);
+		const arweave = getArweaveFromURL(parameters.getGateway());
 
 		const ardrive = cliArDriveFactory({
 			wallet,
 			feeMultiple: parameters.getOptionalBoostSetting(),
-			dryRun
+			dryRun,
+			arweave
 		});
 
 		const parentFolderId = parameters.getRequiredParameterValue(ParentFolderIdParameter, EID);

@@ -8,20 +8,27 @@ import { cliArDriveAnonymousFactory, cliArDriveFactory } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
-import { DrivePrivacyParameters, ParentFolderIdParameter, TreeDepthParams } from '../parameter_declarations';
+import {
+	DrivePrivacyParameters,
+	GatewayParameter,
+	ParentFolderIdParameter,
+	TreeDepthParams
+} from '../parameter_declarations';
+import { getArweaveFromURL } from '../utils/get_arweave_for_url';
 
 new CLICommand({
 	name: 'list-folder',
-	parameters: [ParentFolderIdParameter, ...TreeDepthParams, ...DrivePrivacyParameters],
+	parameters: [ParentFolderIdParameter, ...TreeDepthParams, ...DrivePrivacyParameters, GatewayParameter],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
 		const folderId = EID(parameters.getRequiredParameterValue(ParentFolderIdParameter));
 		let children: (ArFSPrivateFileOrFolderWithPaths | ArFSPublicFileOrFolderWithPaths)[];
 		const maxDepth = await parameters.getMaxDepth(0);
+		const arweave = getArweaveFromURL(parameters.getGateway());
 
 		if (await parameters.getIsPrivate()) {
 			const wallet = await parameters.getRequiredWallet();
-			const arDrive = cliArDriveFactory({ wallet });
+			const arDrive = cliArDriveFactory({ wallet, arweave });
 
 			const driveId = await arDrive.getDriveIdForFolderId(folderId);
 			const driveKey = await parameters.getDriveKey({ driveId });
@@ -31,7 +38,7 @@ new CLICommand({
 
 			children = await arDrive.listPrivateFolder({ folderId, driveKey, maxDepth, owner: driveOwner });
 		} else {
-			const arDrive = cliArDriveAnonymousFactory({});
+			const arDrive = cliArDriveAnonymousFactory({ arweave });
 			children = await arDrive.listPublicFolder({ folderId, maxDepth });
 		}
 

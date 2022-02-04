@@ -11,9 +11,11 @@ import {
 	TreeDepthParams,
 	WalletFileParameter,
 	DestinationManifestNameParameter,
-	ConflictResolutionParams
+	ConflictResolutionParams,
+	GatewayParameter
 } from '../parameter_declarations';
 import { fileUploadConflictPrompts } from '../prompts';
+import { getArweaveFromURL } from '../utils/get_arweave_for_url';
 
 new CLICommand({
 	name: 'create-manifest',
@@ -25,17 +27,20 @@ new CLICommand({
 		WalletFileParameter,
 		SeedPhraseParameter,
 		...ConflictResolutionParams,
-		...TreeDepthParams
+		...TreeDepthParams,
+		GatewayParameter
 	],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options, cliWalletDao);
 
 		const wallet = await parameters.getRequiredWallet();
+		const arweave = getArweaveFromURL(parameters.getGateway());
 
 		const arDrive = cliArDriveFactory({
 			wallet: wallet,
 			feeMultiple: parameters.getOptionalBoostSetting(),
-			dryRun: !!options.dryRun
+			dryRun: !!options.dryRun,
+			arweave
 		});
 
 		const folderId = parameters.getRequiredParameterValue(FolderIdParameter, EID);

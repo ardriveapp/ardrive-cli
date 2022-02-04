@@ -2,28 +2,28 @@ import {
 	EID,
 	ArFSPrivateFileOrFolderWithPaths,
 	ArFSPublicFileOrFolderWithPaths,
-	ArDriveAnonymous,
-	ArFSDAOAnonymous,
 	alphabeticalOrder
 } from 'ardrive-core-js';
-import { cliArDriveFactory, cliArweave, cliWalletDao } from '..';
+import { cliArDriveAnonymousFactory, cliArDriveFactory, cliWalletDao } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
-import { DriveIdParameter, DrivePrivacyParameters, TreeDepthParams } from '../parameter_declarations';
+import { DriveIdParameter, DrivePrivacyParameters, GatewayParameter, TreeDepthParams } from '../parameter_declarations';
+import { getArweaveFromURL } from '../utils/get_arweave_for_url';
 
 new CLICommand({
 	name: 'list-drive',
-	parameters: [DriveIdParameter, ...TreeDepthParams, ...DrivePrivacyParameters],
+	parameters: [DriveIdParameter, ...TreeDepthParams, ...DrivePrivacyParameters, GatewayParameter],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options, cliWalletDao);
 		const driveId = EID(parameters.getRequiredParameterValue(DriveIdParameter));
 		let children: (ArFSPrivateFileOrFolderWithPaths | ArFSPublicFileOrFolderWithPaths)[];
 		const maxDepth = await parameters.getMaxDepth(Number.MAX_SAFE_INTEGER);
+		const arweave = getArweaveFromURL(parameters.getGateway());
 
 		if (await parameters.getIsPrivate()) {
 			const wallet = await parameters.getRequiredWallet();
-			const arDrive = cliArDriveFactory({ wallet });
+			const arDrive = cliArDriveFactory({ wallet, arweave });
 			const driveKey = await parameters.getDriveKey({ driveId });
 			const drive = await arDrive.getPrivateDrive({ driveId, driveKey });
 			const rootFolderId = drive.rootFolderId;
@@ -39,7 +39,7 @@ new CLICommand({
 				owner: driveOwner
 			});
 		} else {
-			const arDrive = new ArDriveAnonymous(new ArFSDAOAnonymous(cliArweave));
+			const arDrive = cliArDriveAnonymousFactory({ arweave });
 			const drive = await arDrive.getPublicDrive({ driveId });
 			const rootFolderId = drive.rootFolderId;
 			children = await arDrive.listPublicFolder({ folderId: rootFolderId, maxDepth, includeRoot: true });

@@ -12,7 +12,8 @@ import {
 	ParentFolderIdParameter,
 	WalletFileParameter,
 	LocalPathParameter,
-	LocalCSVParameter
+	LocalCSVParameter,
+	GatewayParameter
 } from '../parameter_declarations';
 import { fileUploadConflictPrompts, folderUploadConflictPrompts } from '../prompts';
 import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
@@ -30,6 +31,7 @@ import {
 } from 'ardrive-core-js';
 import { cliArDriveFactory } from '..';
 import * as fs from 'fs';
+import { getArweaveFromURL } from '../utils/get_arweave_for_url';
 
 interface UploadPathParameter {
 	parentFolderId: FolderID;
@@ -133,7 +135,8 @@ new CLICommand({
 		...DrivePrivacyParameters,
 		LocalFilePathParameter_DEPRECATED,
 		LocalFilesParameter_DEPRECATED,
-		BoostParameter
+		BoostParameter,
+		GatewayParameter
 	],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
@@ -162,11 +165,14 @@ new CLICommand({
 			const conflictResolution = parameters.getFileNameConflictResolution();
 			const shouldBundle = !!parameters.getParameterValue(ShouldBundleParameter);
 
+			const arweave = getArweaveFromURL(parameters.getGateway());
+
 			const arDrive = cliArDriveFactory({
 				wallet: wallet,
 				feeMultiple: parameters.getOptionalBoostSetting(),
 				dryRun: !!options.dryRun,
-				shouldBundle
+				shouldBundle,
+				arweave
 			});
 
 			const results = await Promise.all(

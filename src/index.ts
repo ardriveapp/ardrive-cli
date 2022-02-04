@@ -44,6 +44,9 @@ export const cliArweave = Arweave.init({
 
 export const cliWalletDao = new WalletDAO(cliArweave, CLI_APP_NAME, CLI_APP_VERSION);
 
+export const customArweaveCliWalletDAO = (arweave = cliArweave): WalletDAO =>
+	new WalletDAO(arweave, CLI_APP_NAME, CLI_APP_VERSION);
+
 export const cliArDriveFactory = ({
 	appName = CLI_APP_NAME,
 	appVersion = CLI_APP_VERSION,
