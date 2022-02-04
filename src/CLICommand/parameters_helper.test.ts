@@ -23,7 +23,8 @@ import {
 	SeedPhraseParameter,
 	WalletFileParameter,
 	MaxDepthParameter,
-	AllParameter
+	AllParameter,
+	GatewayParameter
 } from '../parameter_declarations';
 import '../parameter_declarations';
 import { CLIAction } from './action';
@@ -545,6 +546,114 @@ describe('ParametersHelper class', () => {
 				const maxDepthPromise = parameters.getMaxDepth().catch(() => null);
 				return maxDepthPromise.then((maxDepth) => expect(typeof maxDepth).to.equal('number'));
 			});
+		});
+	});
+
+	describe('getGateway method', () => {
+		it('returns the expected URLs', async () => {
+			const cmd = declareCommandWithParams(program, [GatewayParameter]);
+
+			const validUrlTests: [string, { protocol: string; hostName: string; port: string }][] = [
+				['http://arweave.net', { hostName: 'arweave.net', protocol: 'http:', port: '' }],
+				['http://arweave.net:80', { hostName: 'arweave.net', protocol: 'http:', port: '' }], // http uses default port 80
+				['http://arweave.net:443', { hostName: 'arweave.net', protocol: 'http:', port: '443' }],
+				['weirdProtocol://arweave.net:21', { hostName: 'arweave.net', protocol: 'weirdprotocol:', port: '21' }],
+				['https://arweave.net:443', { hostName: 'arweave.net', protocol: 'https:', port: '' }], // https uses default port 443
+				['https://arweave.net:101', { hostName: 'arweave.net', protocol: 'https:', port: '101' }],
+				['https://arweave.net:80', { hostName: 'arweave.net', protocol: 'https:', port: '80' }],
+				[
+					'https://port-zero-is-fine.net:0',
+					{ hostName: 'port-zero-is-fine.net', protocol: 'https:', port: '0' }
+				],
+				['https://max-port-limit:65535', { hostName: 'max-port-limit', protocol: 'https:', port: '65535' }],
+				['folder1://testIt.Com:9', { hostName: 'testIt.Com', protocol: 'folder1:', port: '9' }],
+				[
+					'http://removes-leading-zeroes-on-port:009',
+					{ hostName: 'removes-leading-zeroes-on-port', protocol: 'http:', port: '9' }
+				],
+				[
+					'file://file-protocol-no-port.ok',
+					{ hostName: 'file-protocol-no-port.ok', protocol: 'file:', port: '' }
+				],
+				['http://no-dot-com-is-fine', { hostName: 'no-dot-com-is-fine', protocol: 'http:', port: '' }],
+				[
+					'ar://gr8.emoji.🚀.com:1337',
+					{ hostName: 'gr8.emoji.%F0%9F%9A%80.com', protocol: 'ar:', port: '1337' }
+				]
+			];
+
+			for (const [
+				testUrlString,
+				{ hostName: expectedHostName, port: expectedPort, protocol: expectedProtocol }
+			] of validUrlTests) {
+				CLICommand.parse(program, [...baseArgv, testCommandName, '--gateway', testUrlString]);
+				await cmd.action.then((options) => {
+					const parameters = new ParametersHelper(options);
+					const gateway = parameters.getGateway();
+
+					expect(gateway.hostname).to.equal(expectedHostName);
+					expect(gateway.port).to.equal(expectedPort);
+					expect(gateway.protocol).to.equal(expectedProtocol);
+				});
+			}
+		});
+
+		it('throws on invalid URLs during the URL class constructor', async () => {
+			const cmd = declareCommandWithParams(program, [GatewayParameter]);
+
+			const invalidUrlTests: string[] = [
+				// Throws on hosts without a protocol
+				'arweave.net',
+				'no-protocol.com',
+				// Throws on ports using invalid characters; ports must use integers
+				'https://bad-port.hello:INVALID',
+				'https://arweave.net:443B',
+				'http://arweave.net:Nope',
+				// Throws above the max port number limit, which is an 16-bit integer -- so 65535 is the max limit
+				'https://arweave.net:1000000000',
+				'https://arweave.net:65536',
+				// Throws on file protocols with a port (Special case)
+				'file://testit.com:92',
+				'file://testit.com:101',
+				// Throws on (`:`) in hostName
+				'http://ar:weave.net',
+				// Throws on (` `) in hostName
+				'http://ar weave.net'
+			];
+
+			for (const testUrlString of invalidUrlTests) {
+				CLICommand.parse(program, [...baseArgv, testCommandName, '--gateway', testUrlString]);
+
+				await cmd.action.then((options) => {
+					const parameters = new ParametersHelper(options);
+
+					expect(() => parameters.getGateway()).to.throw(TypeError, `Invalid URL: ${testUrlString}`);
+				});
+			}
+		});
+
+		it('throws on user provided URLs where the hostName property cannot be determined', async () => {
+			const cmd = declareCommandWithParams(program, [GatewayParameter]);
+
+			const invalidHostNameTests: string[] = [
+				'arweave.net:443',
+				'arweave.net:80',
+				'strange:words:??',
+				'there:are:so:many:colons:here:for:this:test'
+			];
+
+			for (const testUrlString of invalidHostNameTests) {
+				CLICommand.parse(program, [...baseArgv, testCommandName, '--gateway', testUrlString]);
+
+				await cmd.action.then((options) => {
+					const parameters = new ParametersHelper(options);
+
+					expect(() => parameters.getGateway()).to.throw(
+						TypeError,
+						`Host name could not be determined from provided URL: ${testUrlString}`
+					);
+				});
+			}
 		});
 	});
 });
