@@ -37,6 +37,7 @@ export const ShouldBundleParameter = 'bundle'; // commander maps --no-x style pa
 export const LocalPathParameter = 'localPath';
 export const LocalPathsParameter = 'localPaths';
 export const LocalCSVParameter = 'localCsv';
+export const GatewayParameter = 'gateway';
 
 // Aggregates for convenience
 export const WalletTypeParameters = [WalletFileParameter, SeedPhraseParameter];
@@ -58,6 +59,7 @@ export const AllParameters = [
 	FileIdParameter,
 	FolderIdParameter,
 	FolderNameParameter,
+	GatewayParameter,
 	GetAllRevisionsParameter,
 	LastTxParameter,
 	LocalFilePathParameter_DEPRECATED,
@@ -431,4 +433,10 @@ Parameter.declare({
 		LocalPathsParameter,
 		DestinationFileNameParameter
 	]
+});
+
+Parameter.declare({
+	name: GatewayParameter,
+	aliases: ['--gateway'],
+	description: `(OPTIONAL) a ‘protocol://host:port’ formatted string specifying the connection info for the Arweave gateway server to use`
 });
