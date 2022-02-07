@@ -100,8 +100,9 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
     5. [Working With Folders](#working-with-folders)
         1. [Creating Folders](#creating-folders)
         2. [Moving Folders](#moving-folders)
-        3. [Viewing Folder Metadata](#viewing-folder-metadata)
-        4. [Listing Contents of a Folder](#listing-contents-of-a-folder)
+        3. [Renaming Folders](#rename-folder)
+        4. [Viewing Folder Metadata](#viewing-folder-metadata)
+        5. [Listing Contents of a Folder](#listing-contents-of-a-folder)
     6. [Working With Files](#working-with-files)
         1. [Uploading a Single File](#uploading-a-single-file)
         2. [Download a Single File (BETA)](#download-file)
@@ -555,6 +556,14 @@ Moving a folder is as simple as supplying a new parent folder ID. Note that nami
 
 ```shell
 ardrive move-folder --folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" --parent-folder-id "29850ab7-56d4-4e1f-a5be-cb86d5513921" -w /path/to/wallet.json
+```
+
+### Renaming Folders<a id="rename-folder"></a>
+
+In order to rename a folder you must provide a name different from its current one, and it must not create naming conflicts with its sibling entities.
+
+```shell
+ardrive rename-folder --folder-id "568d5eba-dbf3-4a49-8129-1c58f7fd35bc" --folder-name "Folder with cool stuff" -w "./wallet.json"
 ```
 
 ### Viewing Folder Metadata

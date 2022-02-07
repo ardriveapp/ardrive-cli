@@ -31,6 +31,7 @@ Commands:
   move-file [options]
   move-folder [options]
   rename-file [options]
+  rename-folder [options]
   send-ar [options]
   send-tx [options]
   tx-status [options]
