@@ -10,14 +10,19 @@ import { cliArDriveFactory, cliArweave, cliWalletDao } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
-import { DriveIdParameter, DrivePrivacyParameters, TreeDepthParams } from '../parameter_declarations';
+import {
+	DriveIdParameter,
+	DrivePrivacyParameters,
+	TreeDepthParams,
+	WithKeysParameter
+} from '../parameter_declarations';
 
 new CLICommand({
 	name: 'list-drive',
-	parameters: [DriveIdParameter, ...TreeDepthParams, ...DrivePrivacyParameters],
+	parameters: [DriveIdParameter, WithKeysParameter, ...TreeDepthParams, ...DrivePrivacyParameters],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options, cliWalletDao);
-		const driveId = EID(parameters.getRequiredParameterValue(DriveIdParameter));
+		const driveId = parameters.getRequiredParameterValue(DriveIdParameter, EID);
 		let children: (ArFSPrivateFileOrFolderWithPaths | ArFSPublicFileOrFolderWithPaths)[];
 		const maxDepth = await parameters.getMaxDepth(Number.MAX_SAFE_INTEGER);
 
@@ -27,6 +32,7 @@ new CLICommand({
 			const driveKey = await parameters.getDriveKey({ driveId });
 			const drive = await arDrive.getPrivateDrive({ driveId, driveKey });
 			const rootFolderId = drive.rootFolderId;
+			const withKeys = await parameters.getParameterValue(WithKeysParameter, (value) => !!value);
 
 			// We have the drive id from deriving a key, we can derive the owner
 			const driveOwner = await arDrive.getOwnerForDriveId(driveId);
@@ -36,7 +42,8 @@ new CLICommand({
 				driveKey,
 				maxDepth,
 				includeRoot: true,
-				owner: driveOwner
+				owner: driveOwner,
+				withKeys
 			});
 		} else {
 			const arDrive = new ArDriveAnonymous(new ArFSDAOAnonymous(cliArweave));
