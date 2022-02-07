@@ -32,7 +32,7 @@ new CLICommand({
 		console.log(`AR amount sent: ${arAmount.toString()}`);
 		console.log(`Destination address: ${destAddress}`);
 		const rewardSetting = boost ? { feeMultiple: boost } : undefined;
-		const dryRun = !!parameters.getParameterValue(DryRunParameter);
+		const dryRun = parameters.isDryRun();
 
 		const arTransferResult = await cliWalletDao.sendARToAddress(
 			arAmount,

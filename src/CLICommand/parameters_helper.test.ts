@@ -23,7 +23,8 @@ import {
 	SeedPhraseParameter,
 	WalletFileParameter,
 	MaxDepthParameter,
-	AllParameter
+	AllParameter,
+	DryRunParameter
 } from '../parameter_declarations';
 import '../parameter_declarations';
 import { CLIAction } from './action';
@@ -544,6 +545,28 @@ describe('ParametersHelper class', () => {
 				const parameters = new ParametersHelper(options);
 				const maxDepthPromise = parameters.getMaxDepth().catch(() => null);
 				return maxDepthPromise.then((maxDepth) => expect(typeof maxDepth).to.equal('number'));
+			});
+		});
+	});
+
+	describe('isDryRun', () => {
+		it('returns true when the parameter is specified', () => {
+			const cmd = declareCommandWithParams(program, [DryRunParameter]);
+			CLICommand.parse(program, [...baseArgv, testCommandName, '--dry-run']);
+			return cmd.action.then((options) => {
+				const parameters = new ParametersHelper(options);
+				const dryRun = parameters.isDryRun();
+				expect(dryRun).to.be.true;
+			});
+		});
+
+		it('returns false when the parameter is omitted', () => {
+			const cmd = declareCommandWithParams(program, [DryRunParameter]);
+			CLICommand.parse(program, [...baseArgv, testCommandName]);
+			return cmd.action.then((options) => {
+				const parameters = new ParametersHelper(options);
+				const dryRun = parameters.isDryRun();
+				expect(dryRun).to.be.false;
 			});
 		});
 	});

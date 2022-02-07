@@ -1,55 +1,57 @@
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import {
 	BoostParameter,
-	FolderNameParameter,
 	DryRunParameter,
-	ParentFolderIdParameter,
-	DrivePrivacyParameters
+	DriveIdParameter,
+	DrivePrivacyParameters,
+	DriveNameParameter
 } from '../parameter_declarations';
 import { cliArDriveFactory } from '..';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { CLIAction } from '../CLICommand/action';
-import { Wallet, EID } from 'ardrive-core-js';
+import { EID, Wallet } from 'ardrive-core-js';
 
 new CLICommand({
-	name: 'create-folder',
+	name: 'rename-drive',
 	parameters: [
-		ParentFolderIdParameter,
-		FolderNameParameter,
+		DriveIdParameter,
+		{ name: DriveNameParameter, description: 'the new name for the drive' },
 		BoostParameter,
 		DryRunParameter,
 		...DrivePrivacyParameters
 	],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
-		const wallet: Wallet = await parameters.getRequiredWallet();
-		const dryRun = parameters.isDryRun();
 
+		const dryRun = parameters.isDryRun();
+		const driveId = parameters.getRequiredParameterValue(DriveIdParameter, EID);
+		const newName = parameters.getRequiredParameterValue(DriveNameParameter);
+
+		const wallet: Wallet = await parameters.getRequiredWallet();
 		const ardrive = cliArDriveFactory({
 			wallet,
 			feeMultiple: parameters.getOptionalBoostSetting(),
 			dryRun
 		});
 
-		const parentFolderId = parameters.getRequiredParameterValue(ParentFolderIdParameter, EID);
-		const driveId = await ardrive.getDriveIdForFolderId(parentFolderId);
-		const folderName = parameters.getRequiredParameterValue(FolderNameParameter);
-
-		const createFolderResult = await (async function () {
+		const result = await (async function () {
 			if (await parameters.getIsPrivate()) {
 				const driveKey = await parameters.getDriveKey({ driveId });
-				return ardrive.createPrivateFolder({
-					folderName,
+
+				return ardrive.renamePrivateDrive({
 					driveId,
-					driveKey,
-					parentFolderId
+					newName,
+					driveKey
 				});
 			} else {
-				return ardrive.createPublicFolder({ folderName, driveId, parentFolderId });
+				return ardrive.renamePublicDrive({
+					driveId,
+					newName
+				});
 			}
 		})();
-		console.log(JSON.stringify(createFolderResult, null, 4));
 
+		console.log(JSON.stringify(result, null, 4));
 		return SUCCESS_EXIT_CODE;
 	})
 });
