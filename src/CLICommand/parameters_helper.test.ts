@@ -24,7 +24,8 @@ import {
 	WalletFileParameter,
 	MaxDepthParameter,
 	AllParameter,
-	GatewayParameter
+	GatewayParameter,
+	DryRunParameter
 } from '../parameter_declarations';
 import '../parameter_declarations';
 import { CLIAction } from './action';
@@ -654,6 +655,28 @@ describe('ParametersHelper class', () => {
 					);
 				});
 			}
+		});
+	});
+
+	describe('isDryRun', () => {
+		it('returns true when the parameter is specified', () => {
+			const cmd = declareCommandWithParams(program, [DryRunParameter]);
+			CLICommand.parse(program, [...baseArgv, testCommandName, '--dry-run']);
+			return cmd.action.then((options) => {
+				const parameters = new ParametersHelper(options);
+				const dryRun = parameters.isDryRun();
+				expect(dryRun).to.be.true;
+			});
+		});
+
+		it('returns false when the parameter is omitted', () => {
+			const cmd = declareCommandWithParams(program, [DryRunParameter]);
+			CLICommand.parse(program, [...baseArgv, testCommandName]);
+			return cmd.action.then((options) => {
+				const parameters = new ParametersHelper(options);
+				const dryRun = parameters.isDryRun();
+				expect(dryRun).to.be.false;
+			});
 		});
 	});
 });

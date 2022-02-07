@@ -6,6 +6,7 @@ export const PrivateParameter = 'private';
 export const UnsafeDrivePasswordParameter = 'unsafeDrivePassword';
 export const DriveNameParameter = 'driveName';
 export const FolderNameParameter = 'folderName';
+export const FileNameParameter = 'fileName';
 export const DriveKeyParameter = 'driveKey';
 export const AddressParameter = 'address';
 export const DriveIdParameter = 'driveId';
@@ -57,6 +58,7 @@ export const AllParameters = [
 	DriveIdParameter,
 	DryRunParameter,
 	FileIdParameter,
+	FileNameParameter,
 	FolderIdParameter,
 	FolderNameParameter,
 	GatewayParameter,
@@ -147,6 +149,13 @@ Parameter.declare({
 	name: FolderNameParameter,
 	aliases: ['-n', '--folder-name'],
 	description: `the name for the new folder`,
+	required: true
+});
+
+Parameter.declare({
+	name: FileNameParameter,
+	aliases: ['-n', '--file-name'],
+	description: `the new file name`,
 	required: true
 });
 

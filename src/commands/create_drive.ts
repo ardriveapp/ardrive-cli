@@ -26,7 +26,7 @@ new CLICommand({
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
 		const wallet: Wallet = await parameters.getRequiredWallet();
-		const dryRun = !!parameters.getParameterValue(DryRunParameter);
+		const dryRun = parameters.isDryRun();
 		const driveName = parameters.getRequiredParameterValue(DriveNameParameter);
 		const shouldBundle = !!parameters.getParameterValue(ShouldBundleParameter);
 		const arweave = getArweaveFromURL(parameters.getGateway());

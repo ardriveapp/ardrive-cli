@@ -13,7 +13,8 @@ import {
 	AskParameter,
 	SkipParameter,
 	BoostParameter,
-	GatewayParameter
+	GatewayParameter,
+	DryRunParameter
 } from '../parameter_declarations';
 import { cliWalletDao } from '..';
 import passwordPrompt from 'prompts';
@@ -309,5 +310,10 @@ export class ParametersHelper {
 			throw new TypeError(`Host name could not be determined from provided URL: ${userProvidedURL.href}`);
 		}
 		return userProvidedURL;
+	}
+
+	public isDryRun(): boolean {
+		const dryRun = this.getParameterValue(DryRunParameter);
+		return !!dryRun;
 	}
 }
