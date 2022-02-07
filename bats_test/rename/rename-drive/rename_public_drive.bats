@@ -11,8 +11,6 @@ load '/home/node/packages/node_modules/bats-assert/load.bash'
 load './rename_drive.sh'
 # A function which triggers the rename with invalid names. DEPENDS on rename_drive.sh
 load './rename_invalid_names.sh'
-# A function which triggers a rename with an already in use name. DEPENDS on rename_drive.sh
-load './rename_colliding_name.sh'
 # A function which triggers a rename with exactly the same name. DEPENDS on rename_drive.sh
 load './rename_same_name.sh'
 
