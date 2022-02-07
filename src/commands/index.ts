@@ -23,6 +23,7 @@ import './list_drive';
 import './list_folder';
 import './move_file';
 import './move_folder';
+import './rename_drive';
 import './rename_file';
 import './rename_folder';
 import './send_ar';
