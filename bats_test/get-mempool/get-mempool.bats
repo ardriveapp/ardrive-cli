@@ -11,6 +11,11 @@ load '/home/node/packages/node_modules/bats-assert/load.bash'
     assert_output --regexp '^[0-9]{1,4}'
 }
 
+@test "'ardrive get-mempool --gateway' will error with an invalid Arweave gateway" {
+    run yarn ardrive get-mempool --gateway http://fakeway.net
+    assert_line -n 0 'Error: getaddrinfo ENOTFOUND fakeway.net'
+}
+
 @test "'ardrive get-mempool' first line contains a valid TX" {
     # Needs wrapping for piping
     run yarn ardrive get-mempool
