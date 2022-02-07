@@ -30,6 +30,7 @@ Commands:
   list-folder [options]
   move-file [options]
   move-folder [options]
+  rename-file [options]
   send-ar [options]
   send-tx [options]
   tx-status [options]
