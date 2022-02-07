@@ -1131,32 +1131,37 @@ ardrive send-tx -x /path/to/sendme.json
 
 ### Using a Custom Arweave Gateway
 
-On each command that uses a gateway, it is possible to supply your own custom Arweave gateway using the flag `--gateway`. For example, you could test out that your ArFS transactions are working as expected on a local test network such as [arlocal] with this flow:
+On each command that uses a gateway, it is possible to supply your own custom Arweave gateway using the flag `--gateway` or by setting an environment variable named `ARWEAVE_GATEWAY`.
+
+For example, you could test out that your ArFS transactions are working as expected on a local test network such as [ArLocal] with this flow:
 
 ```shell
 # Setup ArLocal instance on port 1984
 npx arlocal
 
-# Fund wallet with AR
-curl http://localhost:1984/mint/{ your public wallet address here }/99999999999999
+# In another terminal, fund your wallet with AR
+curl http://localhost:1984/mint/{ your public wallet address }/99999999999999
 
-# Create drive and root folder on ArLocal
+# Create drive and root folder on ArLocal using `--gateway` flag
 ardrive create-drive --gateway http://localhost:1984 -w /path/to/wallet -n 'my-test-drive'
 
-# Mine block with drive + root folder transactions
-curl http://localhost:1984/mine
+# Setup ARWEAVE_GATEWAY as ENV variable
+export ARWEAVE_GATEWAY="http://localhost:1984"
 
-# Upload file to ArLocal
-ardrive upload-file --gateway http://localhost:1984 -F { root folder id from create drive } -l /path/to/file -w /path/to/wallet
+# Mine block with drive + root folder transactions
+curl "$ARWEAVE_GATEWAY/mine"
+
+# Upload file to ArLocal with ENV var
+ardrive upload-file -F { root folder id from create drive } -l /path/to/file -w /path/to/wallet
 
 # Mine block with file transaction
-curl http://localhost:1984/mine
+curl "$ARWEAVE_GATEWAY/mine"
 
 # Inspect meta data of created entities
-ardrive list-drive --gateway http://localhost:1984 -d { drive id from create drive }
+ardrive list-drive -d { drive id from create drive }
 
 # Download file to verify integrity
-ardrive download-file --gateway http://localhost:1984 -f { file id from upload file }
+ardrive download-file -f { file id from upload file }
 ```
 
 # All ArDrive CLI Commands
