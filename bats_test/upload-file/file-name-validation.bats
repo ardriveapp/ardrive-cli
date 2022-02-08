@@ -21,6 +21,18 @@ setup_file() {
 }
 
 @test "upload file with empty destination file name (no bundle)" {
+    run -1 bash -c "yarn ardrive upload-file --dry-run --local-path '/home/node/10Chunks.txt' -F $PUB_FOLD_ID -w $WALLET -d '' --no-bundle"
+
+    assert_line -n 0 "Error: The file name must contain between 1 and 255 characters"
+}
+
+@test "upload file with long destination file name" {
+    run -1 bash -c "yarn ardrive upload-file --dry-run --local-path '/home/node/10Chunks.txt' -F $PUB_FOLD_ID -w $WALLET -d '+==============================================================================================================================================================================================================================================================='"
+
+    assert_line -n 0 "Error: The file name must contain between 1 and 255 characters"
+}
+
+@test "upload file with long destination file name (no bundle)" {
     run -1 bash -c "yarn ardrive upload-file --dry-run --local-path '/home/node/10Chunks.txt' -F $PUB_FOLD_ID -w $WALLET --no-bundle -d '+==============================================================================================================================================================================================================================================================='"
 
     assert_line -n 0 "Error: The file name must contain between 1 and 255 characters"
