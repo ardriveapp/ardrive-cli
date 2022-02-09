@@ -100,22 +100,24 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
     5. [Working With Folders](#working-with-folders)
         1. [Creating Folders](#creating-folders)
         2. [Moving Folders](#moving-folders)
-        3. [Viewing Folder Metadata](#viewing-folder-metadata)
-        4. [Listing Contents of a Folder](#listing-contents-of-a-folder)
+        3. [Renaming Folders](#rename-folder)
+        4. [Viewing Folder Metadata](#viewing-folder-metadata)
+        5. [Listing Contents of a Folder](#listing-contents-of-a-folder)
     6. [Working With Files](#working-with-files)
         1. [Uploading a Single File](#uploading-a-single-file)
         2. [Download a Single File (BETA)](#download-file)
-        3. [Uploading a Folder with Files](#bulk-upload)
-        4. [Downloading a Folder with Files](#download-folder)
-        5. [Downloading a Drive](#download-drive)
-        6. [Uploading Multiple Files](#multi-file-upload)
-        7. [Name Conflict Resolution on Upload](#conflict-resolution)
-        8. [Understanding Bundled Transactions](#bundles)
-        9. [Uploading a Non-Bundled Transaction](#no-bundle)
-        10. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
-        11. [Moving Files](#moving-files)
-        12. [Uploading Manifests](#uploading-manifests)
-        13. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
+        3. [Rename a Single File](#rename-file)
+        4. [Uploading a Folder with Files](#bulk-upload)
+        5. [Downloading a Folder with Files](#download-folder)
+        6. [Downloading a Drive](#download-drive)
+        7. [Uploading Multiple Files](#multi-file-upload)
+        8. [Name Conflict Resolution on Upload](#conflict-resolution)
+        9. [Understanding Bundled Transactions](#bundles)
+        10. [Uploading a Non-Bundled Transaction](#no-bundle)
+        11. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
+        12. [Moving Files](#moving-files)
+        13. [Uploading Manifests](#uploading-manifests)
+        14. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
     7. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -557,6 +559,14 @@ Moving a folder is as simple as supplying a new parent folder ID. Note that nami
 ardrive move-folder --folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" --parent-folder-id "29850ab7-56d4-4e1f-a5be-cb86d5513921" -w /path/to/wallet.json
 ```
 
+### Renaming Folders<a id="rename-folder"></a>
+
+In order to rename a folder you must provide a name different from its current one, and it must not create naming conflicts with its sibling entities.
+
+```shell
+ardrive rename-folder --folder-id "568d5eba-dbf3-4a49-8129-1c58f7fd35bc" --folder-name "Folder with cool stuff" -w "./wallet.json"
+```
+
 ### Viewing Folder Metadata
 
 To view the metadata of a folder, users can use the `folder-info` command:
@@ -724,6 +734,14 @@ Specify a filename in the --local-path if you'd like to use a different name tha
 
 ```shell
 ardrive download-file -w /path/to/wallet.json -file-id "ff450770-a9cb-46a5-9234-89cbd9796610" --local-path /my_ardrive_downloads/my_pic.png
+```
+
+### Rename a Single File<a id="rename-file"></a>
+
+To rename an on-chain file you can make use of the `rename-file` command. The required parameters are the file ID and the new name, as well as the owner wallet or seed phrase.
+
+```shell
+ardrive rename-file --file-id "290a3f9a-37b2-4f0f-a899-6fac983833b3" --file-name "My custom file name.txt" --wallet-file "wallet.json"
 ```
 
 ### Uploading a Folder with Files (Bulk Upload)<a id="bulk-upload"></a>
