@@ -1,5 +1,5 @@
 import { AR } from 'ardrive-core-js';
-import { customArweaveCliWalletDAO } from '..';
+import { cliWalletDAOFactory } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
@@ -13,7 +13,7 @@ new CLICommand({
 		const parameters = new ParametersHelper(options);
 		const arweave = getArweaveFromURL(parameters.getGateway());
 		const address = await parameters.getWalletAddress();
-		const walletDAO = customArweaveCliWalletDAO(arweave);
+		const walletDAO = cliWalletDAOFactory(arweave);
 		const balanceInWinston = await walletDAO.getAddressWinstonBalance(address);
 		const balanceInAR = new AR(balanceInWinston);
 		console.log(`${balanceInWinston}\tWinston`);

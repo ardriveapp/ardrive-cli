@@ -1,5 +1,5 @@
 import { AR, ADDR } from 'ardrive-core-js';
-import { CLI_APP_NAME, CLI_APP_VERSION, customArweaveCliWalletDAO } from '..';
+import { CLI_APP_NAME, CLI_APP_VERSION, cliWalletDAOFactory } from '..';
 import { CLICommand } from '../CLICommand';
 import { ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
@@ -40,7 +40,7 @@ new CLICommand({
 		const dryRun = parameters.isDryRun();
 		const arweave = getArweaveFromURL(parameters.getGateway());
 
-		const walletDAO = customArweaveCliWalletDAO(arweave);
+		const walletDAO = cliWalletDAOFactory(arweave);
 
 		const arTransferResult = await walletDAO.sendARToAddress(
 			arAmount,
