@@ -446,6 +446,6 @@ Parameter.declare({
 
 Parameter.declare({
 	name: GatewayParameter,
-	aliases: ['--gateway', '-g'],
+	aliases: ['-g', '--gateway'],
 	description: `(OPTIONAL) a 'protocol://host:port' formatted string specifying the connection info for the Arweave gateway server to use`
 });
