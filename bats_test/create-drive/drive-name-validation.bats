@@ -16,5 +16,5 @@ load '../constants.sh'
 @test "create drive with long name results in an error message and exit code 1" {
     run -1 bash -c "yarn ardrive create-drive --dry-run -n $ENTITY_NAME_LONG -w $WALLET"
 
-    assert_line -n 0 'Error: The drive name must be smaller than 255 bytes'
+    assert_line -n 0 'Error: The drive name must not exceed 255 bytes'
 }

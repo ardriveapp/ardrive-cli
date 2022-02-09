@@ -31,11 +31,11 @@ setup_file() {
 @test "upload file with long destination file name results in an error message and exit code 1" {
     run -1 bash -c "yarn ardrive upload-file --dry-run --local-path '/home/node/10Chunks.txt' -F $PUB_FOLD_ID -w $WALLET -d $ENTITY_NAME_LONG"
 
-    assert_line -n 0 'Error: The file name must be smaller than 255 bytes'
+    assert_line -n 0 'Error: The file name must not exceed 255 bytes'
 }
 
 @test "upload file with long destination file name (no bundle) results in an error message and exit code 1" {
     run -1 bash -c "yarn ardrive upload-file --dry-run --local-path '/home/node/10Chunks.txt' -F $PUB_FOLD_ID -w $WALLET --no-bundle -d $ENTITY_NAME_LONG"
 
-    assert_line -n 0 'Error: The file name must be smaller than 255 bytes'
+    assert_line -n 0 'Error: The file name must not exceed 255 bytes'
 }
