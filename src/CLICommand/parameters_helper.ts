@@ -281,8 +281,13 @@ export class ParametersHelper {
 		return mapFunc(value);
 	}
 
-	// Parse user input through `URL` constructor. This will throw an error on any
-	// provided url that does not have a `protocol` and `host` or is otherwise invalid
+	/**
+	 * Gathers a valid gateway URL from user provided gateway parameter,
+	 * an environment variable, or returns the default arweave gateway
+	 *
+	 * @throws on user provided gateways that are incompatible with URL class constructor
+	 * @throws when hostName cannot be derived from a user provided gateway
+	 */
 	public getGateway(): URL {
 		const userProvidedURL = (() => {
 			// Use optional --gateway supplied parameter as first choice
