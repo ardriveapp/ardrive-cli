@@ -27,7 +27,7 @@ new CLICommand({
 		console.log(`Destination address: ${transaction.target}`);
 
 		const response = await (async () => {
-			if (options.dryRun) {
+			if (parameters.isDryRun()) {
 				return { status: 200, statusText: 'OK', data: '' };
 			} else {
 				return await arweave.transactions.post(transaction);

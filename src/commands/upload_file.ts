@@ -170,7 +170,7 @@ new CLICommand({
 			const arDrive = cliArDriveFactory({
 				wallet: wallet,
 				feeMultiple: parameters.getOptionalBoostSetting(),
-				dryRun: !!options.dryRun,
+				dryRun: parameters.isDryRun(),
 				shouldBundle,
 				arweave
 			});
