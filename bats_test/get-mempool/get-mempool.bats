@@ -12,8 +12,8 @@ load '/home/node/packages/node_modules/bats-assert/load.bash'
 }
 
 @test "'ardrive get-mempool --gateway' will error with an invalid Arweave gateway" {
-    run yarn ardrive get-mempool --gateway http://fakeway.net
-    assert_line -n 0 'Error: getaddrinfo ENOTFOUND fakeway.net'
+    run -1 yarn ardrive get-mempool --gateway http://localhost:1337
+    assert_line -n 0 'Error: connect ECONNREFUSED 127.0.0.1:1337'
 }
 
 @test "'ardrive get-mempool' first line contains a valid TX" {

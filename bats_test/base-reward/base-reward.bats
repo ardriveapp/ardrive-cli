@@ -11,6 +11,6 @@ load '/home/node/packages/node_modules/bats-assert/load.bash'
 }
 
 @test "'ardrive base-reward --gateway' will error with an invalid Arweave gateway" {
-    run yarn ardrive base-reward --gateway http://fakeway.net
-    assert_line -n 0 'Error: getaddrinfo ENOTFOUND fakeway.net'
+    run -1 yarn ardrive base-reward --gateway http://localhost:1337
+    assert_line -n 0 'Error: connect ECONNREFUSED 127.0.0.1:1337'
 }
