@@ -1,10 +1,11 @@
 import {
 	EID,
-	ArFSPrivateFileOrFolderWithPaths,
-	ArFSPublicFileOrFolderWithPaths,
 	ArDriveAnonymous,
 	ArFSDAOAnonymous,
-	alphabeticalOrder
+	alphabeticalOrder,
+	ArFSPublicFolderOrFileWithPaths,
+	ArFSPrivateFileWithPaths,
+	ArFSPrivateFolderWithPaths
 } from 'ardrive-core-js';
 import { cliArDriveFactory, cliArweave, cliWalletDao } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
@@ -23,7 +24,7 @@ new CLICommand({
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options, cliWalletDao);
 		const driveId = parameters.getRequiredParameterValue(DriveIdParameter, EID);
-		let children: (ArFSPrivateFileOrFolderWithPaths | ArFSPublicFileOrFolderWithPaths)[];
+		let children: (ArFSPrivateFolderWithPaths | ArFSPrivateFileWithPaths | ArFSPublicFolderOrFileWithPaths)[];
 		const maxDepth = await parameters.getMaxDepth(Number.MAX_SAFE_INTEGER);
 
 		if (await parameters.getIsPrivate()) {
@@ -53,8 +54,9 @@ new CLICommand({
 		}
 
 		const sortedChildren = children.sort((a, b) => alphabeticalOrder(a.path, b.path)) as (
-			| Partial<ArFSPrivateFileOrFolderWithPaths>
-			| Partial<ArFSPublicFileOrFolderWithPaths>
+			| Partial<ArFSPrivateFolderWithPaths>
+			| Partial<ArFSPrivateFileWithPaths>
+			| Partial<ArFSPublicFolderOrFileWithPaths>
 		)[];
 
 		// TODO: Fix base types so deleting un-used values is not necessary; Tickets: PE-525 + PE-556

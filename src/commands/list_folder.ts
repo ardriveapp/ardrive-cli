@@ -1,8 +1,9 @@
 import {
 	EID,
-	ArFSPrivateFileOrFolderWithPaths,
-	ArFSPublicFileOrFolderWithPaths,
-	alphabeticalOrder
+	alphabeticalOrder,
+	ArFSPublicFolderOrFileWithPaths,
+	ArFSPrivateFileWithPaths,
+	ArFSPrivateFolderWithPaths
 } from 'ardrive-core-js';
 import { cliArDriveAnonymousFactory, cliArDriveFactory } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
@@ -21,7 +22,7 @@ new CLICommand({
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
 		const folderId = parameters.getRequiredParameterValue(ParentFolderIdParameter, EID);
-		let children: (ArFSPrivateFileOrFolderWithPaths | ArFSPublicFileOrFolderWithPaths)[];
+		let children: (ArFSPrivateFolderWithPaths | ArFSPrivateFileWithPaths | ArFSPublicFolderOrFileWithPaths)[];
 		const maxDepth = await parameters.getMaxDepth(0);
 
 		if (await parameters.getIsPrivate()) {
@@ -42,8 +43,9 @@ new CLICommand({
 		}
 
 		const sortedChildren = children.sort((a, b) => alphabeticalOrder(a.path, b.path)) as (
-			| Partial<ArFSPrivateFileOrFolderWithPaths>
-			| Partial<ArFSPublicFileOrFolderWithPaths>
+			| Partial<ArFSPrivateFolderWithPaths>
+			| Partial<ArFSPrivateFileWithPaths>
+			| Partial<ArFSPublicFolderOrFileWithPaths>
 		)[];
 
 		// TODO: Fix base types so deleting un-used values is not necessary; Tickets: PE-525 + PE-556
