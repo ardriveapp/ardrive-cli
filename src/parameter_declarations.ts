@@ -39,6 +39,7 @@ export const LocalPathParameter = 'localPath';
 export const LocalPathsParameter = 'localPaths';
 export const LocalCSVParameter = 'localCsv';
 export const GatewayParameter = 'gateway';
+export const CustomContentTypeParameter = 'contentType';
 
 // Aggregates for convenience
 export const WalletTypeParameters = [WalletFileParameter, SeedPhraseParameter];
@@ -448,4 +449,11 @@ Parameter.declare({
 	name: GatewayParameter,
 	aliases: ['-g', '--gateway'],
 	description: `(OPTIONAL) a 'protocol://host:port' formatted string specifying the connection info for the Arweave gateway server to use`
+});
+
+Parameter.declare({
+	name: CustomContentTypeParameter,
+	aliases: ['--content-type'],
+	description:
+		'(OPTIONAL) Provide a custom content type to all files within the upload to be used by the gateway to display the content'
 });

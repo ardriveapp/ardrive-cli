@@ -15,6 +15,8 @@ load './rename_invalid_names.sh'
 load './rename_colliding_name.sh'
 # A function which triggers a rename with exactly the same name. DEPENDS on rename_file.sh
 load './rename_same_name.sh'
+# Constants
+load '../../constants.sh'
 
 DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")" >/dev/null 2>&1 && pwd)"
 
@@ -28,10 +30,7 @@ setup_file() {
     # Note 1: The above function runs the command with multiple invalid examples, so we get multiple lines logged in this case
     # Note 2: We don't assert for the exit code (a.k.a. "${status}") here because of `Note 1`, so we assert the error by reading the output
 
-    assert_line -n 0 "Error: The file name cannot start with spaces"
-    assert_line -n 1 "Error: The file name cannot have trailing dots or spaces"
-    assert_line -n 2 "Error: The file name cannot have trailing dots or spaces"
-    assert_line -n 3 "Error: The file name cannot contain reserved characters (i.e. '\\\\', '/', ':', '*', '?', '\"', '<', '>', '|')"
+    assert_line -n 0 'Error: The file name must not exceed 255 bytes'
 }
 
 @test 'Errors out if the rename would end up in a name collision' {

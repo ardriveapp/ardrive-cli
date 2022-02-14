@@ -169,7 +169,7 @@ export const fileUploadConflictPrompts: FileConflictPrompts = {
 	fileToFolderNameConflict
 };
 
-export const folderUploadConflictPrompts: FolderConflictPrompts = {
+export const fileAndFolderUploadConflictPrompts: FolderConflictPrompts = {
 	...fileUploadConflictPrompts,
 	folderToFolderNameConflict,
 	folderToFileNameConflict
