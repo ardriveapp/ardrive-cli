@@ -1,10 +1,8 @@
 #!/bin/bash
 
 # Depends on ./rename_folder.sh
+# Depends on ../..constants.sh
 
 rename_invalid_names() {
-    echo "$(rename_folder "${FOLDER_ID}" " leading spaces.txt")"
-    echo "$(rename_folder "${FOLDER_ID}" "trailing spaces.png ")"
-    echo "$(rename_folder "${FOLDER_ID}" "trailing dots.doc.")"
-    echo "$(rename_folder "${FOLDER_ID}" "reserved characters :*.txt")"
+    echo "$(rename_folder "${FOLDER_ID}" "$ENTITY_NAME_LONG")"
 }
