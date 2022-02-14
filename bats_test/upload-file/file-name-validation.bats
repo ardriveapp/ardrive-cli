@@ -7,6 +7,8 @@ load '/home/node/packages/node_modules/bats-assert/load.bash'
 # Constants
 load '../constants.sh'
 
+DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")" >/dev/null 2>&1 && pwd)"
+
 setup_file() {
     run $DIR/create-file.sh
     echo "##### Created 10 chunk test file" >>/home/node/bats.log
