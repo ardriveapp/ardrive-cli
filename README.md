@@ -251,6 +251,7 @@ To ensure your environment is compatible, we also recommend the following VSCode
 
 **Number of files in a bulk upload:** Theoretically unlimited<br>
 **Max individual file size**: 2GB (Node.js limitation)<br>
+**Max file name length**: 255 bytes<br>
 **Max ANS-104 bundled transaction size:** Not yet implemented. 2GB per bundle. App will handle creating multiple bundles.<br>
 **Max ANS-104 data item counts per bundled transaction:** Not yet implemented. Also not adequately specified, though a very large number of data items per bundle is associated with increased rates of GQL indexing failure.
 
