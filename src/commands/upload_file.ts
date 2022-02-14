@@ -12,7 +12,8 @@ import {
 	ParentFolderIdParameter,
 	WalletFileParameter,
 	LocalPathParameter,
-	LocalCSVParameter
+	LocalCSVParameter,
+	CustomContentTypeParameter
 } from '../parameter_declarations';
 import { fileAndFolderUploadConflictPrompts } from '../prompts';
 import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
@@ -54,10 +55,15 @@ function getFilesFromCSV(parameters: ParametersHelper): UploadPathParameter[] | 
 	const csvRows = localCSVFileData.split(ROW_SEPARATOR);
 	const fileParameters: UploadPathParameter[] = csvRows.map((row: string) => {
 		const csvFields = row.split(COLUMN_SEPARATOR).map((f: string) => f.trim());
-		const [localFilePath, destinationFileName, _parentFolderId, drivePassword, _driveKey] = csvFields;
+		// eslint-disable-next-line prettier/prettier
+		const [localFilePath, destinationFileName, _parentFolderId, drivePassword, _driveKey, _customContentType] =
+			// eslint-disable-next-line prettier/prettier
+			csvFields;
+
+		const customContentType = _customContentType ?? parameters.getParameterValue(CustomContentTypeParameter);
 
 		// TODO: Make CSV uploads more bulk performant
-		const wrappedEntity = wrapFileOrFolder(localFilePath);
+		const wrappedEntity = wrapFileOrFolder(localFilePath, customContentType);
 		const parentFolderId = EID(
 			_parentFolderId ? _parentFolderId : parameters.getRequiredParameterValue(ParentFolderIdParameter)
 		);
@@ -80,9 +86,10 @@ function getFileList(parameters: ParametersHelper, parentFolderId: FolderID): Up
 	if (!localPaths) {
 		return undefined;
 	}
+	const customContentType = parameters.getParameterValue(CustomContentTypeParameter);
 
 	const localPathsToUpload = localPaths.map((filePath: FilePath) => {
-		const wrappedEntity = wrapFileOrFolder(filePath);
+		const wrappedEntity = wrapFileOrFolder(filePath, customContentType);
 
 		return {
 			parentFolderId,
@@ -96,11 +103,15 @@ function getFileList(parameters: ParametersHelper, parentFolderId: FolderID): Up
 function getSingleFile(parameters: ParametersHelper, parentFolderId: FolderID): UploadPathParameter[] {
 	// NOTE: Single file is the last possible use case. Throw exception if the parameter isn't found.
 	const localFilePath =
-		parameters.getParameterValue(LocalFilePathParameter_DEPRECATED, wrapFileOrFolder) ??
-		parameters.getRequiredParameterValue(LocalPathParameter, wrapFileOrFolder);
+		parameters.getParameterValue(LocalFilePathParameter_DEPRECATED) ??
+		parameters.getRequiredParameterValue<string>(LocalPathParameter);
+
+	const customContentType = parameters.getParameterValue(CustomContentTypeParameter);
+
+	const wrappedEntity = wrapFileOrFolder(localFilePath, customContentType);
 	const singleParameter = {
 		parentFolderId: parentFolderId,
-		wrappedEntity: localFilePath,
+		wrappedEntity,
 		destinationFileName: parameters.getParameterValue(DestinationFileNameParameter)
 	};
 
@@ -131,9 +142,9 @@ new CLICommand({
 		ShouldBundleParameter,
 		...ConflictResolutionParams,
 		...DrivePrivacyParameters,
+		CustomContentTypeParameter,
 		LocalFilePathParameter_DEPRECATED,
-		LocalFilesParameter_DEPRECATED,
-		BoostParameter
+		LocalFilesParameter_DEPRECATED
 	],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
@@ -180,7 +191,12 @@ new CLICommand({
 							  })
 							: undefined;
 
-						return { wrappedEntity, driveKey, destFolderId: parentFolderId, destName: destinationFileName };
+						return {
+							wrappedEntity,
+							driveKey,
+							destFolderId: parentFolderId,
+							destName: destinationFileName
+						};
 					}
 				)
 			);
