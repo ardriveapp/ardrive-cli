@@ -51,7 +51,7 @@ export const cliArDriveFactory = ({
 	appName = CLI_APP_NAME,
 	appVersion = CLI_APP_VERSION,
 	arweave = cliArweave,
-	walletDao = cliWalletDao,
+	walletDao = cliWalletDAOFactory(arweave),
 	dryRun,
 	feeMultiple,
 	wallet,
