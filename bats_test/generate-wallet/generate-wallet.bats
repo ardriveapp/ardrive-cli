@@ -20,3 +20,14 @@ load '/home/node/packages/node_modules/bats-assert/load.bash'
     assert_line -n 8 '"TgjJGFXrggHszRCRaccjeFJOHP22RMakqddAgImnMtStAFwOKdlNA1WND0xd4e1zVJso_IFRO9-kMrMv8JmLj-3QloS5-UFDlvfywfqHwPiyy3KVQtgGnm6PJ6WR2qbA2dcBgiGpM-lbC-t-mRa4YeNANmrTchr5RIlXNg4pVaFZUjG6-QDb4WL_CFmA5KgC70HFzaXFHvKFM2SYRo_lUytjINzsv6oayB6nFfhq0e1EyouyOY5cU5B57Lu9QSfMWdnbNdwW7pHNkZwOd9BqrRhBcO1JncHKsyr8bplWO1ffTftpMmSseDzaSd_Zi1n2h8dblu8jMh6pNAiWF46bBA"'
     assert_line -n 9 '"2011-04-29"'
 }
+
+@test "generate-wallet rejects short and long seed phrases" {
+    
+    run -1 bash -c "yarn ardrive generate-wallet -s 'invalid seed phrase'"
+
+    assert_line -n 0 "Error: 'invalid seed phrase' is not a valid 12 word seed phrase!"
+    
+    run -1 bash -c "yarn ardrive generate-wallet -s 'this invalid seed phrase has thirteen words and is expected to be rejected'"
+
+    assert_line -n 0 "Error: 'this invalid seed phrase has thirteen words and is expected to be rejected' is not a valid 12 word seed phrase!"
+}
