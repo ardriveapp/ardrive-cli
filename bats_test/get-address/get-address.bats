@@ -40,7 +40,7 @@ load '/home/node/packages/node_modules/bats-assert/load.bash'
     }
     '
 
-    WALLET="$WALLET" run -0 bash -c 'echo "$WALLET" | yarn ardrive get-address -w /dev/stdin'
+    run -0 bash -c 'echo $WALLET | yarn ardrive get-address -w /dev/stdin'
 
     assert_line -n 0 'HTTn8F92tR32N8wuo-NIDkjmqPknrbl10JWo5MZ9x2k'
 }
