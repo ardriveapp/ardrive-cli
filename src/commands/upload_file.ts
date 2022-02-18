@@ -26,7 +26,8 @@ import {
 	wrapFileOrFolder,
 	EID,
 	readJWKFile,
-	isFolder
+	isFolder,
+	EntityKey
 } from 'ardrive-core-js';
 import { cliArDriveFactory } from '..';
 import * as fs from 'fs';
@@ -61,7 +62,7 @@ function getFilesFromCSV(parameters: ParametersHelper): UploadPathParameter[] | 
 		const parentFolderId = EID(
 			_parentFolderId ? _parentFolderId : parameters.getRequiredParameterValue(ParentFolderIdParameter)
 		);
-		const driveKey = _driveKey ? Buffer.from(_driveKey) : undefined;
+		const driveKey = _driveKey ? new EntityKey(Buffer.from(_driveKey)) : undefined;
 
 		return {
 			parentFolderId,

@@ -23,7 +23,7 @@ new CLICommand({
 				// We have the drive id from deriving a key, we can derive the owner
 				const driveOwner = await arDrive.getOwnerForDriveId(driveId);
 
-				return arDrive.getPrivateFileKeyless({ fileId, driveKey, owner: driveOwner });
+				return arDrive.getPrivateFile({ fileId, driveKey, owner: driveOwner });
 			} else {
 				const arDrive = cliArDriveAnonymousFactory({});
 				return arDrive.getPublicFile({ fileId });
