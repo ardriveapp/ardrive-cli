@@ -25,7 +25,7 @@ load '/home/node/packages/node_modules/bats-assert/load.bash'
 
 @test "get-address finds the correct address of a canonical wallet" {
 
-    ! read -d '' WALLET <<DOC_END 
+    WALLET='
     {
         "kty": "RSA",
         "n": "jw8e2rH-iNRaLsoutq7UIVrcK0wxqQzG7wJ8ip0J6uNDXDKzFB9H0WwcHXYZyhE2faS73J47Tob5KtpTlBXt6lCOnl8Vp0Ud3Y025lDhxMevnSVkTBY8SIxSsAOwwUDPFIJE9W2f9ZZ4DZh5hWy7n0wYWi4APWiwD7tfvxX8xHUcOOvZRiTY-JOmN7pOnFvwzblX4Mpg1kON-b31VLxhyZKUYFhDuEXsxX8mHT_kpbUdHV24DMch44SbzNkRSYKJ3IqSW6fBZo5Zt9wzpFe7VhhRrfM8ZEOVYWdebLQfMc0lxt4zXQCHpmrUub8e13GGCB2kL3q38sR7XU_fa1PyiTsPtYjH0v4cdvkK58dfnTZDlhfSJjoyNYi_MVuhdtw5drECxxGJQItE6IdWvnKW8yAjJs0rAxQ8vVQhw9Ss6Kj4exM-szuKjcNpbbS_k8dK1j-CELPJ1bh2rThfc2NFCGvweTtn-oatJDObqymkqOV2939k8Xydeb0cC3CTt4QGnO5zW3yffupT3DorX0T2OhTDHjVWVmXE0e5hACpguHTIMLF418t5OcH981EG2d0sTDDrCBVTWyhmADZpvdTryj4r2c4YgaPw8YElyGCGkhw3txAfMPAUPxtbx3v3OBeFCpSpIjXdRqrDapaDd3CLSBgHy3OuNF4_YBXSBIBiNpU",
@@ -38,7 +38,7 @@ load '/home/node/packages/node_modules/bats-assert/load.bash'
         "qi": "TgjJGFXrggHszRCRaccjeFJOHP22RMakqddAgImnMtStAFwOKdlNA1WND0xd4e1zVJso_IFRO9-kMrMv8JmLj-3QloS5-UFDlvfywfqHwPiyy3KVQtgGnm6PJ6WR2qbA2dcBgiGpM-lbC-t-mRa4YeNANmrTchr5RIlXNg4pVaFZUjG6-QDb4WL_CFmA5KgC70HFzaXFHvKFM2SYRo_lUytjINzsv6oayB6nFfhq0e1EyouyOY5cU5B57Lu9QSfMWdnbNdwW7pHNkZwOd9BqrRhBcO1JncHKsyr8bplWO1ffTftpMmSseDzaSd_Zi1n2h8dblu8jMh6pNAiWF46bBA",
         "kid": "2011-04-29"
     }
-DOC_END
+    '
 
     WALLET="$WALLET" run -0 bash -c 'echo "$WALLET" | yarn ardrive get-address -w /dev/stdin'
 
