@@ -38,6 +38,7 @@ export const ShouldBundleParameter = 'bundle'; // commander maps --no-x style pa
 export const LocalPathParameter = 'localPath';
 export const LocalPathsParameter = 'localPaths';
 export const LocalCSVParameter = 'localCsv';
+export const CustomContentTypeParameter = 'contentType';
 
 // Aggregates for convenience
 export const WalletTypeParameters = [WalletFileParameter, SeedPhraseParameter];
@@ -440,4 +441,11 @@ Parameter.declare({
 		LocalPathsParameter,
 		DestinationFileNameParameter
 	]
+});
+
+Parameter.declare({
+	name: CustomContentTypeParameter,
+	aliases: ['--content-type'],
+	description:
+		'(OPTIONAL) Provide a custom content type to all files within the upload to be used by the gateway to display the content'
 });
