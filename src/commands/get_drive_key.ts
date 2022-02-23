@@ -15,6 +15,6 @@ new CLICommand({
 			const arDrive = cliArDriveFactory({ wallet: await parameters.getRequiredWallet() });
 			await arDrive.getPrivateDrive({ driveId, driveKey });
 		}
-		console.log(driveKey);
+		console.log(driveKey.toJSON());
 	})
 });

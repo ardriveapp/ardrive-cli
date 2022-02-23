@@ -38,9 +38,10 @@ new CLICommand({
 
 		const fileKey = await deriveFileKey(`${fileId}`, driveKey);
 		if (options.verify) {
-			await new ArFSPrivateFileBuilder(fileId, cliArweave, driveKey, undefined, fileKey).build();
+			const file = await new ArFSPrivateFileBuilder(fileId, cliArweave, driveKey, undefined).build();
+			console.log(file.fileKey.toJSON());
+		} else {
+			console.log(fileKey.toJSON());
 		}
-
-		console.log(fileKey);
 	})
 });
