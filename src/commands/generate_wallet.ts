@@ -12,7 +12,7 @@ new CLICommand({
 		const parameters = new ParametersHelper(options);
 		const seedPhrase = parameters.getRequiredParameterValue(SeedPhraseParameter);
 		const wallet = await cliWalletDao.generateJWKWallet(new SeedPhrase(seedPhrase));
-		console.log(JSON.stringify(wallet));
+		console.log(JSON.stringify(wallet['jwk'] || wallet));
 		return SUCCESS_EXIT_CODE;
 	})
 });
