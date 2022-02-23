@@ -12,7 +12,8 @@ import {
 	ReplaceParameter,
 	AskParameter,
 	SkipParameter,
-	BoostParameter
+	BoostParameter,
+	DryRunParameter
 } from '../parameter_declarations';
 import { cliWalletDao } from '..';
 import passwordPrompt from 'prompts';
@@ -275,5 +276,10 @@ export class ParametersHelper {
 			throw new Error(`Required parameter ${parameterName} wasn't provided!`);
 		}
 		return mapFunc(value);
+	}
+
+	public isDryRun(): boolean {
+		const dryRun = this.getParameterValue(DryRunParameter);
+		return !!dryRun;
 	}
 }
