@@ -1,4 +1,4 @@
-import { EID, urlEncodeHashKey } from 'ardrive-core-js';
+import { EID } from 'ardrive-core-js';
 import { cliArDriveFactory } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
@@ -15,6 +15,6 @@ new CLICommand({
 			const arDrive = cliArDriveFactory({ wallet: await parameters.getRequiredWallet() });
 			await arDrive.getPrivateDrive({ driveId, driveKey });
 		}
-		console.log(urlEncodeHashKey(driveKey));
+		console.log(driveKey);
 	})
 });
