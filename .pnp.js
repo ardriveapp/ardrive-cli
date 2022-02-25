@@ -48,7 +48,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/source-map-support", "npm:0.5.4"],
             ["@typescript-eslint/eslint-plugin", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
             ["@typescript-eslint/parser", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
-            ["ardrive-core-js", "npm:1.8.0-alpha-4"],
+            ["ardrive-core-js", "npm:1.9.0-alpha-0"],
             ["arweave", "npm:1.10.18"],
             ["axios", "npm:0.21.1"],
             ["chai", "npm:4.3.4"],
@@ -1879,7 +1879,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/source-map-support", "npm:0.5.4"],
             ["@typescript-eslint/eslint-plugin", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
             ["@typescript-eslint/parser", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
-            ["ardrive-core-js", "npm:1.8.0-alpha-4"],
+            ["ardrive-core-js", "npm:1.9.0-alpha-0"],
             ["arweave", "npm:1.10.18"],
             ["axios", "npm:0.21.1"],
             ["chai", "npm:4.3.4"],
@@ -1905,14 +1905,14 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["ardrive-core-js", [
-<<<<<<< HEAD
-        ["npm:1.8.0-alpha-4", {
-          "packageLocation": "./.yarn/cache/ardrive-core-js-npm-1.8.0-alpha-4-3728c9cf4f-1f4a15a8b4.zip/node_modules/ardrive-core-js/",
+        ["npm:1.9.0-alpha-0", {
+          "packageLocation": "./.yarn/cache/ardrive-core-js-npm-1.9.0-alpha-0-b4045b51a9-0b90176154.zip/node_modules/ardrive-core-js/",
           "packageDependencies": [
-=======
-        ["npm:1.8.0", {
-          "packageLocation": "./.yarn/cache/ardrive-core-js-npm-1.8.0-5a3b702d23-091a457022.zip/node_modules/ardrive-core-js/",
-          "packageDependencies": [
+            ["ardrive-core-js", "npm:1.9.0-alpha-0"],
+            ["@alexsasharegan/simple-cache", "npm:3.3.3"],
+            ["arbundles", "npm:0.5.5"],
+            ["arweave", "npm:1.10.18"],
+            ["arweave-mnemonic-keys", "npm:0.0.9"],
             ["axios", "npm:0.21.1"],
             ["axios-retry", "npm:3.2.4"],
             ["base64-js", "npm:1.5.1"],
@@ -18243,7 +18243,7 @@ module.exports = require("path");;
 /************************************************************************/
 /******/ 	// The module cache
 /******/ 	var __webpack_module_cache__ = {};
-/******/
+/******/ 	
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
 /******/ 		// Check if module is in cache
@@ -18256,14 +18256,14 @@ module.exports = require("path");;
 /******/ 			// no module.loaded needed
 /******/ 			exports: {}
 /******/ 		};
-/******/
+/******/ 	
 /******/ 		// Execute the module function
 /******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
-/******/
+/******/ 	
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
-/******/
+/******/ 	
 /************************************************************************/
 /******/ 	/* webpack/runtime/compat get default export */
 /******/ 	(() => {
@@ -18276,7 +18276,7 @@ module.exports = require("path");;
 /******/ 			return getter;
 /******/ 		};
 /******/ 	})();
-/******/
+/******/ 	
 /******/ 	/* webpack/runtime/define property getters */
 /******/ 	(() => {
 /******/ 		// define getter functions for harmony exports
@@ -18288,12 +18288,12 @@ module.exports = require("path");;
 /******/ 			}
 /******/ 		};
 /******/ 	})();
-/******/
+/******/ 	
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */
 /******/ 	(() => {
 /******/ 		__webpack_require__.o = (obj, prop) => Object.prototype.hasOwnProperty.call(obj, prop)
 /******/ 	})();
-/******/
+/******/ 	
 /************************************************************************/
 /******/ 	// module exports must be returned from runtime so entry inlining is disabled
 /******/ 	// startup
