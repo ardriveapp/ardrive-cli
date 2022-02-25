@@ -39,6 +39,7 @@ export const LocalPathParameter = 'localPath';
 export const LocalPathsParameter = 'localPaths';
 export const LocalCSVParameter = 'localCsv';
 export const WithKeysParameter = 'withKeys';
+export const CustomContentTypeParameter = 'contentType';
 
 // Aggregates for convenience
 export const WalletTypeParameters = [WalletFileParameter, SeedPhraseParameter];
@@ -449,4 +450,11 @@ Parameter.declare({
 	aliases: ['-K', '--with-keys'],
 	description: `(OPTIONAL) displays the driveKey and fileKey of the listed entities`,
 	type: 'boolean'
+});
+
+Parameter.declare({
+	name: CustomContentTypeParameter,
+	aliases: ['--content-type'],
+	description:
+		'(OPTIONAL) Provide a custom content type to all files within the upload to be used by the gateway to display the content'
 });
