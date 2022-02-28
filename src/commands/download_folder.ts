@@ -5,11 +5,13 @@ import { CLIAction } from '../CLICommand/action';
 import {
 	DrivePrivacyParameters,
 	FolderIdParameter,
+	GatewayParameter,
 	LocalPathParameter,
 	MaxDepthParameter
 } from '../parameter_declarations';
 import { getOutputFolderPathAndName } from '../utils';
 import { join as joinPath } from 'path';
+import { getArweaveFromURL } from '../utils/get_arweave_for_url';
 
 new CLICommand({
 	name: 'download-folder',
@@ -21,7 +23,8 @@ new CLICommand({
 				'(OPTIONAL) the path on the local filesystem where the folder should be created and into which its contents are then downloaded. By default, the folder is created in the current working directory.'
 		},
 		MaxDepthParameter,
-		...DrivePrivacyParameters
+		...DrivePrivacyParameters,
+		GatewayParameter
 	],
 	action: new CLIAction(async (options) => {
 		const parameters = new ParametersHelper(options);
@@ -30,11 +33,13 @@ new CLICommand({
 		const destOutputPath = parameters.getParameterValue(LocalPathParameter) || '.';
 		const [destFolderPath, customFolderName] = getOutputFolderPathAndName(destOutputPath);
 		let outputPath: string;
+		const arweave = getArweaveFromURL(parameters.getGateway());
 
 		if (await parameters.getIsPrivate()) {
 			const wallet = await parameters.getRequiredWallet();
 			const ardrive = cliArDriveFactory({
-				wallet
+				wallet,
+				arweave
 			});
 			const driveId = await ardrive.getDriveIdForFolderId(folderId);
 			const driveKey = await parameters.getDriveKey({ driveId: driveId });
@@ -50,7 +55,7 @@ new CLICommand({
 				customFolderName ? customFolderName : (await ardrive.getPrivateFolder({ folderId, driveKey })).name
 			);
 		} else {
-			const ardrive = cliArDriveAnonymousFactory({});
+			const ardrive = cliArDriveAnonymousFactory({ arweave });
 			await ardrive.downloadPublicFolder({ folderId, destFolderPath, customFolderName, maxDepth });
 			outputPath = joinPath(
 				destFolderPath,

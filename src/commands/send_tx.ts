@@ -1,16 +1,16 @@
-import { cliArweave } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
-import { DryRunParameter, TxFilePathParameter } from '../parameter_declarations';
+import { DryRunParameter, GatewayParameter, TxFilePathParameter } from '../parameter_declarations';
 import * as fs from 'fs';
 import Transaction from 'arweave/node/lib/transaction';
 import * as crypto from 'crypto';
 import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { CLIAction } from '../CLICommand/action';
 import { b64UrlToBuffer, bufferTob64Url } from 'ardrive-core-js';
+import { getArweaveFromURL } from '../utils/get_arweave_for_url';
 
 new CLICommand({
 	name: 'send-tx',
-	parameters: [TxFilePathParameter, DryRunParameter],
+	parameters: [TxFilePathParameter, DryRunParameter, GatewayParameter],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
 		const transaction = new Transaction(
@@ -20,15 +20,17 @@ new CLICommand({
 			crypto.createHash('sha256').update(b64UrlToBuffer(transaction.owner)).digest()
 		);
 
+		const arweave = getArweaveFromURL(parameters.getGateway());
+
 		console.log(`Source address: ${srcAddress}`);
-		console.log(`AR amount sent: ${cliArweave.ar.winstonToAr(transaction.quantity)}`);
+		console.log(`AR amount sent: ${arweave.ar.winstonToAr(transaction.quantity)}`);
 		console.log(`Destination address: ${transaction.target}`);
 
 		const response = await (async () => {
-			if (options.dryRun) {
+			if (parameters.isDryRun()) {
 				return { status: 200, statusText: 'OK', data: '' };
 			} else {
-				return await cliArweave.transactions.post(transaction);
+				return await arweave.transactions.post(transaction);
 			}
 		})();
 		if (response.status === 200 || response.status === 202) {

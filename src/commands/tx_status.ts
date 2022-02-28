@@ -1,15 +1,15 @@
 import { fetchMempool, TransactionID, TxID } from 'ardrive-core-js';
-import { cliArweave } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
 import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
-import { ConfirmationsParameter, TransactionIdParameter } from '../parameter_declarations';
+import { ConfirmationsParameter, GatewayParameter, TransactionIdParameter } from '../parameter_declarations';
+import { getArweaveFromURL } from '../utils/get_arweave_for_url';
 
 const MIN_CONFIRMATIONS = 15;
 
 new CLICommand({
 	name: 'tx-status',
-	parameters: [TransactionIdParameter, ConfirmationsParameter],
+	parameters: [TransactionIdParameter, ConfirmationsParameter, GatewayParameter],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
 		const confirmations = parameters.getParameterValue<number>(ConfirmationsParameter, Number) ?? MIN_CONFIRMATIONS;
@@ -21,7 +21,9 @@ new CLICommand({
 			return SUCCESS_EXIT_CODE;
 		}
 
-		const confStatus = (await cliArweave.transactions.getStatus(`${txId}`)).confirmed;
+		const arweave = getArweaveFromURL(parameters.getGateway());
+
+		const confStatus = (await arweave.transactions.getStatus(`${txId}`)).confirmed;
 
 		if (!confStatus?.block_height) {
 			console.log(`${txId}: Not found`);

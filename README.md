@@ -126,6 +126,7 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         3. [Check for network congestion before uploading](#check-congestion)
         4. [Front-run Congestion By Boosting Miner Rewards](#boost)
         5. [Send AR Transactions From a Cold Wallet](#cold-tx)
+        6. [Using a Custom Arweave Gateway](#using-a-custom-arweave-gateway)
 4. [All ArDrive CLI Commands](#all-ardrive-cli-commands)
 5. [Getting Help](#getting-help)
 
@@ -1177,6 +1178,41 @@ Transport your signed transaction to the Internet-connected machine and run the 
 ardrive send-tx -x /path/to/sendme.json
 ```
 
+### Using a Custom Arweave Gateway
+
+On each command that uses a gateway, it is possible to supply your own custom Arweave gateway using the flag `--gateway` or by setting an environment variable named `ARWEAVE_GATEWAY`.
+
+For example, you could test out that your ArFS transactions are working as expected on a local test network such as [ArLocal] with this flow:
+
+```shell
+# Setup ArLocal instance on port 1984
+npx arlocal
+
+# In another terminal, fund your wallet with AR
+curl http://localhost:1984/mint/{ your public wallet address }/99999999999999
+
+# Create drive and root folder on ArLocal using `--gateway` flag
+ardrive create-drive --gateway http://localhost:1984 -w /path/to/wallet -n 'my-test-drive'
+
+# Setup ARWEAVE_GATEWAY as ENV variable
+export ARWEAVE_GATEWAY="http://localhost:1984"
+
+# Mine block with drive + root folder transactions
+curl "$ARWEAVE_GATEWAY/mine"
+
+# Upload file to ArLocal with ENV var
+ardrive upload-file -F { root folder id from create drive } -l /path/to/file -w /path/to/wallet
+
+# Mine block with file transaction
+curl "$ARWEAVE_GATEWAY/mine"
+
+# Inspect meta data of created entities
+ardrive list-drive -d { drive id from create drive }
+
+# Download file to verify integrity
+ardrive download-file -f { file id from upload file }
+```
+
 # All ArDrive CLI Commands
 
 ```shell
@@ -1269,4 +1305,5 @@ ardrive <command> --help
 [kb-wallets]: https://ardrive.atlassian.net/l/c/FpK8FuoQ
 [arweave-manifests]: https://github.com/ArweaveTeam/arweave/wiki/Path-Manifests
 [example-manifest-webpage]: https://arweave.net/qozq9YIUPEHfZhoTp9DkBpJuA_KNULBnfLiMroj5pZI
+[arlocal]: https://github.com/textury/arlocal
 [mozilla-mime-types]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
