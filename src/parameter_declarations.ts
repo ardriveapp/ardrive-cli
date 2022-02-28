@@ -38,6 +38,7 @@ export const ShouldBundleParameter = 'bundle'; // commander maps --no-x style pa
 export const LocalPathParameter = 'localPath';
 export const LocalPathsParameter = 'localPaths';
 export const LocalCSVParameter = 'localCsv';
+export const GatewayParameter = 'gateway';
 export const CustomContentTypeParameter = 'contentType';
 
 // Aggregates for convenience
@@ -58,9 +59,10 @@ export const AllParameters = [
 	DriveIdParameter,
 	DryRunParameter,
 	FileIdParameter,
+	FileNameParameter,
 	FolderIdParameter,
 	FolderNameParameter,
-	FileNameParameter,
+	GatewayParameter,
 	GetAllRevisionsParameter,
 	LastTxParameter,
 	LocalFilePathParameter_DEPRECATED,
@@ -441,6 +443,12 @@ Parameter.declare({
 		LocalPathsParameter,
 		DestinationFileNameParameter
 	]
+});
+
+Parameter.declare({
+	name: GatewayParameter,
+	aliases: ['-g', '--gateway'],
+	description: `(OPTIONAL) a 'protocol://host:port' formatted string specifying the connection info for the Arweave gateway server to use`
 });
 
 Parameter.declare({

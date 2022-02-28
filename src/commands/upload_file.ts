@@ -13,6 +13,7 @@ import {
 	WalletFileParameter,
 	LocalPathParameter,
 	LocalCSVParameter,
+	GatewayParameter,
 	CustomContentTypeParameter
 } from '../parameter_declarations';
 import { fileAndFolderUploadConflictPrompts } from '../prompts';
@@ -31,6 +32,7 @@ import {
 } from 'ardrive-core-js';
 import { cliArDriveFactory } from '..';
 import * as fs from 'fs';
+import { getArweaveFromURL } from '../utils/get_arweave_for_url';
 
 interface UploadPathParameter {
 	parentFolderId: FolderID;
@@ -144,7 +146,9 @@ new CLICommand({
 		...DrivePrivacyParameters,
 		CustomContentTypeParameter,
 		LocalFilePathParameter_DEPRECATED,
-		LocalFilesParameter_DEPRECATED
+		LocalFilesParameter_DEPRECATED,
+		BoostParameter,
+		GatewayParameter
 	],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
@@ -173,11 +177,14 @@ new CLICommand({
 			const conflictResolution = parameters.getFileNameConflictResolution();
 			const shouldBundle = !!parameters.getParameterValue(ShouldBundleParameter);
 
+			const arweave = getArweaveFromURL(parameters.getGateway());
+
 			const arDrive = cliArDriveFactory({
 				wallet: wallet,
 				feeMultiple: parameters.getOptionalBoostSetting(),
-				dryRun: !!options.dryRun,
-				shouldBundle
+				dryRun: parameters.isDryRun(),
+				shouldBundle,
+				arweave
 			});
 
 			const uploadStats: ArDriveUploadStats[] = await Promise.all(
