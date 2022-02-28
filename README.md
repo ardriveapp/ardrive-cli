@@ -730,13 +730,13 @@ ardrive drive-info -d "c7f87712-b54e-4491-bc96-1c5fa7b1da50" | jq -r '.rootFolde
 By using the `download-file` command you can download a file on chain to a folder in your local storage specified by --local-path (or to your current working directory if not specified):
 
 ```shell
-ardrive download-file -w /path/to/wallet.json -file-id "ff450770-a9cb-46a5-9234-89cbd9796610" --local-path /my_ardrive_downloads/
+ardrive download-file -w /path/to/wallet.json --file-id "ff450770-a9cb-46a5-9234-89cbd9796610" --local-path /my_ardrive_downloads/
 ```
 
 Specify a filename in the --local-path if you'd like to use a different name than the one that's used in your drive:
 
 ```shell
-ardrive download-file -w /path/to/wallet.json -file-id "ff450770-a9cb-46a5-9234-89cbd9796610" --local-path /my_ardrive_downloads/my_pic.png
+ardrive download-file -w /path/to/wallet.json --file-id "ff450770-a9cb-46a5-9234-89cbd9796610" --local-path /my_ardrive_downloads/my_pic.png
 ```
 
 ### Rename a Single File<a id="rename-file"></a>
