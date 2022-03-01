@@ -23,7 +23,7 @@ Commands:
   get-balance [options]
   get-drive-key [options]
   get-file-key [options]
-  get-mempool
+  get-mempool [options]
   last-tx [options]
   list-all-drives [options]
   list-drive [options]

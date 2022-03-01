@@ -19,7 +19,13 @@ import {
 
 new CLICommand({
 	name: 'list-folder',
-	parameters: [ParentFolderIdParameter, WithKeysParameter, ...TreeDepthParams, ...DrivePrivacyParameters],
+	parameters: [
+		ParentFolderIdParameter,
+		WithKeysParameter,
+		...TreeDepthParams,
+		...DrivePrivacyParameters,
+		GatewayParameter
+	],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
 		const folderId = parameters.getRequiredParameterValue(ParentFolderIdParameter, EID);
@@ -30,10 +36,11 @@ new CLICommand({
 			| ArFSPublicFileWithPaths
 		)[];
 		const maxDepth = await parameters.getMaxDepth(0);
+		const arweave = getArweaveFromURL(parameters.getGateway());
 
 		if (await parameters.getIsPrivate()) {
 			const wallet = await parameters.getRequiredWallet();
-			const arDrive = cliArDriveFactory({ wallet });
+			const arDrive = cliArDriveFactory({ wallet, arweave });
 
 			const driveId = await arDrive.getDriveIdForFolderId(folderId);
 			const driveKey = await parameters.getDriveKey({ driveId });
@@ -44,7 +51,7 @@ new CLICommand({
 
 			children = await arDrive.listPrivateFolder({ folderId, driveKey, maxDepth, owner: driveOwner, withKeys });
 		} else {
-			const arDrive = cliArDriveAnonymousFactory({});
+			const arDrive = cliArDriveAnonymousFactory({ arweave });
 			children = await arDrive.listPublicFolder({ folderId, maxDepth });
 		}
 

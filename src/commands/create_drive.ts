@@ -4,12 +4,14 @@ import {
 	DriveCreationPrivacyParameters,
 	DriveNameParameter,
 	DryRunParameter,
+	GatewayParameter,
 	ShouldBundleParameter
 } from '../parameter_declarations';
 import { cliArDriveFactory } from '..';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { CLIAction } from '../CLICommand/action';
 import { Wallet, JWKWallet, PrivateDriveKeyData } from 'ardrive-core-js';
+import { getArweaveFromURL } from '../utils/get_arweave_for_url';
 
 new CLICommand({
 	name: 'create-drive',
@@ -18,7 +20,8 @@ new CLICommand({
 		DriveNameParameter,
 		...DriveCreationPrivacyParameters,
 		ShouldBundleParameter,
-		BoostParameter
+		BoostParameter,
+		GatewayParameter
 	],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
@@ -26,13 +29,16 @@ new CLICommand({
 		const dryRun = parameters.isDryRun();
 		const driveName = parameters.getRequiredParameterValue(DriveNameParameter);
 		const shouldBundle = !!parameters.getParameterValue(ShouldBundleParameter);
+		const arweave = getArweaveFromURL(parameters.getGateway());
 
 		const ardrive = cliArDriveFactory({
 			wallet: wallet,
 			feeMultiple: parameters.getOptionalBoostSetting(),
 			dryRun,
-			shouldBundle
+			shouldBundle,
+			arweave
 		});
+
 		const createDriveResult = await (async function () {
 			if (await parameters.getIsPrivate()) {
 				const drivePassword = await parameters.getDrivePassword(true);

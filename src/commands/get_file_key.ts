@@ -1,5 +1,4 @@
 import { ArFSPrivateFileBuilder, deriveFileKey, DriveID, EID, EntityKey } from 'ardrive-core-js';
-import { cliArweave } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
 import {
@@ -7,8 +6,10 @@ import {
 	DriveIdParameter,
 	DriveKeyParameter,
 	FileIdParameter,
+	GatewayParameter,
 	NoVerifyParameter
 } from '../parameter_declarations';
+import { getArweaveFromURL } from '../utils/get_arweave_for_url';
 
 new CLICommand({
 	name: 'get-file-key',
@@ -17,7 +18,8 @@ new CLICommand({
 		DriveIdParameter,
 		DriveKeyParameter,
 		FileIdParameter,
-		NoVerifyParameter
+		NoVerifyParameter,
+		GatewayParameter
 	],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
@@ -38,7 +40,8 @@ new CLICommand({
 
 		const fileKey = await deriveFileKey(`${fileId}`, driveKey);
 		if (options.verify) {
-			const file = await new ArFSPrivateFileBuilder(fileId, cliArweave, driveKey, undefined).build();
+			const arweave = getArweaveFromURL(parameters.getGateway());
+			const file = await new ArFSPrivateFileBuilder(fileId, arweave, driveKey, undefined, fileKey).build();
 			console.log(file.fileKey.toJSON());
 		} else {
 			console.log(fileKey.toJSON());

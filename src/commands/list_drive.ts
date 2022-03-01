@@ -1,14 +1,12 @@
 import {
 	EID,
-	ArDriveAnonymous,
-	ArFSDAOAnonymous,
 	alphabeticalOrder,
 	ArFSPrivateFileWithPaths,
 	ArFSPrivateFolderWithPaths,
 	ArFSPublicFolderWithPaths,
 	ArFSPublicFileWithPaths
 } from 'ardrive-core-js';
-import { cliArDriveFactory, cliArweave, cliWalletDao } from '..';
+import { cliArDriveAnonymousFactory, cliArDriveFactory, cliWalletDao } from '..';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
@@ -21,7 +19,7 @@ import {
 
 new CLICommand({
 	name: 'list-drive',
-	parameters: [DriveIdParameter, WithKeysParameter, ...TreeDepthParams, ...DrivePrivacyParameters],
+	parameters: [DriveIdParameter, WithKeysParameter, ...TreeDepthParams, ...DrivePrivacyParameters, GatewayParameter],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options, cliWalletDao);
 		const driveId = parameters.getRequiredParameterValue(DriveIdParameter, EID);
@@ -32,10 +30,11 @@ new CLICommand({
 			| ArFSPublicFileWithPaths
 		)[];
 		const maxDepth = await parameters.getMaxDepth(Number.MAX_SAFE_INTEGER);
+		const arweave = getArweaveFromURL(parameters.getGateway());
 
 		if (await parameters.getIsPrivate()) {
 			const wallet = await parameters.getRequiredWallet();
-			const arDrive = cliArDriveFactory({ wallet });
+			const arDrive = cliArDriveFactory({ wallet, arweave });
 			const driveKey = await parameters.getDriveKey({ driveId });
 			const drive = await arDrive.getPrivateDrive({ driveId, driveKey });
 			const rootFolderId = drive.rootFolderId;
@@ -53,7 +52,7 @@ new CLICommand({
 				withKeys
 			});
 		} else {
-			const arDrive = new ArDriveAnonymous(new ArFSDAOAnonymous(cliArweave));
+			const arDrive = cliArDriveAnonymousFactory({ arweave });
 			const drive = await arDrive.getPublicDrive({ driveId });
 			const rootFolderId = drive.rootFolderId;
 			children = await arDrive.listPublicFolder({ folderId: rootFolderId, maxDepth, includeRoot: true });

@@ -39,6 +39,7 @@ export const LocalPathParameter = 'localPath';
 export const LocalPathsParameter = 'localPaths';
 export const LocalCSVParameter = 'localCsv';
 export const WithKeysParameter = 'withKeys';
+export const GatewayParameter = 'gateway';
 export const CustomContentTypeParameter = 'contentType';
 
 // Aggregates for convenience
@@ -59,9 +60,10 @@ export const AllParameters = [
 	DriveIdParameter,
 	DryRunParameter,
 	FileIdParameter,
+	FileNameParameter,
 	FolderIdParameter,
 	FolderNameParameter,
-	FileNameParameter,
+	GatewayParameter,
 	GetAllRevisionsParameter,
 	LastTxParameter,
 	LocalFilePathParameter_DEPRECATED,
@@ -450,6 +452,12 @@ Parameter.declare({
 	aliases: ['-K', '--with-keys'],
 	description: `(OPTIONAL) displays the driveKey and fileKey of the listed entities`,
 	type: 'boolean'
+});
+
+Parameter.declare({
+	name: GatewayParameter,
+	aliases: ['-g', '--gateway'],
+	description: `(OPTIONAL) a 'protocol://host:port' formatted string specifying the connection info for the Arweave gateway server to use`
 });
 
 Parameter.declare({
