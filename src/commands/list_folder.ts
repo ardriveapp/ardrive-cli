@@ -12,10 +12,12 @@ import { CLIAction } from '../CLICommand/action';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import {
 	DrivePrivacyParameters,
+	GatewayParameter,
 	ParentFolderIdParameter,
 	TreeDepthParams,
 	WithKeysParameter
 } from '../parameter_declarations';
+import { getArweaveFromURL } from '../utils/get_arweave_for_url';
 
 new CLICommand({
 	name: 'list-folder',

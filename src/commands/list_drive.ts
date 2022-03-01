@@ -13,9 +13,11 @@ import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import {
 	DriveIdParameter,
 	DrivePrivacyParameters,
+	GatewayParameter,
 	TreeDepthParams,
 	WithKeysParameter
 } from '../parameter_declarations';
+import { getArweaveFromURL } from '../utils/get_arweave_for_url';
 
 new CLICommand({
 	name: 'list-drive',
