@@ -34,7 +34,8 @@ import {
 	replaceOnConflicts,
 	skipOnConflicts,
 	upsertOnConflicts,
-	askOnConflicts
+	askOnConflicts,
+	EntityKey
 } from 'ardrive-core-js';
 import { JWKInterface } from 'arweave/node/lib/wallet';
 
@@ -130,7 +131,7 @@ export class ParametersHelper {
 
 		return new PrivateKeyData({
 			password,
-			driveKeys: driveKey ? [Buffer.from(driveKey, 'base64')] : undefined,
+			driveKeys: driveKey ? [new EntityKey(Buffer.from(driveKey, 'base64'))] : undefined,
 			wallet: (wallet as JWKWallet) ?? undefined
 		});
 	}
@@ -149,7 +150,7 @@ export class ParametersHelper {
 
 		const driveKey = this.getParameterValue(DriveKeyParameter);
 		if (driveKey) {
-			const paramDriveKey = Buffer.from(driveKey, 'base64');
+			const paramDriveKey = new EntityKey(Buffer.from(driveKey, 'base64'));
 			ParametersHelper.driveKeyCache[`${driveId}`] = paramDriveKey;
 			return paramDriveKey;
 		}
