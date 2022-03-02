@@ -38,6 +38,7 @@ export const ShouldBundleParameter = 'bundle'; // commander maps --no-x style pa
 export const LocalPathParameter = 'localPath';
 export const LocalPathsParameter = 'localPaths';
 export const LocalCSVParameter = 'localCsv';
+export const WithKeysParameter = 'withKeys';
 export const GatewayParameter = 'gateway';
 export const CustomContentTypeParameter = 'contentType';
 
@@ -79,7 +80,8 @@ export const AllParameters = [
 	TransactionIdParameter,
 	TxFilePathParameter,
 	UnsafeDrivePasswordParameter,
-	WalletFileParameter
+	WalletFileParameter,
+	WithKeysParameter
 ] as const;
 export type ParameterName = typeof AllParameters[number];
 
@@ -443,6 +445,13 @@ Parameter.declare({
 		LocalPathsParameter,
 		DestinationFileNameParameter
 	]
+});
+
+Parameter.declare({
+	name: WithKeysParameter,
+	aliases: ['-K', '--with-keys'],
+	description: `(OPTIONAL) displays the driveKey and fileKey of the listed entities`,
+	type: 'boolean'
 });
 
 Parameter.declare({
