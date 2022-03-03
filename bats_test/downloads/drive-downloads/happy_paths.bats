@@ -39,9 +39,6 @@ setup() {
 }
 
 @test "Download drive to a custom folder using a custom depth of 0" {
-    # Skipped for now as test is failing, but the command itself is working properly. PE-1066
-    skip
-
     cd "${DIR}"
     run -0 download_public_drive "${MY_DRIVE_ID}" "${DIR}/MyCustomFolderName" "0"
 
