@@ -669,7 +669,7 @@ Example output:
 ]
 ```
 
-To list further more than the immediate children, you can make use of the flags: `--all` and `--max-depth`.
+To list further than the immediate children, you can make use of the flags: `--all` and `--max-depth`.
 
 ```shell
 # List all contents of a public folder
