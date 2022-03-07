@@ -23,7 +23,6 @@ import {
 	FolderID,
 	ArFSFileToUpload,
 	ArFSFolderToUpload,
-	ArFSResult,
 	DriveKey,
 	wrapFileOrFolder,
 	EID,
@@ -120,16 +119,6 @@ function getSingleFile(parameters: ParametersHelper, parentFolderId: FolderID): 
 
 	return [singleParameter];
 }
-
-export const formatResults = (results: ArFSResult[]): ArFSResult =>
-	results.reduce(
-		(previousValue, currentValue) => ({
-			created: [...previousValue.created, ...currentValue.created],
-			tips: [...previousValue.tips, ...currentValue.tips],
-			fees: { ...previousValue.fees, ...currentValue.fees }
-		}),
-		{ created: [], tips: [], fees: {} }
-	);
 
 new CLICommand({
 	name: 'upload-file',
