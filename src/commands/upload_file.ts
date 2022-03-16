@@ -190,7 +190,7 @@ new CLICommand({
 					uploadStats.push({
 						wrappedEntity,
 						driveKey:
-							driveKey || (await parameters.getIsPrivate())
+							driveKey ?? (await parameters.getIsPrivate())
 								? await parameters.getDriveKey({
 										driveId: await arDrive.getDriveIdForFolderId(parentFolderId),
 										drivePassword,
