@@ -177,26 +177,33 @@ new CLICommand({
 				arweave
 			});
 
-			const uploadStats: ArDriveUploadStats[] = await Promise.all(
-				filesToUpload.map(
-					async ({ parentFolderId, wrappedEntity, destinationFileName, driveKey, drivePassword }) => {
-						driveKey ??= (await parameters.getIsPrivate())
-							? await parameters.getDriveKey({
-									driveId: await arDrive.getDriveIdForFolderId(parentFolderId),
-									drivePassword,
-									useCache: true
-							  })
-							: undefined;
+			const uploadStats: ArDriveUploadStats[] = await (async () => {
+				const uploadStats: ArDriveUploadStats[] = [];
 
-						return {
-							wrappedEntity,
-							driveKey,
-							destFolderId: parentFolderId,
-							destName: destinationFileName
-						};
-					}
-				)
-			);
+				for (const {
+					parentFolderId,
+					wrappedEntity,
+					destinationFileName,
+					driveKey,
+					drivePassword
+				} of filesToUpload) {
+					uploadStats.push({
+						wrappedEntity,
+						driveKey:
+							driveKey || (await parameters.getIsPrivate())
+								? await parameters.getDriveKey({
+										driveId: await arDrive.getDriveIdForFolderId(parentFolderId),
+										drivePassword,
+										useCache: true
+								  })
+								: undefined,
+						destFolderId: parentFolderId,
+						destName: destinationFileName
+					});
+				}
+
+				return uploadStats;
+			})();
 
 			const results = await arDrive.uploadAllEntities({
 				entitiesToUpload: uploadStats,
