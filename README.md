@@ -127,6 +127,7 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         4. [Front-run Congestion By Boosting Miner Rewards](#boost)
         5. [Send AR Transactions From a Cold Wallet](#cold-tx)
         6. [Using a Custom Arweave Gateway](#using-a-custom-arweave-gateway)
+        7. [Persistent Caching of ArFS Entity Metadata](#metadata-caching)
 4. [All ArDrive CLI Commands](#all-ardrive-cli-commands)
 5. [Getting Help](#getting-help)
 
@@ -1227,6 +1228,23 @@ ardrive list-drive -d { drive id from create drive }
 # Download file to verify integrity
 ardrive download-file -f { file id from upload file }
 ```
+
+### Persistent Caching of ArFS Entity Metadata<a id="metadata-caching"></a>
+
+To avoid redundant requests to the Arweave network for immutable ArFS entity metadata, a persistent file cache is created and maintained at:
+
+```
+Windows: <os.homedir()>/ardrive-caches/metadata
+Non-Windows: <os.homedir()>/.ardrive/caches/metadata
+```
+
+The `XDG_CACHE_HOME` environment variable is honored, where applicable, and will be used in place of `os.homedir()` in the scenarios described above.
+
+Metadata cache logging to stderr can be enabled by setting the `ARDRIVE_CACHE_LOG` environment variable to `1`.
+
+Cache performance is UNDEFINED for multi-process scenarios, but is presumed to be generally usable.
+
+The cache can be manually cleared safely at any time that any integrating app is not in operation.
 
 # All ArDrive CLI Commands
 
