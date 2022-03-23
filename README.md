@@ -479,6 +479,9 @@ Useful notes on listing the contents of drives:
 # List everything in a private drive
 ardrive list-drive -d "c7f87712-b54e-4491-bc96-1c5fa7b1da50" -w /path/to/my/wallet.json -P
 
+# List a private drive including the `fileKey` and/or `driveKey` of all listed entitites
+ardrive list-drive -d "c7f87712-b54e-4491-bc96-1c5fa7b1da50" -w /path/to/my/wallet.json -P --with-keys
+
 # List the contents of a public drive up to and including those in the grandchild folders of the root folder
 ardrive list-drive -d "c7f87712-b54e-4491-bc96-1c5fa7b1da50" --max-depth 2
 ```
@@ -581,7 +584,7 @@ ardrive folder-info --folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0"
 
 ### Listing Contents of a Folder
 
-Similar to drives, the `list-folder` command can be used to fetch the metadata of each entity within a folder. But by default, the command will fetch only the immediate children of that folder (`--maxdepth 0`):
+Similar to drives, the `list-folder` command can be used to fetch the metadata of each entity within a folder. But by default, the command will fetch only the immediate children of that folder (`--max-depth 0`):
 
 ```shell
 # List immediate children of folder "My Public Folder"
@@ -667,9 +670,21 @@ Example output:
 ]
 ```
 
+To list further than the immediate children, you can make use of the flags: `--all` and `--max-depth`.
+
 ```shell
-# List all contents of a folder
+# List all contents of a public folder
 ardrive list-folder --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" --all
+
+# List the contents of a public folder with custom depth
+ardrive list-folder --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" --max-depth 2
+```
+
+In the case of private entitites, the `--with-keys` flag will make the command to include the keys in the output.
+
+```shell
+# List all contents of a private folder including the `fileKey` and/or `driveKey` of all listed entitites
+ardrive list-folder --parent-folder-id "1b027047-4cfc-4eee-88a8-9af694f660c0" -w /my/wallet.json --with-keys
 ```
 
 ## Working With Files
