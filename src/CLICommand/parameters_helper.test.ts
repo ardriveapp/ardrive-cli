@@ -30,7 +30,7 @@ import {
 import '../parameter_declarations';
 import { CLIAction } from './action';
 import { SUCCESS_EXIT_CODE } from './error_codes';
-import { ArweaveAddress, EID, urlEncodeHashKey } from 'ardrive-core-js';
+import { ArweaveAddress, EID } from 'ardrive-core-js';
 
 const expectedArweaveAddress = new ArweaveAddress('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
 
@@ -462,7 +462,7 @@ describe('ParametersHelper class', () => {
 					driveId: EID('00000000-0000-0000-0000-000000000000')
 				});
 				return driveKeyPromise.then((driveKey) =>
-					expect(urlEncodeHashKey(driveKey)).to.equal('Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg')
+					expect(driveKey.toString()).to.equal('Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg')
 				);
 			});
 		});
@@ -480,7 +480,7 @@ describe('ParametersHelper class', () => {
 				return parameters
 					.getDriveKey({ driveId: EID('00000000-0000-0000-0000-000000000000') })
 					.then((driveKey) =>
-						expect(urlEncodeHashKey(driveKey)).to.equal('Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg')
+						expect(driveKey.toString()).to.equal('Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg')
 					);
 			});
 		});
