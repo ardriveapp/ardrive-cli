@@ -108,18 +108,19 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         2. [Download a Single File (BETA)](#download-file)
         3. [Rename a Single File](#rename-file)
         4. [Uploading a Folder with Files](#bulk-upload)
-        5. [Downloading a Folder with Files](#download-folder)
-        6. [Downloading a Drive](#download-drive)
-        7. [Uploading Multiple Files](#multi-file-upload)
-        8. [Name Conflict Resolution on Upload](#conflict-resolution)
-        9. [Understanding Bundled Transactions](#bundles)
-        10. [Uploading a Non-Bundled Transaction](#no-bundle)
-        11. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
-        12. [Moving Files](#moving-files)
-        13. [Uploading Manifests](#uploading-manifests)
-        14. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
-        15. [Uploading With a Custom Content Type](#custom-content-type)
-        16. [Uploading a Custom Manifest](#custom-manifest)
+        5. [Progress Logging of Transaction Uploads](#progress-logging-of-transaction-uploads)
+        6. [Downloading a Folder with Files](#download-folder)
+        7. [Downloading a Drive](#download-drive)
+        8. [Uploading Multiple Files](#multi-file-upload)
+        9. [Name Conflict Resolution on Upload](#conflict-resolution)
+        10. [Understanding Bundled Transactions](#bundles)
+        11. [Uploading a Non-Bundled Transaction](#no-bundle)
+        12. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
+        13. [Moving Files](#moving-files)
+        14. [Uploading Manifests](#uploading-manifests)
+        15. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
+        16. [Uploading With a Custom Content Type](#custom-content-type)
+        17. [Uploading a Custom Manifest](#custom-manifest)
     7. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -739,6 +740,27 @@ NOTE: To upload to the root of a drive, specify its root folder ID as the parent
 
 ```shell
 ardrive drive-info -d "c7f87712-b54e-4491-bc96-1c5fa7b1da50" | jq -r '.rootFolderId'
+```
+
+### Progress Logging of Transaction Uploads
+
+Progress logging of transaction uploads to stderr can be enabled by setting the `ARDRIVE_PROGRESS_LOG` environment variable to `1`:
+
+```shell
+Uploading file transaction 1 of total 2 transactions...
+Transaction _GKQasQX194a364Hph8Oe-oku1AdfHwxWOw9_JC1yjc Upload Progress: 0%
+Transaction _GKQasQX194a364Hph8Oe-oku1AdfHwxWOw9_JC1yjc Upload Progress: 35%
+Transaction _GKQasQX194a364Hph8Oe-oku1AdfHwxWOw9_JC1yjc Upload Progress: 66%
+Transaction _GKQasQX194a364Hph8Oe-oku1AdfHwxWOw9_JC1yjc Upload Progress: 100%
+Uploading file transaction 2 of total 2 transactions...
+Transaction nA1stCdTkuf290k0qsqvmJ78isEC0bwgrAi3D8Cl1LU Upload Progress: 0%
+Transaction nA1stCdTkuf290k0qsqvmJ78isEC0bwgrAi3D8Cl1LU Upload Progress: 13%
+Transaction nA1stCdTkuf290k0qsqvmJ78isEC0bwgrAi3D8Cl1LU Upload Progress: 28%
+Transaction nA1stCdTkuf290k0qsqvmJ78isEC0bwgrAi3D8Cl1LU Upload Progress: 42%
+Transaction nA1stCdTkuf290k0qsqvmJ78isEC0bwgrAi3D8Cl1LU Upload Progress: 60%
+Transaction nA1stCdTkuf290k0qsqvmJ78isEC0bwgrAi3D8Cl1LU Upload Progress: 76%
+Transaction nA1stCdTkuf290k0qsqvmJ78isEC0bwgrAi3D8Cl1LU Upload Progress: 91%
+Transaction nA1stCdTkuf290k0qsqvmJ78isEC0bwgrAi3D8Cl1LU Upload Progress: 100%
 ```
 
 ### Download a Single file (BETA)<a id="download-file"></a>
