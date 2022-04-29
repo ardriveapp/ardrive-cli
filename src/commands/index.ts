@@ -26,6 +26,7 @@ import './move_folder';
 import './rename_drive';
 import './rename_file';
 import './rename_folder';
+import './retry_tx';
 import './send_ar';
 import './send_tx';
 import './tx_status';
