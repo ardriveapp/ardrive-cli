@@ -951,6 +951,34 @@ Example output:
 }
 ```
 
+### Retrying a Failed File Data Transaction (Public Unbundled Files Only)<a id="retry-tx"></a>
+
+Retrying transactions that have been POSTED but their chunks are left in this incomplete state is a feature that is available with the Arweave network and also with the ArDrive CLI.
+
+#### Defining a Failed Data Transaction
+
+When uploading a transaction over 256 KiB in size to the Arweave network, that transaction's data will be split into multiple chunks of data. A transaction constructed this way will always post the header first and foremost, then send the chunks of data.
+
+With just that header information, a transaction accepted to the network, can be mined into a block, and will become optimistically accessible at various endpoints on the gateway including GQL. This all happens irregardless of whether the chunks of data arrive or not.
+
+If the process of uploading chunks were to be interrupted (e.g: network failure, killing the process, system crash), the transaction will be left with incomplete chunks of data. And the transaction owner's wallet would be charged for the transaction based on the header information.
+
+#### Information Required to Retry a Transaction
+
+In order to re-seed the chunks to an unbundled ArFS data transaction, a user must have the data transaction ID, the original file data, and a destination folder ID or a valid file ID for the file.
+
+When an upload fails, generally this transaction ID information would be lost. But a user can quickly recover this transaction ID with the `ardrive last-tx -w /path/to/wallet` command.
+
+#### Retrying with ArDrive CLI
+
+With the data transaction ID and the file data is recovered a file simply use the `retry-tx` command:
+
+```shell
+ardrive retry-tx --transaction-id { Data Transaction ID } --parent-folder-id { Destination Folder ID }  --local-path /path/to/file  --wallet-file /path/to/wallet
+```
+
+**Note: Retry feature is currently only available for PUBLIC unbundled file transactions. It is also perfectly safe to mistakenly re-seed the chunks of a healthy transaction, the transaction will remain stable and the wallet will not be re-charged.**
+
 ### Moving Files<a id="moving-files"></a>
 
 Files can be moved from one folder to another within the same drive. Moving a file is simply the process of uploading a new file metadata revision with an updated File ID <> Parent Folder ID relationship. The following command will move a file from its current location in a public drive to a new parent folder in that drive:
