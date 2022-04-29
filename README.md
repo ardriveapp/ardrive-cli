@@ -116,11 +116,12 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         10. [Understanding Bundled Transactions](#bundles)
         11. [Uploading a Non-Bundled Transaction](#no-bundle)
         12. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
-        13. [Moving Files](#moving-files)
-        14. [Uploading Manifests](#uploading-manifests)
-        15. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
-        16. [Uploading With a Custom Content Type](#custom-content-type)
-        17. [Uploading a Custom Manifest](#custom-manifest)
+        13. [Retrying a Failed File Data Transaction (Public Unbundled Files Only)](#retry-tx)
+        14. [Moving Files](#moving-files)
+        15. [Uploading Manifests](#uploading-manifests)
+        16. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
+        17. [Uploading With a Custom Content Type](#custom-content-type)
+        18. [Uploading a Custom Manifest](#custom-manifest)
     7. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -1322,6 +1323,8 @@ create-manifest
 
 move-file
 move-folder
+
+retry-tx
 
 
 Read ArFS
