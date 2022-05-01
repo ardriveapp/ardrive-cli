@@ -5,16 +5,16 @@ import {
 	DestinationFileNameParameter,
 	DryRunParameter,
 	ParentFolderIdParameter,
-	WalletFileParameter,
 	LocalPathParameter,
 	GatewayParameter,
 	CustomContentTypeParameter,
 	TransactionIdParameter,
-	FileIdParameter
+	FileIdParameter,
+	WalletTypeParameters
 } from '../parameter_declarations';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { CLIAction } from '../CLICommand/action';
-import { wrapFileOrFolder, EID, readJWKFile, TxID } from 'ardrive-core-js';
+import { wrapFileOrFolder, EID, TxID } from 'ardrive-core-js';
 import { cliArDriveFactory } from '..';
 import { getArweaveFromURL } from '../utils/get_arweave_for_url';
 
@@ -31,7 +31,7 @@ new CLICommand({
 		CustomContentTypeParameter,
 		GatewayParameter,
 		TransactionIdParameter,
-		WalletFileParameter
+		...WalletTypeParameters
 	],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
@@ -50,11 +50,11 @@ new CLICommand({
 			throw Error('Retrying folder uploads is not yet supported!');
 		}
 
-		const wallet = parameters.getRequiredParameterValue(WalletFileParameter, readJWKFile);
+		const wallet = await parameters.getRequiredWallet();
 		const arweave = getArweaveFromURL(parameters.getGateway());
 
 		const arDrive = cliArDriveFactory({
-			wallet: wallet,
+			wallet,
 			feeMultiple: parameters.getOptionalBoostSetting(),
 			dryRun: parameters.isDryRun(),
 			arweave
