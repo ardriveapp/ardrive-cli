@@ -22,7 +22,7 @@ new CLICommand({
 	name: 'retry-tx',
 	parameters: [
 		LocalPathParameter,
-		ParentFolderIdParameter,
+		{ name: ParentFolderIdParameter, required: false },
 		{ name: FileIdParameter, required: false },
 		DestinationFileNameParameter,
 		BoostParameter,
@@ -30,7 +30,7 @@ new CLICommand({
 		...ConflictResolutionParams,
 		CustomContentTypeParameter,
 		GatewayParameter,
-		TransactionIdParameter,
+		{ name: TransactionIdParameter, description: 'The data transaction id in which to retry' },
 		...WalletTypeParameters
 	],
 	action: new CLIAction(async function action(options) {
