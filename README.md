@@ -43,7 +43,7 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
             "dataTxId": "tSMcfvAQu_tKLUkdvRRbqdX93oAf3h6c9eJsSj8mXL4",
             "metadataTxId": "EvE06MmE9IKeUzFMnxSgY1M5tJX4uHU64-n8Pf_lZfU",
             "bundledIn": "qjdHiQoWlSjCvhj5RgtA247W_q3S10suI6l0E30GPoE",
-            "sourceUri": "./helloworld.txt",
+            "sourceUri": "file://Users/BestArDriver/Uploads/helloworld.txt",
         },
         {
             "type": "bundle",
@@ -725,7 +725,7 @@ Example output:
             "dataTxId": "l4iNWyBapfAIj7OU-nB8z9XrBhawyqzs5O9qhk-3EnI",
             "metadataTxId": "YfdDXUyerPCpBbGTm_gv_x5hR3tu5fnz8bM-jPL__JE",
             "bundledIn": "1zwdfZAIV8E26YjBs2ZQ4xjjP_1ewalvRgD_GyYw7f8-jPL__JE",
-            "sourceUri": "/path/to/file.txt"
+            "sourceUri": "file://Users/BestArDriver/path/to/file.txt"
         },
         {
             "type": "bundle",
