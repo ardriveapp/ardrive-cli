@@ -724,8 +724,8 @@ Example output:
             "entityId": "6613395a-cf19-4420-846a-f88b7b765c05"
             "dataTxId": "l4iNWyBapfAIj7OU-nB8z9XrBhawyqzs5O9qhk-3EnI",
             "metadataTxId": "YfdDXUyerPCpBbGTm_gv_x5hR3tu5fnz8bM-jPL__JE",
-            "bundledIn": "1zwdfZAIV8E26YjBs2ZQ4xjjP_1ewalvRgD_GyYw7f8-jPL__JE",
-            "sourceUri": "file://Users/BestArDriver/path/to/file.txt"
+            "bundledIn": "1zwdfZAIV8E26YjBs2ZQ4xjjP_1ewalvRgD_GyYw7f8",
+            "sourceUri": "file:///path/to/file.txt"
         },
         {
             "type": "bundle",
