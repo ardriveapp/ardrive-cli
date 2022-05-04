@@ -954,25 +954,13 @@ Example output:
 
 ### Retrying a Failed File Data Transaction (Public Unbundled Files Only)<a id="retry-tx"></a>
 
-Retrying transactions that have been POSTED but their chunks are left in this incomplete state is a feature that is available with the Arweave network and also with the ArDrive CLI.
+Arweave data upload transactions are split into two phases: transaction posting and chunks uploading. Once the transaction post phase has been completed, you've effectively "paid" the network for storage of the data chunks that you'll send in the next stage.
 
-#### Defining a Failed Data Transaction
+If your system encounters an error while posting the transaction, you can retry posting the transaction for as long as your tx_anchor is valid ([learn more about tx_anchors here][tx_anchors]). You may retry and/or resume posting chunks at any time after your transaction has posted. The ArDrive CLI allows you to take advantage of this Arweave protocol capability.
 
-When uploading a transaction over 256 KiB in size to the Arweave network, that transaction's data will be split into multiple chunks of data. A transaction constructed this way will always post the header first and foremost, then send the chunks of data.
+Using the CLI, when the transaction post has succeeded but the chunk upload fails due to the process crashing the data transaction's ID could be lost. But a user has a few options to recover this ID. If it is their last transaction, they can quickly recover this transaction ID with the `ardrive last-tx -w /path/to/wallet` command. Another option us to use an Arweave gateway GQL endpoint to search for transactions that belong to their wallet. Or they could check out their latest transactions with a third party tool like [ViewBlock][viewblock].
 
-With just that header information, a transaction accepted to the network, can be mined into a block, and will become optimistically accessible at various endpoints on the gateway including GQL. This all happens irregardless of whether the chunks of data arrive or not.
-
-If the process of uploading chunks were to be interrupted (e.g: network failure, killing the process, system crash), the transaction will be left with incomplete chunks of data. And the transaction owner's wallet would be charged for the transaction based on the header information.
-
-#### Information Required to Retry a Transaction
-
-In order to re-seed the chunks to an unbundled ArFS data transaction, a user must have the data transaction ID, the original file data, and a destination folder ID or a valid file ID for the file.
-
-When an upload fails, generally this transaction ID information would be lost. But a user can quickly recover this transaction ID with the `ardrive last-tx -w /path/to/wallet` command.
-
-#### Retrying with ArDrive CLI
-
-With the data transaction ID and the file data is recovered a file simply use the `retry-tx` command:
+In order to re-seed the chunks to an unbundled ArFS data transaction, a user must have the data transaction ID, the original file data, and a destination folder ID or a valid file ID for the file. With this information simply use the `retry-tx` command:
 
 ```shell
 ardrive retry-tx --transaction-id { Data Transaction ID } --parent-folder-id { Destination Folder ID }  --local-path /path/to/file  --wallet-file /path/to/wallet
@@ -1393,3 +1381,5 @@ ardrive <command> --help
 [example-manifest-webpage]: https://arweave.net/qozq9YIUPEHfZhoTp9DkBpJuA_KNULBnfLiMroj5pZI
 [arlocal]: https://github.com/textury/arlocal
 [mozilla-mime-types]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
+[viewblock]: https://viewblock.io/arweave/
+[tx_anchors]: https://docs.arweave.org/developers/server/http-api#field-definitions
