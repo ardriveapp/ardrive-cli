@@ -43,9 +43,6 @@ new CLICommand({
 		const dataTxId = parameters.getRequiredParameterValue(TransactionIdParameter, TxID);
 		const wrappedFile = wrapFileOrFolder(localFilePath, customContentType);
 
-		const destinationFolderId = parameters.getParameterValue(ParentFolderIdParameter, EID);
-		const fileId = parameters.getParameterValue(FileIdParameter, EID);
-
 		if (wrappedFile.entityType !== 'file') {
 			throw Error('Retrying folder uploads is not yet supported!');
 		}
@@ -60,13 +57,29 @@ new CLICommand({
 			arweave
 		});
 
-		const results = await arDrive.retryPublicArFSFileUpload({
-			wrappedFile,
-			dataTxId,
-			destinationFolderId,
-			fileId,
-			conflictResolution
-		});
+		const destinationFolderId = parameters.getParameterValue(ParentFolderIdParameter, EID);
+		const fileId = parameters.getParameterValue(FileIdParameter, EID);
+
+		const results = await (async () => {
+			if (fileId) {
+				return arDrive.retryPublicArFSFileUploadByFileId({
+					wrappedFile,
+					dataTxId,
+					fileId
+				});
+			}
+
+			if (destinationFolderId) {
+				return arDrive.retryPublicArFSFileUploadByDestFolderId({
+					wrappedFile,
+					dataTxId,
+					destinationFolderId,
+					conflictResolution
+				});
+			}
+
+			throw Error('Must provide a file ID or destination folder ID in order to retry and ArFS file transaction');
+		})();
 
 		console.log(JSON.stringify(results, null, 4));
 		return SUCCESS_EXIT_CODE;
