@@ -14,7 +14,8 @@ import {
 	SkipParameter,
 	BoostParameter,
 	GatewayParameter,
-	DryRunParameter
+	DryRunParameter,
+	CustomTagsParameter
 } from '../parameter_declarations';
 import { cliWalletDao } from '..';
 import passwordPrompt from 'prompts';
@@ -35,7 +36,8 @@ import {
 	skipOnConflicts,
 	upsertOnConflicts,
 	askOnConflicts,
-	EntityKey
+	EntityKey,
+	GQLTagInterface
 } from 'ardrive-core-js';
 import { JWKInterface } from 'arweave/node/lib/wallet';
 
@@ -282,6 +284,28 @@ export class ParametersHelper {
 		return mapFunc(value);
 	}
 
+	public getCustomTags(path?: string): GQLTagInterface[] | undefined {
+		const tagPath = path ?? this.getParameterValue(CustomTagsParameter);
+		if (!tagPath) {
+			return undefined;
+		}
+
+		// Read tag file or throw fs path error
+		const tagFile = fs.readFileSync(tagPath, { encoding: 'utf8' });
+
+		try {
+			const tagJSON: unknown = JSON.parse(tagFile);
+
+			if (isGqlTagInterfaceArray(tagJSON)) {
+				// Valid custom tags
+				return tagJSON;
+			}
+		} catch {
+			throw Error(invalidSchemaError);
+		}
+		throw Error(invalidSchemaError);
+	}
+
 	/**
 	 * Gathers a valid gateway URL from user provided gateway parameter,
 	 * an environment variable, or returns the default arweave gateway
@@ -323,3 +347,12 @@ export class ParametersHelper {
 		return !!dryRun;
 	}
 }
+
+function isGqlTagInterfaceArray(tags: unknown): tags is GQLTagInterface[] {
+	const gqlTags = tags as GQLTagInterface[];
+
+	return gqlTags.length > 0 && Object.keys(gqlTags[0]).includes('name') && Object.keys(gqlTags[0]).includes('value');
+}
+
+const invalidSchemaError =
+	'Invalid custom metadata schema. Please use valid a JSON file with `[{ name: string, value: string }]` format!';

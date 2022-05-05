@@ -13,7 +13,8 @@ import {
 	LocalPathParameter,
 	LocalCSVParameter,
 	GatewayParameter,
-	CustomContentTypeParameter
+	CustomContentTypeParameter,
+	CustomTagsParameter
 } from '../parameter_declarations';
 import { fileAndFolderUploadConflictPrompts } from '../prompts';
 import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
@@ -55,15 +56,21 @@ function getFilesFromCSV(parameters: ParametersHelper): UploadPathParameter[] | 
 	const csvRows = localCSVFileData.split(ROW_SEPARATOR);
 	const fileParameters: UploadPathParameter[] = csvRows.map((row: string) => {
 		const csvFields = row.split(COLUMN_SEPARATOR).map((f: string) => f.trim());
-		// eslint-disable-next-line prettier/prettier
-		const [localFilePath, destinationFileName, _parentFolderId, drivePassword, _driveKey, _customContentType] =
-			// eslint-disable-next-line prettier/prettier
-			csvFields;
+		const [
+			localFilePath,
+			destinationFileName,
+			_parentFolderId,
+			drivePassword,
+			_driveKey,
+			_customContentType,
+			_customTagsPath
+		] = csvFields;
 
 		const customContentType = _customContentType ?? parameters.getParameterValue(CustomContentTypeParameter);
+		const customTags = parameters.getCustomTags(_customTagsPath);
 
 		// TODO: Make CSV uploads more bulk performant
-		const wrappedEntity = wrapFileOrFolder(localFilePath, customContentType);
+		const wrappedEntity = wrapFileOrFolder(localFilePath, customContentType, customTags);
 		const parentFolderId = EID(
 			_parentFolderId ? _parentFolderId : parameters.getRequiredParameterValue(ParentFolderIdParameter)
 		);
@@ -87,9 +94,10 @@ function getFileList(parameters: ParametersHelper, parentFolderId: FolderID): Up
 		return undefined;
 	}
 	const customContentType = parameters.getParameterValue(CustomContentTypeParameter);
+	const customTags = parameters.getCustomTags();
 
 	const localPathsToUpload = localPaths.map((filePath: FilePath) => {
-		const wrappedEntity = wrapFileOrFolder(filePath, customContentType);
+		const wrappedEntity = wrapFileOrFolder(filePath, customContentType, customTags);
 
 		return {
 			parentFolderId,
@@ -107,8 +115,9 @@ function getSingleFile(parameters: ParametersHelper, parentFolderId: FolderID): 
 		parameters.getRequiredParameterValue<string>(LocalPathParameter);
 
 	const customContentType = parameters.getParameterValue(CustomContentTypeParameter);
+	const customTags = parameters.getCustomTags();
 
-	const wrappedEntity = wrapFileOrFolder(localFilePath, customContentType);
+	const wrappedEntity = wrapFileOrFolder(localFilePath, customContentType, customTags);
 	const singleParameter = {
 		parentFolderId: parentFolderId,
 		wrappedEntity,
@@ -133,6 +142,7 @@ new CLICommand({
 		...ConflictResolutionParams,
 		...DrivePrivacyParameters,
 		CustomContentTypeParameter,
+		CustomTagsParameter,
 		LocalFilePathParameter_DEPRECATED,
 		LocalFilesParameter_DEPRECATED,
 		BoostParameter,

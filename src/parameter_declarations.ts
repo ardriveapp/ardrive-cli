@@ -41,6 +41,7 @@ export const LocalCSVParameter = 'localCsv';
 export const WithKeysParameter = 'withKeys';
 export const GatewayParameter = 'gateway';
 export const CustomContentTypeParameter = 'contentType';
+export const CustomTagsParameter = 'customTags';
 
 // Aggregates for convenience
 export const WalletTypeParameters = [WalletFileParameter, SeedPhraseParameter];
@@ -53,6 +54,8 @@ export const AllParameters = [
 	ArAmountParameter,
 	BoostParameter,
 	ConfirmationsParameter,
+	CustomContentTypeParameter,
+	CustomTagsParameter,
 	DestinationAddressParameter,
 	DestinationFileNameParameter,
 	DriveKeyParameter,
@@ -465,4 +468,10 @@ Parameter.declare({
 	aliases: ['--content-type'],
 	description:
 		'(OPTIONAL) Provide a custom content type to all files within the upload to be used by the gateway to display the content'
+});
+
+Parameter.declare({
+	name: CustomTagsParameter,
+	aliases: ['--custom-tags'],
+	description: '(OPTIONAL) Path to JSON file containing custom GQL tags to add to all metadata within the upload'
 });
