@@ -10,7 +10,6 @@ import {
 	LocalFilePathParameter_DEPRECATED,
 	LocalFilesParameter_DEPRECATED,
 	ParentFolderIdParameter,
-	WalletFileParameter,
 	LocalPathParameter,
 	LocalCSVParameter,
 	GatewayParameter,
@@ -26,7 +25,6 @@ import {
 	DriveKey,
 	wrapFileOrFolder,
 	EID,
-	readJWKFile,
 	EntityKey,
 	ArDriveUploadStats
 } from 'ardrive-core-js';
@@ -162,7 +160,7 @@ new CLICommand({
 			return getSingleFile(parameters, parentFolderId);
 		})();
 		if (filesToUpload.length) {
-			const wallet = parameters.getRequiredParameterValue(WalletFileParameter, readJWKFile);
+			const wallet = await parameters.getRequiredWallet();
 
 			const conflictResolution = parameters.getFileNameConflictResolution();
 			const shouldBundle = !!parameters.getParameterValue(ShouldBundleParameter);
@@ -170,7 +168,7 @@ new CLICommand({
 			const arweave = getArweaveFromURL(parameters.getGateway());
 
 			const arDrive = cliArDriveFactory({
-				wallet: wallet,
+				wallet,
 				feeMultiple: parameters.getOptionalBoostSetting(),
 				dryRun: parameters.isDryRun(),
 				shouldBundle,
