@@ -11,12 +11,16 @@ ardrive create-drive --wallet-file /path/to/my/wallet.json --drive-name "Teenage
         {
             "type": "drive",
             "metadataTxId": "giv2R8Xj0bbe6l5taBTQJk_38zwIrMH_g1-knSCisjU",
-            "entityId": "898687ea-b678-4f86-b4e7-49560b190356"
+            "entityId": "898687ea-b678-4f86-b4e7-49560b190356",
+            "bundledIn": "Vj2x4IBEAezBvhj5RgtA247W_q3S10suI6l0E30GPoE",
+            "entityName": "Teenage Love Poetry"
         },
         {
             "type": "folder",
             "metadataTxId": "VljnttwUxRStnVuPYakF9e2whjhYJVWB0nSxD5dVyJ8",
-            "entityId": "f0c58c11-430c-4383-8e54-4d864cc7e927"
+            "entityId": "f0c58c11-430c-4383-8e54-4d864cc7e927",
+            "bundledIn": "Vj2x4IBEAezBvhj5RgtA247W_q3S10suI6l0E30GPoE",
+            "entityName": "Teenage Love Poetry"
         },
         {
             "type": "bundle",
@@ -34,9 +38,12 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
     "created": [
         {
             "type": "file",
-            "metadataTxId": "EvE06MmE9IKeUzFMnxSgY1M5tJX4uHU64-n8Pf_lZfU",
+            "entityName": "ode_to_ardrive.txt",
+            "entityId": "bd2ce978-6ede-4b0d-8f79-2d7bc235a0e0",
             "dataTxId": "tSMcfvAQu_tKLUkdvRRbqdX93oAf3h6c9eJsSj8mXL4",
-            "entityId": "bd2ce978-6ede-4b0d-8f79-2d7bc235a0e0"
+            "metadataTxId": "EvE06MmE9IKeUzFMnxSgY1M5tJX4uHU64-n8Pf_lZfU",
+            "bundledIn": "qjdHiQoWlSjCvhj5RgtA247W_q3S10suI6l0E30GPoE",
+            "sourceUri": "file://Users/BestArDriver/Uploads/helloworld.txt"
         },
         {
             "type": "bundle",
@@ -351,7 +358,7 @@ At the root of every data tree is a "Drive" entity. When a drive is created, a R
 # Use `tee` to keep a receipt of the full set of transactions info and `jq` to focus on the data of interest
 ardrive create-drive --wallet-file /path/to/my/wallet.json --drive-name "Teenage Love Poetry" |
 tee created_drive.json |
-jq '[.created[] | del(.metadataTxId)]'
+jq '[.created[] | del(.metadataTxId, .entityName, .bundledIn)]'
 [
     {
         "type": "drive",
@@ -547,7 +554,8 @@ Example output:
             "type": "folder",
             "metadataTxId": "AYFMBVmwqhbg9y5Fbj3Iasy5oxUqhauOW7PcS1sl4Dk",
             "entityId": "d1b7c514-fb12-4603-aad8-002cf63015d3",
-            "key": "yHdCjpCKD2cuhQcKNx2d/XF5ReEjoKfZVqKunlCnPEk"
+            "key": "yHdCjpCKD2cuhQcKNx2d/XF5ReEjoKfZVqKunlCnPEk",
+            "entityName": "My Awesome Folder"
         }
     ],
     "tips": [],
@@ -712,9 +720,12 @@ Example output:
     "created": [
         {
             "type": "file",
-            "metadataTxId": "YfdDXUyerPCpBbGTm_gv_x5hR3tu5fnz8bM-jPL__JE",
-            "dataTxId": "l4iNWyBapfAIj7OU-nB8z9XrBhawyqzs5O9qhk-3EnI",
+            "entityName": "file.txt"
             "entityId": "6613395a-cf19-4420-846a-f88b7b765c05"
+            "dataTxId": "l4iNWyBapfAIj7OU-nB8z9XrBhawyqzs5O9qhk-3EnI",
+            "metadataTxId": "YfdDXUyerPCpBbGTm_gv_x5hR3tu5fnz8bM-jPL__JE",
+            "bundledIn": "1zwdfZAIV8E26YjBs2ZQ4xjjP_1ewalvRgD_GyYw7f8",
+            "sourceUri": "file:///path/to/file.txt"
         },
         {
             "type": "bundle",
