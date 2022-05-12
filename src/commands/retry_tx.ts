@@ -30,7 +30,7 @@ new CLICommand({
 		...ConflictResolutionParams,
 		CustomContentTypeParameter,
 		GatewayParameter,
-		{ name: TransactionIdParameter, description: 'The data transaction id in which to retry' },
+		{ name: TransactionIdParameter, description: 'The transaction ID of the data transaction to retry' },
 		...WalletTypeParameters
 	],
 	action: new CLIAction(async function action(options) {
