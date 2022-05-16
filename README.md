@@ -977,7 +977,7 @@ Using the CLI, when the transaction post has succeeded but the chunk upload step
 In order to re-seed the chunks for an unbundled ArFS data transaction, a user must have the data transaction ID, the original file data, and either a destination folder ID or a valid file ID for the file. Supply that information to the `retry-tx` command like so:
 
 ```shell
-ardrive retry-tx --transaction-id { Data Transaction ID } --parent-folder-id { Destination Folder ID }  --local-path /path/to/file  --wallet-file /path/to/wallet
+ardrive retry-tx --tx-id { Data Transaction ID } --parent-folder-id { Destination Folder ID }  --local-path /path/to/file  --wallet-file /path/to/wallet
 ```
 
 **Note: Retry feature is currently only available for PUBLIC unbundled file transactions. It is also perfectly safe to mistakenly re-seed the chunks of a healthy transaction, the transaction will remain stable and the wallet balance will not be affected.**
