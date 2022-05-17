@@ -123,11 +123,12 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         10. [Understanding Bundled Transactions](#bundles)
         11. [Uploading a Non-Bundled Transaction](#no-bundle)
         12. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
-        13. [Moving Files](#moving-files)
-        14. [Uploading Manifests](#uploading-manifests)
-        15. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
-        16. [Uploading With a Custom Content Type](#custom-content-type)
-        17. [Uploading a Custom Manifest](#custom-manifest)
+        13. [Retrying a Failed File Data Transaction (Public Unbundled Files Only)](#retry-tx)
+        14. [Moving Files](#moving-files)
+        15. [Uploading Manifests](#uploading-manifests)
+        16. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
+        17. [Uploading With a Custom Content Type](#custom-content-type)
+        18. [Uploading a Custom Manifest](#custom-manifest)
     7. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -962,6 +963,25 @@ Example output:
 }
 ```
 
+### Retrying a Failed File Data Transaction (Public Unbundled Files Only)<a id="retry-tx"></a>
+
+Arweave data upload transactions are split into two phases: transaction posting and chunks uploading. Once the transaction post phase has been completed, you've effectively "paid" the network for storage of the data chunks that you'll send in the next stage.
+
+If your system encounters an error while posting the transaction, you can retry posting the transaction for as long as your tx_anchor is valid ([learn more about tx_anchors here][tx_anchors]). You may retry and/or resume posting chunks at any time after your transaction has posted. The ArDrive CLI allows you to take advantage of this Arweave protocol capability.
+
+Using the CLI, when the transaction post has succeeded but the chunk upload step fails, the data transaction's ID could be lost. There are a few options to recover this ID. If the failed transaction is the most recent one sent from a wallet, the transaction ID can be recovered with the `ardrive last-tx -w /path/to/wallet` command AFTER the transaction's headers have been mined (It can take 5-10 minutes for the tx-id to become available with the last-tx approach). Other options for finding the partially uploaded transaction's ID include:
+
+-   Using an Arweave gateway GQL http endpoint to search for transactions that belong to the wallet. See this [Arweave GQL Guide][gql-guide] for more info.
+-   Browse the recent transactions associated with the wallet via a block explorer tool like [ViewBlock][viewblock].
+
+In order to re-seed the chunks for an unbundled ArFS data transaction, a user must have the data transaction ID, the original file data, and either a destination folder ID or a valid file ID for the file. Supply that information to the `retry-tx` command like so:
+
+```shell
+ardrive retry-tx --tx-id { Data Transaction ID } --parent-folder-id { Destination Folder ID }  --local-path /path/to/file  --wallet-file /path/to/wallet
+```
+
+**Note: Retry feature is currently only available for PUBLIC unbundled file transactions. It is also perfectly safe to mistakenly re-seed the chunks of a healthy transaction, the transaction will remain stable and the wallet balance will not be affected.**
+
 ### Moving Files<a id="moving-files"></a>
 
 Files can be moved from one folder to another within the same drive. Moving a file is simply the process of uploading a new file metadata revision with an updated File ID <> Parent Folder ID relationship. The following command will move a file from its current location in a public drive to a new parent folder in that drive:
@@ -1306,6 +1326,8 @@ create-manifest
 move-file
 move-folder
 
+retry-tx
+
 
 Read ArFS
 ===========
@@ -1373,3 +1395,6 @@ ardrive <command> --help
 [example-manifest-webpage]: https://arweave.net/qozq9YIUPEHfZhoTp9DkBpJuA_KNULBnfLiMroj5pZI
 [arlocal]: https://github.com/textury/arlocal
 [mozilla-mime-types]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
+[viewblock]: https://viewblock.io/arweave/
+[tx_anchors]: https://docs.arweave.org/developers/server/http-api#field-definitions
+[gql-guide]: https://gql-guide.vercel.app/#owners
