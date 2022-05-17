@@ -969,7 +969,7 @@ Arweave data upload transactions are split into two phases: transaction posting 
 
 If your system encounters an error while posting the transaction, you can retry posting the transaction for as long as your tx_anchor is valid ([learn more about tx_anchors here][tx_anchors]). You may retry and/or resume posting chunks at any time after your transaction has posted. The ArDrive CLI allows you to take advantage of this Arweave protocol capability.
 
-Using the CLI, when the transaction post has succeeded but the chunk upload step fails, the data transaction's ID could be lost. There are a few options to recover this ID. If the failed transaction is the most recent one sent from a wallet, the transaction ID can be quickly recovered with the `ardrive last-tx -w /path/to/wallet` command. Other options for finding the partially uploaded transaction's ID include:
+Using the CLI, when the transaction post has succeeded but the chunk upload step fails, the data transaction's ID could be lost. There are a few options to recover this ID. If the failed transaction is the most recent one sent from a wallet, the transaction ID can be recovered with the `ardrive last-tx -w /path/to/wallet` command AFTER the transaction's headers have been mined (It can take 5-10 minutes for the tx-id to become available with the last-tx approach). Other options for finding the partially uploaded transaction's ID include:
 
 -   Using an Arweave gateway GQL http endpoint to search for transactions that belong to the wallet. See this [Arweave GQL Guide][gql-guide] for more info.
 -   Browse the recent transactions associated with the wallet via a block explorer tool like [ViewBlock][viewblock].
@@ -977,7 +977,7 @@ Using the CLI, when the transaction post has succeeded but the chunk upload step
 In order to re-seed the chunks for an unbundled ArFS data transaction, a user must have the data transaction ID, the original file data, and either a destination folder ID or a valid file ID for the file. Supply that information to the `retry-tx` command like so:
 
 ```shell
-ardrive retry-tx --transaction-id { Data Transaction ID } --parent-folder-id { Destination Folder ID }  --local-path /path/to/file  --wallet-file /path/to/wallet
+ardrive retry-tx --tx-id { Data Transaction ID } --parent-folder-id { Destination Folder ID }  --local-path /path/to/file  --wallet-file /path/to/wallet
 ```
 
 **Note: Retry feature is currently only available for PUBLIC unbundled file transactions. It is also perfectly safe to mistakenly re-seed the chunks of a healthy transaction, the transaction will remain stable and the wallet balance will not be affected.**
