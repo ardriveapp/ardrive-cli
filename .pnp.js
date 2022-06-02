@@ -48,7 +48,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/source-map-support", "npm:0.5.4"],
             ["@typescript-eslint/eslint-plugin", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
             ["@typescript-eslint/parser", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
-            ["ardrive-core-js", "npm:1.14.0"],
+            ["ardrive-core-js", "npm:1.15.0-alpha-1"],
             ["arweave", "npm:1.10.18"],
             ["axios", "npm:0.21.1"],
             ["chai", "npm:4.3.4"],
@@ -341,16 +341,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [
             ["@babel/parser", "npm:7.15.6"],
             ["@babel/types", "npm:7.15.6"]
-          ],
-          "linkType": "HARD",
-        }]
-      ]],
-      ["@babel/runtime", [
-        ["npm:7.17.0", {
-          "packageLocation": "./.yarn/cache/@babel-runtime-npm-7.17.0-447a597408-bdca012061.zip/node_modules/@babel/runtime/",
-          "packageDependencies": [
-            ["@babel/runtime", "npm:7.17.0"],
-            ["regenerator-runtime", "npm:0.13.9"]
           ],
           "linkType": "HARD",
         }]
@@ -1879,7 +1869,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/source-map-support", "npm:0.5.4"],
             ["@typescript-eslint/eslint-plugin", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
             ["@typescript-eslint/parser", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
-            ["ardrive-core-js", "npm:1.14.0"],
+            ["ardrive-core-js", "npm:1.15.0-alpha-1"],
             ["arweave", "npm:1.10.18"],
             ["axios", "npm:0.21.1"],
             ["chai", "npm:4.3.4"],
@@ -1905,16 +1895,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["ardrive-core-js", [
-        ["npm:1.14.0", {
-          "packageLocation": "./.yarn/cache/ardrive-core-js-npm-1.14.0-f812516345-46c4485354.zip/node_modules/ardrive-core-js/",
+        ["npm:1.15.0-alpha-1", {
+          "packageLocation": "./.yarn/cache/ardrive-core-js-npm-1.15.0-alpha-1-0973e1d8e8-d692c6638f.zip/node_modules/ardrive-core-js/",
           "packageDependencies": [
-            ["ardrive-core-js", "npm:1.14.0"],
+            ["ardrive-core-js", "npm:1.15.0-alpha-1"],
             ["@alexsasharegan/simple-cache", "npm:3.3.3"],
             ["arbundles", "npm:0.5.5"],
             ["arweave", "npm:1.10.18"],
             ["arweave-mnemonic-keys", "npm:0.0.9"],
             ["axios", "npm:0.21.1"],
-            ["axios-retry", "npm:3.2.4"],
             ["base64-js", "npm:1.5.1"],
             ["bignumber.js", "npm:9.0.1"],
             ["futoin-hkdf", "npm:1.3.3"],
@@ -2149,17 +2138,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [
             ["axios", "npm:0.24.0"],
             ["follow-redirects", "virtual:39e5c1e79ea63134f0cf339f4463df92854aaf708a45210afd29a0b4b9f67f95b34a1abbcabaae6d0033ad99a1d5f690ab51ed8e5d3283b87ccbc3a9ab3ec05f#npm:1.14.5"]
-          ],
-          "linkType": "HARD",
-        }]
-      ]],
-      ["axios-retry", [
-        ["npm:3.2.4", {
-          "packageLocation": "./.yarn/cache/axios-retry-npm-3.2.4-826fab4739-ae61ba77f4.zip/node_modules/axios-retry/",
-          "packageDependencies": [
-            ["axios-retry", "npm:3.2.4"],
-            ["@babel/runtime", "npm:7.17.0"],
-            ["is-retry-allowed", "npm:2.2.0"]
           ],
           "linkType": "HARD",
         }]
@@ -4584,15 +4562,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD",
         }]
       ]],
-      ["is-retry-allowed", [
-        ["npm:2.2.0", {
-          "packageLocation": "./.yarn/cache/is-retry-allowed-npm-2.2.0-b4b58fc581-7cbd3c3882.zip/node_modules/is-retry-allowed/",
-          "packageDependencies": [
-            ["is-retry-allowed", "npm:2.2.0"]
-          ],
-          "linkType": "HARD",
-        }]
-      ]],
       ["is-stream", [
         ["npm:2.0.0", {
           "packageLocation": "./.yarn/cache/is-stream-npm-2.0.0-1401f82ad7-f92ba04a8b.zip/node_modules/is-stream/",
@@ -6238,15 +6207,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [
             ["readdirp", "npm:3.6.0"],
             ["picomatch", "npm:2.3.0"]
-          ],
-          "linkType": "HARD",
-        }]
-      ]],
-      ["regenerator-runtime", [
-        ["npm:0.13.9", {
-          "packageLocation": "./.yarn/cache/regenerator-runtime-npm-0.13.9-6d02340eec-8587f99ed6.zip/node_modules/regenerator-runtime/",
-          "packageDependencies": [
-            ["regenerator-runtime", "npm:0.13.9"]
           ],
           "linkType": "HARD",
         }]
