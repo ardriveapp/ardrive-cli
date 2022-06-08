@@ -1034,6 +1034,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/bn.js@npm:^5":
+  version: 5.1.0
+  resolution: "@types/bn.js@npm:5.1.0"
+  dependencies:
+    "@types/node": "*"
+  checksum: e33009f99b19bfbef4591704c2deb18f3c55dc433435091895d462846b97bc22ec0440ff0a05439bc7e3a25b07f8bfd2c43215ee50523e4238a9e2865f98578e
+  languageName: node
+  linkType: hard
+
 "@types/chai@npm:*, @types/chai@npm:^4.2.21":
   version: 4.2.21
   resolution: "@types/chai@npm:4.2.21"
@@ -1651,6 +1660,7 @@ __metadata:
   resolution: "ardrive-cli@workspace:."
   dependencies:
     "@istanbuljs/nyc-config-typescript": ^1.0.1
+    "@types/bn.js": ^5
     "@types/chai": ^4.2.21
     "@types/jwk-to-pem": ^2.0.0
     "@types/lodash": ^4
@@ -1665,6 +1675,7 @@ __metadata:
     ardrive-core-js: 1.15.1-alpha-1
     arweave: 1.11.4
     axios: ^0.21.1
+    bn.js: ^5.2.1
     chai: ^4.3.4
     commander: ^8.2.0
     eslint: ^7.23.0

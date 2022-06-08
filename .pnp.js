@@ -38,6 +38,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./",
           "packageDependencies": [
             ["@istanbuljs/nyc-config-typescript", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:1.0.1"],
+            ["@types/bn.js", "npm:5.1.0"],
             ["@types/chai", "npm:4.2.21"],
             ["@types/jwk-to-pem", "npm:2.0.1"],
             ["@types/lodash", "npm:4.14.176"],
@@ -52,6 +53,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["ardrive-core-js", "npm:1.15.1-alpha-1"],
             ["arweave", "npm:1.11.4"],
             ["axios", "npm:0.21.1"],
+            ["bn.js", "npm:5.2.1"],
             ["chai", "npm:4.3.4"],
             ["commander", "npm:8.3.0"],
             ["eslint", "npm:7.23.0"],
@@ -1242,6 +1244,16 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD",
         }]
       ]],
+      ["@types/bn.js", [
+        ["npm:5.1.0", {
+          "packageLocation": "./.yarn/cache/@types-bn.js-npm-5.1.0-4a0335ff4f-e33009f99b.zip/node_modules/@types/bn.js/",
+          "packageDependencies": [
+            ["@types/bn.js", "npm:5.1.0"],
+            ["@types/node", "npm:16.7.13"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
       ["@types/chai", [
         ["npm:4.2.21", {
           "packageLocation": "./.yarn/cache/@types-chai-npm-4.2.21-22c1ed2cef-fc7d32fbae.zip/node_modules/@types/chai/",
@@ -2002,6 +2014,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [
             ["ardrive-cli", "workspace:."],
             ["@istanbuljs/nyc-config-typescript", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:1.0.1"],
+            ["@types/bn.js", "npm:5.1.0"],
             ["@types/chai", "npm:4.2.21"],
             ["@types/jwk-to-pem", "npm:2.0.1"],
             ["@types/lodash", "npm:4.14.176"],
@@ -2016,6 +2029,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["ardrive-core-js", "npm:1.15.1-alpha-1"],
             ["arweave", "npm:1.11.4"],
             ["axios", "npm:0.21.1"],
+            ["bn.js", "npm:5.2.1"],
             ["chai", "npm:4.3.4"],
             ["commander", "npm:8.3.0"],
             ["eslint", "npm:7.23.0"],
