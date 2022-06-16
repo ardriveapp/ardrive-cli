@@ -11,12 +11,16 @@ ardrive create-drive --wallet-file /path/to/my/wallet.json --drive-name "Teenage
         {
             "type": "drive",
             "metadataTxId": "giv2R8Xj0bbe6l5taBTQJk_38zwIrMH_g1-knSCisjU",
-            "entityId": "898687ea-b678-4f86-b4e7-49560b190356"
+            "entityId": "898687ea-b678-4f86-b4e7-49560b190356",
+            "bundledIn": "Vj2x4IBEAezBvhj5RgtA247W_q3S10suI6l0E30GPoE",
+            "entityName": "Teenage Love Poetry"
         },
         {
             "type": "folder",
             "metadataTxId": "VljnttwUxRStnVuPYakF9e2whjhYJVWB0nSxD5dVyJ8",
-            "entityId": "f0c58c11-430c-4383-8e54-4d864cc7e927"
+            "entityId": "f0c58c11-430c-4383-8e54-4d864cc7e927",
+            "bundledIn": "Vj2x4IBEAezBvhj5RgtA247W_q3S10suI6l0E30GPoE",
+            "entityName": "Teenage Love Poetry"
         },
         {
             "type": "bundle",
@@ -34,9 +38,12 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
     "created": [
         {
             "type": "file",
-            "metadataTxId": "EvE06MmE9IKeUzFMnxSgY1M5tJX4uHU64-n8Pf_lZfU",
+            "entityName": "ode_to_ardrive.txt",
+            "entityId": "bd2ce978-6ede-4b0d-8f79-2d7bc235a0e0",
             "dataTxId": "tSMcfvAQu_tKLUkdvRRbqdX93oAf3h6c9eJsSj8mXL4",
-            "entityId": "bd2ce978-6ede-4b0d-8f79-2d7bc235a0e0"
+            "metadataTxId": "EvE06MmE9IKeUzFMnxSgY1M5tJX4uHU64-n8Pf_lZfU",
+            "bundledIn": "qjdHiQoWlSjCvhj5RgtA247W_q3S10suI6l0E30GPoE",
+            "sourceUri": "file://Users/BestArDriver/Uploads/helloworld.txt"
         },
         {
             "type": "bundle",
@@ -116,11 +123,12 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         10. [Understanding Bundled Transactions](#bundles)
         11. [Uploading a Non-Bundled Transaction](#no-bundle)
         12. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
-        13. [Moving Files](#moving-files)
-        14. [Uploading Manifests](#uploading-manifests)
-        15. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
-        16. [Uploading With a Custom Content Type](#custom-content-type)
-        17. [Uploading a Custom Manifest](#custom-manifest)
+        13. [Retrying a Failed File Data Transaction (Public Unbundled Files Only)](#retry-tx)
+        14. [Moving Files](#moving-files)
+        15. [Uploading Manifests](#uploading-manifests)
+        16. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
+        17. [Uploading With a Custom Content Type](#custom-content-type)
+        18. [Uploading a Custom Manifest](#custom-manifest)
     7. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -351,7 +359,7 @@ At the root of every data tree is a "Drive" entity. When a drive is created, a R
 # Use `tee` to keep a receipt of the full set of transactions info and `jq` to focus on the data of interest
 ardrive create-drive --wallet-file /path/to/my/wallet.json --drive-name "Teenage Love Poetry" |
 tee created_drive.json |
-jq '[.created[] | del(.metadataTxId)]'
+jq '[.created[] | del(.metadataTxId, .entityName, .bundledIn)]'
 [
     {
         "type": "drive",
@@ -547,7 +555,8 @@ Example output:
             "type": "folder",
             "metadataTxId": "AYFMBVmwqhbg9y5Fbj3Iasy5oxUqhauOW7PcS1sl4Dk",
             "entityId": "d1b7c514-fb12-4603-aad8-002cf63015d3",
-            "key": "yHdCjpCKD2cuhQcKNx2d/XF5ReEjoKfZVqKunlCnPEk"
+            "key": "yHdCjpCKD2cuhQcKNx2d/XF5ReEjoKfZVqKunlCnPEk",
+            "entityName": "My Awesome Folder"
         }
     ],
     "tips": [],
@@ -712,9 +721,12 @@ Example output:
     "created": [
         {
             "type": "file",
-            "metadataTxId": "YfdDXUyerPCpBbGTm_gv_x5hR3tu5fnz8bM-jPL__JE",
-            "dataTxId": "l4iNWyBapfAIj7OU-nB8z9XrBhawyqzs5O9qhk-3EnI",
+            "entityName": "file.txt"
             "entityId": "6613395a-cf19-4420-846a-f88b7b765c05"
+            "dataTxId": "l4iNWyBapfAIj7OU-nB8z9XrBhawyqzs5O9qhk-3EnI",
+            "metadataTxId": "YfdDXUyerPCpBbGTm_gv_x5hR3tu5fnz8bM-jPL__JE",
+            "bundledIn": "1zwdfZAIV8E26YjBs2ZQ4xjjP_1ewalvRgD_GyYw7f8",
+            "sourceUri": "file:///path/to/file.txt"
         },
         {
             "type": "bundle",
@@ -950,6 +962,25 @@ Example output:
     "dataContentType": "image/png"
 }
 ```
+
+### Retrying a Failed File Data Transaction (Public Unbundled Files Only)<a id="retry-tx"></a>
+
+Arweave data upload transactions are split into two phases: transaction posting and chunks uploading. Once the transaction post phase has been completed, you've effectively "paid" the network for storage of the data chunks that you'll send in the next stage.
+
+If your system encounters an error while posting the transaction, you can retry posting the transaction for as long as your tx_anchor is valid ([learn more about tx_anchors here][tx_anchors]). You may retry and/or resume posting chunks at any time after your transaction has posted. The ArDrive CLI allows you to take advantage of this Arweave protocol capability.
+
+Using the CLI, when the transaction post has succeeded but the chunk upload step fails, the data transaction's ID could be lost. There are a few options to recover this ID. If the failed transaction is the most recent one sent from a wallet, the transaction ID can be recovered with the `ardrive last-tx -w /path/to/wallet` command AFTER the transaction's headers have been mined (It can take 5-10 minutes for the tx-id to become available with the last-tx approach). Other options for finding the partially uploaded transaction's ID include:
+
+-   Using an Arweave gateway GQL http endpoint to search for transactions that belong to the wallet. See this [Arweave GQL Guide][gql-guide] for more info.
+-   Browse the recent transactions associated with the wallet via a block explorer tool like [ViewBlock][viewblock].
+
+In order to re-seed the chunks for an unbundled ArFS data transaction, a user must have the data transaction ID, the original file data, and either a destination folder ID or a valid file ID for the file. Supply that information to the `retry-tx` command like so:
+
+```shell
+ardrive retry-tx --tx-id { Data Transaction ID } --parent-folder-id { Destination Folder ID }  --local-path /path/to/file  --wallet-file /path/to/wallet
+```
+
+**Note: Retry feature is currently only available for PUBLIC unbundled file transactions. It is also perfectly safe to mistakenly re-seed the chunks of a healthy transaction, the transaction will remain stable and the wallet balance will not be affected.**
 
 ### Moving Files<a id="moving-files"></a>
 
@@ -1295,6 +1326,8 @@ create-manifest
 move-file
 move-folder
 
+retry-tx
+
 
 Read ArFS
 ===========
@@ -1362,3 +1395,6 @@ ardrive <command> --help
 [example-manifest-webpage]: https://arweave.net/qozq9YIUPEHfZhoTp9DkBpJuA_KNULBnfLiMroj5pZI
 [arlocal]: https://github.com/textury/arlocal
 [mozilla-mime-types]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
+[viewblock]: https://viewblock.io/arweave/
+[tx_anchors]: https://docs.arweave.org/developers/server/http-api#field-definitions
+[gql-guide]: https://gql-guide.vercel.app/#owners
