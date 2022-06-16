@@ -56,21 +56,14 @@ function getFilesFromCSV(parameters: ParametersHelper): UploadPathParameter[] | 
 	const csvRows = localCSVFileData.split(ROW_SEPARATOR);
 	const fileParameters: UploadPathParameter[] = csvRows.map((row: string) => {
 		const csvFields = row.split(COLUMN_SEPARATOR).map((f: string) => f.trim());
-		const [
-			localFilePath,
-			destinationFileName,
-			_parentFolderId,
-			drivePassword,
-			_driveKey,
-			_customContentType,
-			_customTagsPath
-		] = csvFields;
+		// prettier-ignore
+		const [localFilePath, destinationFileName, _parentFolderId, drivePassword, _driveKey, _customContentType] =
+			csvFields;
 
 		const customContentType = _customContentType ?? parameters.getParameterValue(CustomContentTypeParameter);
-		const customTags = parameters.getCustomTags(_customTagsPath);
 
 		// TODO: Make CSV uploads more bulk performant
-		const wrappedEntity = wrapFileOrFolder(localFilePath, customContentType, customTags);
+		const wrappedEntity = wrapFileOrFolder(localFilePath, customContentType);
 		const parentFolderId = EID(
 			_parentFolderId ? _parentFolderId : parameters.getRequiredParameterValue(ParentFolderIdParameter)
 		);
@@ -94,10 +87,9 @@ function getFileList(parameters: ParametersHelper, parentFolderId: FolderID): Up
 		return undefined;
 	}
 	const customContentType = parameters.getParameterValue(CustomContentTypeParameter);
-	const customTags = parameters.getCustomTags();
 
 	const localPathsToUpload = localPaths.map((filePath: FilePath) => {
-		const wrappedEntity = wrapFileOrFolder(filePath, customContentType, customTags);
+		const wrappedEntity = wrapFileOrFolder(filePath, customContentType);
 
 		return {
 			parentFolderId,
@@ -115,9 +107,8 @@ function getSingleFile(parameters: ParametersHelper, parentFolderId: FolderID): 
 		parameters.getRequiredParameterValue<string>(LocalPathParameter);
 
 	const customContentType = parameters.getParameterValue(CustomContentTypeParameter);
-	const customTags = parameters.getCustomTags();
 
-	const wrappedEntity = wrapFileOrFolder(localFilePath, customContentType, customTags);
+	const wrappedEntity = wrapFileOrFolder(localFilePath, customContentType);
 	const singleParameter = {
 		parentFolderId: parentFolderId,
 		wrappedEntity,
@@ -182,7 +173,8 @@ new CLICommand({
 				feeMultiple: parameters.getOptionalBoostSetting(),
 				dryRun: parameters.isDryRun(),
 				shouldBundle,
-				arweave
+				arweave,
+				customMetaData: parameters.getCustomMetaData()
 			});
 
 			const uploadStats: ArDriveUploadStats[] = await (async () => {

@@ -37,7 +37,9 @@ import {
 	upsertOnConflicts,
 	askOnConflicts,
 	EntityKey,
-	GQLTagInterface
+	CustomMetaData,
+	isCustomMetaData,
+	isCustomMetaDataTagInterface
 } from 'ardrive-core-js';
 import { JWKInterface } from 'arweave/node/lib/wallet';
 
@@ -284,8 +286,8 @@ export class ParametersHelper {
 		return mapFunc(value);
 	}
 
-	public getCustomTags(path?: string): GQLTagInterface[] | undefined {
-		const tagPath = path ?? this.getParameterValue(CustomTagsParameter);
+	public getCustomMetaData(): CustomMetaData | undefined {
+		const tagPath = this.getParameterValue(CustomTagsParameter);
 		if (!tagPath) {
 			return undefined;
 		}
@@ -296,9 +298,14 @@ export class ParametersHelper {
 		try {
 			const tagJSON: unknown = JSON.parse(tagFile);
 
-			if (isGqlTagInterfaceArray(tagJSON)) {
-				// Valid custom tags
+			if (isCustomMetaData(tagJSON)) {
+				// Valid custom metadata schema we can send to core
 				return tagJSON;
+			}
+			if (isCustomMetaDataTagInterface(tagJSON)) {
+				// User submits an object of names and values with no instructions on where to put them
+				// By default, We will put them on the File MetaData JSON
+				return { tagsOnFileMetaDataJson: tagJSON };
 			}
 		} catch {
 			throw Error(invalidSchemaError);
@@ -346,12 +353,6 @@ export class ParametersHelper {
 		const dryRun = this.getParameterValue(DryRunParameter);
 		return !!dryRun;
 	}
-}
-
-function isGqlTagInterfaceArray(tags: unknown): tags is GQLTagInterface[] {
-	const gqlTags = tags as GQLTagInterface[];
-
-	return gqlTags.length > 0 && Object.keys(gqlTags[0]).includes('name') && Object.keys(gqlTags[0]).includes('value');
 }
 
 const invalidSchemaError =

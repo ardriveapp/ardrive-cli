@@ -59,7 +59,8 @@ export const cliArDriveFactory = ({
 	communityOracle,
 	priceEstimator,
 	shouldBundle = true,
-	arFSTagSettings = new ArFSTagSettings({ appName, appVersion }),
+	customMetaData,
+	arFSTagSettings = new ArFSTagSettings({ appName, appVersion, customMetaData }),
 	uploadPlanner
 }: ArDriveSettings): ArDrive =>
 	arDriveFactory({
