@@ -29,6 +29,7 @@ import './rename_folder';
 import './retry_tx';
 import './send_ar';
 import './send_tx';
+import './test_wallet';
 import './tx_status';
 import './upload_file';
 

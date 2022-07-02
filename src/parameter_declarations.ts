@@ -41,6 +41,7 @@ export const LocalCSVParameter = 'localCsv';
 export const WithKeysParameter = 'withKeys';
 export const GatewayParameter = 'gateway';
 export const CustomContentTypeParameter = 'contentType';
+export const DebugParameter = 'debug';
 
 // Aggregates for convenience
 export const WalletTypeParameters = [WalletFileParameter, SeedPhraseParameter];
@@ -465,4 +466,11 @@ Parameter.declare({
 	aliases: ['--content-type'],
 	description:
 		'(OPTIONAL) Provide a custom content type to all files within the upload to be used by the gateway to display the content'
+});
+
+Parameter.declare({
+	name: DebugParameter,
+	aliases: ['--debug'],
+	description: 'Prints additional diagnostic information to the console',
+	type: 'boolean'
 });
