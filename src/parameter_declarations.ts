@@ -41,7 +41,10 @@ export const LocalCSVParameter = 'localCsv';
 export const WithKeysParameter = 'withKeys';
 export const GatewayParameter = 'gateway';
 export const CustomContentTypeParameter = 'contentType';
-export const CustomTagsParameter = 'customTags';
+export const DataGqlTagsParameter = 'dataGqlTags';
+export const MetaDataFileParameter = 'metaDataFile';
+export const MetaDataGqlTagsParameter = 'metaDataGqlTags';
+export const MetaDataJsonParameter = 'metaDataJson';
 
 // Aggregates for convenience
 export const WalletTypeParameters = [WalletFileParameter, SeedPhraseParameter];
@@ -55,7 +58,7 @@ export const AllParameters = [
 	BoostParameter,
 	ConfirmationsParameter,
 	CustomContentTypeParameter,
-	CustomTagsParameter,
+	DataGqlTagsParameter,
 	DestinationAddressParameter,
 	DestinationFileNameParameter,
 	DriveKeyParameter,
@@ -74,6 +77,9 @@ export const AllParameters = [
 	LocalPathParameter,
 	LocalPathsParameter,
 	MaxDepthParameter,
+	MetaDataFileParameter,
+	MetaDataGqlTagsParameter,
+	MetaDataJsonParameter,
 	ShouldBundleParameter,
 	NoVerifyParameter,
 	ParentFolderIdParameter,
@@ -471,7 +477,36 @@ Parameter.declare({
 });
 
 Parameter.declare({
-	name: CustomTagsParameter,
-	aliases: ['--custom-tags'],
-	description: '(OPTIONAL) Path to JSON file containing custom GQL tags to add to all metadata within the upload'
+	name: MetaDataFileParameter,
+	aliases: ['--metadata-file'],
+	description:
+		'(OPTIONAL) Path to JSON file containing custom metadata to add to ArFS transactions within the upload',
+	forbiddenConjunctionParameters: [MetaDataJsonParameter, MetaDataGqlTagsParameter, DataGqlTagsParameter]
+});
+
+Parameter.declare({
+	name: MetaDataJsonParameter,
+	aliases: ['--metadata-json'],
+	type: 'array',
+	description:
+		'(OPTIONAL) An mapping of custom metadata in the `"TAG_NAME" "TAG_VALUE"` format to be applied to the Data JSON of all MetaData Transactions created. Must be an even number of string values to determine custom metadata',
+	forbiddenConjunctionParameters: [MetaDataFileParameter, MetaDataGqlTagsParameter, DataGqlTagsParameter]
+});
+
+Parameter.declare({
+	name: MetaDataGqlTagsParameter,
+	aliases: ['--metadata-gql-tags'],
+	type: 'array',
+	description:
+		'(OPTIONAL) An mapping of custom metadata in the `"TAG_NAME" "TAG_VALUE"` format to be applied to the GQL Tags of all MetaData Transactions created. Must be an even number of string values to determine custom metadata',
+	forbiddenConjunctionParameters: [MetaDataJsonParameter, MetaDataFileParameter, DataGqlTagsParameter]
+});
+
+Parameter.declare({
+	name: DataGqlTagsParameter,
+	aliases: ['--data-gql-tags'],
+	type: 'array',
+	description:
+		'(OPTIONAL) An mapping of custom metadata in the `"TAG_NAME" "TAG_VALUE"` format to be applied to the GQL Tags of all Data Transactions created. Must be an even number of string values to determine custom metadata',
+	forbiddenConjunctionParameters: [MetaDataJsonParameter, MetaDataGqlTagsParameter, MetaDataFileParameter]
 });
