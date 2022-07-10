@@ -63,6 +63,7 @@ class TestCliApiObject {
 	name = stub(this.program, 'name').returnsThis();
 	usage = stub(this.program, 'usage').returnsThis();
 	outputHelp = stub(this.program, 'outputHelp');
+	version = stub(this.program, 'version');
 }
 
 describe('CLICommand class', () => {

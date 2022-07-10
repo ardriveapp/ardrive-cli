@@ -5,6 +5,9 @@ import { CliApiObject, ExitCode, ParsedParameters } from './cli';
 import { ERROR_EXIT_CODE } from './error_codes';
 import { Parameter, ParameterName, ParameterOverridenConfig } from './parameter';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { version: CLI_APP_VERSION } = require('../../package.json');
+
 export type CommandName = string;
 export interface CommandDescriptor {
 	name: CommandName;
@@ -105,6 +108,7 @@ export class CLICommand {
 	 */
 	constructor(readonly commandDescription: CommandDescriptor, program: CliApiObject = programApi) {
 		program.name('ardrive');
+		program.version(CLI_APP_VERSION);
 		program.addHelpCommand(true);
 		program.usage('[command] [command-specific options]');
 		// Override the commander's default exit (process.exit()) to avoid abruptly interrupting the script execution
