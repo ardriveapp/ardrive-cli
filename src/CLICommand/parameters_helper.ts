@@ -15,7 +15,9 @@ import {
 	BoostParameter,
 	GatewayParameter,
 	DryRunParameter,
-	CustomTagsParameter
+	MetaDataFileParameter,
+	MetaDataGqlTagsParameter,
+	MetadataJsonParameter
 } from '../parameter_declarations';
 import { cliWalletDao } from '..';
 import passwordPrompt from 'prompts';
@@ -39,7 +41,8 @@ import {
 	EntityKey,
 	CustomMetaData,
 	isCustomMetaData,
-	isCustomMetaDataTagInterface
+	isCustomMetaDataTagInterface,
+	CustomMetaDataTagInterface
 } from 'ardrive-core-js';
 import { JWKInterface } from 'arweave/node/lib/wallet';
 
@@ -287,13 +290,27 @@ export class ParametersHelper {
 	}
 
 	public getCustomMetaData(): CustomMetaData | undefined {
-		const tagPath = this.getParameterValue(CustomTagsParameter);
-		if (!tagPath) {
-			return undefined;
+		const metaDataPath = this.getParameterValue(MetaDataFileParameter);
+		if (metaDataPath) {
+			return this.readMetaDataFromPath(metaDataPath);
 		}
 
+		const metaDataGqlTags = this.mapMetaDataArrayToTagInterface(
+			this.getParameterValue<string[]>(MetaDataGqlTagsParameter)
+		);
+		const metaDataJson = this.mapMetaDataArrayToTagInterface(
+			this.getParameterValue<string[]>(MetadataJsonParameter)
+		);
+
+		return {
+			metaDataGqlTags,
+			metaDataJson
+		};
+	}
+
+	private readMetaDataFromPath(path: string): CustomMetaData {
 		// Read tag file or throw fs path error
-		const tagFile = fs.readFileSync(tagPath, { encoding: 'utf8' });
+		const tagFile = fs.readFileSync(path, { encoding: 'utf8' });
 
 		try {
 			const tagJSON: unknown = JSON.parse(tagFile);
@@ -305,12 +322,48 @@ export class ParametersHelper {
 			if (isCustomMetaDataTagInterface(tagJSON)) {
 				// User submits an object of names and values with no instructions on where to put them
 				// By default, We will put them on the File MetaData JSON
-				return { tagsOnFileMetaDataJson: tagJSON };
+				return { metaDataJson: tagJSON };
 			}
 		} catch {
 			throw Error(invalidSchemaError);
 		}
 		throw Error(invalidSchemaError);
+	}
+
+	private mapMetaDataArrayToTagInterface(metadata: string[] | undefined): CustomMetaDataTagInterface | undefined {
+		if (metadata === undefined || metadata.length === 0) {
+			return undefined;
+		}
+		this.assertEvenTags(metadata);
+
+		const metaData: CustomMetaDataTagInterface = {};
+		let temp: string | null = null;
+
+		for (const val of metadata) {
+			this.assertCharacterLength(val);
+
+			if (temp === null) {
+				// val is tag Name
+				temp = val;
+			} else {
+				// val is tag Value
+				metaData[temp] = val;
+			}
+		}
+
+		return metaData;
+	}
+
+	private assertEvenTags(tags?: string[]): void {
+		if (tags && tags.length % 2 !== 0) {
+			throw Error('User must provide an even number custom metadata inputs! e.g: --metadata-json "NAME" "VALUE"');
+		}
+	}
+
+	private assertCharacterLength(value: string): void {
+		if (value.length === 0) {
+			throw Error('Metadata string must be at least one character!');
+		}
 	}
 
 	/**
