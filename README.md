@@ -84,10 +84,11 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
     8. [Limitations](#limitations)
 3. [Using the CLI](#using-the-cli)
     1. [CLI Help](#cli-help)
-    2. [Wallet Operations](#wallet-operations)
-    3. [Working With Entities](#working-with-entities)
+    2. [CLI Version](#cli-version)
+    3. [Wallet Operations](#wallet-operations)
+    4. [Working With Entities](#working-with-entities)
         1. [Dry Run](#dry-run)
-    4. [Working With Drives](#working-with-drives)
+    5. [Working With Drives](#working-with-drives)
         1. [Understanding Drive Hierarchies](#understanding-drive-hierarchies)
             1. [Fetching Drive Info](#drive-info)
         2. [Understanding Drive and File Keys](#understanding-drive-and-file-keys)
@@ -104,13 +105,13 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
             1. [Get Share Links for Files in the Drive](#get-share-links)
             2. [Get Total Size of Files in the Drive](#get-total-size)
             3. [Get Total Count of Files in the Drive](#get-file-count)
-    5. [Working With Folders](#working-with-folders)
+    6. [Working With Folders](#working-with-folders)
         1. [Creating Folders](#creating-folders)
         2. [Moving Folders](#moving-folders)
         3. [Renaming Folders](#rename-folder)
         4. [Viewing Folder Metadata](#viewing-folder-metadata)
         5. [Listing Contents of a Folder](#listing-contents-of-a-folder)
-    6. [Working With Files](#working-with-files)
+    7. [Working With Files](#working-with-files)
         1. [Uploading a Single File](#uploading-a-single-file)
         2. [Download a Single File (BETA)](#download-file)
         3. [Rename a Single File](#rename-file)
@@ -129,7 +130,7 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         16. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
         17. [Uploading With a Custom Content Type](#custom-content-type)
         18. [Uploading a Custom Manifest](#custom-manifest)
-    7. [Other Utility Operations](#other-utility-operations)
+    8. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
         3. [Check for network congestion before uploading](#check-congestion)
@@ -276,6 +277,15 @@ Learn to use any command:
 
 ```shell
 ardrive --help
+```
+
+## CLI Version
+
+You can print out the version by running any of:
+
+```shell
+ardrive --version
+ardrive -V
 ```
 
 ## Wallet Operations
