@@ -1,5 +1,7 @@
 #!/usr/bin/env bats
 
+bats_require_minimum_version 1.5.0
+
 # Support lib
 load '/home/node/packages/node_modules/bats-support/load.bash'
 # File methods. DEPENDS on SUPPORT lib.
@@ -17,7 +19,6 @@ load './rename_colliding_name.sh'
 load './rename_same_name.sh'
 # Constants
 load '../../constants.sh'
-
 
 DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")" >/dev/null 2>&1 && pwd)"
 
