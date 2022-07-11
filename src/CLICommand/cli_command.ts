@@ -16,7 +16,14 @@ export interface CommandDescriptor {
 }
 
 const programAsUnknown: unknown = program;
-const programApi: CliApiObject = programAsUnknown as CliApiObject;
+export const programApi: CliApiObject = programAsUnknown as CliApiObject;
+
+programApi.name('ardrive');
+programApi.version(CLI_APP_VERSION);
+programApi.addHelpCommand(true);
+programApi.usage('[command] [command-specific options]');
+// Override the commander's default exit (process.exit()) to avoid abruptly interrupting the script execution
+programApi.exitOverride();
 
 /**
  * @name setCommanderCommand
@@ -107,12 +114,6 @@ export class CLICommand {
 	 * @param {string[]} argv a custom argv for testing purposes
 	 */
 	constructor(readonly commandDescription: CommandDescriptor, program: CliApiObject = programApi) {
-		program.name('ardrive');
-		program.version(CLI_APP_VERSION);
-		program.addHelpCommand(true);
-		program.usage('[command] [command-specific options]');
-		// Override the commander's default exit (process.exit()) to avoid abruptly interrupting the script execution
-		program.exitOverride();
 		setCommanderCommand(this.commandDescription, program);
 		CLICommand.allCommandInstances.push(this);
 	}

@@ -71,6 +71,12 @@ describe('CLICommand class', () => {
 	const program: CliApiObject = new Command() as CliApiObject;
 
 	before(() => {
+		program.name('ardrive');
+		program.addHelpCommand(true);
+		program.usage('[command] [command-specific options]');
+		// Override the commander's default exit (process.exit()) to avoid abruptly interrupting the script execution
+		program.exitOverride();
+
 		stubbedProgram = new TestCliApiObject(program);
 	});
 
