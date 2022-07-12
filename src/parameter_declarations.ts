@@ -48,7 +48,7 @@ export const MetadataJsonParameter = 'metadataJson';
 
 // Aggregates for convenience
 export const CustomMetaDataParameters = [
-	DataGqlTagsParameter,
+	// DataGqlTagsParameter,
 	MetaDataFileParameter,
 	MetaDataGqlTagsParameter,
 	MetadataJsonParameter
@@ -486,7 +486,7 @@ Parameter.declare({
 	name: MetaDataFileParameter,
 	aliases: ['--metadata-file'],
 	description:
-		'(OPTIONAL) Path to JSON file containing custom metadata to add to ArFS transactions within the upload',
+		'(OPTIONAL) Path to JSON file containing a custom metadata schema to add to ArFS transactions within the upload. Input must be a valid JSON object containing these example shapes: `{ "TAG_NAME": "TAG_VALUE" }` or `{ metaDataJson: { "TAG_NAME": [ "VAL_1", "VAL_2" ] }, metaDataGqlTags: { "IPFS_Add": "MY_PERMANENT_HASH?" } }`. Can NOT be used in conjunction with --metadata-json OR --metadata-gql-tags',
 	forbiddenConjunctionParameters: [MetadataJsonParameter, MetaDataGqlTagsParameter, DataGqlTagsParameter]
 });
 
@@ -495,7 +495,7 @@ Parameter.declare({
 	aliases: ['--metadata-json'],
 	type: 'array',
 	description:
-		'(OPTIONAL) An mapping of custom metadata in the `"TAG_NAME" "TAG_VALUE"` format to be applied to the Data JSON of all MetaData Transactions created. Must be an even number of string values to determine custom metadata',
+		'(OPTIONAL) A mapping of custom metadata in the `"TAG_NAME" "TAG_VALUE"` format to be applied to the Data JSON of all MetaData Transactions created. Must be an even number of string values to determine custom metadata. Can NOT be used in conjunction with --metadata-file',
 	forbiddenConjunctionParameters: [MetaDataFileParameter]
 });
 
@@ -504,15 +504,16 @@ Parameter.declare({
 	aliases: ['--metadata-gql-tags'],
 	type: 'array',
 	description:
-		'(OPTIONAL) An mapping of custom metadata in the `"TAG_NAME" "TAG_VALUE"` format to be applied to the GQL Tags of all MetaData Transactions created. Must be an even number of string values to determine custom metadata',
+		'(OPTIONAL) A mapping of custom metadata in the `"TAG_NAME" "TAG_VALUE"` format to be applied to the GQL Tags of all MetaData Transactions created. Must be an even number of string values to determine custom metadata. Can NOT be used in conjunction with --metadata-file',
 	forbiddenConjunctionParameters: [MetaDataFileParameter]
 });
 
-Parameter.declare({
-	name: DataGqlTagsParameter,
-	aliases: ['--data-gql-tags'],
-	type: 'array',
-	description:
-		'(OPTIONAL) An mapping of custom metadata in the `"TAG_NAME" "TAG_VALUE"` format to be applied to the GQL Tags of all Data Transactions created. Must be an even number of string values to determine custom metadata',
-	forbiddenConjunctionParameters: [MetaDataFileParameter]
-});
+// TODO: PE-1534
+// Parameter.declare({
+// 	name: DataGqlTagsParameter,
+// 	aliases: ['--data-gql-tags'],
+// 	type: 'array',
+// 	description:
+// 		'(OPTIONAL) A mapping of custom metadata in the `"TAG_NAME" "TAG_VALUE"` format to be applied to the GQL Tags of all Data Transactions created. Must be an even number of string values to determine custom metadata. Can NOT be used in conjunction with --metadata-file',
+// 	forbiddenConjunctionParameters: [MetaDataFileParameter]
+// });

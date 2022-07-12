@@ -348,6 +348,7 @@ export class ParametersHelper {
 			} else {
 				// val is tag Value
 				metaData[temp] = val;
+				temp = null;
 			}
 		}
 
