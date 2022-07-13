@@ -41,8 +41,9 @@ import {
 	EntityKey,
 	CustomMetaData,
 	isCustomMetaData,
-	isCustomMetaDataTagInterface,
-	CustomMetaDataTagInterface
+	CustomMetaDataTagInterface,
+	assertCustomMetaDataTagInterface,
+	invalidCustomMetaDataErrorMessage
 } from 'ardrive-core-js';
 import { JWKInterface } from 'arweave/node/lib/wallet';
 
@@ -311,23 +312,18 @@ export class ParametersHelper {
 	private readMetaDataFromPath(path: string): CustomMetaData {
 		// Read tag file or throw fs path error
 		const tagFile = fs.readFileSync(path, { encoding: 'utf8' });
+		const tagJSON: unknown = JSON.parse(tagFile);
 
-		try {
-			const tagJSON: unknown = JSON.parse(tagFile);
-
-			if (isCustomMetaData(tagJSON)) {
-				// Valid custom metadata schema we can send to core
-				return tagJSON;
-			}
-			if (isCustomMetaDataTagInterface(tagJSON)) {
-				// User submits an object of names and values with no instructions on where to put them
-				// By default, We will put them on the File MetaData JSON
-				return { metaDataJson: tagJSON };
-			}
-		} catch {
-			throw Error(invalidSchemaError);
+		if (isCustomMetaData(tagJSON)) {
+			// Valid custom metadata schema we can send to core
+			return tagJSON;
 		}
-		throw Error(invalidSchemaError);
+		if (assertCustomMetaDataTagInterface(tagJSON)) {
+			// User submits an object of names and values with no instructions on where to put them
+			// By default, We will put them on the File MetaData JSON
+			return { metaDataJson: tagJSON };
+		}
+		throw Error(invalidCustomMetaDataErrorMessage);
 	}
 
 	private mapMetaDataArrayToTagInterface(metadata: string[] | undefined): CustomMetaDataTagInterface | undefined {
@@ -340,8 +336,6 @@ export class ParametersHelper {
 		let temp: string | null = null;
 
 		for (const val of metadata) {
-			this.assertCharacterLength(val);
-
 			if (temp === null) {
 				// val is tag Name
 				temp = val;
@@ -352,18 +346,13 @@ export class ParametersHelper {
 			}
 		}
 
+		assertCustomMetaDataTagInterface(metaData);
 		return metaData;
 	}
 
 	private assertEvenTags(tags?: string[]): void {
 		if (tags && tags.length % 2 !== 0) {
 			throw Error('User must provide an even number custom metadata inputs! e.g: --metadata-json "NAME" "VALUE"');
-		}
-	}
-
-	private assertCharacterLength(value: string): void {
-		if (value.length === 0) {
-			throw Error('Metadata string must be at least one character!');
 		}
 	}
 
@@ -408,6 +397,3 @@ export class ParametersHelper {
 		return !!dryRun;
 	}
 }
-
-const invalidSchemaError =
-	'Invalid custom metadata schema. Please use valid a JSON file with `[{ name: string, value: string }]` format!';
