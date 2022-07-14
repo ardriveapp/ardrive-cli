@@ -53,6 +53,11 @@ function declareCommandWithParams(
 		parameters,
 		action: new CLIAction(action || dummyActionHandler)
 	};
+	program.name('ardrive');
+	program.addHelpCommand(true);
+	program.usage('[command] [command-specific options]');
+	// Override the commander's default exit (process.exit()) to avoid abruptly interrupting the script execution
+	program.exitOverride();
 	return new CLICommand(command, program);
 }
 

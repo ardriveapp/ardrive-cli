@@ -5,6 +5,9 @@ import { CliApiObject, ExitCode, ParsedParameters } from './cli';
 import { ERROR_EXIT_CODE } from './error_codes';
 import { Parameter, ParameterName, ParameterOverridenConfig } from './parameter';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { version: CLI_APP_VERSION } = require('../../package.json');
+
 export type CommandName = string;
 export interface CommandDescriptor {
 	name: CommandName;
@@ -13,7 +16,14 @@ export interface CommandDescriptor {
 }
 
 const programAsUnknown: unknown = program;
-const programApi: CliApiObject = programAsUnknown as CliApiObject;
+export const programApi: CliApiObject = programAsUnknown as CliApiObject;
+
+programApi.name('ardrive');
+programApi.version(CLI_APP_VERSION);
+programApi.addHelpCommand(true);
+programApi.usage('[command] [command-specific options]');
+// Override the commander's default exit (process.exit()) to avoid abruptly interrupting the script execution
+programApi.exitOverride();
 
 /**
  * @name setCommanderCommand
@@ -104,11 +114,6 @@ export class CLICommand {
 	 * @param {string[]} argv a custom argv for testing purposes
 	 */
 	constructor(readonly commandDescription: CommandDescriptor, program: CliApiObject = programApi) {
-		program.name('ardrive');
-		program.addHelpCommand(true);
-		program.usage('[command] [command-specific options]');
-		// Override the commander's default exit (process.exit()) to avoid abruptly interrupting the script execution
-		program.exitOverride();
 		setCommanderCommand(this.commandDescription, program);
 		CLICommand.allCommandInstances.push(this);
 	}

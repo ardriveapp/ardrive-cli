@@ -1,12 +1,14 @@
 #!/usr/bin/env bats
 
+bats_require_minimum_version 1.5.0
+
 # Support lib
 load '/home/node/packages/node_modules/bats-support/load.bash'
 # Assertions
 load '/home/node/packages/node_modules/bats-assert/load.bash'
 
 @test "generate-wallet creates canonical wallet" {
-    
+
     run -0 bash -c "yarn ardrive generate-wallet -s 'this is an example twelve word seed phrase that you could use' | jq .kty,.n,.e,.d,.p,.q,.dp,.dq,.qi,.kid"
 
     assert_line -n 0 '"RSA"'
@@ -22,11 +24,11 @@ load '/home/node/packages/node_modules/bats-assert/load.bash'
 }
 
 @test "generate-wallet rejects short and long seed phrases" {
-    
+
     run -1 bash -c "yarn ardrive generate-wallet -s 'invalid seed phrase'"
 
     assert_line -n 0 "Error: 'invalid seed phrase' is not a valid 12 word seed phrase!"
-    
+
     run -1 bash -c "yarn ardrive generate-wallet -s 'this invalid seed phrase has thirteen words and is expected to be rejected'"
 
     assert_line -n 0 "Error: 'this invalid seed phrase has thirteen words and is expected to be rejected' is not a valid 12 word seed phrase!"
