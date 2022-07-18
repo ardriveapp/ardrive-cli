@@ -21,6 +21,7 @@ export abstract class CliApiObject {
 	abstract usage(usage: string): CliApiObject;
 	abstract outputHelp(): void;
 	abstract exitOverride(callback?: (commanderError: CommanderError) => void): CliApiObject;
+	abstract version(str: string, flags?: string, description?: string): CliApiObject;
 }
 
 export type ActionCallback = (options: ParsedParameters) => ActionReturnType; // commander action callback

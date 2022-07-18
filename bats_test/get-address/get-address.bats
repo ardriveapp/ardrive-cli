@@ -1,23 +1,25 @@
 #!/usr/bin/env bats
 
+bats_require_minimum_version 1.5.0
+
 # Support lib
 load '/home/node/packages/node_modules/bats-support/load.bash'
 # Assertions
 load '/home/node/packages/node_modules/bats-assert/load.bash'
 
 @test "get-address finds the correct address of a canonical seed phrase" {
-    
+
     run -0 bash -c "yarn ardrive get-address -s 'this is an example twelve word seed phrase that you could use'"
 
     assert_line -n 0 'HTTn8F92tR32N8wuo-NIDkjmqPknrbl10JWo5MZ9x2k'
 }
 
 @test "get-address rejects short and long seed phrases" {
-    
+
     run -1 bash -c "yarn ardrive get-address -s 'invalid seed phrase'"
 
     assert_line -n 0 "Error: 'invalid seed phrase' is not a valid 12 word seed phrase!"
-    
+
     run -1 bash -c "yarn ardrive get-address -s 'this invalid seed phrase has thirteen words and is expected to be rejected'"
 
     assert_line -n 0 "Error: 'this invalid seed phrase has thirteen words and is expected to be rejected' is not a valid 12 word seed phrase!"
