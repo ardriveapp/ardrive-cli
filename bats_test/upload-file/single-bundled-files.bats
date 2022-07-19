@@ -1,5 +1,7 @@
 #!/usr/bin/env bats
 
+bats_require_minimum_version 1.5.0
+
 # Support lib
 load '/home/node/packages/node_modules/bats-support/load.bash'
 # Assertions
@@ -18,7 +20,6 @@ setup_file() {
     # TODO: Use a $HOME variable for local testing support
     cd /home/node/ardrive-cli
 }
-
 
 @test "upload-file creates a bundled transaction by default" {
     run -0 bash -c "yarn ardrive upload-file --dry-run --local-path '/home/node/10Chunks.txt' -F $PUB_FOLD_ID -w $WALLET | jq '.created[] .type'"
@@ -49,7 +50,7 @@ setup_file() {
     assert_line -n 1 '"file"'
     assert_line -n 2 '"bundle"'
     assert_line -n 3 ''
-    
+
 }
 
 @test "upload-file used on a bulk folder returns the expected results" {

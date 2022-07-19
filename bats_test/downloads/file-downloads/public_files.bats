@@ -1,5 +1,7 @@
 #!/usr/bin/env bats
 
+bats_require_minimum_version 1.5.0
+
 # Support lib
 load '/home/node/packages/node_modules/bats-support/load.bash'
 # File methods. DEPENDS on SUPPORT lib.
