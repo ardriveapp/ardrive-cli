@@ -472,5 +472,6 @@ Parameter.declare({
 Parameter.declare({
 	name: IPFSParameter,
 	aliases: ['--ipfs'],
-	description: '(OPTIONAL) Shares the entity to the IPFS+Arweave ecosystem'
+	description: '(OPTIONAL) Shares the entity to the IPFS+Arweave ecosystem',
+	type: 'boolean'
 });
