@@ -41,6 +41,7 @@ export const LocalCSVParameter = 'localCsv';
 export const WithKeysParameter = 'withKeys';
 export const GatewayParameter = 'gateway';
 export const CustomContentTypeParameter = 'contentType';
+export const IPFSParameter = 'ipfs';
 
 // Aggregates for convenience
 export const WalletTypeParameters = [WalletFileParameter, SeedPhraseParameter];
@@ -81,7 +82,8 @@ export const AllParameters = [
 	TxFilePathParameter,
 	UnsafeDrivePasswordParameter,
 	WalletFileParameter,
-	WithKeysParameter
+	WithKeysParameter,
+	IPFSParameter
 ] as const;
 export type ParameterName = typeof AllParameters[number];
 
@@ -465,4 +467,10 @@ Parameter.declare({
 	aliases: ['--content-type'],
 	description:
 		'(OPTIONAL) Provide a custom content type to all files within the upload to be used by the gateway to display the content'
+});
+
+Parameter.declare({
+	name: IPFSParameter,
+	aliases: ['--ipfs'],
+	description: '(OPTIONAL) Shares the entity to the IPFS+Arweave ecosystem'
 });
