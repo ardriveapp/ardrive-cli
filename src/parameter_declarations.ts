@@ -469,6 +469,7 @@ Parameter.declare({
 		'(OPTIONAL) Provide a custom content type to all files within the upload to be used by the gateway to display the content'
 });
 
+// TODO: double check with the team the flag name and description
 Parameter.declare({
 	name: IPFSParameter,
 	aliases: ['--ipfs'],
