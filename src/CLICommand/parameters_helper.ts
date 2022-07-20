@@ -40,10 +40,7 @@ import {
 	askOnConflicts,
 	EntityKey,
 	CustomMetaData,
-	isCustomMetaData,
-	CustomMetaDataTagInterface,
-	assertCustomMetaDataTagInterface,
-	invalidCustomMetaDataErrorMessage
+	assertCustomMetaData
 } from 'ardrive-core-js';
 import { JWKInterface } from 'arweave/node/lib/wallet';
 
@@ -292,47 +289,42 @@ export class ParametersHelper {
 
 	public getCustomMetaData(): CustomMetaData | undefined {
 		const metaDataPath = this.getParameterValue(MetaDataFileParameter);
-		if (metaDataPath) {
-			return this.readMetaDataFromPath(metaDataPath);
+
+		const customMetaData = metaDataPath
+			? this.readMetaDataFromPath(metaDataPath)
+			: {
+					metaDataGqlTags: this.mapMetaDataArrayToCustomMetaDataShape(
+						this.getParameterValue<string[]>(MetaDataGqlTagsParameter)
+					),
+					metaDataJson: this.mapMetaDataArrayToCustomMetaDataShape(
+						this.getParameterValue<string[]>(MetadataJsonParameter)
+					)
+			  };
+
+		assertCustomMetaData(customMetaData);
+
+		if (Object.keys(customMetaData).length > 0) {
+			return customMetaData;
 		}
 
-		const metaDataGqlTags = this.mapMetaDataArrayToTagInterface(
-			this.getParameterValue<string[]>(MetaDataGqlTagsParameter)
-		);
-		const metaDataJson = this.mapMetaDataArrayToTagInterface(
-			this.getParameterValue<string[]>(MetadataJsonParameter)
-		);
-
-		return {
-			metaDataGqlTags,
-			metaDataJson
-		};
+		return undefined;
 	}
 
 	private readMetaDataFromPath(path: string): CustomMetaData {
-		// Read tag file or throw fs path error
+		// Read tag file or throw fs path error or throw JSON parse error
 		const tagFile = fs.readFileSync(path, { encoding: 'utf8' });
-		const tagJSON: unknown = JSON.parse(tagFile);
-
-		if (isCustomMetaData(tagJSON)) {
-			// Valid custom metadata schema we can send to core
-			return tagJSON;
-		}
-		if (assertCustomMetaDataTagInterface(tagJSON)) {
-			// User submits an object of names and values with no instructions on where to put them
-			// By default, We will put them on the File MetaData JSON
-			return { metaDataJson: tagJSON };
-		}
-		throw Error(invalidCustomMetaDataErrorMessage);
+		return JSON.parse(tagFile);
 	}
 
-	private mapMetaDataArrayToTagInterface(metadata: string[] | undefined): CustomMetaDataTagInterface | undefined {
+	private mapMetaDataArrayToCustomMetaDataShape(
+		metadata: string[] | undefined
+	): CustomMetaDataCliArrayInput | undefined {
 		if (metadata === undefined || metadata.length === 0) {
 			return undefined;
 		}
 		this.assertEvenTags(metadata);
 
-		const metaData: CustomMetaDataTagInterface = {};
+		const metaData: CustomMetaDataCliArrayInput = {};
 		let temp: string | null = null;
 
 		for (const val of metadata) {
@@ -346,7 +338,6 @@ export class ParametersHelper {
 			}
 		}
 
-		assertCustomMetaDataTagInterface(metaData);
 		return metaData;
 	}
 
@@ -397,3 +388,5 @@ export class ParametersHelper {
 		return !!dryRun;
 	}
 }
+
+type CustomMetaDataCliArrayInput = Record<string, string>;
