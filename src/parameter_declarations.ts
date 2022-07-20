@@ -486,7 +486,7 @@ Parameter.declare({
 	name: MetaDataFileParameter,
 	aliases: ['--metadata-file'],
 	description:
-		'(OPTIONAL) Path to JSON file containing a custom metadata schema to add to ArFS transactions within the upload. Input must be a valid JSON object containing these example shapes: `{ "TAG_NAME": "TAG_VALUE" }` or `{ metaDataJson: { "TAG_NAME": [ "VAL_1", "VAL_2" ] }, metaDataGqlTags: { "IPFS_Add": "MY_PERMANENT_HASH?" } }`. Can NOT be used in conjunction with --metadata-json OR --metadata-gql-tags',
+		'(OPTIONAL) Path to JSON file containing a custom metadata schema to add to ArFS transactions within the upload. Input must be a valid JSON object, e.g shape: `{ metaDataJson: { "TAG_NAME": [ "VAL_1", "VAL_2" ] }, metaDataGqlTags: { "IPFS-Add": "MY_PERMANENT_HASH?" } }`. Can NOT be used in conjunction with --metadata-json OR --metadata-gql-tags',
 	forbiddenConjunctionParameters: [MetadataJsonParameter, MetaDataGqlTagsParameter, DataGqlTagsParameter]
 });
 
