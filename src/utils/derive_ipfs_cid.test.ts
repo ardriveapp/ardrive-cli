@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { derivateIpfsCid } from './derivate_ipfs_cid';
+import { deriveIpfsCid } from './derive_ipfs_cid';
 
 const dataToHash = [
 	{ data: 'hello', hash: 'QmWfVY9y3xjsixTgbd9AorQxH7VtMpzfx2HaWtsoUYecaX' },
@@ -10,7 +10,7 @@ const dataToHash = [
 describe('derivateIpfsCid function', () => {
 	it('returns the expeced hash', async () => {
 		for (const expected of dataToHash) {
-			const actualCid = await derivateIpfsCid(expected.data);
+			const actualCid = await deriveIpfsCid(expected.data);
 			expect(actualCid).to.equal(expected.hash);
 		}
 	});
