@@ -7,7 +7,7 @@ const dataToHash = [
 	{ data: Buffer.from('my file data'), hash: 'Qmd8s28wFUPP2rRbQEvvoHh84G22ShP5YzNgvT2mdhyrmq' }
 ];
 
-describe('derivateIpfsCid function', () => {
+describe('deriveIpfsCid function', () => {
 	it('returns the expeced hash', async () => {
 		for (const expected of dataToHash) {
 			const actualCid = await deriveIpfsCid(expected.data);
