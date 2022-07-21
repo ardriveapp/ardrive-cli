@@ -1167,10 +1167,22 @@ https://arweave.net/{dataTxId}/custom-file-2
 
 ArDrive CLI has the capability of attaching custom metadata to ArFS File and Folder MetaData Transactions during the `upload-file` command. This metadata can be applied to either the GQL tags on the MetaData Transaction and/or into the MetaData Transaction's Data JSON.
 
-All custom metadata applied must ultimately adhere to the following JSON shape:
+All custom metadata applied must ultimately adhere to the following JSON shapes:
 
 ```ts
-type CustomMetaDataTagInterface = Record<string, string | string[]>;
+// GQL Tags
+type CustomMetaDataGqlTags = Record<string, string | string[]>;
+
+// Data JSON Fields
+type CustomMetaDataJsonFields = Record<string, JsonSerializable>;
+
+export type JsonSerializable =
+    | string
+    | number
+    | boolean
+    | null
+    | { [member: string]: JsonSerializable }
+    | JsonSerializable[];
 ```
 
 e.g:
@@ -1185,11 +1197,11 @@ When the custom metadata is attached to the MetaData Transaction's GQL tags, the
 
 When these tags are added to the MetaData Transaction's Data JSON they can be read by downloading the JSON data directly from `https://arweave.net/METADATA_TX_ID`.
 
-To add this custom metadata to your file metadata transactions, CLI users can pass custom metadata with three different parameters:
+To add this custom metadata to your file metadata transactions, CLI users can pass custom metadata these parameters:
 
--   `--metadata-file`
--   `--metadata-json`
--   `--metadata-gql-tags`
+-   `--metadata-file path/to/json/schema`
+-   `--metadata-json "Tag-Name" "Tag Val"`
+-   `--metadata-gql-tags "Tag-Name" "Tag Val"`
 
 The `--metadata-file` will accept a file path to JSON file containing custom metadata:
 
@@ -1197,13 +1209,7 @@ The `--metadata-file` will accept a file path to JSON file containing custom met
 ardrive upload-file --metadata-file path/to/metadata/json # ...
 ```
 
-```json
-{
-    "IPFS-Add": "MY_HASH"
-}
-```
-
-By default the metadata will be added to the MetaData Transaction's Data JSON. This object can optionally contain instructions on where to put this metadata. e.g:
+This JSON schema object must contain instructions on where to put this metadata with the `metaDataJson` and `metaDataGqlTags` keys. e.g:
 
 ```json
 {
@@ -1216,7 +1222,7 @@ By default the metadata will be added to the MetaData Transaction's Data JSON. T
 }
 ```
 
-The `--metadata-json` and `--metadata-gql-tags` parameters accept an array of string values to be applied to their respective target (MetaData Tx Data JSON or GQL Tags). This method of CLI input does not support multiple tag values for a given tag name and the input must be an EVEN number of string values. e.g:
+Alternatively, the `--metadata-json` and `--metadata-gql-tags` parameters accept an array of string values to be applied to their respective target (MetaData Tx Data JSON or GQL Tags). This method of CLI input does not support multiple tag values for a given tag name and the input must be an EVEN number of string values. e.g:
 
 ```shell
 upload-file --metadata-gql-tags "IPFS-Add" "MY_HASH" --metadata-json "Tag-1" "Tag-Val" "Tag-2" "Tag-Val" # ...
@@ -1225,7 +1231,7 @@ upload-file --metadata-gql-tags "IPFS-Add" "MY_HASH" --metadata-json "Tag-1" "Ta
 Custom metadata applied to files and/or folders during the `upload-file` command will be read back through all existing read commands. e.g:
 
 ```shell
-> yarn ardrive file-info -f 067c4008-9cbe-422e-b697-05442f73da2b
+ardrive file-info -f 067c4008-9cbe-422e-b697-05442f73da2b
 {
     "appName": "ArDrive-CLI",
     "appVersion": "1.17.0",
