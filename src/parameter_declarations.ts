@@ -474,5 +474,6 @@ Parameter.declare({
 	name: IPFSParameter,
 	aliases: ['--add-ipfs-tag'],
 	description: '(OPTIONAL) Shares the entity to the IPFS+Arweave ecosystem',
-	type: 'boolean'
+	type: 'boolean',
+	forbiddenConjunctionParameters: [PrivateParameter, UnsafeDrivePasswordParameter]
 });
