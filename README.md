@@ -1176,7 +1176,7 @@ type CustomMetaDataTagInterface = Record<string, string | string[]>;
 e.g:
 
 ```shell
-{ IPFS_Add: 'MY_HASH' }
+{ IPFS-Add: 'MY_HASH' }
 # or
 { 'Custom Name': ['Val 1', 'Val 2'] }
 ```
