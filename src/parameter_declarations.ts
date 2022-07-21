@@ -41,7 +41,7 @@ export const LocalCSVParameter = 'localCsv';
 export const WithKeysParameter = 'withKeys';
 export const GatewayParameter = 'gateway';
 export const CustomContentTypeParameter = 'contentType';
-export const IPFSParameter = 'ipfs';
+export const IPFSParameter = 'addIpfsTag';
 
 // Aggregates for convenience
 export const WalletTypeParameters = [WalletFileParameter, SeedPhraseParameter];
@@ -472,7 +472,7 @@ Parameter.declare({
 // TODO: double check with the team the flag name and description
 Parameter.declare({
 	name: IPFSParameter,
-	aliases: ['--ipfs'],
+	aliases: ['--add-ipfs-tag'],
 	description: '(OPTIONAL) Shares the entity to the IPFS+Arweave ecosystem',
 	type: 'boolean'
 });
