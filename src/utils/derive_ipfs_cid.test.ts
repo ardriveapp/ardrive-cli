@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { deriveIpfsCid } from './derive_ipfs_cid';
+import { deriveIpfsCid } from './ipfs_utils';
 
 const dataToHash = [
 	{ data: 'hello', hash: 'QmWfVY9y3xjsixTgbd9AorQxH7VtMpzfx2HaWtsoUYecaX' },
