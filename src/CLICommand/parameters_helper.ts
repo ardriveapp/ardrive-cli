@@ -14,7 +14,10 @@ import {
 	SkipParameter,
 	BoostParameter,
 	GatewayParameter,
-	DryRunParameter
+	DryRunParameter,
+	MetaDataFileParameter,
+	MetaDataGqlTagsParameter,
+	MetadataJsonParameter
 } from '../parameter_declarations';
 import { cliWalletDao } from '..';
 import passwordPrompt from 'prompts';
@@ -35,7 +38,9 @@ import {
 	skipOnConflicts,
 	upsertOnConflicts,
 	askOnConflicts,
-	EntityKey
+	EntityKey,
+	CustomMetaData,
+	assertCustomMetaData
 } from 'ardrive-core-js';
 import { JWKInterface } from 'arweave/node/lib/wallet';
 
@@ -282,6 +287,66 @@ export class ParametersHelper {
 		return mapFunc(value);
 	}
 
+	public getCustomMetaData(): CustomMetaData | undefined {
+		const metaDataPath = this.getParameterValue(MetaDataFileParameter);
+
+		const customMetaData = metaDataPath
+			? this.readMetaDataFromPath(metaDataPath)
+			: {
+					metaDataGqlTags: this.mapMetaDataArrayToCustomMetaDataShape(
+						this.getParameterValue<string[]>(MetaDataGqlTagsParameter)
+					),
+					metaDataJson: this.mapMetaDataArrayToCustomMetaDataShape(
+						this.getParameterValue<string[]>(MetadataJsonParameter)
+					)
+			  };
+
+		assertCustomMetaData(customMetaData);
+
+		if (Object.keys(customMetaData).length > 0) {
+			return customMetaData;
+		}
+
+		return undefined;
+	}
+
+	private readMetaDataFromPath(path: string): CustomMetaData {
+		// Read tag file or throw fs path error or throw JSON parse error
+		const tagFile = fs.readFileSync(path, { encoding: 'utf8' });
+		return JSON.parse(tagFile);
+	}
+
+	private mapMetaDataArrayToCustomMetaDataShape(
+		metadata: string[] | undefined
+	): CustomMetaDataCliArrayInput | undefined {
+		if (metadata === undefined || metadata.length === 0) {
+			return undefined;
+		}
+		this.assertEvenTags(metadata);
+
+		const metaData: CustomMetaDataCliArrayInput = {};
+		let temp: string | null = null;
+
+		for (const val of metadata) {
+			if (temp === null) {
+				// val is tag Name
+				temp = val;
+			} else {
+				// val is tag Value
+				metaData[temp] = val;
+				temp = null;
+			}
+		}
+
+		return metaData;
+	}
+
+	private assertEvenTags(tags?: string[]): void {
+		if (tags && tags.length % 2 !== 0) {
+			throw Error('User must provide an even number custom metadata inputs! e.g: --metadata-json "NAME" "VALUE"');
+		}
+	}
+
 	/**
 	 * Gathers a valid gateway URL from user provided gateway parameter,
 	 * an environment variable, or returns the default arweave gateway
@@ -323,3 +388,5 @@ export class ParametersHelper {
 		return !!dryRun;
 	}
 }
+
+type CustomMetaDataCliArrayInput = Record<string, string>;

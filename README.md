@@ -130,6 +130,7 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         16. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
         17. [Uploading With a Custom Content Type](#custom-content-type)
         18. [Uploading a Custom Manifest](#custom-manifest)
+        19. [Uploading Files with Custom MetaData](#uploading-files-with-custom-metadata)
     8. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -1170,6 +1171,100 @@ The returned `dataTxId` field on the created `file` entity will be the endpoint 
 https://arweave.net/{dataTxId}
 https://arweave.net/{dataTxId}/custom-file-1
 https://arweave.net/{dataTxId}/custom-file-2
+```
+
+### Uploading Files with Custom MetaData
+
+ArDrive CLI has the capability of attaching custom metadata to ArFS File and Folder MetaData Transactions during the `upload-file` command. This metadata can be applied to either the GQL tags on the MetaData Transaction and/or into the MetaData Transaction's Data JSON.
+
+All custom metadata applied must ultimately adhere to the following JSON shapes:
+
+```ts
+// GQL Tags
+type CustomMetaDataGqlTags = Record<string, string | string[]>;
+
+// Data JSON Fields
+type CustomMetaDataJsonFields = Record<string, JsonSerializable>;
+
+export type JsonSerializable =
+    | string
+    | number
+    | boolean
+    | null
+    | { [member: string]: JsonSerializable }
+    | JsonSerializable[];
+```
+
+e.g:
+
+```shell
+{ IPFS-Add: 'MY_HASH' }
+# or
+{ 'Custom Name': ['Val 1', 'Val 2'] }
+```
+
+When the custom metadata is attached to the MetaData Transaction's GQL tags, they will become visible on any Arweave GQL gateway and also third party tools that read GQL data.
+
+When these tags are added to the MetaData Transaction's Data JSON they can be read by downloading the JSON data directly from `https://arweave.net/METADATA_TX_ID`.
+
+To add this custom metadata to your file metadata transactions, CLI users can pass custom metadata these parameters:
+
+-   `--metadata-file path/to/json/schema`
+-   `--metadata-json "Tag-Name" "Tag Val"`
+-   `--metadata-gql-tags "Tag-Name" "Tag Val"`
+
+The `--metadata-file` will accept a file path to JSON file containing custom metadata:
+
+```shell
+ardrive upload-file --metadata-file path/to/metadata/json # ...
+```
+
+This JSON schema object must contain instructions on where to put this metadata with the `metaDataJson` and `metaDataGqlTags` keys. e.g:
+
+```json
+{
+    "metaDataJson": {
+        "Tag-Name": ["Value-1", "Value-2"]
+    },
+    "metaDataGqlTags": {
+        "GQL Tag Name": "Tag Value"
+    }
+}
+```
+
+Alternatively, the `--metadata-json` and `--metadata-gql-tags` parameters accept an array of string values to be applied to their respective target (MetaData Tx Data JSON or GQL Tags). This method of CLI input does not support multiple tag values for a given tag name and the input must be an EVEN number of string values. e.g:
+
+```shell
+upload-file --metadata-gql-tags "IPFS-Add" "MY_HASH" --metadata-json "Tag-1" "Tag-Val" "Tag-2" "Tag-Val" # ...
+```
+
+Custom metadata applied to files and/or folders during the `upload-file` command will be read back through all existing read commands. e.g:
+
+```shell
+ardrive file-info -f 067c4008-9cbe-422e-b697-05442f73da2b
+{
+    "appName": "ArDrive-CLI",
+    "appVersion": "1.17.0",
+    "arFS": "0.11",
+    "contentType": "application/json",
+    "driveId": "967215ca-a489-494b-97ec-0dd428d7be34",
+    "entityType": "file",
+    "name": "unique-name-9718",
+    "txId": "sxg8bNu6_bbaHkJTxAINVVoz_F-LiFe6s7OnxzoJJk4",
+    "unixTime": 1657655070,
+    "size": 262148,
+    "lastModifiedDate": 1655409872705,
+    "dataTxId": "ublZcIff77ejl3m0uEA8lXEfnTWmSBOFoz-HibqKeyk",
+    "dataContentType": "text/plain",
+    "parentFolderId": "97bc4fb5-aca4-4ffe-938f-1285153d98ca",
+    "entityId": "067c4008-9cbe-422e-b697-05442f73da2b",
+    "fileId": "067c4008-9cbe-422e-b697-05442f73da2b",
+    "IPFS-Add": "MY_HASH",
+    "Tag-1": "Val",
+    "Tag-2": "Val",
+    "Tag-3": "Val",
+    "Boost": "1.05"
+}
 ```
 
 ## Other Utility Operations
