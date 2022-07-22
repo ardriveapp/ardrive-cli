@@ -473,7 +473,8 @@ Parameter.declare({
 Parameter.declare({
 	name: IPFSParameter,
 	aliases: ['--add-ipfs-tag'],
-	description: '(OPTIONAL) Shares the entity to the IPFS+Arweave ecosystem',
+	description:
+		'(OPTIONAL) Computes the v1 IPFS content identifier (CID) for each file and sets it as the "IPFS-Add" tag value of each\'s respective ArFS metadata transaction',
 	type: 'boolean',
 	forbiddenConjunctionParameters: [PrivateParameter, UnsafeDrivePasswordParameter]
 });

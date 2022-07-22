@@ -766,13 +766,13 @@ ardrive drive-info -d "c7f87712-b54e-4491-bc96-1c5fa7b1da50" | jq -r '.rootFolde
 
 ### The IPFS+Arweave integration
 
-If you'd like to share the file you are attempting to upload to the IPFS protocol as well, you can set the `--ipfs` flag to the `upload-file` command.
+By adding the `--add-ipfs-tag` flag to the `upload-file` command the ArDrive CLI will set the `IPFS-Add` GQL tag to the v1 IPFS Content Identifier (CID) which can be used to query entities by its corresponding CID when present.
 
 ```shell
-ardrive upload-file --ipfs --local-path /path/to/file.txt  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
+ardrive upload-file --add-ipfs-tag --local-path /path/to/file.txt  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
 ```
 
-By using the flag you are making use of the `IPFS+Arweave` ecosystem. You can find more information about the integration [here](https://arweave.medium.com/arweave-ipfs-persistence-for-the-interplanetary-file-system-9f12981c36c3);
+You can find more information about the IPFS+Arweave ecosystem [here](https://arweave.medium.com/arweave-ipfs-persistence-for-the-interplanetary-file-system-9f12981c36c3).
 
 ### Progress Logging of Transaction Uploads
 
