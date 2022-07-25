@@ -1265,7 +1265,7 @@ With some custom scripting and the `--metadata-file` parameter, the ArDrive CLI 
 ```shell
 for i in {1..5}
 do
-yarn ardrive upload-file -F 97bc4fb5-aca4-4ffe-938f-1285153d98ca --local-path "../uploads/test-file-$i.txt" -w ../wallets/best_wallet_key_J40R1BgFSI1_7p25QW49T7P46BePJJnlDrsFGY1YWbM.json --metadata-file "../custom/metadata-$i.json" --dry-run > "file-result-$i.json"
+ardrive upload-file -F f0c58c11-430c-4383-8e54-4d864cc7e927 --local-path "../uploads/test-file-$i.txt" -w "/path/to/wallet.json" --metadata-file "../custom/metadata-$i.json" --dry-run > "file-result-$i.json"
 done
 ```
 
