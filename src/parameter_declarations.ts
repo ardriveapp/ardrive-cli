@@ -474,7 +474,7 @@ Parameter.declare({
 	name: IPFSParameter,
 	aliases: ['--add-ipfs-tag'],
 	description:
-		'(OPTIONAL) Computes the v1 IPFS content identifier (CID) for each file and sets it as the "IPFS-Add" tag value of each\'s respective ArFS metadata transaction',
+		'(OPTIONAL) Computes the v1 IPFS content identifier (CID) for each file and sets it as the "IPFS-Add" tag value of each\'s respective file data transaction',
 	type: 'boolean',
 	forbiddenConjunctionParameters: [PrivateParameter, UnsafeDrivePasswordParameter]
 });
