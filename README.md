@@ -131,6 +131,7 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         17. [Uploading With a Custom Content Type](#custom-content-type)
         18. [Uploading a Custom Manifest](#custom-manifest)
         19. [Uploading Files with Custom MetaData](#uploading-files-with-custom-metadata)
+        20. [Applying Unique Custom MetaData During Bulk Workflows](#applying-unique-custom-metadata-during-bulk-workflows)
     8. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -1255,6 +1256,17 @@ ardrive file-info -f 067c4008-9cbe-422e-b697-05442f73da2b
     "Tag-3": "Val",
     "Boost": "1.05"
 }
+```
+
+#### Applying Unique Custom MetaData During Bulk Workflows
+
+With some custom scripting and the `--metadata-file` parameter, the ArDrive CLI can be used to apply custom metadata to each file individually in a bulk workflow. For example, if you choose a numbered file naming pattern you can make use of a `for` loop:
+
+```shell
+for i in {1..5}
+do
+yarn ardrive upload-file -F 97bc4fb5-aca4-4ffe-938f-1285153d98ca --local-path "../uploads/test-file-$i.txt" -w ../wallets/best_wallet_key_J40R1BgFSI1_7p25QW49T7P46BePJJnlDrsFGY1YWbM.json --metadata-file "../custom/metadata-$i.json" --dry-run > "file-result-$i.json"
+done
 ```
 
 ## Other Utility Operations
