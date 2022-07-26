@@ -765,15 +765,13 @@ NOTE: To upload to the root of a drive, specify its root folder ID as the parent
 ardrive drive-info -d "c7f87712-b54e-4491-bc96-1c5fa7b1da50" | jq -r '.rootFolderId'
 ```
 
-### The IPFS+Arweave integration
+### IPFS CID Tagging
 
-By adding the `--add-ipfs-tag` flag to the `upload-file` command the ArDrive CLI will set the `IPFS-Add` GQL tag to the v1 IPFS Content Identifier (CID) which can be used to query entities by its corresponding CID when present.
+Certain nodes on the Arweave network may be running the [IPFS+Arweave bridge](https://arweave.medium.com/arweave-ipfs-persistence-for-the-interplanetary-file-system-9f12981c36c3). Tagging your file upload transaction with its IPFS v1 CID value in the 'IFS-Add' tag may allow you to take advantage of this system. It can also be helpful for finding data on Arweave via GQL based on its CID. To include the CID tag on your file uploads, you may use the '--add-ipfs-tag' flag:
 
 ```shell
 ardrive upload-file --add-ipfs-tag --local-path /path/to/file.txt  --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
 ```
-
-You can find more information about the IPFS+Arweave ecosystem [here](https://arweave.medium.com/arweave-ipfs-persistence-for-the-interplanetary-file-system-9f12981c36c3).
 
 ### Progress Logging of Transaction Uploads
 
