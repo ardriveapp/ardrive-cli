@@ -290,20 +290,29 @@ export class ParametersHelper {
 	public getCustomMetaData(): CustomMetaData | undefined {
 		const metaDataPath = this.getParameterValue(MetaDataFileParameter);
 
-		const customMetaData = metaDataPath
-			? this.readMetaDataFromPath(metaDataPath)
-			: {
-					metaDataGqlTags: this.mapMetaDataArrayToCustomMetaDataShape(
-						this.getParameterValue<string[]>(MetaDataGqlTagsParameter)
-					),
-					metaDataJson: this.mapMetaDataArrayToCustomMetaDataShape(
-						this.getParameterValue<string[]>(MetadataJsonParameter)
-					)
-			  };
+		const customMetaData = (() => {
+			if (metaDataPath) {
+				return this.readMetaDataFromPath(metaDataPath);
+			}
 
-		assertCustomMetaData(customMetaData);
+			const customMetaData: CustomMetaData = {};
+			const metaDataGqlTags = this.mapMetaDataArrayToCustomMetaDataShape(
+				this.getParameterValue<string[]>(MetaDataGqlTagsParameter)
+			);
+			if (metaDataGqlTags) {
+				Object.assign(customMetaData, metaDataGqlTags);
+			}
+			const metaDataJson = this.mapMetaDataArrayToCustomMetaDataShape(
+				this.getParameterValue<string[]>(MetadataJsonParameter)
+			);
+			if (metaDataJson) {
+				Object.assign(customMetaData, metaDataGqlTags);
+			}
+			return customMetaData;
+		})();
 
 		if (Object.keys(customMetaData).length > 0) {
+			assertCustomMetaData(customMetaData);
 			return customMetaData;
 		}
 
