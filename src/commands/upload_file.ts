@@ -14,7 +14,8 @@ import {
 	LocalCSVParameter,
 	GatewayParameter,
 	CustomContentTypeParameter,
-	CustomMetaDataParameters
+	CustomMetaDataParameters,
+	IPFSParameter
 } from '../parameter_declarations';
 import { fileAndFolderUploadConflictPrompts } from '../prompts';
 import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
@@ -27,11 +28,13 @@ import {
 	wrapFileOrFolder,
 	EID,
 	EntityKey,
-	ArDriveUploadStats
+	ArDriveUploadStats,
+	CustomMetaData
 } from 'ardrive-core-js';
 import { cliArDriveFactory } from '..';
 import * as fs from 'fs';
 import { getArweaveFromURL } from '../utils/get_arweave_for_url';
+import { deriveIpfsCid } from '../utils/ipfs_utils';
 
 interface UploadPathParameter {
 	parentFolderId: FolderID;
@@ -39,6 +42,11 @@ interface UploadPathParameter {
 	destinationFileName?: string;
 	drivePassword?: string;
 	driveKey?: DriveKey;
+}
+
+interface GetCustomMetaDataWithIpfsCidParameter {
+	customMetaData?: CustomMetaData;
+	localFilePath: FilePath;
 }
 
 type FilePath = string;
@@ -82,7 +90,10 @@ function getFilesFromCSV(parameters: ParametersHelper): UploadPathParameter[] | 
 	return fileParameters;
 }
 
-function getFileList(parameters: ParametersHelper, parentFolderId: FolderID): UploadPathParameter[] | undefined {
+async function getFileList(
+	parameters: ParametersHelper,
+	parentFolderId: FolderID
+): Promise<UploadPathParameter[] | undefined> {
 	const localPaths = parameters.getParameterValue<string[]>(LocalPathsParameter);
 	if (!localPaths) {
 		return undefined;
@@ -90,8 +101,14 @@ function getFileList(parameters: ParametersHelper, parentFolderId: FolderID): Up
 	const customContentType = parameters.getParameterValue(CustomContentTypeParameter);
 	const customMetaData = parameters.getCustomMetaData();
 
-	const localPathsToUpload = localPaths.map((filePath: FilePath) => {
-		const wrappedEntity = wrapFileOrFolder(filePath, customContentType, customMetaData);
+	const localPathsToUpload = localPaths.map(async (filePath: FilePath) => {
+		const customMetaDataWithIipfsFlag = await (async function () {
+			const ipfsFlag = parameters.getParameterValue(IPFSParameter);
+			return ipfsFlag
+				? await getCustomMetaDataWithIpfsCid({ customMetaData, localFilePath: filePath })
+				: customMetaData;
+		})();
+		const wrappedEntity = wrapFileOrFolder(filePath, customContentType, customMetaDataWithIipfsFlag);
 
 		return {
 			parentFolderId,
@@ -99,17 +116,21 @@ function getFileList(parameters: ParametersHelper, parentFolderId: FolderID): Up
 		};
 	});
 
-	return localPathsToUpload;
+	return Promise.all(localPathsToUpload);
 }
 
-function getSingleFile(parameters: ParametersHelper, parentFolderId: FolderID): UploadPathParameter[] {
+async function getSingleFile(parameters: ParametersHelper, parentFolderId: FolderID): Promise<UploadPathParameter[]> {
 	// NOTE: Single file is the last possible use case. Throw exception if the parameter isn't found.
 	const localFilePath =
 		parameters.getParameterValue(LocalFilePathParameter_DEPRECATED) ??
 		parameters.getRequiredParameterValue<string>(LocalPathParameter);
 
 	const customContentType = parameters.getParameterValue(CustomContentTypeParameter);
-	const customMetaData = parameters.getCustomMetaData();
+	const customMetaData = await (async function () {
+		const customMetaData = parameters.getCustomMetaData();
+		const ipfsFlag = parameters.getParameterValue(IPFSParameter);
+		return ipfsFlag ? await getCustomMetaDataWithIpfsCid({ customMetaData, localFilePath }) : customMetaData;
+	})();
 
 	const wrappedEntity = wrapFileOrFolder(localFilePath, customContentType, customMetaData);
 	const singleParameter = {
@@ -119,6 +140,32 @@ function getSingleFile(parameters: ParametersHelper, parentFolderId: FolderID): 
 	};
 
 	return [singleParameter];
+}
+
+async function getCustomMetaDataWithIpfsCid({
+	customMetaData,
+	localFilePath
+}: GetCustomMetaDataWithIpfsCidParameter): Promise<CustomMetaData> {
+	const customMetaDataClone: CustomMetaData = Object.assign({}, customMetaData);
+
+	const customIpfsTag = customMetaDataClone.dataGqlTags?.['IPFS-Add'];
+	if (customIpfsTag) {
+		throw new Error(
+			`You cannot pass the --add-ipfs-tag flag and set the custom IPFS-Add metadata item. Found: { 'IPFS-Add': ${JSON.stringify(
+				customIpfsTag
+			)}}`
+		);
+	} else {
+		const fileContent = fs.readFileSync(localFilePath);
+		const cidHash = await deriveIpfsCid(fileContent);
+
+		if (!customMetaDataClone.dataGqlTags) {
+			customMetaDataClone.dataGqlTags = {};
+		}
+		customMetaDataClone.dataGqlTags['IPFS-Add'] = cidHash;
+	}
+
+	return customMetaDataClone;
 }
 
 new CLICommand({
@@ -140,7 +187,8 @@ new CLICommand({
 		LocalFilePathParameter_DEPRECATED,
 		LocalFilesParameter_DEPRECATED,
 		BoostParameter,
-		GatewayParameter
+		GatewayParameter,
+		IPFSParameter
 	],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
@@ -155,7 +203,7 @@ new CLICommand({
 			// Determine list of files to upload and destinations from parameter list
 			// First check the multi-file input case
 			const parentFolderId: FolderID = parameters.getRequiredParameterValue(ParentFolderIdParameter, EID);
-			const fileList = getFileList(parameters, parentFolderId);
+			const fileList = await getFileList(parameters, parentFolderId);
 			if (fileList) {
 				return fileList;
 			}
