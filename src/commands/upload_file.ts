@@ -32,6 +32,8 @@ import {
 import { cliArDriveFactory } from '..';
 import * as fs from 'fs';
 import { getArweaveFromURL } from '../utils/get_arweave_for_url';
+import { getTempFolder } from '../utils/temp';
+import { download } from '../utils/download';
 
 interface UploadPathParameter {
 	parentFolderId: FolderID;
@@ -118,20 +120,34 @@ function getSingleFile(parameters: ParametersHelper, parentFolderId: FolderID): 
 	return [singleParameter];
 }
 
-// function getRemoteFile(parameters: ParametersHelper, parentFolderId: FolderID): UploadPathParameter[] {
-// 	const remoteFilePath = parameters.getParameterValue(RemotePathParameter);
+async function getRemoteFile(
+	parameters: ParametersHelper,
+	parentFolderId: FolderID
+): Promise<UploadPathParameter[] | undefined> {
+	const remoteFilePath = parameters.getParameterValue(RemotePathParameter);
 
-// 	const customContentType = parameters.getParameterValue(CustomContentTypeParameter);
+	if (!remoteFilePath) {
+		return undefined;
+	}
 
-// 	const wrappedEntity = wrapFileOrFolder(localFilePath, customContentType);
-// 	const singleParameter = {
-// 		parentFolderId: parentFolderId,
-// 		wrappedEntity,
-// 		destinationFileName: parameters.getParameterValue(DestinationFileNameParameter)
-// 	};
+	const tempFolder = await getTempFolder();
 
-// 	return [singleParameter];
-// }
+	const localFilePath = await download(remoteFilePath, tempFolder);
+
+	if (!localFilePath) {
+		return undefined;
+	}
+	const customContentType = parameters.getParameterValue(CustomContentTypeParameter);
+
+	const wrappedEntity = wrapFileOrFolder(localFilePath, customContentType);
+	const singleParameter = {
+		parentFolderId: parentFolderId,
+		wrappedEntity,
+		destinationFileName: parameters.getParameterValue(DestinationFileNameParameter)
+	};
+
+	return [singleParameter];
+}
 
 new CLICommand({
 	name: 'upload-file',
@@ -164,13 +180,18 @@ new CLICommand({
 				return filesFromCSV;
 			}
 
-			//const filesFromRemote = getFilesFromRemotePath(parameters);
 			// Determine list of files to upload and destinations from parameter list
 			// First check the multi-file input case
 			const parentFolderId: FolderID = parameters.getRequiredParameterValue(ParentFolderIdParameter, EID);
 			const fileList = getFileList(parameters, parentFolderId);
 			if (fileList) {
 				return fileList;
+			}
+
+			const filesFromRemote = await getRemoteFile(parameters, parentFolderId);
+
+			if (filesFromRemote) {
+				return filesFromRemote;
 			}
 
 			// If neither the multi-file input case or csv case produced files, try the single file case (deprecated)

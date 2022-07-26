@@ -1,24 +1,39 @@
-import { get } from 'http';
-import { createWriteStream } from 'fs';
+import * as http from 'http';
+import * as https from 'https';
+import * as fs from 'fs';
 
-export async function download(url: string, dest: string): Promise<void> {
-	const file = createWriteStream(dest);
-	return new Promise<void>((resolve, reject) => {
-		let responseSent = false; // flag to make sure that response is sent only once.
-		get(url, (response) => {
+/**
+ * Downloads file from remote HTTP[S] host and puts its contents to the
+ * specified location.
+ */
+export async function download(url: string, filePath: string): Promise<string | undefined> {
+	const proto = !url.charAt(4).localeCompare('s') ? https : http;
+
+	return new Promise((resolve, reject) => {
+		const file = fs.createWriteStream(filePath);
+
+		const request = proto.get(url, (response) => {
+			if (response.statusCode !== 200) {
+				fs.unlink(filePath, () => {
+					reject(new Error(`Failed to get '${url}' (${response.statusCode})`));
+				});
+				return;
+			}
+
 			response.pipe(file);
-			file.on('finish', () => {
-				file.close();
-				() => {
-					if (responseSent) return;
-					responseSent = true;
-					resolve();
-				};
-			});
-		}).on('error', (err) => {
-			if (responseSent) return;
-			responseSent = true;
-			reject(err);
 		});
+
+		// The destination stream is ended by the time it's called
+		file.on('finish', () => resolve(file.path.toString()));
+
+		request.on('error', (err: unknown) => {
+			fs.unlink(filePath, () => reject(err));
+		});
+
+		file.on('error', (err: unknown) => {
+			fs.unlink(filePath, () => reject(err));
+		});
+
+		request.end();
 	});
 }
