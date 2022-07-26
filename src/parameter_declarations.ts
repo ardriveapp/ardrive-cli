@@ -41,6 +41,7 @@ export const LocalCSVParameter = 'localCsv';
 export const WithKeysParameter = 'withKeys';
 export const GatewayParameter = 'gateway';
 export const CustomContentTypeParameter = 'contentType';
+export const RemotePathParameter = 'remotePath';
 
 // Aggregates for convenience
 export const WalletTypeParameters = [WalletFileParameter, SeedPhraseParameter];
@@ -81,7 +82,8 @@ export const AllParameters = [
 	TxFilePathParameter,
 	UnsafeDrivePasswordParameter,
 	WalletFileParameter,
-	WithKeysParameter
+	WithKeysParameter,
+	RemotePathParameter
 ] as const;
 export type ParameterName = typeof AllParameters[number];
 
@@ -465,4 +467,21 @@ Parameter.declare({
 	aliases: ['--content-type'],
 	description:
 		'(OPTIONAL) Provide a custom content type to all files within the upload to be used by the gateway to display the content'
+});
+
+Parameter.declare({
+	name: RemotePathParameter,
+	aliases: ['--remote-path'],
+	description: `the remote path for the file that will be uploaded
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-file-path
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-files
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-paths
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-path
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-csv`,
+	forbiddenConjunctionParameters: [
+		LocalFilePathParameter_DEPRECATED,
+		LocalPathsParameter,
+		LocalCSVParameter,
+		LocalPathParameter
+	]
 });

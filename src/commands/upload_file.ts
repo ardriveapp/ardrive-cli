@@ -13,7 +13,8 @@ import {
 	LocalPathParameter,
 	LocalCSVParameter,
 	GatewayParameter,
-	CustomContentTypeParameter
+	CustomContentTypeParameter,
+	RemotePathParameter
 } from '../parameter_declarations';
 import { fileAndFolderUploadConflictPrompts } from '../prompts';
 import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
@@ -48,7 +49,6 @@ function getFilesFromCSV(parameters: ParametersHelper): UploadPathParameter[] | 
 	if (!localCSVFile) {
 		return undefined;
 	}
-
 	const localCSVFileData = fs.readFileSync(localCSVFile).toString().trim();
 	const COLUMN_SEPARATOR = ',';
 	const ROW_SEPARATOR = '\n';
@@ -118,6 +118,21 @@ function getSingleFile(parameters: ParametersHelper, parentFolderId: FolderID): 
 	return [singleParameter];
 }
 
+// function getRemoteFile(parameters: ParametersHelper, parentFolderId: FolderID): UploadPathParameter[] {
+// 	const remoteFilePath = parameters.getParameterValue(RemotePathParameter);
+
+// 	const customContentType = parameters.getParameterValue(CustomContentTypeParameter);
+
+// 	const wrappedEntity = wrapFileOrFolder(localFilePath, customContentType);
+// 	const singleParameter = {
+// 		parentFolderId: parentFolderId,
+// 		wrappedEntity,
+// 		destinationFileName: parameters.getParameterValue(DestinationFileNameParameter)
+// 	};
+
+// 	return [singleParameter];
+// }
+
 new CLICommand({
 	name: 'upload-file',
 	parameters: [
@@ -136,7 +151,8 @@ new CLICommand({
 		LocalFilePathParameter_DEPRECATED,
 		LocalFilesParameter_DEPRECATED,
 		BoostParameter,
-		GatewayParameter
+		GatewayParameter,
+		RemotePathParameter
 	],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
@@ -148,6 +164,7 @@ new CLICommand({
 				return filesFromCSV;
 			}
 
+			//const filesFromRemote = getFilesFromRemotePath(parameters);
 			// Determine list of files to upload and destinations from parameter list
 			// First check the multi-file input case
 			const parentFolderId: FolderID = parameters.getRequiredParameterValue(ParentFolderIdParameter, EID);
