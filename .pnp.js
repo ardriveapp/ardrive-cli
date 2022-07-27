@@ -50,7 +50,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/source-map-support", "npm:0.5.4"],
             ["@typescript-eslint/eslint-plugin", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
             ["@typescript-eslint/parser", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
-            ["ardrive-core-js", "npm:1.16.0-alpha-1"],
+            ["ardrive-core-js", "npm:1.16.0-alpha-2"],
             ["arweave", "npm:1.11.4"],
             ["axios", "npm:0.21.1"],
             ["bn.js", "npm:5.2.1"],
@@ -2063,7 +2063,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/source-map-support", "npm:0.5.4"],
             ["@typescript-eslint/eslint-plugin", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
             ["@typescript-eslint/parser", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:4.20.0"],
-            ["ardrive-core-js", "npm:1.16.0-alpha-1"],
+            ["ardrive-core-js", "npm:1.16.0-alpha-2"],
             ["arweave", "npm:1.11.4"],
             ["axios", "npm:0.21.1"],
             ["bn.js", "npm:5.2.1"],
@@ -2091,10 +2091,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["ardrive-core-js", [
-        ["npm:1.16.0-alpha-1", {
-          "packageLocation": "./.yarn/cache/ardrive-core-js-npm-1.16.0-alpha-1-bd20dee7e7-8f81f445d8.zip/node_modules/ardrive-core-js/",
+        ["npm:1.16.0-alpha-2", {
+          "packageLocation": "./.yarn/cache/ardrive-core-js-npm-1.16.0-alpha-2-eb2e008a5a-d0f7457518.zip/node_modules/ardrive-core-js/",
           "packageDependencies": [
-            ["ardrive-core-js", "npm:1.16.0-alpha-1"],
+            ["ardrive-core-js", "npm:1.16.0-alpha-2"],
             ["@alexsasharegan/simple-cache", "npm:3.3.3"],
             ["arbundles", "npm:0.6.19"],
             ["arweave", "npm:1.11.4"],
