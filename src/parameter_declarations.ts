@@ -493,9 +493,8 @@ Parameter.declare({
 Parameter.declare({
 	name: MetadataJsonParameter,
 	aliases: ['--metadata-json'],
-	type: 'array',
 	description:
-		'(OPTIONAL) A mapping of custom metadata in the `"TAG_NAME" "TAG_VALUE"` format to be applied to the Data JSON of all MetaData Transactions created. Must be an even number of string values to determine custom metadata. Can NOT be used in conjunction with --metadata-file',
+		'(OPTIONAL) A stringified JSON input of custom fields in the `\'{"key": "val", "key-2": true, "key-3": 420, "key-4": ["more", 1337]}\'` format to be applied to the Data JSON of all MetaData Transactions created. Can NOT be used in conjunction with --metadata-file',
 	forbiddenConjunctionParameters: [MetaDataFileParameter]
 });
 
