@@ -1201,7 +1201,6 @@ When these tags are added to the MetaData Transaction's Data JSON they can be re
 To add this custom metadata to your file metadata transactions, CLI users can pass custom metadata these parameters:
 
 -   `--metadata-file path/to/json/schema`
--   `--metadata-json "Tag-Name" "Tag Val"`
 -   `--metadata-gql-tags "Tag-Name" "Tag Val"`
 
 The `--metadata-file` will accept a file path to JSON file containing custom metadata:
@@ -1223,10 +1222,10 @@ This JSON schema object must contain instructions on where to put this metadata 
 }
 ```
 
-Alternatively, the `--metadata-json` and `--metadata-gql-tags` parameters accept an array of string values to be applied to their respective target (MetaData Tx Data JSON or GQL Tags). This method of CLI input does not support multiple tag values for a given tag name and the input must be an EVEN number of string values. e.g:
+Alternatively, the `--metadata-gql-tags` parameters accepts an array of string values to be applied to the MetaData Tx GQL Tags. This method of CLI input does not support multiple tag values for a given tag name and the input must be an EVEN number of string values. e.g:
 
 ```shell
-upload-file --metadata-gql-tags "IPFS-Add" "MY_HASH" --metadata-json "Tag-1" "Tag-Val" "Tag-2" "Tag-Val" # ...
+upload-file --metadata-gql-tags "IPFS-Add" "MY_HASH"  # ...
 ```
 
 Custom metadata applied to files and/or folders during the `upload-file` command will be read back through all existing read commands. e.g:

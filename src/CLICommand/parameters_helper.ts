@@ -16,8 +16,7 @@ import {
 	GatewayParameter,
 	DryRunParameter,
 	MetaDataFileParameter,
-	MetaDataGqlTagsParameter,
-	MetadataJsonParameter
+	MetaDataGqlTagsParameter
 } from '../parameter_declarations';
 import { cliWalletDao } from '..';
 import passwordPrompt from 'prompts';
@@ -302,12 +301,12 @@ export class ParametersHelper {
 			if (metaDataGqlTags) {
 				Object.assign(customMetaData, { metaDataGqlTags });
 			}
-			const metaDataJson = this.mapMetaDataArrayToCustomMetaDataShape(
-				this.getParameterValue<string[]>(MetadataJsonParameter)
-			);
-			if (metaDataJson) {
-				Object.assign(customMetaData, { metaDataJson });
-			}
+			// const metaDataJson = this.mapMetaDataArrayToCustomMetaDataShape(
+			// 	this.getParameterValue<string[]>(MetadataJsonParameter)
+			// );
+			// if (metaDataJson) {
+			// 	Object.assign(customMetaData, { metaDataJson });
+			// }
 			return customMetaData;
 		})();
 

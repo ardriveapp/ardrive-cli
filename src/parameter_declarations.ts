@@ -50,8 +50,8 @@ export const MetadataJsonParameter = 'metadataJson';
 export const CustomMetaDataParameters = [
 	// DataGqlTagsParameter,
 	MetaDataFileParameter,
-	MetaDataGqlTagsParameter,
-	MetadataJsonParameter
+	MetaDataGqlTagsParameter
+	// MetadataJsonParameter
 ];
 export const WalletTypeParameters = [WalletFileParameter, SeedPhraseParameter];
 export const DriveCreationPrivacyParameters = [...WalletTypeParameters, PrivateParameter, UnsafeDrivePasswordParameter];
