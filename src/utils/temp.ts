@@ -9,17 +9,13 @@ function platformTempFolder(): string {
 		: path.join(tempBaseFolder, '.ardrive', 'temp');
 }
 
-export async function getTempFolder(): Promise<string> {
-	const tempFolderPath = await platformTempFolder();
+export function getTempFolder(): string {
+	const tempFolderPath = platformTempFolder();
 	if (fs.existsSync(tempFolderPath)) {
 		return tempFolderPath;
 	}
-	const folder = await fs.promises.mkdir(`${tempFolderPath}`, { recursive: true }).then((result) => {
-		if (!result) {
-			throw new Error('Could not create ardrive-cli temp!');
-		}
 
-		return tempFolderPath;
-	});
-	return folder;
+	fs.mkdirSync(tempFolderPath);
+
+	return tempFolderPath;
 }
