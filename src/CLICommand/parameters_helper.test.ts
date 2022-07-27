@@ -28,7 +28,9 @@ import {
 	DryRunParameter,
 	MetaDataFileParameter,
 	MetaDataGqlTagsParameter,
-	MetadataJsonParameter
+	MetadataJsonParameter,
+	IPFSParameter,
+	DataGqlTagsParameter
 } from '../parameter_declarations';
 import '../parameter_declarations';
 import { CLIAction } from './action';
@@ -704,7 +706,8 @@ describe('ParametersHelper class', () => {
 
 				expect(metaDataResult).to.deep.equal({
 					metaDataGqlTags: { tag: 'val' },
-					metaDataJson: { 'json field': true }
+					metaDataJson: { 'json field': true },
+					dataGqlTags: { 'IPFS-Add': 'HASH DATA' }
 				});
 			});
 		});
@@ -753,6 +756,50 @@ describe('ParametersHelper class', () => {
 					metaDataJson: { 'JSON Field 2': 'Val 2', 'JSON Field 1': 'Val 1' }
 				});
 			});
+		});
+	});
+
+	describe('getCustomMetaDataWithIpfsCid method', () => {
+		it('returns a valid custom metadata object that contains the IPFS-Add data tag', async () => {
+			const cmd = declareCommandWithParams(program, [IPFSParameter]);
+
+			CLICommand.parse(program, [...baseArgv, testCommandName, '--add-ipfs-tag']);
+
+			await cmd.action.then(async (options) => {
+				const parameters = new ParametersHelper(options);
+				const metaDataResult = await parameters.getCustomMetaDataWithIpfsCid({
+					localFilePath: 'tests/stub_files/file_to_be_uploaded.txt'
+				});
+
+				expect(metaDataResult.dataGqlTags).to.deep.equal({
+					'IPFS-Add': 'QmPqAhyw2FcvTj9yAKF6rC5LvF2L5xGBLBQUHsMgiNPn2y'
+				});
+			});
+		});
+
+		it('throws if IPFS-Add is present in the custom metadata of dataTx', async () => {
+			const cmd = declareCommandWithParams(program, [IPFSParameter, MetaDataFileParameter]);
+
+			CLICommand.parse(program, [
+				...baseArgv,
+				testCommandName,
+				'--add-ipfs-tag',
+				'--metadata-file',
+				'tests/stub_files/custom_metadata.json'
+			]);
+
+			await cmd.action
+				.then(async (options) => {
+					const parameters = new ParametersHelper(options);
+					await parameters.getCustomMetaDataWithIpfsCid({
+						localFilePath: 'tests/stub_files/file_to_be_uploaded.txt'
+					});
+				})
+				.catch((err) => {
+					expect(err.message).to.equal(
+						`You cannot pass the --add-ipfs-tag flag and set the custom IPFS-Add metadata item. Found: { 'IPFS-Add': "HASH DATA"}`
+					);
+				});
 		});
 	});
 });
