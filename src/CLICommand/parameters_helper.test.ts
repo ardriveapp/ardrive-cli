@@ -27,8 +27,7 @@ import {
 	GatewayParameter,
 	DryRunParameter,
 	MetaDataFileParameter,
-	MetaDataGqlTagsParameter,
-	MetadataJsonParameter
+	MetaDataGqlTagsParameter
 } from '../parameter_declarations';
 import '../parameter_declarations';
 import { CLIAction } from './action';
@@ -732,27 +731,27 @@ describe('ParametersHelper class', () => {
 			});
 		});
 
-		it('returns the expected custom metadata with the --metadata-json parameter', async () => {
-			const cmd = declareCommandWithParams(program, [MetadataJsonParameter]);
+		// it('returns the expected custom metadata with the --metadata-json parameter', async () => {
+		// 	const cmd = declareCommandWithParams(program, [MetadataJsonParameter]);
 
-			CLICommand.parse(program, [
-				...baseArgv,
-				testCommandName,
-				'--metadata-json',
-				'JSON Field 1',
-				'Val 1',
-				'JSON Field 2',
-				'Val 2'
-			]);
+		// 	CLICommand.parse(program, [
+		// 		...baseArgv,
+		// 		testCommandName,
+		// 		'--metadata-json',
+		// 		'JSON Field 1',
+		// 		'Val 1',
+		// 		'JSON Field 2',
+		// 		'Val 2'
+		// 	]);
 
-			await cmd.action.then((options) => {
-				const parameters = new ParametersHelper(options);
-				const metaDataResult = parameters.getCustomMetaData();
+		// 	await cmd.action.then((options) => {
+		// 		const parameters = new ParametersHelper(options);
+		// 		const metaDataResult = parameters.getCustomMetaData();
 
-				expect(metaDataResult).to.deep.equal({
-					metaDataJson: { 'JSON Field 2': 'Val 2', 'JSON Field 1': 'Val 1' }
-				});
-			});
-		});
+		// 		expect(metaDataResult).to.deep.equal({
+		// 			metaDataJson: { 'JSON Field 2': 'Val 2', 'JSON Field 1': 'Val 1' }
+		// 		});
+		// 	});
+		// });
 	});
 });
