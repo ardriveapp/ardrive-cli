@@ -300,13 +300,13 @@ export class ParametersHelper {
 				this.getParameterValue<string[]>(MetaDataGqlTagsParameter)
 			);
 			if (metaDataGqlTags) {
-				Object.assign(customMetaData, metaDataGqlTags);
+				Object.assign(customMetaData, { metaDataGqlTags });
 			}
 			const metaDataJson = this.mapMetaDataArrayToCustomMetaDataShape(
 				this.getParameterValue<string[]>(MetadataJsonParameter)
 			);
 			if (metaDataJson) {
-				Object.assign(customMetaData, metaDataGqlTags);
+				Object.assign(customMetaData, { metaDataJson });
 			}
 			return customMetaData;
 		})();
