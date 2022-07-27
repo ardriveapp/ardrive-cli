@@ -1225,7 +1225,7 @@ This JSON schema object must contain instructions on where to put this metadata 
 Alternatively, the `--metadata-gql-tags` parameters accepts an array of string values to be applied to the MetaData Tx GQL Tags. This method of CLI input does not support multiple tag values for a given tag name and the input must be an EVEN number of string values. e.g:
 
 ```shell
-upload-file --metadata-gql-tags "IPFS-Add" "MY_HASH"  # ...
+upload-file --metadata-gql-tags "Custom Tag Name" "Custom Tag Value"  # ...
 ```
 
 Custom metadata applied to files and/or folders during the `upload-file` command will be read back through all existing read commands. e.g:
