@@ -15,11 +15,9 @@ export async function download(url: string, filePath: string): Promise<string | 
 		reject(undefined);
 		return;
 	}
-	console.log(url);
 	const pathToFile = path.join(filePath, fileName);
-	console.log(pathToFile);
 	return new Promise((resolve, reject) => {
-		const file = fs.createWriteStream(pathToFile, { flags: 'wx' });
+		const file = fs.createWriteStream(pathToFile);
 
 		const request = proto.get(url, (response) => {
 			if (response.statusCode === 302 || response.statusCode === 301) {
@@ -36,10 +34,12 @@ export async function download(url: string, filePath: string): Promise<string | 
 				});
 				return;
 			}
-			console.log(file.path);
 		});
 		// The destination stream is ended by the time it's called
-		file.on('finish', () => resolve(file.path.toString()));
+
+		file.on('finish', () => {
+			resolve(file.path.toString());
+		});
 
 		request.on('error', (err: unknown) => {
 			fs.unlink(pathToFile, () => reject(err));

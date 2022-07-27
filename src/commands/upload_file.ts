@@ -134,6 +134,7 @@ async function getRemoteFile(
 
 	const localFilePath = await download(remoteFilePath, tempFolder);
 
+	console.log(localFilePath);
 	if (!localFilePath) {
 		return undefined;
 	}
@@ -187,9 +188,8 @@ new CLICommand({
 			if (fileList) {
 				return fileList;
 			}
-
 			const filesFromRemote = await getRemoteFile(parameters, parentFolderId);
-
+			console.log(filesFromRemote);
 			if (filesFromRemote) {
 				return filesFromRemote;
 			}
