@@ -28,13 +28,11 @@ import {
 	wrapFileOrFolder,
 	EID,
 	EntityKey,
-	ArDriveUploadStats,
-	CustomMetaData
+	ArDriveUploadStats
 } from 'ardrive-core-js';
 import { cliArDriveFactory } from '..';
 import * as fs from 'fs';
 import { getArweaveFromURL } from '../utils/get_arweave_for_url';
-import { deriveIpfsCid } from '../utils/ipfs_utils';
 
 interface UploadPathParameter {
 	parentFolderId: FolderID;
@@ -42,11 +40,6 @@ interface UploadPathParameter {
 	destinationFileName?: string;
 	drivePassword?: string;
 	driveKey?: DriveKey;
-}
-
-interface GetCustomMetaDataWithIpfsCidParameter {
-	customMetaData?: CustomMetaData;
-	localFilePath: FilePath;
 }
 
 type FilePath = string;
@@ -105,7 +98,7 @@ async function getFileList(
 		const customMetaDataWithIipfsFlag = await (async function () {
 			const ipfsFlag = parameters.getParameterValue(IPFSParameter);
 			return ipfsFlag
-				? await getCustomMetaDataWithIpfsCid({ customMetaData, localFilePath: filePath })
+				? await parameters.getCustomMetaDataWithIpfsCid({ localFilePath: filePath })
 				: customMetaData;
 		})();
 		const wrappedEntity = wrapFileOrFolder(filePath, customContentType, customMetaDataWithIipfsFlag);
@@ -129,7 +122,7 @@ async function getSingleFile(parameters: ParametersHelper, parentFolderId: Folde
 	const customMetaData = await (async function () {
 		const customMetaData = parameters.getCustomMetaData();
 		const ipfsFlag = parameters.getParameterValue(IPFSParameter);
-		return ipfsFlag ? await getCustomMetaDataWithIpfsCid({ customMetaData, localFilePath }) : customMetaData;
+		return ipfsFlag ? await parameters.getCustomMetaDataWithIpfsCid({ localFilePath }) : customMetaData;
 	})();
 
 	const wrappedEntity = wrapFileOrFolder(localFilePath, customContentType, customMetaData);
@@ -140,32 +133,6 @@ async function getSingleFile(parameters: ParametersHelper, parentFolderId: Folde
 	};
 
 	return [singleParameter];
-}
-
-async function getCustomMetaDataWithIpfsCid({
-	customMetaData,
-	localFilePath
-}: GetCustomMetaDataWithIpfsCidParameter): Promise<CustomMetaData> {
-	const customMetaDataClone: CustomMetaData = Object.assign({}, customMetaData);
-
-	const customIpfsTag = customMetaDataClone.dataGqlTags?.['IPFS-Add'];
-	if (customIpfsTag) {
-		throw new Error(
-			`You cannot pass the --add-ipfs-tag flag and set the custom IPFS-Add metadata item. Found: { 'IPFS-Add': ${JSON.stringify(
-				customIpfsTag
-			)}}`
-		);
-	} else {
-		const fileContent = fs.readFileSync(localFilePath);
-		const cidHash = await deriveIpfsCid(fileContent);
-
-		if (!customMetaDataClone.dataGqlTags) {
-			customMetaDataClone.dataGqlTags = {};
-		}
-		customMetaDataClone.dataGqlTags['IPFS-Add'] = cidHash;
-	}
-
-	return customMetaDataClone;
 }
 
 new CLICommand({
