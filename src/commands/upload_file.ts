@@ -130,7 +130,7 @@ async function getRemoteFile(
 		return undefined;
 	}
 
-	const tempFolder = await getTempFolder();
+	const tempFolder = getTempFolder();
 
 	const localFilePath = await download(remoteFilePath, tempFolder);
 
