@@ -1223,7 +1223,7 @@ This JSON schema object must contain instructions on where to put this metadata 
 }
 ```
 
-The `--metadata-gql-tags` parameter accepts an array of string values to be applied to the MetaData Tx GQL Tags. This method of CLI input does not support multiple tag values for a given tag name and the input must be an EVEN number of string values. e.g:
+The `--metadata-gql-tags` parameter accepts an array of string values to be applied to the MetaData Tx GQL Tags. This method of CLI input does not support multiple tag values for a given tag name and the input must be an EVEN number of string values. (Known bug: String values starting with the - character are currently not supported. Use --metadata-file parameter instead.) e.g:
 
 ```shell
 upload-file --metadata-gql-tags "Custom Tag Name" "Custom Value" # ...
