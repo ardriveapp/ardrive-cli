@@ -17,7 +17,7 @@ export function getTempFolder(): string {
 		return tempFolderPath;
 	}
 
-	fs.mkdirSync(tempFolderPath);
+	fs.mkdirSync(tempFolderPath, { recursive: true });
 
 	return tempFolderPath;
 }
