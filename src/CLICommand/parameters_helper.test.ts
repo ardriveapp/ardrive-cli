@@ -25,7 +25,10 @@ import {
 	MaxDepthParameter,
 	AllParameter,
 	GatewayParameter,
-	DryRunParameter
+	DryRunParameter,
+	MetaDataFileParameter,
+	MetaDataGqlTagsParameter,
+	MetadataJsonParameter
 } from '../parameter_declarations';
 import '../parameter_declarations';
 import { CLIAction } from './action';
@@ -681,6 +684,71 @@ describe('ParametersHelper class', () => {
 				const parameters = new ParametersHelper(options);
 				const dryRun = parameters.isDryRun();
 				expect(dryRun).to.be.false;
+			});
+		});
+	});
+
+	describe('getCustomMetaData method', () => {
+		it('returns the expected custom metadata with the --metadata-file parameter', async () => {
+			const cmd = declareCommandWithParams(program, [MetaDataFileParameter]);
+
+			CLICommand.parse(program, [
+				...baseArgv,
+				testCommandName,
+				'--metadata-file',
+				'tests/stub_files/custom_metadata.json'
+			]);
+			await cmd.action.then((options) => {
+				const parameters = new ParametersHelper(options);
+				const metaDataResult = parameters.getCustomMetaData();
+
+				expect(metaDataResult).to.deep.equal({
+					metaDataGqlTags: { tag: 'val' },
+					metaDataJson: { 'json field': true }
+				});
+			});
+		});
+
+		it('returns the expected custom metadata with the --metadata-gql-tags parameter', async () => {
+			const cmd = declareCommandWithParams(program, [MetaDataGqlTagsParameter]);
+
+			CLICommand.parse(program, [
+				...baseArgv,
+				testCommandName,
+				'--metadata-gql-tags',
+				'Tag-1',
+				'Val 1',
+				'Tag 2',
+				'Val 2'
+			]);
+
+			await cmd.action.then((options) => {
+				const parameters = new ParametersHelper(options);
+				const metaDataResult = parameters.getCustomMetaData();
+
+				expect(metaDataResult).to.deep.equal({
+					metaDataGqlTags: { 'Tag 2': 'Val 2', 'Tag-1': 'Val 1' }
+				});
+			});
+		});
+
+		it('returns the expected custom metadata with the --metadata-json parameter', async () => {
+			const cmd = declareCommandWithParams(program, [MetadataJsonParameter]);
+
+			CLICommand.parse(program, [
+				...baseArgv,
+				testCommandName,
+				'--metadata-json',
+				'{"key": "val", "key-2": true, "key-3": 420, "key-4": ["more", 1337]}'
+			]);
+
+			await cmd.action.then((options) => {
+				const parameters = new ParametersHelper(options);
+				const metaDataResult = parameters.getCustomMetaData();
+
+				expect(metaDataResult).to.deep.equal({
+					metaDataJson: { key: 'val', 'key-2': true, 'key-3': 420, 'key-4': ['more', 1337] }
+				});
 			});
 		});
 	});

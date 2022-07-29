@@ -13,7 +13,8 @@ import {
 	LocalPathParameter,
 	LocalCSVParameter,
 	GatewayParameter,
-	CustomContentTypeParameter
+	CustomContentTypeParameter,
+	CustomMetaDataParameters
 } from '../parameter_declarations';
 import { fileAndFolderUploadConflictPrompts } from '../prompts';
 import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
@@ -55,14 +56,14 @@ function getFilesFromCSV(parameters: ParametersHelper): UploadPathParameter[] | 
 	const csvRows = localCSVFileData.split(ROW_SEPARATOR);
 	const fileParameters: UploadPathParameter[] = csvRows.map((row: string) => {
 		const csvFields = row.split(COLUMN_SEPARATOR).map((f: string) => f.trim());
-		// eslint-disable-next-line prettier/prettier
+		// prettier-ignore
 		const [localFilePath, destinationFileName, _parentFolderId, drivePassword, _driveKey, _customContentType] =
-			// eslint-disable-next-line prettier/prettier
 			csvFields;
 
 		const customContentType = _customContentType ?? parameters.getParameterValue(CustomContentTypeParameter);
 
 		// TODO: Make CSV uploads more bulk performant
+		// TODO: Make CSV work with custom metadata -- Question: How to apply this? Do we only allow metadata JSON file paths for CSV? Do we accept a stringified JSON object directly in the CSV?
 		const wrappedEntity = wrapFileOrFolder(localFilePath, customContentType);
 		const parentFolderId = EID(
 			_parentFolderId ? _parentFolderId : parameters.getRequiredParameterValue(ParentFolderIdParameter)
@@ -87,9 +88,10 @@ function getFileList(parameters: ParametersHelper, parentFolderId: FolderID): Up
 		return undefined;
 	}
 	const customContentType = parameters.getParameterValue(CustomContentTypeParameter);
+	const customMetaData = parameters.getCustomMetaData();
 
 	const localPathsToUpload = localPaths.map((filePath: FilePath) => {
-		const wrappedEntity = wrapFileOrFolder(filePath, customContentType);
+		const wrappedEntity = wrapFileOrFolder(filePath, customContentType, customMetaData);
 
 		return {
 			parentFolderId,
@@ -107,8 +109,9 @@ function getSingleFile(parameters: ParametersHelper, parentFolderId: FolderID): 
 		parameters.getRequiredParameterValue<string>(LocalPathParameter);
 
 	const customContentType = parameters.getParameterValue(CustomContentTypeParameter);
+	const customMetaData = parameters.getCustomMetaData();
 
-	const wrappedEntity = wrapFileOrFolder(localFilePath, customContentType);
+	const wrappedEntity = wrapFileOrFolder(localFilePath, customContentType, customMetaData);
 	const singleParameter = {
 		parentFolderId: parentFolderId,
 		wrappedEntity,
@@ -133,6 +136,7 @@ new CLICommand({
 		...ConflictResolutionParams,
 		...DrivePrivacyParameters,
 		CustomContentTypeParameter,
+		...CustomMetaDataParameters,
 		LocalFilePathParameter_DEPRECATED,
 		LocalFilesParameter_DEPRECATED,
 		BoostParameter,
