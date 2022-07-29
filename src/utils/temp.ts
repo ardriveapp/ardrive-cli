@@ -21,3 +21,15 @@ export function getTempFolder(): string {
 
 	return tempFolderPath;
 }
+
+export function cleanUpTempFolder(): void {
+	const tempFolderPath = platformTempFolder();
+	fs.readdir(tempFolderPath, (err, files) => {
+		if (err) throw err;
+		for (const file of files) {
+			fs.unlink(path.join(tempFolderPath, file), (err) => {
+				if (err) throw err;
+			});
+		}
+	});
+}

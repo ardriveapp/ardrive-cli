@@ -33,7 +33,7 @@ import {
 import { cliArDriveFactory } from '..';
 import * as fs from 'fs';
 import { getArweaveFromURL } from '../utils/get_arweave_for_url';
-import { getTempFolder } from '../utils/temp';
+import { cleanUpTempFolder, getTempFolder } from '../utils/temp';
 import { download } from '../utils/download';
 
 interface UploadPathParameter {
@@ -248,6 +248,7 @@ new CLICommand({
 			});
 
 			console.log(JSON.stringify(results, null, 4));
+			cleanUpTempFolder();
 			return SUCCESS_EXIT_CODE;
 		}
 
