@@ -8,7 +8,9 @@ function platformTempFolder(): string {
 		? path.join(tempBaseFolder, 'ardrive-temp')
 		: path.join(tempBaseFolder, '.ardrive', 'temp');
 }
-
+/**
+ * Gets a folder path for storing temporary files.
+ */
 export function getTempFolder(): string {
 	const tempFolderPath = platformTempFolder();
 	if (fs.existsSync(tempFolderPath)) {
