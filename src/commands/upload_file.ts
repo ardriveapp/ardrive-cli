@@ -134,10 +134,6 @@ async function getRemoteFile(
 
 	const localFilePath = await download(remoteFilePath, tempFolder);
 
-	console.log(localFilePath);
-	if (!localFilePath) {
-		return undefined;
-	}
 	const customContentType = parameters.getParameterValue(CustomContentTypeParameter);
 
 	const wrappedEntity = wrapFileOrFolder(localFilePath, customContentType);

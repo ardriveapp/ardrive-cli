@@ -8,14 +8,13 @@ import axios, { AxiosResponse } from 'axios';
  * @param url URL of the file to download.
  * @param destinationPath Path to the destination file.
  */
-export async function download(url: string, filePath: string): Promise<string | undefined> {
+export async function download(url: string, filePath: string): Promise<string> {
 	const fileName = url.split('/').pop();
 	if (!fileName) {
 		throw new Error('Invalid remote path. No file name found.');
 	}
 	try {
 		const response: AxiosResponse = await axios.get(url, { responseType: 'arraybuffer' });
-		console.log(response.headers['content-type']);
 		const pathToFile = path.join(filePath, fileName);
 
 		fs.writeFileSync(pathToFile, response.data);
