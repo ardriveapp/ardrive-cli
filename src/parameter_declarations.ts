@@ -41,8 +41,18 @@ export const LocalCSVParameter = 'localCsv';
 export const WithKeysParameter = 'withKeys';
 export const GatewayParameter = 'gateway';
 export const CustomContentTypeParameter = 'contentType';
+export const DataGqlTagsParameter = 'dataGqlTags';
+export const MetaDataFileParameter = 'metadataFile';
+export const MetaDataGqlTagsParameter = 'metadataGqlTags';
+export const MetadataJsonParameter = 'metadataJson';
 
 // Aggregates for convenience
+export const CustomMetaDataParameters = [
+	// DataGqlTagsParameter,
+	MetaDataFileParameter,
+	MetaDataGqlTagsParameter,
+	MetadataJsonParameter
+];
 export const WalletTypeParameters = [WalletFileParameter, SeedPhraseParameter];
 export const DriveCreationPrivacyParameters = [...WalletTypeParameters, PrivateParameter, UnsafeDrivePasswordParameter];
 export const DrivePrivacyParameters = [DriveKeyParameter, ...DriveCreationPrivacyParameters];
@@ -53,6 +63,8 @@ export const AllParameters = [
 	ArAmountParameter,
 	BoostParameter,
 	ConfirmationsParameter,
+	CustomContentTypeParameter,
+	DataGqlTagsParameter,
 	DestinationAddressParameter,
 	DestinationFileNameParameter,
 	DriveKeyParameter,
@@ -71,6 +83,9 @@ export const AllParameters = [
 	LocalPathParameter,
 	LocalPathsParameter,
 	MaxDepthParameter,
+	MetaDataFileParameter,
+	MetaDataGqlTagsParameter,
+	MetadataJsonParameter,
 	ShouldBundleParameter,
 	NoVerifyParameter,
 	ParentFolderIdParameter,
@@ -466,3 +481,38 @@ Parameter.declare({
 	description:
 		'(OPTIONAL) Provide a custom content type to all files within the upload to be used by the gateway to display the content'
 });
+
+Parameter.declare({
+	name: MetaDataFileParameter,
+	aliases: ['--metadata-file'],
+	description:
+		'(OPTIONAL) Path to JSON file containing a custom metadata schema to add to ArFS transactions within the upload. Input must be a valid JSON object, e.g shape: `{ metaDataJson: { "TAG_NAME": [ "VAL_1", "VAL_2" ] }, metaDataGqlTags: { "IPFS-Add": "MY_PERMANENT_HASH?" } }`. Can NOT be used in conjunction with --metadata-json OR --metadata-gql-tags',
+	forbiddenConjunctionParameters: [MetadataJsonParameter, MetaDataGqlTagsParameter, DataGqlTagsParameter]
+});
+
+Parameter.declare({
+	name: MetadataJsonParameter,
+	aliases: ['--metadata-json'],
+	description:
+		'(OPTIONAL) A stringified JSON input of custom fields in the `\'{"key": "val", "key-2": true, "key-3": 420, "key-4": ["more", 1337]}\'` format to be applied to the Data JSON of all MetaData Transactions created. Can NOT be used in conjunction with --metadata-file',
+	forbiddenConjunctionParameters: [MetaDataFileParameter]
+});
+
+Parameter.declare({
+	name: MetaDataGqlTagsParameter,
+	aliases: ['--metadata-gql-tags'],
+	type: 'array',
+	description:
+		'(OPTIONAL) A mapping of custom metadata in the `"TAG_NAME" "TAG_VALUE"` format to be applied to the GQL Tags of all MetaData Transactions created. Must be an even number of string values to determine custom metadata. Can NOT be used in conjunction with --metadata-file',
+	forbiddenConjunctionParameters: [MetaDataFileParameter]
+});
+
+// TODO: PE-1534
+// Parameter.declare({
+// 	name: DataGqlTagsParameter,
+// 	aliases: ['--data-gql-tags'],
+// 	type: 'array',
+// 	description:
+// 		'(OPTIONAL) A mapping of custom metadata in the `"TAG_NAME" "TAG_VALUE"` format to be applied to the GQL Tags of all Data Transactions created. Must be an even number of string values to determine custom metadata. Can NOT be used in conjunction with --metadata-file',
+// 	forbiddenConjunctionParameters: [MetaDataFileParameter]
+// });
