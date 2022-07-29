@@ -45,6 +45,7 @@ import {
 	CustomMetaDataJsonFields
 } from 'ardrive-core-js';
 import { JWKInterface } from 'arweave/node/lib/wallet';
+import { deriveIpfsCid } from '../utils/ipfs_utils';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ParameterOptions = any;
@@ -57,6 +58,12 @@ interface GetDriveKeyParams {
 	drivePassword?: string;
 	useCache?: boolean;
 }
+
+interface GetCustomMetaDataWithIpfsCidParameter {
+	localFilePath: FilePath;
+}
+
+type FilePath = string;
 
 /**
  * @type {ParametersHelper}
@@ -287,6 +294,31 @@ export class ParametersHelper {
 			throw new Error(`Required parameter ${parameterName} wasn't provided!`);
 		}
 		return mapFunc(value);
+	}
+
+	async getCustomMetaDataWithIpfsCid({
+		localFilePath
+	}: GetCustomMetaDataWithIpfsCidParameter): Promise<CustomMetaData> {
+		const customMetaDataClone: CustomMetaData = Object.assign({}, this.getCustomMetaData());
+
+		const customIpfsTag = customMetaDataClone.dataGqlTags?.['IPFS-Add'];
+		if (customIpfsTag) {
+			throw new Error(
+				`You cannot pass the --add-ipfs-tag flag and set the custom IPFS-Add metadata item. Found: { 'IPFS-Add': ${JSON.stringify(
+					customIpfsTag
+				)}}`
+			);
+		} else {
+			const fileContent = fs.readFileSync(localFilePath);
+			const cidHash = await deriveIpfsCid(fileContent);
+
+			if (!customMetaDataClone.dataGqlTags) {
+				customMetaDataClone.dataGqlTags = {};
+			}
+			customMetaDataClone.dataGqlTags['IPFS-Add'] = cidHash;
+		}
+
+		return customMetaDataClone;
 	}
 
 	public getCustomMetaData(): CustomMetaData | undefined {

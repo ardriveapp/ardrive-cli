@@ -41,6 +41,7 @@ export const LocalCSVParameter = 'localCsv';
 export const WithKeysParameter = 'withKeys';
 export const GatewayParameter = 'gateway';
 export const CustomContentTypeParameter = 'contentType';
+export const IPFSParameter = 'addIpfsTag';
 export const DataGqlTagsParameter = 'dataGqlTags';
 export const MetaDataFileParameter = 'metadataFile';
 export const MetaDataGqlTagsParameter = 'metadataGqlTags';
@@ -96,7 +97,8 @@ export const AllParameters = [
 	TxFilePathParameter,
 	UnsafeDrivePasswordParameter,
 	WalletFileParameter,
-	WithKeysParameter
+	WithKeysParameter,
+	IPFSParameter
 ] as const;
 export type ParameterName = typeof AllParameters[number];
 
@@ -480,6 +482,15 @@ Parameter.declare({
 	aliases: ['--content-type'],
 	description:
 		'(OPTIONAL) Provide a custom content type to all files within the upload to be used by the gateway to display the content'
+});
+
+Parameter.declare({
+	name: IPFSParameter,
+	aliases: ['--add-ipfs-tag'],
+	description:
+		'(OPTIONAL) Computes the v1 IPFS content identifier (CID) for each file and sets it as the "IPFS-Add" tag value of each\'s respective file data transaction',
+	type: 'boolean',
+	forbiddenConjunctionParameters: [PrivateParameter, UnsafeDrivePasswordParameter]
 });
 
 Parameter.declare({
