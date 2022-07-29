@@ -1672,7 +1672,7 @@ __metadata:
     "@types/source-map-support": ^0
     "@typescript-eslint/eslint-plugin": ^4.18.0
     "@typescript-eslint/parser": ^4.18.0
-    ardrive-core-js: 1.16.0
+    ardrive-core-js: 1.17.0-alpha-0
     arweave: 1.11.4
     axios: ^0.21.1
     bn.js: ^5.2.1
@@ -1699,9 +1699,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"ardrive-core-js@npm:1.16.0":
-  version: 1.16.0
-  resolution: "ardrive-core-js@npm:1.16.0"
+"ardrive-core-js@npm:1.17.0-alpha-0":
+  version: 1.17.0-alpha-0
+  resolution: "ardrive-core-js@npm:1.17.0-alpha-0"
   dependencies:
     "@alexsasharegan/simple-cache": ^3.3.3
     arbundles: ^0.6.19
@@ -1719,7 +1719,7 @@ __metadata:
     smartweave: ^0.4.49
     utf8: ^3.0.0
     uuid: ^8.3.2
-  checksum: 374a87eafe521bbbd53228a8cc21184540dd3ceb8e7df7ee04a331f7f7caa7c9244d78e23eebe5faebff263c1e5388ee5a1a8ae3d025a06f4a46ea33c5d4cd36
+  checksum: c0ce007f6d4433b5fda397c658baf5a5ebcd85fc468d9d3886b0a3d84002d572250dc468b730e89b6ade2f7ed9ebf5f61bb56cc2596c7edcf126fd907a2328a2
   languageName: node
   linkType: hard
 
