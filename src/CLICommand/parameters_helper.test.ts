@@ -742,10 +742,7 @@ describe('ParametersHelper class', () => {
 				...baseArgv,
 				testCommandName,
 				'--metadata-json',
-				'JSON Field 1',
-				'Val 1',
-				'JSON Field 2',
-				'Val 2'
+				'{"key": "val", "key-2": true, "key-3": 420, "key-4": ["more", 1337]}'
 			]);
 
 			await cmd.action.then((options) => {
@@ -753,7 +750,7 @@ describe('ParametersHelper class', () => {
 				const metaDataResult = parameters.getCustomMetaData();
 
 				expect(metaDataResult).to.deep.equal({
-					metaDataJson: { 'JSON Field 2': 'Val 2', 'JSON Field 1': 'Val 1' }
+					metaDataJson: { key: 'val', 'key-2': true, 'key-3': 420, 'key-4': ['more', 1337] }
 				});
 			});
 		});

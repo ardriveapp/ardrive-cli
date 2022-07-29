@@ -40,7 +40,8 @@ import {
 	askOnConflicts,
 	EntityKey,
 	CustomMetaData,
-	assertCustomMetaData
+	assertCustomMetaData,
+	CustomMetaDataJsonFields
 } from 'ardrive-core-js';
 import { JWKInterface } from 'arweave/node/lib/wallet';
 import { deriveIpfsCid } from '../utils/ipfs_utils';
@@ -334,11 +335,11 @@ export class ParametersHelper {
 			if (metaDataGqlTags) {
 				Object.assign(customMetaData, { metaDataGqlTags });
 			}
-			const metaDataJson = this.mapMetaDataArrayToCustomMetaDataShape(
-				this.getParameterValue<string[]>(MetadataJsonParameter)
-			);
+
+			const metaDataJson = this.getParameterValue<string>(MetadataJsonParameter);
+
 			if (metaDataJson) {
-				Object.assign(customMetaData, { metaDataJson });
+				Object.assign(customMetaData, { metaDataJson: this.parseMetaDataJson(metaDataJson) });
 			}
 			return customMetaData;
 		})();
@@ -386,6 +387,10 @@ export class ParametersHelper {
 		if (tags && tags.length % 2 !== 0) {
 			throw Error('User must provide an even number custom metadata inputs! e.g: --metadata-json "NAME" "VALUE"');
 		}
+	}
+
+	private parseMetaDataJson(rawMetaDataJsonString: string): CustomMetaDataJsonFields {
+		return JSON.parse(rawMetaDataJsonString);
 	}
 
 	/**
