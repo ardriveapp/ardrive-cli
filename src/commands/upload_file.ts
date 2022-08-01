@@ -189,7 +189,6 @@ new CLICommand({
 				return fileList;
 			}
 			const filesFromRemote = await getRemoteFile(parameters, parentFolderId);
-			console.log(filesFromRemote);
 			if (filesFromRemote) {
 				return filesFromRemote;
 			}
