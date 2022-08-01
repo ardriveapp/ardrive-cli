@@ -135,7 +135,9 @@ async function getRemoteFile(
 
 	const tempFolder = getTempFolder();
 
-	const localFilePath = await download(remoteFilePath, tempFolder);
+	const localFilePath = await download(remoteFilePath, tempFolder, (downloadProgress: number) => {
+		console.log('Downloading file...', downloadProgress);
+	});
 
 	const customContentType = parameters.getParameterValue(CustomContentTypeParameter);
 
