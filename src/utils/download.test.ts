@@ -20,5 +20,6 @@ describe('download test', () => {
 			error = err;
 		}
 		expect(error?.name).to.equal('Error');
+		expect(error?.message).to.equal('Invalid remote path. No file name found.');
 	});
 });
