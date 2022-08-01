@@ -20,6 +20,8 @@ describe('download test', () => {
 			error = err;
 		}
 		expect(error?.name).to.equal('Error');
-		expect(error?.message).to.equal('Invalid remote path. No file name found.');
+		expect(error?.message).to.equal(
+			'Failed to download file from remote path https://arweave.net/pVoSqZgJUCiNw7oS6CtlVEV8gREQlpRbccrsMLkeIuQ: Request failed with status code 404'
+		);
 	});
 });

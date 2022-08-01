@@ -20,8 +20,6 @@ export async function download(url: string, filePath: string): Promise<string> {
 		fs.writeFileSync(pathToFile, response.data);
 		return pathToFile;
 	} catch (error) {
-		throw new Error(
-			'Failed to download file from remote path https://arweave.net/pVoSqZgJUCiNw7oS6CtlVEV8gREQlpRbccrsMLkeIuQ: Request failed with status code 404'
-		);
+		throw new Error(`Failed to download file from remote path ${url}: ${error.message}`);
 	}
 }
