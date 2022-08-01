@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import path from 'path';
 import axios from 'axios';
-import { uniqueId } from 'lodash';
+import { randomUUID } from 'crypto';
 
 type DownloadProgressCallback = (downloadProgress: number) => void;
 
@@ -18,7 +18,7 @@ export async function download(
 	downloadProgressCallback?: DownloadProgressCallback,
 	fileName?: string
 ): Promise<string> {
-	const name = fileName ?? url.split('/').pop() ?? uniqueId();
+	const name = fileName ?? url.split('/').pop() ?? randomUUID();
 	const pathToFile = path.join(destinationPath, name);
 	try {
 		const writer = fs.createWriteStream(pathToFile);
