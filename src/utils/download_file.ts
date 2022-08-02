@@ -1,6 +1,10 @@
 import * as fs from 'fs';
 import path from 'path';
 import axios from 'axios';
+import util from 'util';
+import stream from 'stream';
+
+const pipeline = util.promisify(stream.pipeline);
 
 type DownloadProgressCallback = (downloadProgress: number) => void;
 type DownloadResult = { pathToFile: string; contentType: string };
@@ -21,6 +25,7 @@ export async function downloadFile(
 ): Promise<DownloadResult> {
 	const pathToFile = path.join(destinationPath, destinationFileName);
 	const writer = fs.createWriteStream(pathToFile);
+
 	try {
 		const { data, headers } = await axios({
 			method: 'get',
@@ -34,19 +39,8 @@ export async function downloadFile(
 			downloadedLength += chunk.length;
 			downloadProgressCallback && downloadProgressCallback((downloadedLength / totalLength) * 100);
 		});
-		return new Promise((resolve) => {
-			data.pipe(writer);
-			let error: Error | null = null;
-			writer.on('error', (err) => {
-				error = err;
-				writer.close();
-			});
-			writer.on('close', () => {
-				if (!error) {
-					resolve({ pathToFile, contentType });
-				}
-			});
-		});
+		await pipeline(data, writer);
+		return { pathToFile, contentType };
 	} catch (error) {
 		writer.close();
 		throw new Error(`Failed to download file from remote path ${url}: ${error.message}`);
