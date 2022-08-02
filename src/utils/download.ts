@@ -12,6 +12,7 @@ type DownloadResult = { pathToFile: string; contentType: string };
  * @param destinationPath Path to the destination file.
  * @param destinationFileName The file name.
  */
+
 export async function download(
 	url: string,
 	destinationPath: string,
