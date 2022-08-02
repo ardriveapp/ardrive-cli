@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 import path from 'path';
 import axios from 'axios';
-import { randomUUID } from 'crypto';
 
 type DownloadProgressCallback = (downloadProgress: number) => void;
 
@@ -10,16 +9,15 @@ type DownloadProgressCallback = (downloadProgress: number) => void;
  * specified location.
  * @param url URL of the file to download.
  * @param destinationPath Path to the destination file.
- * @param fileName The file name. If no name is provided a random name will be used.
+ * @param destinationFileName The file name.
  */
 export async function download(
 	url: string,
 	destinationPath: string,
-	downloadProgressCallback?: DownloadProgressCallback,
-	fileName?: string
+	destinationFileName: string,
+	downloadProgressCallback?: DownloadProgressCallback
 ): Promise<string> {
-	const name = fileName ?? url.split('/').pop() ?? randomUUID();
-	const pathToFile = path.join(destinationPath, name);
+	const pathToFile = path.join(destinationPath, destinationFileName);
 	const writer = fs.createWriteStream(pathToFile);
 	try {
 		const { data, headers } = await axios({

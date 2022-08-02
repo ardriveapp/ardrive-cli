@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { getTempFolder } from './temp';
+import { cleanUpTempFolder, getTempFolder } from './temp';
 import * as fs from 'fs';
 
 describe('temp folder test', () => {
@@ -12,5 +12,12 @@ describe('temp folder test', () => {
 		const tempFolderPath = getTempFolder();
 		expect(tempFolderPath).to.contains('ardrive');
 		expect(tempFolderPath).to.contains('temp');
+	});
+
+	it('cleanUpTempFolder removes the temporary folder from the local system', () => {
+		const tempFolderPath = getTempFolder();
+		expect(fs.existsSync(tempFolderPath)).to.equal(true);
+		cleanUpTempFolder();
+		expect(fs.existsSync(tempFolderPath)).to.equal(false);
 	});
 });
