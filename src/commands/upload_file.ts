@@ -36,6 +36,8 @@ import { getArweaveFromURL } from '../utils/get_arweave_for_url';
 import { cleanUpTempFolder, getTempFolder } from '../utils/temp';
 import { download } from '../utils/download';
 
+const ARDRIVE_PROGRESS_LOG = 'ARDRIVE_PROGRESS_LOG';
+
 interface UploadPathParameter {
 	parentFolderId: FolderID;
 	wrappedEntity: ArFSFileToUpload | ArFSFolderToUpload;
@@ -141,7 +143,9 @@ async function getRemoteFile(
 		tempFolder,
 		destinationFileName,
 		(downloadProgress: number) => {
-			process.stderr.write('Downloading file...' + downloadProgress.toFixed(2) + '\r');
+			if (process.env[ARDRIVE_PROGRESS_LOG] && process.env[ARDRIVE_PROGRESS_LOG] === '1') {
+				process.stderr.write('Downloading file...' + downloadProgress.toFixed(2) + '\r');
+			}
 		}
 	);
 
