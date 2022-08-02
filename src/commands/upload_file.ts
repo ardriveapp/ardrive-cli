@@ -136,7 +136,7 @@ async function getRemoteFile(
 	const tempFolder = getTempFolder();
 	const destinationFileName = parameters.getRequiredParameterValue(DestinationFileNameParameter);
 
-	const localFilePath = await download(
+	const { pathToFile, contentType } = await download(
 		remoteFilePath,
 		tempFolder,
 		destinationFileName,
@@ -147,7 +147,7 @@ async function getRemoteFile(
 
 	const customContentType = parameters.getParameterValue(CustomContentTypeParameter);
 
-	const wrappedEntity = wrapFileOrFolder(localFilePath, customContentType);
+	const wrappedEntity = wrapFileOrFolder(pathToFile, customContentType ?? contentType);
 	const singleParameter = {
 		parentFolderId: parentFolderId,
 		wrappedEntity,

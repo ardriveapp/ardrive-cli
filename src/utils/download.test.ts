@@ -9,8 +9,9 @@ describe('download test', () => {
 	const name = 'cat.jpg';
 	const tempFolderPath = getTempFolder();
 	it('downloads a file into the provided folder when given a valid link', async () => {
-		const result = await download(validDownloadLink, tempFolderPath, name);
-		expect(fs.existsSync(result)).to.equal(true);
+		const { pathToFile, contentType } = await download(validDownloadLink, tempFolderPath, name);
+		expect(fs.existsSync(pathToFile)).to.equal(true);
+		expect(contentType).to.equal('image/jpeg');
 	});
 
 	it('download throws when given an invalid link', async () => {
