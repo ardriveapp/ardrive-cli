@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { cleanUpTempFolder, getTempFolder } from './temp';
+import { cleanUpTempFolder, getTempFolder } from './temp_folder';
 import * as fs from 'fs';
 
 describe('temp folder test', () => {

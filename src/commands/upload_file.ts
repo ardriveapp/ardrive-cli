@@ -33,8 +33,8 @@ import {
 import { cliArDriveFactory } from '..';
 import * as fs from 'fs';
 import { getArweaveFromURL } from '../utils/get_arweave_for_url';
-import { cleanUpTempFolder, getTempFolder } from '../utils/temp';
-import { download } from '../utils/download';
+import { cleanUpTempFolder, getTempFolder } from '../utils/temp_folder';
+import { downloadFile } from '../utils/download_file';
 import { showProgressLog } from '../utils/show_progress_log';
 
 interface UploadPathParameter {
@@ -137,13 +137,13 @@ async function getRemoteFile(
 	const tempFolder = getTempFolder();
 	const destinationFileName = parameters.getRequiredParameterValue(DestinationFileNameParameter);
 
-	const { pathToFile, contentType } = await download(
+	const { pathToFile, contentType } = await downloadFile(
 		remoteFilePath,
 		tempFolder,
 		destinationFileName,
 		(downloadProgress: number) => {
-			if (showProgressLog) {
-				process.stderr.write(`Downloading file... ${downloadProgress}\r`);
+			if (!showProgressLog) {
+				process.stderr.write(`Downloading file... ${downloadProgress.toFixed(2)}% \r`);
 			}
 		}
 	);
