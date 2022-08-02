@@ -141,7 +141,7 @@ async function getRemoteFile(
 		tempFolder,
 		destinationFileName,
 		(downloadProgress: number) => {
-			process.stderr.write('Downloading file...' + downloadProgress + '%\r');
+			process.stderr.write('Downloading file...' + downloadProgress.toFixed(2) + '\r');
 		}
 	);
 

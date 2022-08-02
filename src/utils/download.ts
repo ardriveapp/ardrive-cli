@@ -26,12 +26,11 @@ export async function download(
 			responseType: 'stream'
 		});
 		const totalLength = headers['content-length'];
-
-		data.on(
-			'data',
-			(chunk: string | unknown[]) =>
-				downloadProgressCallback && downloadProgressCallback((chunk.length / totalLength) * 100)
-		);
+		let downloadedLength = 0;
+		data.on('data', (chunk: string | unknown[]) => {
+			downloadedLength += chunk.length;
+			downloadProgressCallback && downloadProgressCallback((downloadedLength / totalLength) * 100);
+		});
 		return new Promise((resolve) => {
 			data.pipe(writer);
 			let error: Error | null = null;
