@@ -29,8 +29,7 @@ import {
 	MetaDataFileParameter,
 	MetaDataGqlTagsParameter,
 	MetadataJsonParameter,
-	IPFSParameter,
-	DataGqlTagsParameter
+	IPFSParameter
 } from '../parameter_declarations';
 import '../parameter_declarations';
 import { CLIAction } from './action';
