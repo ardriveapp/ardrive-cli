@@ -20,36 +20,35 @@ export async function download(
 ): Promise<string> {
 	const name = fileName ?? url.split('/').pop() ?? randomUUID();
 	const pathToFile = path.join(destinationPath, name);
+	const writer = fs.createWriteStream(pathToFile);
 	try {
-		const writer = fs.createWriteStream(pathToFile);
-
-		return axios({
+		const { data, headers } = await axios({
 			method: 'get',
 			url: url,
-			responseType: 'stream',
-			onDownloadProgress: downloadProgressCallback
-		}).then((response) => {
-			//ensure that the user can call `then()` only when the file has
-			//been downloaded entirely.
+			responseType: 'stream'
+		});
+		const totalLength = headers['content-length'];
 
-			return new Promise((resolve, reject) => {
-				response.data.pipe(writer);
-				let error: Error | null = null;
-				writer.on('error', (err) => {
-					error = err;
-					writer.close();
-					reject(err);
-				});
-				writer.on('close', () => {
-					if (!error) {
-						resolve(pathToFile);
-					}
-					//no need to call the reject here, as it will have been called in the
-					//'error' stream;
-				});
+		data.on(
+			'data',
+			(chunk: string | unknown[]) =>
+				downloadProgressCallback && downloadProgressCallback((chunk.length / totalLength) * 100)
+		);
+		return new Promise((resolve) => {
+			data.pipe(writer);
+			let error: Error | null = null;
+			writer.on('error', (err) => {
+				error = err;
+				writer.close();
+			});
+			writer.on('close', () => {
+				if (!error) {
+					resolve(pathToFile);
+				}
 			});
 		});
 	} catch (error) {
+		writer.close();
 		throw new Error(`Failed to download file from remote path ${url}: ${error.message}`);
 	}
 }
