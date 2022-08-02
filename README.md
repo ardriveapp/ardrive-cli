@@ -1139,9 +1139,9 @@ Note: In the case of multi-file uploads or recursive folder uploads, setting thi
 
 ### Uploading From a Remote URL<a id="remote-path"></a>
 
-You can upload a file from an existing url using the `--remote-path` flag. This must be used in conjunction with `--dest-file-name`
+You can upload a file from an existing url using the `--remote-path` flag. This must be used in conjunction with `--dest-file-name`.
 
-You can use a custom content type using the `--content-type` flag, but if this isn't used the app will use the content type from the response header:
+You can use a custom content type using the `--content-type` flag, but if this isn't used the app will use the content type from the response header of the request for the remote data.
 
 ```shell
 ardrive upload-file --remote-path "https://url/to/file" --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -d "example.jpg" -w /path/to/wallet.json
