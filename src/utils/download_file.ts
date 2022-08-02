@@ -37,7 +37,9 @@ export async function downloadFile(
 		let downloadedLength = 0;
 		data.on('data', (chunk: string | unknown[]) => {
 			downloadedLength += chunk.length;
-			downloadProgressCallback && downloadProgressCallback((downloadedLength / totalLength) * 100);
+			const downloadProgressPct = totalLength > 0 ? (downloadedLength / totalLength) * 100 : 0;
+
+			downloadProgressCallback && downloadProgressCallback(downloadProgressPct);
 		});
 		await pipeline(data, writer);
 		return { pathToFile, contentType };
