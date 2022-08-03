@@ -10,7 +10,7 @@ describe('temp folder functions', () => {
 			expect(fs.existsSync(tempFolderPath)).to.equal(true);
 		});
 
-		it('getTempFolder can be called twice in a row', () => {
+		it('can be called twice in a row', () => {
 			const tempFolderPath = getTempFolder();
 			const tempFolderPath2 = getTempFolder();
 			expect(fs.existsSync(tempFolderPath)).to.equal(true);
