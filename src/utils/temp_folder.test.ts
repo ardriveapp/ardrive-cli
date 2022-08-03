@@ -25,7 +25,7 @@ describe('temp folder functions', () => {
 	});
 
 	describe('cleanUpTempFolder function', () => {
-		it('cleanUpTempFolder removes the temporary folder from the local system', () => {
+		it('removes the temporary folder from the local system', () => {
 			const tempFolderPath = getTempFolder();
 			expect(fs.existsSync(tempFolderPath)).to.equal(true);
 			cleanUpTempFolder();
