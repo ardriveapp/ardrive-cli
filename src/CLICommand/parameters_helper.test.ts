@@ -29,7 +29,8 @@ import {
 	MetaDataFileParameter,
 	MetaDataGqlTagsParameter,
 	MetadataJsonParameter,
-	IPFSParameter
+	IPFSParameter,
+	DataGqlTagsParameter
 } from '../parameter_declarations';
 import '../parameter_declarations';
 import { CLIAction } from './action';
@@ -730,6 +731,29 @@ describe('ParametersHelper class', () => {
 
 				expect(metaDataResult).to.deep.equal({
 					metaDataGqlTags: { 'Tag 2': 'Val 2', 'Tag-1': 'Val 1' }
+				});
+			});
+		});
+
+		it('returns the expected custom metadata with the --data-gql-tags parameter', async () => {
+			const cmd = declareCommandWithParams(program, [DataGqlTagsParameter]);
+
+			CLICommand.parse(program, [
+				...baseArgv,
+				testCommandName,
+				'--data-gql-tags',
+				'data Tag',
+				'Val 1',
+				'data Tag 2',
+				'Val 2'
+			]);
+
+			await cmd.action.then((options) => {
+				const parameters = new ParametersHelper(options);
+				const metaDataResult = parameters.getCustomMetaData();
+
+				expect(metaDataResult).to.deep.equal({
+					dataGqlTags: { 'data Tag 2': 'Val 2', 'data Tag': 'Val 1' }
 				});
 			});
 		});

@@ -49,7 +49,7 @@ export const MetadataJsonParameter = 'metadataJson';
 
 // Aggregates for convenience
 export const CustomMetaDataParameters = [
-	// DataGqlTagsParameter,
+	DataGqlTagsParameter,
 	MetaDataFileParameter,
 	MetaDataGqlTagsParameter,
 	MetadataJsonParameter
@@ -518,12 +518,11 @@ Parameter.declare({
 	forbiddenConjunctionParameters: [MetaDataFileParameter]
 });
 
-// TODO: PE-1534
-// Parameter.declare({
-// 	name: DataGqlTagsParameter,
-// 	aliases: ['--data-gql-tags'],
-// 	type: 'array',
-// 	description:
-// 		'(OPTIONAL) A mapping of custom metadata in the `"TAG_NAME" "TAG_VALUE"` format to be applied to the GQL Tags of all Data Transactions created. Must be an even number of string values to determine custom metadata. Can NOT be used in conjunction with --metadata-file',
-// 	forbiddenConjunctionParameters: [MetaDataFileParameter]
-// });
+Parameter.declare({
+	name: DataGqlTagsParameter,
+	aliases: ['--data-gql-tags'],
+	type: 'array',
+	description:
+		'(OPTIONAL) A mapping of custom metadata in the `"TAG_NAME" "TAG_VALUE"` format to be applied to the GQL Tags of all Data Transactions created. Must be an even number of string values to determine custom metadata. Can NOT be used in conjunction with --metadata-file',
+	forbiddenConjunctionParameters: [MetaDataFileParameter]
+});
