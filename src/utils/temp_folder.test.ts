@@ -31,6 +31,7 @@ describe('temp folder functions', () => {
 			cleanUpTempFolder();
 			expect(fs.existsSync(tempFolderPath)).to.equal(false);
 		});
+
 		it('can be called twice in a row', () => {
 			const tempFolderPath = getTempFolder();
 			expect(fs.existsSync(tempFolderPath)).to.equal(true);
