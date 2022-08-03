@@ -147,7 +147,7 @@ async function getRemoteFile(
 			}
 		}
 	);
-
+	process.stderr.clearLine(0);
 	const customContentType = parameters.getParameterValue(CustomContentTypeParameter);
 
 	const wrappedEntity = wrapFileOrFolder(pathToFile, customContentType ?? contentType);

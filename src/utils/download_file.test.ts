@@ -3,13 +3,13 @@ import { getTempFolder } from './temp_folder';
 import { downloadFile } from './download_file';
 import * as fs from 'fs';
 
-describe('download file test', () => {
+describe('downloadFile function', () => {
 	const validDownloadLink = 'https://arweave.net/pVoSqZgJUCiNw7oS6CtlVEd8gREQlpRbccrsMLkeIuQ';
 	const invalidDownloadLink = 'https://arweave.net/pVoSqZgJUCiNw7oS6CtlVEV8gREQlpRbccrsMLkeIuQ';
-	const name = 'cat.jpg';
+	const destinationFileName = 'cat.jpg';
 	const tempFolderPath = getTempFolder();
 	it('downloads a file into the provided folder when given a valid link', async () => {
-		const { pathToFile, contentType } = await downloadFile(validDownloadLink, tempFolderPath, name);
+		const { pathToFile, contentType } = await downloadFile(validDownloadLink, tempFolderPath, destinationFileName);
 		expect(fs.existsSync(pathToFile)).to.equal(true);
 		expect(contentType).to.equal('image/jpeg');
 	});
@@ -17,7 +17,7 @@ describe('download file test', () => {
 	it('download throws when given an invalid link', async () => {
 		let error;
 		try {
-			await downloadFile(invalidDownloadLink, tempFolderPath, name);
+			await downloadFile(invalidDownloadLink, tempFolderPath, destinationFileName);
 		} catch (err) {
 			error = err;
 		}
