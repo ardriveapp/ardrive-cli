@@ -286,7 +286,7 @@ Parameter.declare({
 	aliases: ['-d', '--dest-file-name'],
 	description: `a destination file name to use when uploaded to ArDrive
 \t\t\t\t\t\t\t• Required for use with --remote-path
-\t\t\t\t\t\t\t• Optional use with --local-path or --local-file-path`
+\t\t\t\t\t\t\t• Optional when using with --local-path or --local-file-path`
 });
 
 Parameter.declare({
