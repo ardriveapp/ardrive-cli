@@ -500,6 +500,9 @@ Parameter.declare({
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-paths
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-path
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-csv`,
+	requiredConjunctionParameters: [
+		DestinationFileNameParameter
+	],
 	forbiddenConjunctionParameters: [
 		LocalFilePathParameter_DEPRECATED,
 		LocalPathsParameter,
