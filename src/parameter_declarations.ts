@@ -523,6 +523,6 @@ Parameter.declare({
 	aliases: ['--data-gql-tags'],
 	type: 'array',
 	description:
-		'(OPTIONAL) A mapping of custom metadata in the `"TAG_NAME" "TAG_VALUE"` format to be applied to the GQL Tags of all Data Transactions created. Must be an even number of string values to determine custom metadata. Can NOT be used in conjunction with --metadata-file',
+		'(OPTIONAL) A list of custom Arweave tag name and value pairs in the format `"TAG_NAME" "TAG_VALUE"` that will be applied to all file data transactions created during an invocation. Must be an even number of string values. Can NOT be used in conjunction with --metadata-file',
 	forbiddenConjunctionParameters: [MetaDataFileParameter]
 });
