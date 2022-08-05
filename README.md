@@ -586,7 +586,7 @@ As discussed previously, all folders in a drive are linked by way of parent fold
 Creating folders manually is straightforward:
 
 ```shell
-ardrive create-folder --parent-folder-id "63153bb3-2ca9-4d42-9106-0ce82e793321" --name "My Awesome Folder" -w /path/to/wallet.json
+ardrive create-folder --parent-folder-id "63153bb3-2ca9-4d42-9106-0ce82e793321" --folder-name "My Awesome Folder" -w /path/to/wallet.json
 ```
 
 Example output:
