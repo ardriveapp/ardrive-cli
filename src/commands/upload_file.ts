@@ -272,7 +272,7 @@ new CLICommand({
 				prompts: fileAndFolderUploadConflictPrompts
 			});
 
-			if (remoteFilePath && results.created[0]) {
+			if (remoteFilePath && results.created[0].type === 'file') {
 				// TODO: Include ArFSRemoteFileToUpload functionality in ArDrive Core
 				// TODO: Account for bulk remote path uploads in the future
 				results.created[0].sourceUri = remoteFilePath;
