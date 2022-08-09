@@ -48,6 +48,8 @@ interface UploadPathParameter {
 
 type FilePath = string;
 
+let remoteUri: string | undefined;
+
 function getFilesFromCSV(parameters: ParametersHelper): UploadPathParameter[] | undefined {
 	const localCSVFile =
 		parameters.getParameterValue(LocalFilesParameter_DEPRECATED) ?? parameters.getParameterValue(LocalCSVParameter);
@@ -143,7 +145,7 @@ async function getRemoteFile(
 	parentFolderId: FolderID
 ): Promise<UploadPathParameter[] | undefined> {
 	const remoteFilePath = parameters.getParameterValue(RemotePathParameter);
-
+	remoteUri = remoteFilePath;
 	if (!remoteFilePath) {
 		return undefined;
 	}
@@ -271,6 +273,11 @@ new CLICommand({
 				conflictResolution,
 				prompts: fileAndFolderUploadConflictPrompts
 			});
+
+			if (remoteUri) {
+				// TODO: Include ArFSRemoteFileToUpload functionality in ArDrive Core
+				results.created[0].sourceUri = remoteUri;
+			}
 
 			console.log(JSON.stringify(results, null, 4));
 			cleanUpTempFolder();
