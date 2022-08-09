@@ -18,7 +18,7 @@ describe('getTempFolder function', () => {
 
 	it('returns a folder that contains the correct subfolders', () => {
 		const tempFolderPath = getTempFolder();
-		const expectedPathComponent = os.platform() === 'win32' ? '\\ardrive-temp' : '/.ardrive/temp';
+		const expectedPathComponent = os.platform() === 'win32' ? '\\ardrive-downloads' : '/.ardrive/ardrive-downloads';
 		expect(tempFolderPath).to.contains(expectedPathComponent);
 	});
 
