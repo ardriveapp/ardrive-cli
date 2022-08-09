@@ -55,7 +55,6 @@ function getManualUnixTempPath(): string {
 
 function platformTempFolder(): string {
 	const tempBaseFolder = getOrCreateTempBaseFolder();
-	console.log(tempBaseFolder);
 	return path.join(tempBaseFolder, 'ardrive-downloads');
 }
 /**
