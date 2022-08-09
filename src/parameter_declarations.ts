@@ -42,6 +42,7 @@ export const WithKeysParameter = 'withKeys';
 export const GatewayParameter = 'gateway';
 export const CustomContentTypeParameter = 'contentType';
 export const RemotePathParameter = 'remotePath';
+export const IPFSParameter = 'addIpfsTag';
 export const DataGqlTagsParameter = 'dataGqlTags';
 export const MetaDataFileParameter = 'metadataFile';
 export const MetaDataGqlTagsParameter = 'metadataGqlTags';
@@ -49,7 +50,7 @@ export const MetadataJsonParameter = 'metadataJson';
 
 // Aggregates for convenience
 export const CustomMetaDataParameters = [
-	// DataGqlTagsParameter,
+	DataGqlTagsParameter,
 	MetaDataFileParameter,
 	MetaDataGqlTagsParameter,
 	MetadataJsonParameter
@@ -98,7 +99,8 @@ export const AllParameters = [
 	UnsafeDrivePasswordParameter,
 	WalletFileParameter,
 	WithKeysParameter,
-	RemotePathParameter
+	RemotePathParameter,
+	IPFSParameter
 ] as const;
 export type ParameterName = typeof AllParameters[number];
 
@@ -500,12 +502,21 @@ Parameter.declare({
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-paths
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-path
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-csv`,
+	requiredConjunctionParameters: [DestinationFileNameParameter],
 	forbiddenConjunctionParameters: [
 		LocalFilePathParameter_DEPRECATED,
 		LocalPathsParameter,
 		LocalCSVParameter,
 		LocalPathParameter
 	]
+});
+Parameter.declare({
+	name: IPFSParameter,
+	aliases: ['--add-ipfs-tag'],
+	description:
+		'(OPTIONAL) Computes the v1 IPFS content identifier (CID) for each file and sets it as the "IPFS-Add" tag value of each\'s respective file data transaction',
+	type: 'boolean',
+	forbiddenConjunctionParameters: [PrivateParameter, UnsafeDrivePasswordParameter]
 });
 
 Parameter.declare({
@@ -533,12 +544,11 @@ Parameter.declare({
 	forbiddenConjunctionParameters: [MetaDataFileParameter]
 });
 
-// TODO: PE-1534
-// Parameter.declare({
-// 	name: DataGqlTagsParameter,
-// 	aliases: ['--data-gql-tags'],
-// 	type: 'array',
-// 	description:
-// 		'(OPTIONAL) A mapping of custom metadata in the `"TAG_NAME" "TAG_VALUE"` format to be applied to the GQL Tags of all Data Transactions created. Must be an even number of string values to determine custom metadata. Can NOT be used in conjunction with --metadata-file',
-// 	forbiddenConjunctionParameters: [MetaDataFileParameter]
-// });
+Parameter.declare({
+	name: DataGqlTagsParameter,
+	aliases: ['--data-gql-tags'],
+	type: 'array',
+	description:
+		'(OPTIONAL) A list of custom Arweave tag name and value pairs in the format `"TAG_NAME" "TAG_VALUE"` that will be applied to all file data transactions created during an invocation. Must be an even number of string values. Can NOT be used in conjunction with --metadata-file',
+	forbiddenConjunctionParameters: [MetaDataFileParameter]
+});

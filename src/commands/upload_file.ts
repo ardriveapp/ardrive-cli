@@ -15,7 +15,8 @@ import {
 	GatewayParameter,
 	CustomContentTypeParameter,
 	RemotePathParameter,
-	CustomMetaDataParameters
+	CustomMetaDataParameters,
+	IPFSParameter
 } from '../parameter_declarations';
 import { fileAndFolderUploadConflictPrompts } from '../prompts';
 import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
@@ -85,7 +86,10 @@ function getFilesFromCSV(parameters: ParametersHelper): UploadPathParameter[] | 
 	return fileParameters;
 }
 
-function getFileList(parameters: ParametersHelper, parentFolderId: FolderID): UploadPathParameter[] | undefined {
+async function getFileList(
+	parameters: ParametersHelper,
+	parentFolderId: FolderID
+): Promise<UploadPathParameter[] | undefined> {
 	const localPaths = parameters.getParameterValue<string[]>(LocalPathsParameter);
 	if (!localPaths) {
 		return undefined;
@@ -93,8 +97,14 @@ function getFileList(parameters: ParametersHelper, parentFolderId: FolderID): Up
 	const customContentType = parameters.getParameterValue(CustomContentTypeParameter);
 	const customMetaData = parameters.getCustomMetaData();
 
-	const localPathsToUpload = localPaths.map((filePath: FilePath) => {
-		const wrappedEntity = wrapFileOrFolder(filePath, customContentType, customMetaData);
+	const localPathsToUpload = localPaths.map(async (filePath: FilePath) => {
+		const customMetaDataWithIipfsFlag = await (async function () {
+			const ipfsFlag = parameters.getParameterValue(IPFSParameter);
+			return ipfsFlag
+				? await parameters.getCustomMetaDataWithIpfsCid({ localFilePath: filePath })
+				: customMetaData;
+		})();
+		const wrappedEntity = wrapFileOrFolder(filePath, customContentType, customMetaDataWithIipfsFlag);
 
 		return {
 			parentFolderId,
@@ -102,17 +112,21 @@ function getFileList(parameters: ParametersHelper, parentFolderId: FolderID): Up
 		};
 	});
 
-	return localPathsToUpload;
+	return Promise.all(localPathsToUpload);
 }
 
-function getSingleFile(parameters: ParametersHelper, parentFolderId: FolderID): UploadPathParameter[] {
+async function getSingleFile(parameters: ParametersHelper, parentFolderId: FolderID): Promise<UploadPathParameter[]> {
 	// NOTE: Single file is the last possible use case. Throw exception if the parameter isn't found.
 	const localFilePath =
 		parameters.getParameterValue(LocalFilePathParameter_DEPRECATED) ??
 		parameters.getRequiredParameterValue<string>(LocalPathParameter);
 
 	const customContentType = parameters.getParameterValue(CustomContentTypeParameter);
-	const customMetaData = parameters.getCustomMetaData();
+	const customMetaData = await (async function () {
+		const customMetaData = parameters.getCustomMetaData();
+		const ipfsFlag = parameters.getParameterValue(IPFSParameter);
+		return ipfsFlag ? await parameters.getCustomMetaDataWithIpfsCid({ localFilePath }) : customMetaData;
+	})();
 
 	const wrappedEntity = wrapFileOrFolder(localFilePath, customContentType, customMetaData);
 	const singleParameter = {
@@ -180,7 +194,8 @@ new CLICommand({
 		LocalFilesParameter_DEPRECATED,
 		BoostParameter,
 		GatewayParameter,
-		RemotePathParameter
+		RemotePathParameter,
+		IPFSParameter
 	],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
@@ -195,7 +210,7 @@ new CLICommand({
 			// Determine list of files to upload and destinations from parameter list
 			// First check the multi-file input case
 			const parentFolderId: FolderID = parameters.getRequiredParameterValue(ParentFolderIdParameter, EID);
-			const fileList = getFileList(parameters, parentFolderId);
+			const fileList = await getFileList(parameters, parentFolderId);
 			if (fileList) {
 				return fileList;
 			}

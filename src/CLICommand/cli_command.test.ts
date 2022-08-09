@@ -7,7 +7,9 @@ import {
 	DriveNameParameter,
 	UnsafeDrivePasswordParameter,
 	SeedPhraseParameter,
-	WalletFileParameter
+	WalletFileParameter,
+	IPFSParameter,
+	PrivateParameter
 } from '../parameter_declarations';
 import { CliApiObject } from './cli';
 import { baseArgv } from './test_constants';
@@ -47,6 +49,15 @@ const commandDescriptorForbiddenWalletFileAndSeedPhrase: CommandDescriptor = {
 const parsedCommandOptionsBothSpecified = {
 	[WalletFileParameter]: nonEmptyValue,
 	[SeedPhraseParameter]: nonEmptyValue
+};
+const commandDescriptorIPFSAndPrivate: CommandDescriptor = {
+	name: testingCommandName,
+	parameters: [IPFSParameter, PrivateParameter],
+	action: new CLIAction(dummyAction)
+};
+const parsedCommandOptionsIPFSAndPrivate = {
+	[PrivateParameter]: true,
+	[IPFSParameter]: true
 };
 
 class TestCliApiObject {
@@ -103,7 +114,10 @@ describe('CLICommand class', () => {
 				commandDescriptorForbiddenWalletFileAndSeedPhrase,
 				parsedCommandOptionsBothSpecified
 			);
-		}).to.throw();
+		}).to.throw('Parameter walletFile cannot be used in conjunction with seedPhrase');
+		expect(function () {
+			assertConjunctionParameters(commandDescriptorIPFSAndPrivate, parsedCommandOptionsIPFSAndPrivate);
+		}).to.throw('Parameter addIpfsTag cannot be used in conjunction with private');
 	});
 
 	it('No colliding parameters', () => {

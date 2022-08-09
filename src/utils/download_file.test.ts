@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { getTempFolder } from './temp_folder';
+import { cleanUpTempFolder, getTempFolder } from './temp_folder';
 import { downloadFile } from './download_file';
 import * as fs from 'fs';
 
@@ -25,5 +25,9 @@ describe('downloadFile function', () => {
 		expect(error?.message).to.equal(
 			'Failed to download file from remote path https://arweave.net/pVoSqZgJUCiNw7oS6CtlVEV8gREQlpRbccrsMLkeIuQ: Request failed with status code 404'
 		);
+	});
+
+	after(() => {
+		cleanUpTempFolder();
 	});
 });
