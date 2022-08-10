@@ -36,7 +36,7 @@ function getValidUnixTempPath(): string | null {
 		if (fs.existsSync(envTempFolder)) {
 			return envTempFolder;
 		} else {
-			const tempPath = 'tmp';
+			const tempPath = '/tmp';
 			if (fs.existsSync(tempPath)) {
 				return tempPath;
 			}
