@@ -14,6 +14,7 @@ import {
 	LocalCSVParameter,
 	GatewayParameter,
 	CustomContentTypeParameter,
+	RemotePathParameter,
 	CustomMetaDataParameters,
 	IPFSParameter
 } from '../parameter_declarations';
@@ -33,6 +34,9 @@ import {
 import { cliArDriveFactory } from '..';
 import * as fs from 'fs';
 import { getArweaveFromURL } from '../utils/get_arweave_for_url';
+import { cleanUpTempFolder, getTempFolder } from '../utils/temp_folder';
+import { downloadFile } from '../utils/download_file';
+import { showProgressLog } from '../utils/show_progress_log';
 
 interface UploadPathParameter {
 	parentFolderId: FolderID;
@@ -50,7 +54,6 @@ function getFilesFromCSV(parameters: ParametersHelper): UploadPathParameter[] | 
 	if (!localCSVFile) {
 		return undefined;
 	}
-
 	const localCSVFileData = fs.readFileSync(localCSVFile).toString().trim();
 	const COLUMN_SEPARATOR = ',';
 	const ROW_SEPARATOR = '\n';
@@ -135,6 +138,41 @@ async function getSingleFile(parameters: ParametersHelper, parentFolderId: Folde
 	return [singleParameter];
 }
 
+async function getRemoteFile(
+	parameters: ParametersHelper,
+	parentFolderId: FolderID
+): Promise<UploadPathParameter[] | undefined> {
+	const remoteFilePath = parameters.getParameterValue(RemotePathParameter);
+	if (!remoteFilePath) {
+		return undefined;
+	}
+
+	const tempFolder = getTempFolder();
+	const destinationFileName = parameters.getRequiredParameterValue(DestinationFileNameParameter);
+
+	const { pathToFile, contentType } = await downloadFile(
+		remoteFilePath,
+		tempFolder,
+		destinationFileName,
+		(downloadProgress: number) => {
+			if (showProgressLog) {
+				process.stderr.write(`Downloading file... ${downloadProgress.toFixed(1)}% \r`);
+			}
+		}
+	);
+	process.stderr.clearLine(0);
+	const customContentType = parameters.getParameterValue(CustomContentTypeParameter);
+
+	const wrappedEntity = wrapFileOrFolder(pathToFile, customContentType ?? contentType);
+	const singleParameter = {
+		parentFolderId: parentFolderId,
+		wrappedEntity,
+		destinationFileName: parameters.getParameterValue(DestinationFileNameParameter)
+	};
+
+	return [singleParameter];
+}
+
 new CLICommand({
 	name: 'upload-file',
 	parameters: [
@@ -155,6 +193,7 @@ new CLICommand({
 		LocalFilesParameter_DEPRECATED,
 		BoostParameter,
 		GatewayParameter,
+		RemotePathParameter,
 		IPFSParameter
 	],
 	action: new CLIAction(async function action(options) {
@@ -174,6 +213,10 @@ new CLICommand({
 			if (fileList) {
 				return fileList;
 			}
+			const filesFromRemote = await getRemoteFile(parameters, parentFolderId);
+			if (filesFromRemote) {
+				return filesFromRemote;
+			}
 
 			// If neither the multi-file input case or csv case produced files, try the single file case (deprecated)
 			return getSingleFile(parameters, parentFolderId);
@@ -183,6 +226,7 @@ new CLICommand({
 
 			const conflictResolution = parameters.getFileNameConflictResolution();
 			const shouldBundle = !!parameters.getParameterValue(ShouldBundleParameter);
+			const remoteFilePath = parameters.getParameterValue(RemotePathParameter);
 
 			const arweave = getArweaveFromURL(parameters.getGateway());
 
@@ -228,7 +272,14 @@ new CLICommand({
 				prompts: fileAndFolderUploadConflictPrompts
 			});
 
+			if (remoteFilePath && results.created[0].type === 'file') {
+				// TODO: Include ArFSRemoteFileToUpload functionality in ArDrive Core
+				// TODO: Account for bulk remote path uploads in the future
+				results.created[0].sourceUri = remoteFilePath;
+			}
+
 			console.log(JSON.stringify(results, null, 4));
+			cleanUpTempFolder();
 			return SUCCESS_EXIT_CODE;
 		}
 

@@ -134,9 +134,10 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         15. [Uploading Manifests](#uploading-manifests)
         16. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
         17. [Uploading With a Custom Content Type](#custom-content-type)
-        18. [Uploading a Custom Manifest](#custom-manifest)
-        19. [Uploading Files with Custom MetaData](#uploading-files-with-custom-metadata)
-        20. [Applying Unique Custom MetaData During Bulk Workflows](#applying-unique-custom-metadata-during-bulk-workflows)
+        18. [Uploading From a Remote URL](#remote-path)
+        19. [Uploading a Custom Manifest](#custom-manifest)
+        20. [Uploading Files with Custom MetaData](#uploading-files-with-custom-metadata)
+        21. [Applying Unique Custom MetaData During Bulk Workflows](#applying-unique-custom-metadata-during-bulk-workflows)
     8. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -1174,6 +1175,16 @@ ardrive upload-file --content-type "application/json"  --local-path /path/to/fil
 It is currently possible to set this value to any given string, but the gateway will still only serve valid content types. Check out this list of commonly used MIME types to ensure you're providing a valid content type: [Common MIME types][mozilla-mime-types].
 
 Note: In the case of multi-file uploads or recursive folder uploads, setting this `--content-type` flag will set the provided custom content type on EVERY file entity within a given upload.
+
+### Uploading From a Remote URL<a id="remote-path"></a>
+
+You can upload a file from an existing url using the `--remote-path` flag. This must be used in conjunction with `--dest-file-name`.
+
+You can use a custom content type using the `--content-type` flag, but if this isn't used the app will use the content type from the response header of the request for the remote data.
+
+```shell
+ardrive upload-file --remote-path "https://url/to/file" --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -d "example.jpg" -w /path/to/wallet.json
+```
 
 ### Uploading a Custom Manifest<a id="custom-manifest"></a>
 

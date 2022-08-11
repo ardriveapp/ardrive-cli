@@ -41,6 +41,7 @@ export const LocalCSVParameter = 'localCsv';
 export const WithKeysParameter = 'withKeys';
 export const GatewayParameter = 'gateway';
 export const CustomContentTypeParameter = 'contentType';
+export const RemotePathParameter = 'remotePath';
 export const IPFSParameter = 'addIpfsTag';
 export const DataGqlTagsParameter = 'dataGqlTags';
 export const MetaDataFileParameter = 'metadataFile';
@@ -98,6 +99,7 @@ export const AllParameters = [
 	UnsafeDrivePasswordParameter,
 	WalletFileParameter,
 	WithKeysParameter,
+	RemotePathParameter,
 	IPFSParameter
 ] as const;
 export type ParameterName = typeof AllParameters[number];
@@ -276,15 +278,17 @@ Parameter.declare({
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-file-path
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-files
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-paths
-\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-csv`,
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-csv
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --remote-path`,
 	forbiddenConjunctionParameters: [LocalFilePathParameter_DEPRECATED, LocalPathsParameter, LocalCSVParameter]
 });
 
 Parameter.declare({
 	name: DestinationFileNameParameter,
 	aliases: ['-d', '--dest-file-name'],
-	description: `(OPTIONAL) a destination file name to use when uploaded to ArDrive
-\t\t\t\t\t\t\t• Only valid for use with --local-path or --local-file-path`
+	description: `a destination file name to use when uploaded to ArDrive
+\t\t\t\t\t\t\t• Required for use with --remote-path
+\t\t\t\t\t\t\t• Optional when using with --local-path or --local-file-path`
 });
 
 Parameter.declare({
@@ -309,7 +313,8 @@ Parameter.declare({
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-path
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-paths
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-csv
-\t\t\t\t\t\t\t• Can NOT be used in conjunction with --dest-file-name`,
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --dest-file-name
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --remote-path`,
 	forbiddenConjunctionParameters: [
 		LocalFilePathParameter_DEPRECATED,
 		LocalPathParameter,
@@ -410,7 +415,8 @@ Parameter.declare({
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-file-path
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-files
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-paths
-\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-csv`,
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-csv
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --remote-path`,
 	forbiddenConjunctionParameters: [
 		LocalFilePathParameter_DEPRECATED,
 		LocalFilesParameter_DEPRECATED,
@@ -428,7 +434,8 @@ Parameter.declare({
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-files
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-path
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-csv
-\t\t\t\t\t\t\t• Can NOT be used in conjunction with --dest-file-name`,
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --dest-file-name
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --remote-path`,
 	forbiddenConjunctionParameters: [
 		LocalFilePathParameter_DEPRECATED,
 		LocalFilesParameter_DEPRECATED,
@@ -454,7 +461,8 @@ Parameter.declare({
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-files
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-path
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-paths
-\t\t\t\t\t\t\t• Can NOT be used in conjunction with --dest-file-name`,
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --dest-file-name
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --remote-path`,
 	forbiddenConjunctionParameters: [
 		LocalFilePathParameter_DEPRECATED,
 		LocalFilesParameter_DEPRECATED,
@@ -484,6 +492,24 @@ Parameter.declare({
 		'(OPTIONAL) Provide a custom content type to all files within the upload to be used by the gateway to display the content'
 });
 
+Parameter.declare({
+	name: RemotePathParameter,
+	aliases: ['--remote-path'],
+	description: `the remote path for the file that will be uploaded
+\t\t\t\t\t\t\t• MUST be used in conjunction with --dest-file-name
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-file-path
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-files
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-paths
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-path
+\t\t\t\t\t\t\t• Can NOT be used in conjunction with --local-csv`,
+	requiredConjunctionParameters: [DestinationFileNameParameter],
+	forbiddenConjunctionParameters: [
+		LocalFilePathParameter_DEPRECATED,
+		LocalPathsParameter,
+		LocalCSVParameter,
+		LocalPathParameter
+	]
+});
 Parameter.declare({
 	name: IPFSParameter,
 	aliases: ['--add-ipfs-tag'],
