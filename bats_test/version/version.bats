@@ -19,3 +19,8 @@ EXPECTED_VERSION=$(jq -r '.version' ./package.json)
     run -0 yarn ardrive tx-status -V
     [[ "$output" = "$EXPECTED_VERSION" ]]
 }
+
+@test "'ardrive <SOME COMMAND> --version' overrides other flags" {
+    run -0 yarn ardrive --help --version
+    [[ "$output" = "$EXPECTED_VERSION" ]]
+}

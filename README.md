@@ -74,14 +74,19 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
     2. [Data Portability](#data-portability)
     3. [Intended Audience](#intended-audience)
 2. [Getting Started](#getting-started)
-    1. [Install Yarn 2 (CLI Users and Developers)](#yarn2)
-    2. [Husky (Developers Only)](#husky)
-    3. [NVM (Optional - Recommended)](#nvm)
-    4. [Using a custom ArDrive-Core-JS (Optional - Developers)](#custom-ardrive-core-js)
-    5. [Installing and Starting the CLI From NPM Package (CLI Users)](#install-from-npm)
-    6. [Installing and Starting the CLI From Source (CLI Users and Developers)](#install-from-src)
-    7. [Recommended Visual Studio Code extensions (Developers Only)](#vs-extensions)
-    8. [Limitations](#limitations)
+    1. [Prerequisites](#prerequisites)
+        1. [Git](#git)
+        2. [NVM (Optional - Recommended)](#nvm)
+    2. [Quick Start](#quick-start)
+        1. [Installing and Starting the CLI From NPM Package](#install-from-npm)
+        2. [Upgrading to the Latest CLI Version](#upgrading)
+    3. [Build and Run from Source](#build-from-source)
+        1. [Install Yarn 2](#yarn2)
+        2. [Husky (Developers Only)](#husky)
+        3. [Using a custom ArDrive-Core-JS (Optional)](#custom-ardrive-core-js)
+        4. [Installing and Starting the CLI From Source](#install-from-src)
+        5. [Recommended Visual Studio Code extensions (Developers Only)](#vs-extensions)
+    4. [Limitations](#limitations)
 3. [Using the CLI](#using-the-cli)
     1. [CLI Help](#cli-help)
     2. [CLI Version](#cli-version)
@@ -174,9 +179,57 @@ For deeper integrations with the [ArDrive] platform, consider using the [ArDrive
 
 # Getting Started
 
-CLI users and developers must both follow these steps to get the application and/or developer environment up and running:
+To simply install the latest version of the CLI to your local system and get started, follow the [Quick Start](#quick-start) instructions. To build and/or develop the CLI from source, follow the [Build and Run from Source](#build-from-source) instructions. In either case, be sure to satisfy the requirements in the [Prerequisites](#prerequisites) section.
 
-## Install Yarn 2 (CLI Users and Developers)<a id="yarn2"></a>
+## Prerequisites
+
+The following tools must be installed whether performing a [Quick Start](#quick-start) or [Building from Source](#build-from-source):
+
+### Git
+
+Some of ArDrive's dependencies are transitively installed via Git. Install it, if necessary, and ensure that it's available within your terminal environment:
+
+[Download Git](https://git-scm.com/downloads)
+
+### NVM (Optional - Recommended)<a id="nvm"></a>
+
+This project uses the Node Version Manager (NVM) and an `.nvmrc` file to lock the recommended Node version used by the latest version of `ardrive-core-js`.
+
+**Note for Windows: We recommend using WSL for setting up NVM on Windows using the [instructions described here][wsl-install]**
+
+Follow these steps to get NVM up and running on your system:
+
+1. Install NVM using [these installation instructions][nvm-install].
+2. Navigate to this project's root directory
+3. Ensure that the correct version of Node is installed by performing: `nvm install`
+4. Use the correct version of Node, by performing: `nvm use`
+
+**IT IS STRONGLY RECOMMENDED THAT YOU AVOID GENERATING WALLETS VIA SEED PHRASE WITH THE CLI USING ANY NODE VERSION OTHER THAN THE ONE SPECIFIED IN `.nvmrc`.**
+
+## Quick Start
+
+Once you've satisfied any necessary [prerequisites](#prerequisites), the fastest way to get up and running is to globally install the latest version of the ArDrive CLI to your local system via NPM:
+
+### Installing and Starting the CLI From NPM Package<a id="install-from-npm"></a>
+
+```shell
+npm install -g ardrive-cli
+
+# then invoke the CLI from anywhere on your system:
+ardrive
+```
+
+### Upgrading to the Latest Version<a id="upgrading"></a>
+
+If you globally installed the CLI via NPM, then upgrade to the latest version by simply performing:
+
+```shell
+npm update -g ardrive-cli
+```
+
+## Build and Run from Source<a id="build-from-source"></a>
+
+### Install Yarn 2<a id="yarn2"></a>
 
 Both the ArDrive CLI and ArDrive Core JS use Yarn 2 to manage dependencies and initiate workflows, so follow the [yarn installation instructions][yarn-install] in order to get the latest version. In most cases:
 
@@ -188,7 +241,7 @@ brew install yarn
 npm install -g yarn
 ```
 
-## Husky (Developers Only)<a id="husky"></a>
+### Husky (Developers Only)<a id="husky"></a>
 
 We use husky 6.x to manage the git commit hooks that help to improve the quality of our commits. Please run:
 
@@ -198,20 +251,7 @@ yarn husky install
 
 to enable git hooks for your local checkout. Without doing so, you risk committing non-compliant code to the repository.
 
-## NVM (Optional - Recommended)<a id="nvm"></a>
-
-This repository uses the Node Version Manager (NVM) and an `.nvmrc` file to lock the Node version to the current version used by `ardrive-core-js`.
-
-**Note for Windows: We recommend using WSL for setting up NVM on Windows using the [instructions described here][wsl-install]**
-
-Follow these steps to get NVM up and running on your system:
-
-1. Install NVM using [these installation instructions][nvm-install].
-2. Navigate to this project's root directory
-3. Ensure that the correct version of Node is installed by performing: `nvm install`
-4. Use the correct version of Node, by performing: `nvm use`
-
-## Using a custom ArDrive-Core-JS (Optional - Developers)<a id="custom-ardrive-core-js"></a>
+### Using a custom ArDrive-Core-JS (Optional)<a id="custom-ardrive-core-js"></a>
 
 To test a with a custom version of the `ardrive-core-js` library on your local system, change the `"ardrive-core-js"` line in `package.json` to the root of your local `ardrive-core-js` repo:
 
@@ -220,16 +260,7 @@ To test a with a custom version of the `ardrive-core-js` library on your local s
 + "ardrive-core-js": "../ardrive-core-js/"
 ```
 
-## Installing and Starting the CLI From NPM Package (CLI Users)<a id="install-from-npm"></a>
-
-```shell
-npm install -g ardrive-cli
-
-# then invoke the CLI from anywhere on your system:
-ardrive
-```
-
-## Installing and Starting the CLI From Source (CLI Users and Developers)<a id="install-from-src"></a>
+### Installing and Starting the CLI From Source<a id="install-from-src"></a>
 
 Now that your runtime and/or development environment is set up, to install the package simply run:
 
@@ -255,7 +286,7 @@ npm install i -g /path/to/package.tgz
 ardrive
 ```
 
-## Recommended Visual Studio Code extensions (Developers Only)<a id="vs-extensions"></a>
+### Recommended Visual Studio Code extensions (Developers Only)<a id="vs-extensions"></a>
 
 To ensure your environment is compatible, we also recommend the following VSCode extensions:
 
@@ -269,8 +300,8 @@ To ensure your environment is compatible, we also recommend the following VSCode
 **Number of files in a bulk upload:** Theoretically unlimited<br>
 **Max individual file size**: 2GB (Node.js limitation)<br>
 **Max file name length**: 255 bytes<br>
-**Max ANS-104 bundled transaction size:** Not yet implemented. 2GB per bundle. App will handle creating multiple bundles.<br>
-**Max ANS-104 data item counts per bundled transaction:** Not yet implemented. Also not adequately specified, though a very large number of data items per bundle is associated with increased rates of GQL indexing failure.
+**Max ANS-104 bundled transaction size:** 500 MiB per bundle. App will handle creating multiple bundles.<br>
+**Max ANS-104 data item counts per bundled transaction:** 250 Files per bundle (500 Data Items).
 
 # Using the CLI
 
@@ -556,7 +587,7 @@ As discussed previously, all folders in a drive are linked by way of parent fold
 Creating folders manually is straightforward:
 
 ```shell
-ardrive create-folder --parent-folder-id "63153bb3-2ca9-4d42-9106-0ce82e793321" --name "My Awesome Folder" -w /path/to/wallet.json
+ardrive create-folder --parent-folder-id "63153bb3-2ca9-4d42-9106-0ce82e793321" --folder-name "My Awesome Folder" -w /path/to/wallet.json
 ```
 
 Example output:
