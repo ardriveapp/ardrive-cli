@@ -143,7 +143,6 @@ async function getRemoteFile(
 	parentFolderId: FolderID
 ): Promise<UploadPathParameter[] | undefined> {
 	const remoteFilePath = parameters.getParameterValue(RemotePathParameter);
-
 	if (!remoteFilePath) {
 		return undefined;
 	}
@@ -227,6 +226,7 @@ new CLICommand({
 
 			const conflictResolution = parameters.getFileNameConflictResolution();
 			const shouldBundle = !!parameters.getParameterValue(ShouldBundleParameter);
+			const remoteFilePath = parameters.getParameterValue(RemotePathParameter);
 
 			const arweave = getArweaveFromURL(parameters.getGateway());
 
@@ -271,6 +271,12 @@ new CLICommand({
 				conflictResolution,
 				prompts: fileAndFolderUploadConflictPrompts
 			});
+
+			if (remoteFilePath && results.created[0].type === 'file') {
+				// TODO: Include ArFSRemoteFileToUpload functionality in ArDrive Core
+				// TODO: Account for bulk remote path uploads in the future
+				results.created[0].sourceUri = remoteFilePath;
+			}
 
 			console.log(JSON.stringify(results, null, 4));
 			cleanUpTempFolder();
