@@ -74,6 +74,6 @@ export function getTempFolder(): string {
 export function cleanUpTempFolder(): void {
 	const tempFolderPath = platformTempFolder();
 	if (fs.existsSync(tempFolderPath)) {
-		fs.rmdirSync(tempFolderPath, { recursive: true });
+		fs.rmSync(tempFolderPath, { recursive: true });
 	}
 }
