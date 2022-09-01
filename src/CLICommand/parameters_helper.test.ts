@@ -590,7 +590,8 @@ describe('ParametersHelper class', () => {
 				[
 					'ar://gr8.emoji.🚀.com:1337',
 					{ hostName: 'gr8.emoji.%F0%9F%9A%80.com', protocol: 'ar:', port: '1337' }
-				]
+				],
+				['https://192.168.0.0:1234', { hostName: '192.168.0.0', protocol: 'https:', port: '1234' }]
 			];
 
 			for (const [
