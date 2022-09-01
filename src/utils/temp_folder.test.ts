@@ -1,7 +1,6 @@
 import { expect } from 'chai';
 import { cleanUpTempFolder, getTempFolder } from './temp_folder';
 import * as fs from 'fs';
-import * as os from 'os';
 
 describe('temp folder functions', () => {
 	describe('getTempFolder function', () => {
@@ -19,8 +18,7 @@ describe('temp folder functions', () => {
 
 		it('returns a folder that contains the correct subfolders', () => {
 			const tempFolderPath = getTempFolder();
-			const expectedPathComponent =
-				os.platform() === 'win32' ? '\\ardrive-downloads' : '/.ardrive/ardrive-downloads';
+			const expectedPathComponent = 'ardrive-downloads';
 			expect(tempFolderPath).to.contains(expectedPathComponent);
 		});
 	});

@@ -309,8 +309,8 @@ export class ParametersHelper {
 				)}}`
 			);
 		} else {
-			const fileContent = fs.readFileSync(localFilePath);
-			const cidHash = await deriveIpfsCid(fileContent);
+			const fileStream = fs.createReadStream(localFilePath);
+			const cidHash = await deriveIpfsCid(fileStream);
 
 			if (!customMetaDataClone.dataGqlTags) {
 				customMetaDataClone.dataGqlTags = {};
