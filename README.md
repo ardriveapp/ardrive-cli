@@ -1434,7 +1434,7 @@ npx arlocal
 curl http://localhost:1984/mint/{ your public wallet address }/99999999999999
 
 # Create drive and root folder on ArLocal using `--gateway` flag
-ardrive create-drive --gateway http://localhost:1984 -w /path/to/wallet -n 'my-test-drive'
+ardrive create-drive --gateway http://127.0.0.1:1984 -w /path/to/wallet -n 'my-test-drive'
 
 # Setup ARWEAVE_GATEWAY as ENV variable
 export ARWEAVE_GATEWAY="http://localhost:1984"
