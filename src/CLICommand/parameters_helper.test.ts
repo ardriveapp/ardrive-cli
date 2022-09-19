@@ -723,7 +723,11 @@ describe('ParametersHelper class', () => {
 				'Tag-1',
 				'Val 1',
 				'Tag 2',
-				'Val 2'
+				'Val 2',
+				'App-Name',
+				'My arweave app',
+				'App-Version',
+				'1.2.3'
 			]);
 
 			await cmd.action.then((options) => {
@@ -731,7 +735,12 @@ describe('ParametersHelper class', () => {
 				const metaDataResult = parameters.getCustomMetaData();
 
 				expect(metaDataResult).to.deep.equal({
-					metaDataGqlTags: { 'Tag 2': 'Val 2', 'Tag-1': 'Val 1' }
+					metaDataGqlTags: {
+						'Tag 2': 'Val 2',
+						'Tag-1': 'Val 1',
+						'App-Name': 'My arweave app',
+						'App-Version': '1.2.3'
+					}
 				});
 			});
 		});
