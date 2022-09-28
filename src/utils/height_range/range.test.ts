@@ -108,4 +108,23 @@ describe('Range class', () => {
 			expect(intersection).to.deep.equal(A);
 		});
 	});
+
+	describe('union method', () => {
+		it("returns two sub-ranges if the inputs don't intersect", () => {
+			const A = new Range(0, 25);
+			const B = new Range(26, 100);
+			const union = Range.union(A, B);
+			expect(union.length).to.equal(2);
+			expect(union[0]).to.deep.equal(A);
+			expect(union[1]).to.deep.equal(B);
+		});
+
+		it('returns a single sub-range if the inputs does intersect', () => {
+			const A = new Range(0, 50);
+			const B = new Range(25, 100);
+			const union = Range.union(A, B);
+			expect(union.length).to.equal(1);
+			expect(union[0]).to.deep.equal(new Range(0, 100));
+		});
+	});
 });

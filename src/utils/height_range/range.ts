@@ -13,27 +13,15 @@ export class Range {
 		this.end = end;
 	}
 
-	public static intersection(r_1: Range, r_2: Range): Range | undefined {
-		const start_1 = r_1.start;
-		const start_2 = r_2.start;
-		const end_1 = r_1.end;
-		const end_2 = r_2.end;
-
-		const startOfR_2FallsInR_1 = start_2 >= start_1 && end_1 >= start_2;
-		const endOfR_2FallsInR_1 = end_2 <= end_1 && start_1 <= end_2;
-		const somePointOfR_2FallsInR_1 = startOfR_2FallsInR_1 || endOfR_2FallsInR_1;
-		const r_1IsFullyIncludedInR_2 = start_1 > start_2 && end_1 < end_2;
-		if (somePointOfR_2FallsInR_1) {
-			// the ranges does intersect
-			const intersectionStart = Math.max(start_1, start_2); // the greater start
-			const intersectionEnd = Math.min(end_1, end_2); // the smaller end
-			return new Range(intersectionStart, intersectionEnd);
-		} else if (r_1IsFullyIncludedInR_2) {
-			return r_1;
+	public static union(r_1: Range, r_2: Range): Range[] {
+		const intersection = Range.intersection(r_1, r_2);
+		if (intersection) {
+			const unionStart = Math.min(r_1.start, r_2.start);
+			const unionEnd = Math.max(r_1.end, r_2.end);
+			const union = new Range(unionStart, unionEnd);
+			return [union];
 		}
-
-		// the ranges don't intersect
-		return;
+		return [r_1, r_2];
 	}
 
 	public static difference(r_1: Range, r_2: Range): Range[] {
@@ -63,6 +51,29 @@ export class Range {
 
 		// ranges don't intersect, the difference is the whole r_1
 		return [r_1];
+	}
+
+	public static intersection(r_1: Range, r_2: Range): Range | undefined {
+		const start_1 = r_1.start;
+		const start_2 = r_2.start;
+		const end_1 = r_1.end;
+		const end_2 = r_2.end;
+
+		const startOfR_2FallsInR_1 = start_2 >= start_1 && end_1 >= start_2;
+		const endOfR_2FallsInR_1 = end_2 <= end_1 && start_1 <= end_2;
+		const somePointOfR_2FallsInR_1 = startOfR_2FallsInR_1 || endOfR_2FallsInR_1;
+		const r_1IsFullyIncludedInR_2 = start_1 > start_2 && end_1 < end_2;
+		if (somePointOfR_2FallsInR_1) {
+			// the ranges does intersect
+			const intersectionStart = Math.max(start_1, start_2); // the greater start
+			const intersectionEnd = Math.min(end_1, end_2); // the smaller end
+			return new Range(intersectionStart, intersectionEnd);
+		} else if (r_1IsFullyIncludedInR_2) {
+			return r_1;
+		}
+
+		// the ranges don't intersect
+		return;
 	}
 
 	public toString(): string {
