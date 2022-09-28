@@ -30,7 +30,15 @@ export class HeightRange {
 	}
 
 	public static union(r_1: HeightRange, r_2: HeightRange): HeightRange {
-		throw new Error('UNIMPLEMENTED!');
+		const mixedRanges = [...r_1.rangeSegments, ...r_2.rangeSegments];
+		const normalizedRanges = this.normalizeSegments(mixedRanges);
+		const union = new HeightRange(normalizedRanges);
+		return union;
+	}
+
+	private static normalizeSegments(rangeSegments: Range[]): Range[] {
+		// TODO: implement me!
+		return rangeSegments;
 	}
 }
 

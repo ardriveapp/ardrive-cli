@@ -70,4 +70,42 @@ describe('Range class', () => {
 			expect(diff[0].end).to.equal(100);
 		});
 	});
+
+	describe('intersection method', () => {
+		it("returns an empty array for ranges that don't intersect", () => {
+			const A = new Range(0, 50);
+			const B = new Range(51, 100);
+			const intersection = Range.intersection(A, B);
+			expect(intersection).to.equal(undefined);
+		});
+
+		it('returns a sub-range if the inputs partially intersect', () => {
+			let A = new Range(0, 100);
+			let B = new Range(50, 100);
+			let intersection = Range.intersection(A, B);
+			expect(intersection).to.deep.equal(B);
+
+			A = new Range(0, 100);
+			B = new Range(0, 50);
+			intersection = Range.intersection(A, B);
+			expect(intersection).to.deep.equal(B);
+
+			A = new Range(0, 100);
+			B = new Range(50, 150);
+			intersection = Range.intersection(A, B);
+			expect(intersection).to.deep.equal(new Range(50, 100));
+		});
+
+		it('returns A if B includes A', () => {
+			let A = new Range(25, 50);
+			let B = new Range(0, 100);
+			let intersection = Range.intersection(A, B);
+			expect(intersection).to.deep.equal(A);
+
+			A = new Range(0, 100);
+			B = new Range(0, 100);
+			intersection = Range.intersection(A, B);
+			expect(intersection).to.deep.equal(A);
+		});
+	});
 });
