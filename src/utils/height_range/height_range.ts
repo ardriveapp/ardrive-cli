@@ -31,14 +31,25 @@ export class HeightRange {
 
 	public static union(r_1: HeightRange, r_2: HeightRange): HeightRange {
 		const mixedRanges = [...r_1.rangeSegments, ...r_2.rangeSegments];
-		const normalizedRanges = this.normalizeSegments(mixedRanges);
+		const normalizedRanges = HeightRange.normalizeSegments(mixedRanges);
 		const union = new HeightRange(normalizedRanges);
 		return union;
 	}
 
 	private static normalizeSegments(rangeSegments: Range[]): Range[] {
-		// TODO: implement me!
-		return rangeSegments;
+		const sortedSegments = rangeSegments.sort((a, b) => a.start - b.start);
+		const normalized = sortedSegments.reduce(function (accumulator: Range[], currentRange) {
+			const auxiliar = accumulator.slice();
+			const previousValue = auxiliar.pop();
+			if (!previousValue) {
+				auxiliar.push(currentRange);
+			} else {
+				const union = Range.union(previousValue, currentRange);
+				auxiliar.push(...union);
+			}
+			return auxiliar;
+		}, []);
+		return normalized;
 	}
 }
 

@@ -68,4 +68,37 @@ describe('HeightRange class', () => {
 			});
 		}
 	});
+
+	describe('union method', () => {
+		it("preserves the amount of sub-ranges if those don't intersect", () => {
+			const A = new HeightRange([new Range(0, 25)]);
+			const B = new HeightRange([new Range(50, 100), new Range(150, 200)]);
+			const union = HeightRange.union(A, B);
+
+			expect(union.rangeSegments.length).to.equal(3);
+			expect(union.rangeSegments).to.contain(A.rangeSegments[0]);
+			expect(union.rangeSegments).to.contain(B.rangeSegments[0]);
+			expect(union.rangeSegments).to.contain(B.rangeSegments[1]);
+		});
+
+		it('returns a single sub-range if all of them intersect', () => {
+			const A = new HeightRange([new Range(0, 200)]);
+			const B = new HeightRange([new Range(50, 100), new Range(150, 250)]);
+			const union = HeightRange.union(A, B);
+
+			expect(union.rangeSegments.length).to.equal(1);
+			expect(union.rangeSegments[0]).to.deep.equal(new Range(0, 250));
+		});
+
+		it('returns more than 1 and less than the total if some of them intersect', () => {
+			const A = new HeightRange([new Range(0, 25)]);
+			const B = new HeightRange([new Range(50, 100), new Range(150, 200)]);
+			const union = HeightRange.union(A, B);
+
+			expect(union.rangeSegments.length).to.equal(3);
+			expect(union.rangeSegments[0]).to.deep.equal(A.rangeSegments[0]);
+			expect(union.rangeSegments[1]).to.deep.equal(B.rangeSegments[0]);
+			expect(union.rangeSegments[2]).to.deep.equal(B.rangeSegments[1]);
+		});
+	});
 });
