@@ -15,7 +15,10 @@ export class Range {
 
 	public static union(r_1: Range, r_2: Range): Range[] {
 		const intersection = Range.intersection(r_1, r_2);
-		if (intersection) {
+		const endOfR_1TouchesStartOfR_2 = r_1.end + 1 === r_2.start;
+		const endOfR_2TouchesStartOfR_1 = r_2.end + 1 === r_1.start;
+		const rangesAreContiguous = endOfR_1TouchesStartOfR_2 || endOfR_2TouchesStartOfR_1;
+		if (intersection || rangesAreContiguous) {
 			const unionStart = Math.min(r_1.start, r_2.start);
 			const unionEnd = Math.max(r_1.end, r_2.end);
 			const union = new Range(unionStart, unionEnd);

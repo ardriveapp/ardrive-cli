@@ -111,7 +111,7 @@ describe('Range class', () => {
 
 	describe('union method', () => {
 		it("returns two sub-ranges if the inputs don't intersect", () => {
-			const A = new Range(0, 25);
+			const A = new Range(0, 24);
 			const B = new Range(26, 100);
 			const union = Range.union(A, B);
 			expect(union.length).to.equal(2);
@@ -120,9 +120,15 @@ describe('Range class', () => {
 		});
 
 		it('returns a single sub-range if the inputs does intersect', () => {
-			const A = new Range(0, 50);
-			const B = new Range(25, 100);
-			const union = Range.union(A, B);
+			let A = new Range(0, 50);
+			let B = new Range(25, 100);
+			let union = Range.union(A, B);
+			expect(union.length).to.equal(1);
+			expect(union[0]).to.deep.equal(new Range(0, 100));
+
+			A = new Range(0, 50);
+			B = new Range(51, 100);
+			union = Range.union(A, B);
 			expect(union.length).to.equal(1);
 			expect(union[0]).to.deep.equal(new Range(0, 100));
 		});
