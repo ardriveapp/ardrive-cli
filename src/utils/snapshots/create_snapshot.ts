@@ -1,19 +1,42 @@
 import {
+	ArFSPublicFileDataPrototype,
+	ArFSPublicFileDataTransactionData,
 	ArweaveAddress,
 	DESCENDING_ORDER,
 	DriveID,
 	GatewayAPI,
 	GQLEdgeInterface,
+	RewardSettings,
 	TransactionID,
 	TxID
 } from 'ardrive-core-js';
+import { MultiChunkTxUploader } from 'ardrive-core-js/lib/arfs/multi_chunk_tx_uploader';
+import { TxPreparer } from 'ardrive-core-js/lib/arfs/tx/tx_preparer';
 import { HeightRange, Range } from '../height_range';
 import { buildQuery } from '../query';
 import { SnapshotData, TxSnapshot } from './snapshot_types';
 
-// export async function createSnapshot({ owner, driveId, gatewayApi }: CreateSnapshotParams): Promise<void> {
+export async function postSnapshot({
+	snapshot,
+	gatewayApi,
+	txPreparer,
+	rewardSettings
+}: CreateSnapshotParams): Promise<void> {
+	const data = snapshotDataToBuffer(snapshot.data);
 
-// }
+	const objectData = new ArFSPublicFileDataTransactionData(data);
+	const publicFileDataProto = new ArFSPublicFileDataPrototype(objectData, 'application/json', {
+		'Entity-Type': 'snapshot'
+	});
+	const transaction = await txPreparer.prepareFileDataTx({ objectMetaData: publicFileDataProto, rewardSettings });
+
+	const uploader = new MultiChunkTxUploader({ gatewayApi, transaction });
+	await uploader.batchUploadChunks();
+}
+
+export function snapshotDataToBuffer(snapshot: SnapshotData): Buffer {
+	return Buffer.from(JSON.stringify(snapshot));
+}
 
 export async function constructSnapshotData({
 	owner,
@@ -95,7 +118,14 @@ interface GetDataParams {
 	gatewayApi: GatewayAPI;
 }
 
-interface GetSnapshotDataResult {
+export interface GetSnapshotDataResult {
 	data: SnapshotData;
 	range: HeightRange;
+}
+
+interface CreateSnapshotParams {
+	snapshot: GetSnapshotDataResult;
+	txPreparer: TxPreparer;
+	gatewayApi: GatewayAPI;
+	rewardSettings: RewardSettings;
 }
