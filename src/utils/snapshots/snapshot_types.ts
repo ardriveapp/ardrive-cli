@@ -6,29 +6,35 @@ export class SnapshotItem {
 	public readonly validSubRange: HeightRange;
 
 	constructor(args: SnapshotItemParams) {
-		this.node = args.node;
+		this.node = args.gqlNode;
 		const tags = this.node.tags;
 		const heightStart = tags.find((tag) => tag.name === 'Block-Start')?.value;
 		const heightEnd = tags.find((tag) => tag.name === 'Block-End')?.value;
 
+		if (!(heightStart && heightEnd)) {
+			throw new Error('The Snapshot transaction must have Block-Start and Block-End GQL tags!');
+		}
+
 		this.validSubRange = HeightRange.difference(
-			new HeightRange([new Range(+heightStart!, +heightEnd!)]),
+			new HeightRange([new Range(+heightStart, +heightEnd)]),
 			args.obscuredBy
 		);
 	}
 }
 
 interface SnapshotItemParams {
-	node: GQLNodeInterface;
+	gqlNode: GQLNodeInterface;
 	obscuredBy: HeightRange;
 }
 
 export interface SnapshotData {
 	// sorted in **GQL order**
-	entities: EntitySnapshot[]; // contains revisions as well
+	txSnapshots: TxSnapshot[]; // contains revisions as well
 }
 
-export interface EntitySnapshot {
+export interface TxSnapshot {
 	gqlNode: GQLNodeInterface;
+
+	// Should this be a JSON object instead of string?
 	jsonMetadata: string;
 }
