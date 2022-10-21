@@ -8,7 +8,7 @@ export async function getAllSnapshotItems(args: queryAllParams): Promise<Snapsho
 	const gqlEdges = await queryAllSnapshots(args);
 	return gqlEdges.map((edge) => {
 		const node = edge.node;
-		const item = new SnapshotItem({ node, obscuredBy });
+		const item = new SnapshotItem({ gqlNode: node, obscuredBy });
 		obscuredBy = HeightRange.union(obscuredBy, item.validSubRange);
 		return item;
 	});

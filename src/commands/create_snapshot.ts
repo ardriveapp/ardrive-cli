@@ -115,7 +115,8 @@ async function prepareSnapshotFileToUpload({
 	const customMetadata = {
 		dataGqlTags: {
 			'Block-Start': `${range.start}`,
-			'Block-End': `${range.end}`
+			'Block-End': `${range.end}`,
+			'Entity-Type': 'snapshot'
 		}
 	};
 	const wrappedEntity = wrapFileOrFolder(temporaryFilePath, customContentType, customMetadata) as ArFSFileToUpload;
