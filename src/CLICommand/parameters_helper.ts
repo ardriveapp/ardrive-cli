@@ -18,7 +18,8 @@ import {
 	MetaDataFileParameter,
 	MetaDataGqlTagsParameter,
 	MetadataJsonParameter,
-	DataGqlTagsParameter
+	DataGqlTagsParameter,
+	BundlerUrlParameter
 } from '../parameter_declarations';
 import { cliWalletDao } from '..';
 import passwordPrompt from 'prompts';
@@ -52,6 +53,7 @@ type ParameterOptions = any;
 
 const DEFAULT_GATEWAY = 'https://arweave.net:443';
 const ARWEAVE_GATEWAY_ENV_VAR = 'ARWEAVE_GATEWAY';
+const BUNDLER_URL_ENV_VAR = 'BUNDLER_URL';
 
 interface GetDriveKeyParams {
 	driveId: DriveID;
@@ -427,6 +429,42 @@ export class ParametersHelper {
 
 		if (!userProvidedURL) {
 			// Return default CLI Arweave if no gateway can be derived from the user
+			return new URL(DEFAULT_GATEWAY);
+		}
+
+		if (userProvidedURL.hostname === '') {
+			// Ensure a valid host name was provided to be used in Arweave.init()
+			throw new TypeError(`Host name could not be determined from provided URL: ${userProvidedURL.href}`);
+		}
+		return userProvidedURL;
+	}
+
+	/**
+	 * Gathers a valid bundler URL from user provided bundler parameter,
+	 * an environment variable, or returns the default arweave bundler
+	 *
+	 * @throws on user provided bundlers that are incompatible with URL class constructor
+	 * @throws when hostName cannot be derived from a user provided bundler
+	 */
+	public getBundler(): URL {
+		const userProvidedURL = (() => {
+			// Use optional --bundler-url supplied parameter as first choice
+			const bundlerFromParam = this.getParameterValue(BundlerUrlParameter);
+			if (bundlerFromParam) {
+				return new URL(bundlerFromParam);
+			}
+
+			// Then check for an ENV provided bundler
+			const envBundler = process.env[BUNDLER_URL_ENV_VAR];
+			if (envBundler) {
+				return new URL(envBundler);
+			}
+
+			return undefined;
+		})();
+
+		if (!userProvidedURL) {
+			// Return default CLI bundler if no bundler url can be derived from the user
 			return new URL(DEFAULT_GATEWAY);
 		}
 
