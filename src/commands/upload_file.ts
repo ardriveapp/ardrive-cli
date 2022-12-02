@@ -16,7 +16,9 @@ import {
 	CustomContentTypeParameter,
 	RemotePathParameter,
 	CustomMetaDataParameters,
-	IPFSParameter
+	IPFSParameter,
+	BundlerUrlParameter,
+	ShouldBundlerParameter
 } from '../parameter_declarations';
 import { fileAndFolderUploadConflictPrompts } from '../prompts';
 import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
@@ -183,16 +185,16 @@ new CLICommand({
 		ParentFolderIdParameter,
 		DestinationFileNameParameter,
 		BoostParameter,
-		DryRunParameter,
 		ShouldBundleParameter,
+		ShouldBundlerParameter,
 		...ConflictResolutionParams,
 		...DrivePrivacyParameters,
 		CustomContentTypeParameter,
 		...CustomMetaDataParameters,
 		LocalFilePathParameter_DEPRECATED,
 		LocalFilesParameter_DEPRECATED,
-		BoostParameter,
 		GatewayParameter,
+		BundlerUrlParameter,
 		RemotePathParameter,
 		IPFSParameter
 	],
@@ -226,16 +228,20 @@ new CLICommand({
 
 			const conflictResolution = parameters.getFileNameConflictResolution();
 			const shouldBundle = !!parameters.getParameterValue(ShouldBundleParameter);
+			const shouldUseBundler = !!parameters.getParameterValue(ShouldBundlerParameter);
 			const remoteFilePath = parameters.getParameterValue(RemotePathParameter);
 
 			const arweave = getArweaveFromURL(parameters.getGateway());
+			const bundlerUrl = parameters.getBundler();
 
 			const arDrive = cliArDriveFactory({
 				wallet,
 				feeMultiple: parameters.getOptionalBoostSetting(),
 				dryRun: parameters.isDryRun(),
 				shouldBundle,
-				arweave
+				useBundler: shouldUseBundler,
+				arweave,
+				bundlerUrl
 			});
 
 			const uploadStats: ArDriveUploadStats[] = await (async () => {
