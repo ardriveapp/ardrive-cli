@@ -1,11 +1,13 @@
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import {
 	BoostParameter,
+	BundlerUrlParameter,
 	DriveCreationPrivacyParameters,
 	DriveNameParameter,
 	DryRunParameter,
 	GatewayParameter,
-	ShouldBundleParameter
+	ShouldBundleParameter,
+	ShouldBundlerParameter
 } from '../parameter_declarations';
 import { cliArDriveFactory } from '..';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
@@ -21,7 +23,9 @@ new CLICommand({
 		...DriveCreationPrivacyParameters,
 		ShouldBundleParameter,
 		BoostParameter,
-		GatewayParameter
+		GatewayParameter,
+		ShouldBundlerParameter,
+		BundlerUrlParameter
 	],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
@@ -29,14 +33,18 @@ new CLICommand({
 		const dryRun = parameters.isDryRun();
 		const driveName = parameters.getRequiredParameterValue(DriveNameParameter);
 		const shouldBundle = !!parameters.getParameterValue(ShouldBundleParameter);
+		const useBundler = !!parameters.getParameterValue(ShouldBundlerParameter);
 		const arweave = getArweaveFromURL(parameters.getGateway());
+		const bundlerUrl = parameters.getBundler();
 
 		const ardrive = cliArDriveFactory({
 			wallet: wallet,
 			feeMultiple: parameters.getOptionalBoostSetting(),
 			dryRun,
 			shouldBundle,
-			arweave
+			arweave,
+			bundlerUrl,
+			useBundler
 		});
 
 		const createDriveResult = await (async function () {
