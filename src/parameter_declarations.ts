@@ -16,6 +16,7 @@ export const LastTxParameter = 'lastTx';
 export const TxFilePathParameter = 'txFilePath';
 export const DestinationAddressParameter = 'destAddress';
 export const TransactionIdParameter = 'txId';
+export const ExternalTransactionIdParameter = 'externalTxId';
 export const ConfirmationsParameter = 'confirmations';
 export const FolderIdParameter = 'folderId';
 export const FileIdParameter = 'fileId';
@@ -100,7 +101,8 @@ export const AllParameters = [
 	WalletFileParameter,
 	WithKeysParameter,
 	RemotePathParameter,
-	IPFSParameter
+	IPFSParameter,
+	ExternalTransactionIdParameter
 ] as const;
 export type ParameterName = typeof AllParameters[number];
 
@@ -234,6 +236,13 @@ Parameter.declare({
 	name: TransactionIdParameter,
 	aliases: ['-t', '--tx-id'],
 	description: 'The transaction id to check the status of in the mempool',
+	required: true
+});
+
+Parameter.declare({
+	name: ExternalTransactionIdParameter,
+	aliases: ['-e', '--external-tx-id'],
+	description: 'The transaction id to point the shortcut to',
 	required: true
 });
 
