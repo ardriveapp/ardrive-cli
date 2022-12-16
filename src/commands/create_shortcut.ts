@@ -6,20 +6,22 @@ import {
 	DrivePrivacyParameters,
 	FileNameParameter,
 	GatewayParameter,
-	ExternalTransactionIdParameter
+	ExternalTransactionIdParameter,
+	ParentFolderIdParameter
 } from '../parameter_declarations';
 import { cliArDriveFactory } from '..';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { CLIAction } from '../CLICommand/action';
-import { EID, TxID, Wallet } from 'ardrive-core-js';
+import { EID, FileID, FolderID, TransactionID, TxID, Wallet } from 'ardrive-core-js';
 import { getArweaveFromURL } from '../utils/get_arweave_for_url';
 
 new CLICommand({
 	name: 'create-shortcut',
 	parameters: [
-		FileIdParameter,
-		FileNameParameter,
+		{ name: FileIdParameter, required: false },
+		{ name: FileNameParameter, required: false },
 		ExternalTransactionIdParameter,
+		ParentFolderIdParameter,
 		BoostParameter,
 		DryRunParameter,
 		...DrivePrivacyParameters,
@@ -30,9 +32,10 @@ new CLICommand({
 		const arweave = getArweaveFromURL(parameters.getGateway());
 
 		const dryRun = parameters.isDryRun();
-		const fileId = parameters.getRequiredParameterValue(FileIdParameter, EID);
-		const newName = parameters.getRequiredParameterValue(FileNameParameter);
-		const externalTxId = parameters.getRequiredParameterValue(ExternalTransactionIdParameter, TxID);
+		const fileId: FileID | undefined = parameters.getParameterValue(FileIdParameter, EID);
+		const newName: string | undefined = parameters.getParameterValue(FileNameParameter);
+		const externalTxId: TransactionID = parameters.getRequiredParameterValue(ExternalTransactionIdParameter, TxID);
+		const parentFolderId: FolderID = parameters.getRequiredParameterValue(ParentFolderIdParameter, EID);
 
 		const wallet: Wallet = await parameters.getRequiredWallet();
 		const ardrive = cliArDriveFactory({
@@ -45,17 +48,10 @@ new CLICommand({
 		const result = await (async function () {
 			if (await parameters.getIsPrivate()) {
 				throw new Error('UNIMPLEMENTED!');
-				const driveId = await ardrive.getDriveIdForFileId(fileId);
-				const driveKey = await parameters.getDriveKey({ driveId });
-
-				return ardrive.renamePrivateFile({
-					fileId,
-					newName,
-					driveKey
-				});
 			} else {
 				return ardrive.createPublicShortcut({
 					externalTxId,
+					parentFolderId,
 					fileId,
 					name: newName
 				});
