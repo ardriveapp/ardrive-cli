@@ -47,6 +47,8 @@ export const DataGqlTagsParameter = 'dataGqlTags';
 export const MetaDataFileParameter = 'metadataFile';
 export const MetaDataGqlTagsParameter = 'metadataGqlTags';
 export const MetadataJsonParameter = 'metadataJson';
+export const PaymentAmountParameter = 'paymentAmount';
+export const CurrencyTypeParameter = 'currencyType';
 
 // Aggregates for convenience
 export const CustomMetaDataParameters = [
@@ -551,4 +553,16 @@ Parameter.declare({
 	description:
 		'(OPTIONAL) A list of custom Arweave tag name and value pairs in the format `"TAG_NAME" "TAG_VALUE"` that will be applied to all file data transactions created during an invocation. Must be an even number of string values. Can NOT be used in conjunction with --metadata-file',
 	forbiddenConjunctionParameters: [MetaDataFileParameter]
+});
+
+Parameter.declare({
+	name: CurrencyTypeParameter,
+	aliases: ['-c', '--currency-type'],
+	description: 'Currency type to get top up for'
+});
+
+Parameter.declare({
+	name: PaymentAmountParameter,
+	aliases: ['-a', '--payment-amount'],
+	description: 'Payment amount get top up for'
 });
