@@ -1190,6 +1190,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node@npm:>=8.1.0":
+  version: 18.15.12
+  resolution: "@types/node@npm:18.15.12"
+  checksum: dff7596db8d0a18bcd8da542dc62ed4377cba39546ff53baaa06d106f1482bc3e4e5e03644f5d1e3cef0904ffbe8ebbc244b2b0851f8025ab2a3959ee0ace58f
+  languageName: node
+  linkType: hard
+
 "@types/node@npm:^12.12.54":
   version: 12.20.55
   resolution: "@types/node@npm:12.20.55"
@@ -1720,6 +1727,7 @@ __metadata:
     rimraf: ^3.0.2
     sinon: ^11.1.2
     source-map-support: ^0.5.20
+    stripe: ^12.2.0
     ts-node: ^10.2.1
     ts-sinon: ^2.0.1
     typescript: ^4.2.3
@@ -6271,6 +6279,15 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
+"qs@npm:^6.11.0":
+  version: 6.11.1
+  resolution: "qs@npm:6.11.1"
+  dependencies:
+    side-channel: ^1.0.4
+  checksum: 82ee78ef12a16f3372fae5b64f76f8aedecb000feea882bbff1af146c147f6eb66b08f9c3f34d7e076f28563586956318b9b2ca41141846cdd6d5ad6f241d52f
+  languageName: node
+  linkType: hard
+
 "qs@npm:^6.9.4":
   version: 6.10.5
   resolution: "qs@npm:6.10.5"
@@ -7199,6 +7216,16 @@ resolve@^1.10.0:
   version: 3.1.1
   resolution: "strip-json-comments@npm:3.1.1"
   checksum: 492f73e27268f9b1c122733f28ecb0e7e8d8a531a6662efbd08e22cccb3f9475e90a1b82cab06a392f6afae6d2de636f977e231296400d0ec5304ba70f166443
+  languageName: node
+  linkType: hard
+
+"stripe@npm:^12.2.0":
+  version: 12.2.0
+  resolution: "stripe@npm:12.2.0"
+  dependencies:
+    "@types/node": ">=8.1.0"
+    qs: ^6.11.0
+  checksum: dbd478d43aff4d9ea6197fa72c303626b56277d0a5f6c021f3877d739b3f4a6bcf2d212be0ed4714b1a29ac6f5642dfb160d997f2ccabf88401ab733c9f446c8
   languageName: node
   linkType: hard
 
