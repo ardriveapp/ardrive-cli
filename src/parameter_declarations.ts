@@ -49,6 +49,7 @@ export const MetaDataGqlTagsParameter = 'metadataGqlTags';
 export const MetadataJsonParameter = 'metadataJson';
 export const PaymentAmountParameter = 'paymentAmount';
 export const CurrencyTypeParameter = 'currencyType';
+export const PayInCliParameter = 'payInCli';
 
 // Aggregates for convenience
 export const CustomMetaDataParameters = [
@@ -565,4 +566,11 @@ Parameter.declare({
 	name: PaymentAmountParameter,
 	aliases: ['-a', '--payment-amount'],
 	description: 'Payment amount get top up for'
+});
+
+Parameter.declare({
+	name: PayInCliParameter,
+	aliases: ['-cli', '--pay-in-cli'],
+	description: `Pay in the CLI (BETA - LESS SECURE - NOT RECOMMENDED)`,
+	type: 'boolean'
 });
