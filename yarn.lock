@@ -1204,10 +1204,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^14.14.32, @types/node@npm:^14.6.1":
+"@types/node@npm:^14.6.1":
   version: 14.17.15
   resolution: "@types/node@npm:14.17.15"
   checksum: e0840304db236027e822ef1e149de433afd20d2553699cdc2ce651d107a77646c6eaaeaec8c348eabdc05169440dbc2cf069791bef65ca4b6e5ee4412e69c898
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^18.16.1":
+  version: 18.16.1
+  resolution: "@types/node@npm:18.16.1"
+  checksum: 799026b949a48993cba7c9b81b2eabfdfb34c880744cb44c1c990fbedc9e315f3634d126eb2cf9a6e0795577c01016e2326d98565bef695ada9d363fadeb6946
   languageName: node
   linkType: hard
 
@@ -1700,7 +1707,7 @@ __metadata:
     "@types/jwk-to-pem": ^2.0.0
     "@types/lodash": ^4
     "@types/mocha": ^9.0.0
-    "@types/node": ^14.14.32
+    "@types/node": ^18.16.1
     "@types/node-fetch": ^2.6.1
     "@types/prompts": ^2.0.9
     "@types/sinon": ^10.0.2
