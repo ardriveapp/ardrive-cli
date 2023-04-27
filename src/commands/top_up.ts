@@ -1,17 +1,13 @@
-import { JWKWallet } from 'ardrive-core-js';
 import axios from 'axios';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
 import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import {
 	CurrencyTypeParameter,
+	DestinationAddressParameter,
 	PayInCliParameter,
-	PaymentAmountParameter,
-	WalletTypeParameters
+	PaymentAmountParameter
 } from '../parameter_declarations';
-import { toB64Url } from '../utils/base64';
-import { jwkToPem } from '../utils/pem';
-import { signData } from '../utils/signData';
 import { Stripe } from 'stripe';
 import prompts from 'prompts';
 import { exec } from 'child_process';
@@ -28,18 +24,14 @@ const stripe = new Stripe(stripeTestPublishableKey, { apiVersion: '2022-11-15' }
 
 new CLICommand({
 	name: 'top-up',
-	parameters: [PaymentAmountParameter, CurrencyTypeParameter, PayInCliParameter, ...WalletTypeParameters],
+	parameters: [PaymentAmountParameter, CurrencyTypeParameter, PayInCliParameter, DestinationAddressParameter],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
 
-		const walletFile = (await parameters.getRequiredWallet()) as JWKWallet;
 		const paymentAmount = parameters.getRequiredParameterValue(PaymentAmountParameter);
 		const currencyType = parameters.getRequiredParameterValue(CurrencyTypeParameter);
+		const destinationAddress = parameters.getRequiredParameterValue<string>(DestinationAddressParameter);
 		const payInCli = parameters.getParameterValue<boolean>(PayInCliParameter);
-
-		const nonce = '123';
-		const signature = await signData(jwkToPem(walletFile.getPrivateKey()), nonce);
-		const publicKey = toB64Url(Buffer.from(jwkToPem(walletFile.getPrivateKey(), true)));
 
 		const method = payInCli ? 'payment-intent' : 'checkout-session';
 
@@ -47,15 +39,8 @@ new CLICommand({
 			paymentSession: { client_secret: string; id: string; url: string };
 			topUpQuote: { winstonCreditAmount: string };
 		}>(
-			`http://localhost:3000/v1/top-up/${method}/${currencyType}/${paymentAmount}`,
-			// `https://payment.ardrive.dev/v1/top-up/${method}/${currencyType}/${paymentAmount}`,
-			{
-				headers: {
-					'x-public-key': publicKey,
-					'x-nonce': nonce,
-					'x-signature': toB64Url(Buffer.from(signature))
-				}
-			}
+			// `http://localhost:3001/v1/top-up/${method}/${destinationAddress}/${currencyType}/${paymentAmount}`
+			`https://payment.ardrive.dev/v1/top-up/${method}/${destinationAddress}/${currencyType}/${paymentAmount}`
 		);
 
 		const { client_secret, id, url } = data.paymentSession;
