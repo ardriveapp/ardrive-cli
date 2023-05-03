@@ -14,11 +14,11 @@ import { exec } from 'child_process';
 
 // ArDrive Stripe Test PUBLISHABLE Key. Enable this one to test workflows
 const stripeTestPublishableKey =
-	/* cspell:disable */ 'pk_test_51JUAtwC8apPOWkDLh2FPZkQkiKZEkTo6wqgLCtQoClL6S4l2jlbbc5MgOdwOUdU9Tn93NNvqAGbu115lkJChMikG00XUfTmo2z'; /* cspell:enable */
+	// /* cspell:disable */ 'pk_test_51JUAtwC8apPOWkDLh2FPZkQkiKZEkTo6wqgLCtQoClL6S4l2jlbbc5MgOdwOUdU9Tn93NNvqAGbu115lkJChMikG00XUfTmo2z'; /* cspell:enable */
 
-// ArDrive Stripe Production PUBLISHABLE Key. This one is safe to have on a front end application 👍
-// const stripeProdPublishableKey =
-// /* cspell:disable */ 'pk_live_51JUAtwC8apPOWkDLMQqNF9sPpfneNSPnwX8YZ8y1FNDl6v94hZIwzgFSYl27bWE4Oos8CLquunUswKrKcaDhDO6m002Yj9AeKj'; /* cspell:enable */
+	// ArDrive Stripe Production PUBLISHABLE Key. This one is safe to have on a front end application 👍
+	// const stripeProdPublishableKey =
+	/* cspell:disable */ 'pk_live_51JUAtwC8apPOWkDLMQqNF9sPpfneNSPnwX8YZ8y1FNDl6v94hZIwzgFSYl27bWE4Oos8CLquunUswKrKcaDhDO6m002Yj9AeKj'; /* cspell:enable */
 
 const stripe = new Stripe(stripeTestPublishableKey, { apiVersion: '2022-11-15' });
 
@@ -35,13 +35,14 @@ new CLICommand({
 
 		const method = payInCli ? 'payment-intent' : 'checkout-session';
 
+		const paymentServiceUrl = 'https://payment.ardrive.io';
+		// const paymentServiceUrl = 'https://payment.ardrive.dev';
+		// const paymentServiceUrl = 'http://localhost:3001';
+
 		const { data } = await axios.get<{
 			paymentSession: { client_secret: string; id: string; url: string };
 			topUpQuote: { winstonCreditAmount: string };
-		}>(
-			// `http://localhost:3001/v1/top-up/${method}/${destinationAddress}/${currencyType}/${paymentAmount}`
-			`https://payment.ardrive.dev/v1/top-up/${method}/${destinationAddress}/${currencyType}/${paymentAmount}`
-		);
+		}>(`${paymentServiceUrl}/v1/top-up/${method}/${destinationAddress}/${currencyType}/${paymentAmount}`);
 
 		const { client_secret, id, url } = data.paymentSession;
 
