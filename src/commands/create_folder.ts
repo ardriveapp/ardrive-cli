@@ -6,8 +6,8 @@ import {
 	ParentFolderIdParameter,
 	DrivePrivacyParameters,
 	GatewayParameter,
-	ShouldBundlerParameter,
-	BundlerUrlParameter
+	ShouldTurboParameter,
+	TurboUrlParameter
 } from '../parameter_declarations';
 import { cliArDriveFactory } from '..';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
@@ -24,24 +24,23 @@ new CLICommand({
 		DryRunParameter,
 		...DrivePrivacyParameters,
 		GatewayParameter,
-		ShouldBundlerParameter,
-		BundlerUrlParameter
+		ShouldTurboParameter,
+		TurboUrlParameter
 	],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
 		const wallet: Wallet = await parameters.getRequiredWallet();
 		const dryRun = parameters.isDryRun();
 		const arweave = getArweaveFromURL(parameters.getGateway());
-		const useBundler = !!parameters.getParameterValue(ShouldBundlerParameter);
-		const bundlerUrl = parameters.getBundler();
+		const useTurbo = !!parameters.getParameterValue(ShouldTurboParameter);
+		const turboUrl = parameters.getTurbo();
 
 		const ardrive = cliArDriveFactory({
 			wallet,
 			feeMultiple: parameters.getOptionalBoostSetting(),
 			dryRun,
 			arweave,
-			useBundler,
-			bundlerUrl
+			turboSettings: useTurbo ? { turboUrl } : undefined
 		});
 
 		const parentFolderId = parameters.getRequiredParameterValue(ParentFolderIdParameter, EID);

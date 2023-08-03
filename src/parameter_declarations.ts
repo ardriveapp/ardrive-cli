@@ -35,13 +35,13 @@ export const UpsertParameter = 'upsert';
 export const AskParameter = 'ask';
 export const NoVerifyParameter = 'verify'; // commander maps --no-x style params to options.x and always includes in options
 export const ShouldBundleParameter = 'bundle'; // commander maps --no-x style params to options.x and always includes in options
-export const ShouldBundlerParameter = 'bundler'; // commander maps --no-x style params to options.x and always includes in options
+export const ShouldTurboParameter = 'turbo'; // commander maps --no-x style params to options.x and always includes in options
 export const LocalPathParameter = 'localPath';
 export const LocalPathsParameter = 'localPaths';
 export const LocalCSVParameter = 'localCsv';
 export const WithKeysParameter = 'withKeys';
 export const GatewayParameter = 'gateway';
-export const BundlerUrlParameter = 'bundlerUrl';
+export const TurboUrlParameter = 'turboUrl';
 export const CustomContentTypeParameter = 'contentType';
 export const RemotePathParameter = 'remotePath';
 export const IPFSParameter = 'addIpfsTag';
@@ -65,7 +65,7 @@ export const AllParameters = [
 	AddressParameter,
 	AllParameter,
 	ArAmountParameter,
-	BundlerUrlParameter,
+	TurboUrlParameter,
 	BoostParameter,
 	ConfirmationsParameter,
 	CustomContentTypeParameter,
@@ -92,7 +92,7 @@ export const AllParameters = [
 	MetaDataGqlTagsParameter,
 	MetadataJsonParameter,
 	ShouldBundleParameter,
-	ShouldBundlerParameter,
+	ShouldTurboParameter,
 	NoVerifyParameter,
 	ParentFolderIdParameter,
 	PrivateParameter,
@@ -413,10 +413,9 @@ Parameter.declare({
 });
 
 Parameter.declare({
-	name: ShouldBundlerParameter,
-	aliases: ['--no-bundler'],
-	description:
-		'(OPTIONAL) Do not send data items to bundler service; send as direct to network bundles. NOT RECOMMENDED.',
+	name: ShouldTurboParameter,
+	aliases: ['--turbo'],
+	description: '(OPTIONAL) Send data items to turbo service; send as direct to network bundles. BETA.',
 	type: 'boolean'
 });
 
@@ -498,9 +497,9 @@ Parameter.declare({
 });
 
 Parameter.declare({
-	name: BundlerUrlParameter,
-	aliases: ['--bundler-url'],
-	description: `(OPTIONAL) a 'protocol://host:port' formatted string specifying the connection info for which bundler service to send data items to`
+	name: TurboUrlParameter,
+	aliases: ['--turbo-url'],
+	description: `(OPTIONAL) a 'protocol://host:port' formatted string specifying the connection info for which turbo service to send data items to`
 });
 
 Parameter.declare({
