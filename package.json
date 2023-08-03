@@ -29,15 +29,15 @@
 		"@types/prompts": "^2.0.9",
 		"@types/sinon": "^10.0.2",
 		"@types/source-map-support": "^0",
-		"@typescript-eslint/eslint-plugin": "^4.18.0",
-		"@typescript-eslint/parser": "^4.18.0",
+		"@typescript-eslint/eslint-plugin": "^6.2.1",
+		"@typescript-eslint/parser": "^6.2.1",
 		"chai": "^4.3.4",
-		"eslint": "^7.23.0",
+		"eslint": "^8.46.0",
 		"eslint-config-prettier": "^8.1.0",
 		"eslint-plugin-prettier": "latest",
 		"husky": "^=6",
 		"lint-staged": "^11.0.0",
-		"mocha": "^9.1.1",
+		"mocha": "^10.2.0",
 		"nyc": "^15.1.0",
 		"prettier": "^2.2.1",
 		"rimraf": "^3.0.2",
@@ -45,7 +45,7 @@
 		"source-map-support": "^0.5.20",
 		"ts-node": "^10.2.1",
 		"ts-sinon": "^2.0.1",
-		"typescript": "^4.2.3"
+		"typescript": "^5.1.6"
 	},
 	"scripts": {
 		"clean": "rimraf [ lib .nyc_output node_modules coverage ]",
