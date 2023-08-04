@@ -81,7 +81,7 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         1. [Installing and Starting the CLI From NPM Package](#install-from-npm)
         2. [Upgrading to the Latest CLI Version](#upgrading)
     3. [Build and Run from Source](#build-from-source)
-        1. [Install Yarn 2](#yarn3)
+        1. [Install Yarn 3](#yarn3)
         2. [Husky (Developers Only)](#husky)
         3. [Using a custom ArDrive-Core-JS (Optional)](#custom-ardrive-core-js)
         4. [Installing and Starting the CLI From Source](#install-from-src)
