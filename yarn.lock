@@ -1242,12 +1242,12 @@ __metadata:
   linkType: hard
 
 "@types/node-fetch@npm:^2.6.1":
-  version: 2.6.1
-  resolution: "@types/node-fetch@npm:2.6.1"
+  version: 2.6.4
+  resolution: "@types/node-fetch@npm:2.6.4"
   dependencies:
     "@types/node": "*"
     form-data: ^3.0.0
-  checksum: a3e5d7f413d1638d795dff03f7b142b1b0e0c109ed210479000ce7b3ea11f9a6d89d9a024c96578d9249570c5fe5287a5f0f4aaba98199222230196ff2d6b283
+  checksum: f3e1d881bb42269e676ecaf49f0e096ab345e22823a2b2d071d60619414817fe02df48a31a8d05adb23054028a2a65521bdb3906ceb763ab6d3339c8d8775058
   languageName: node
   linkType: hard
 
@@ -1272,10 +1272,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^14.14.32, @types/node@npm:^14.6.1":
+"@types/node@npm:^14.6.1":
   version: 14.17.15
   resolution: "@types/node@npm:14.17.15"
   checksum: e0840304db236027e822ef1e149de433afd20d2553699cdc2ce651d107a77646c6eaaeaec8c348eabdc05169440dbc2cf069791bef65ca4b6e5ee4412e69c898
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^18.17.2":
+  version: 18.17.2
+  resolution: "@types/node@npm:18.17.2"
+  checksum: 2e08acaeb30e05f96fbf3d974fc2203bf10ed9020cafd511018dbba8023044bb8758f9d5a2a8e68da3bca827ccef7628202de9b7ca3b515374a7b094b128930a
   languageName: node
   linkType: hard
 
@@ -1779,7 +1786,7 @@ __metadata:
     "@types/jwk-to-pem": ^2.0.0
     "@types/lodash": ^4
     "@types/mocha": ^9.0.0
-    "@types/node": ^14.14.32
+    "@types/node": ^18.17.2
     "@types/node-fetch": ^2.6.1
     "@types/prompts": ^2.0.9
     "@types/sinon": ^10.0.2

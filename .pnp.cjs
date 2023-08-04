@@ -34,8 +34,8 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/jwk-to-pem", "npm:2.0.1"],\
             ["@types/lodash", "npm:4.14.176"],\
             ["@types/mocha", "npm:9.0.0"],\
-            ["@types/node", "npm:14.17.15"],\
-            ["@types/node-fetch", "npm:2.6.1"],\
+            ["@types/node", "npm:18.17.2"],\
+            ["@types/node-fetch", "npm:2.6.4"],\
             ["@types/prompts", "npm:2.4.0"],\
             ["@types/sinon", "npm:10.0.2"],\
             ["@types/source-map-support", "npm:0.5.4"],\
@@ -1520,13 +1520,20 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/node", "npm:16.7.13"]\
           ],\
           "linkType": "HARD"\
+        }],\
+        ["npm:18.17.2", {\
+          "packageLocation": "./.yarn/cache/@types-node-npm-18.17.2-471d3f5212-2e08acaeb3.zip/node_modules/@types/node/",\
+          "packageDependencies": [\
+            ["@types/node", "npm:18.17.2"]\
+          ],\
+          "linkType": "HARD"\
         }]\
       ]],\
       ["@types/node-fetch", [\
-        ["npm:2.6.1", {\
-          "packageLocation": "./.yarn/cache/@types-node-fetch-npm-2.6.1-cb57369c1c-a3e5d7f413.zip/node_modules/@types/node-fetch/",\
+        ["npm:2.6.4", {\
+          "packageLocation": "./.yarn/cache/@types-node-fetch-npm-2.6.4-3e5a54c325-f3e1d881bb.zip/node_modules/@types/node-fetch/",\
           "packageDependencies": [\
-            ["@types/node-fetch", "npm:2.6.1"],\
+            ["@types/node-fetch", "npm:2.6.4"],\
             ["@types/node", "npm:16.7.13"],\
             ["form-data", "npm:3.0.1"]\
           ],\
@@ -2177,8 +2184,8 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/jwk-to-pem", "npm:2.0.1"],\
             ["@types/lodash", "npm:4.14.176"],\
             ["@types/mocha", "npm:9.0.0"],\
-            ["@types/node", "npm:14.17.15"],\
-            ["@types/node-fetch", "npm:2.6.1"],\
+            ["@types/node", "npm:18.17.2"],\
+            ["@types/node-fetch", "npm:2.6.4"],\
             ["@types/prompts", "npm:2.4.0"],\
             ["@types/sinon", "npm:10.0.2"],\
             ["@types/source-map-support", "npm:0.5.4"],\
@@ -8702,7 +8709,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@tsconfig/node12", "npm:1.0.9"],\
             ["@tsconfig/node14", "npm:1.0.1"],\
             ["@tsconfig/node16", "npm:1.0.2"],\
-            ["@types/node", "npm:14.17.15"],\
+            ["@types/node", "npm:18.17.2"],\
             ["@types/swc__core", null],\
             ["@types/swc__wasm", null],\
             ["@types/typescript", null],\
