@@ -17,6 +17,9 @@
 		"lodash": "^4.17.21",
 		"prompts": "^2.4.0"
 	},
+	"engines": {
+		"node": ">=18.17.0"
+	},
 	"devDependencies": {
 		"@istanbuljs/nyc-config-typescript": "^1.0.1",
 		"@types/bn.js": "^5",

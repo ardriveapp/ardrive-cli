@@ -81,7 +81,7 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         1. [Installing and Starting the CLI From NPM Package](#install-from-npm)
         2. [Upgrading to the Latest CLI Version](#upgrading)
     3. [Build and Run from Source](#build-from-source)
-        1. [Install Yarn 2](#yarn2)
+        1. [Install Yarn 2](#yarn3)
         2. [Husky (Developers Only)](#husky)
         3. [Using a custom ArDrive-Core-JS (Optional)](#custom-ardrive-core-js)
         4. [Installing and Starting the CLI From Source](#install-from-src)
@@ -229,9 +229,9 @@ npm update -g ardrive-cli
 
 ## Build and Run from Source<a id="build-from-source"></a>
 
-### Install Yarn 2<a id="yarn2"></a>
+### Install Yarn 3<a id="yarn3"></a>
 
-Both the ArDrive CLI and ArDrive Core JS use Yarn 2 to manage dependencies and initiate workflows, so follow the [yarn installation instructions][yarn-install] in order to get the latest version. In most cases:
+Both the ArDrive CLI and ArDrive Core JS use Yarn 3 to manage dependencies and initiate workflows, so follow the [yarn installation instructions][yarn-install] in order to get the latest version. In most cases:
 
 ```shell
 # Brew (OSX):
