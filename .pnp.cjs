@@ -34,14 +34,14 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/jwk-to-pem", "npm:2.0.1"],\
             ["@types/lodash", "npm:4.14.176"],\
             ["@types/mocha", "npm:9.0.0"],\
-            ["@types/node", "npm:14.17.15"],\
-            ["@types/node-fetch", "npm:2.6.1"],\
+            ["@types/node", "npm:18.17.2"],\
+            ["@types/node-fetch", "npm:2.6.4"],\
             ["@types/prompts", "npm:2.4.0"],\
             ["@types/sinon", "npm:10.0.2"],\
             ["@types/source-map-support", "npm:0.5.4"],\
             ["@typescript-eslint/eslint-plugin", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:6.2.1"],\
             ["@typescript-eslint/parser", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:6.2.1"],\
-            ["ardrive-core-js", "npm:1.18.0"],\
+            ["ardrive-core-js", "npm:2.0.0-alpha-0"],\
             ["arweave", "npm:1.11.4"],\
             ["axios", "npm:0.21.1"],\
             ["bn.js", "npm:5.2.1"],\
@@ -1520,13 +1520,20 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/node", "npm:16.7.13"]\
           ],\
           "linkType": "HARD"\
+        }],\
+        ["npm:18.17.2", {\
+          "packageLocation": "./.yarn/cache/@types-node-npm-18.17.2-471d3f5212-2e08acaeb3.zip/node_modules/@types/node/",\
+          "packageDependencies": [\
+            ["@types/node", "npm:18.17.2"]\
+          ],\
+          "linkType": "HARD"\
         }]\
       ]],\
       ["@types/node-fetch", [\
-        ["npm:2.6.1", {\
-          "packageLocation": "./.yarn/cache/@types-node-fetch-npm-2.6.1-cb57369c1c-a3e5d7f413.zip/node_modules/@types/node-fetch/",\
+        ["npm:2.6.4", {\
+          "packageLocation": "./.yarn/cache/@types-node-fetch-npm-2.6.4-3e5a54c325-f3e1d881bb.zip/node_modules/@types/node-fetch/",\
           "packageDependencies": [\
-            ["@types/node-fetch", "npm:2.6.1"],\
+            ["@types/node-fetch", "npm:2.6.4"],\
             ["@types/node", "npm:16.7.13"],\
             ["form-data", "npm:3.0.1"]\
           ],\
@@ -2177,14 +2184,14 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/jwk-to-pem", "npm:2.0.1"],\
             ["@types/lodash", "npm:4.14.176"],\
             ["@types/mocha", "npm:9.0.0"],\
-            ["@types/node", "npm:14.17.15"],\
-            ["@types/node-fetch", "npm:2.6.1"],\
+            ["@types/node", "npm:18.17.2"],\
+            ["@types/node-fetch", "npm:2.6.4"],\
             ["@types/prompts", "npm:2.4.0"],\
             ["@types/sinon", "npm:10.0.2"],\
             ["@types/source-map-support", "npm:0.5.4"],\
             ["@typescript-eslint/eslint-plugin", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:6.2.1"],\
             ["@typescript-eslint/parser", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:6.2.1"],\
-            ["ardrive-core-js", "npm:1.18.0"],\
+            ["ardrive-core-js", "npm:2.0.0-alpha-0"],\
             ["arweave", "npm:1.11.4"],\
             ["axios", "npm:0.21.1"],\
             ["bn.js", "npm:5.2.1"],\
@@ -2212,10 +2219,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]\
       ]],\
       ["ardrive-core-js", [\
-        ["npm:1.18.0", {\
-          "packageLocation": "./.yarn/cache/ardrive-core-js-npm-1.18.0-a0233d1edc-e6b185b6f2.zip/node_modules/ardrive-core-js/",\
+        ["npm:2.0.0-alpha-0", {\
+          "packageLocation": "./.yarn/cache/ardrive-core-js-npm-2.0.0-alpha-0-b90abfd5f0-7f922ef022.zip/node_modules/ardrive-core-js/",\
           "packageDependencies": [\
-            ["ardrive-core-js", "npm:1.18.0"],\
+            ["ardrive-core-js", "npm:2.0.0-alpha-0"],\
             ["@alexsasharegan/simple-cache", "npm:3.3.3"],\
             ["arbundles", "npm:0.6.19"],\
             ["arweave", "npm:1.11.4"],\
@@ -8702,7 +8709,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@tsconfig/node12", "npm:1.0.9"],\
             ["@tsconfig/node14", "npm:1.0.1"],\
             ["@tsconfig/node16", "npm:1.0.2"],\
-            ["@types/node", "npm:14.17.15"],\
+            ["@types/node", "npm:18.17.2"],\
             ["@types/swc__core", null],\
             ["@types/swc__wasm", null],\
             ["@types/typescript", null],\

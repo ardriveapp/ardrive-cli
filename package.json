@@ -1,6 +1,6 @@
 {
 	"name": "ardrive-cli",
-	"version": "1.22.0",
+	"version": "2.0.0",
 	"description": "The ArDrive Command Line Interface (CLI is a Node.js application for terminal-based ArDrive workflows. It also offers utility operations for securely interacting with Arweave wallets and inspecting various Arweave blockchain conditions.",
 	"main": "./lib/index.js",
 	"bin": {
@@ -8,7 +8,7 @@
 	},
 	"types": "./lib/index.d.ts",
 	"dependencies": {
-		"ardrive-core-js": "file:../ardrive-core-js",
+		"ardrive-core-js": "2.0.0-alpha-0",
 		"arweave": "1.11.4",
 		"axios": "^0.21.1",
 		"bn.js": "^5.2.1",
@@ -17,6 +17,9 @@
 		"lodash": "^4.17.21",
 		"prompts": "^2.4.0"
 	},
+	"engines": {
+		"node": ">=18.17.0"
+	},
 	"devDependencies": {
 		"@istanbuljs/nyc-config-typescript": "^1.0.1",
 		"@types/bn.js": "^5",
@@ -24,7 +27,7 @@
 		"@types/jwk-to-pem": "^2.0.0",
 		"@types/lodash": "^4",
 		"@types/mocha": "^9.0.0",
-		"@types/node": "^14.14.32",
+		"@types/node": "^18.17.2",
 		"@types/node-fetch": "^2.6.1",
 		"@types/prompts": "^2.0.9",
 		"@types/sinon": "^10.0.2",
