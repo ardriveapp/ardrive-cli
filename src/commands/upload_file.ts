@@ -229,7 +229,6 @@ new CLICommand({
 			const conflictResolution = parameters.getFileNameConflictResolution();
 			const shouldBundle = !!parameters.getParameterValue(ShouldBundleParameter);
 			const shouldUseTurbo = !!parameters.getParameterValue(ShouldTurboParameter);
-			console.log('shouldUseTurbo', shouldUseTurbo);
 			const remoteFilePath = parameters.getParameterValue(RemotePathParameter);
 
 			const arweave = getArweaveFromURL(parameters.getGateway());
