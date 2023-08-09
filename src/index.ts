@@ -12,7 +12,6 @@ import {
 	WalletDAO
 } from 'ardrive-core-js';
 import { ArFSTagSettings } from 'ardrive-core-js/lib/arfs/arfs_tag_settings';
-import { turboProdUrl } from 'ardrive-core-js/lib/utils/constants';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: CLI_APP_VERSION } = require('../package.json');
@@ -60,7 +59,7 @@ export const cliArDriveFactory = ({
 	communityOracle,
 	priceEstimator,
 	shouldBundle = true,
-	turboSettings = { turboUrl: turboProdUrl },
+	turboSettings = undefined,
 	arFSTagSettings = new ArFSTagSettings({ appName, appVersion }),
 	uploadPlanner
 }: ArDriveSettings): ArDrive =>
