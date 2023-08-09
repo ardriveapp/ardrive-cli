@@ -5,7 +5,9 @@ import {
 	FolderIdParameter,
 	ParentFolderIdParameter,
 	DrivePrivacyParameters,
-	GatewayParameter
+	GatewayParameter,
+	TurboUrlParameter,
+	ShouldTurboParameter
 } from '../parameter_declarations';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { CLIAction } from '../CLICommand/action';
@@ -20,6 +22,8 @@ new CLICommand({
 		ParentFolderIdParameter,
 		BoostParameter,
 		DryRunParameter,
+		ShouldTurboParameter,
+		TurboUrlParameter,
 		...DrivePrivacyParameters,
 		GatewayParameter
 	],
@@ -30,11 +34,14 @@ new CLICommand({
 		const dryRun = parameters.isDryRun();
 		const folderId = parameters.getRequiredParameterValue(FolderIdParameter, EID);
 		const newParentFolderId = parameters.getRequiredParameterValue(ParentFolderIdParameter, EID);
+		const shouldUseTurbo = !!parameters.getParameterValue(ShouldTurboParameter);
+		const turboUrl = parameters.getTurbo();
 
 		const wallet: Wallet = await parameters.getRequiredWallet();
 		const ardrive = cliArDriveFactory({
 			wallet: wallet,
 			feeMultiple: parameters.getOptionalBoostSetting(),
+			turboSettings: shouldUseTurbo ? { turboUrl } : undefined,
 			dryRun,
 			arweave
 		});
