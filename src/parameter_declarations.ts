@@ -415,7 +415,7 @@ Parameter.declare({
 Parameter.declare({
 	name: ShouldTurboParameter,
 	aliases: ['--turbo'],
-	description: '(OPTIONAL) Send data items to turbo service; send as direct to network bundles. BETA.',
+	description: '(OPTIONAL) Send data items to turbo service. BETA FEATURE.',
 	type: 'boolean'
 });
 
