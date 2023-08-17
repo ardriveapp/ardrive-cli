@@ -81,7 +81,7 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         1. [Installing and Starting the CLI From NPM Package](#install-from-npm)
         2. [Upgrading to the Latest CLI Version](#upgrading)
     3. [Build and Run from Source](#build-from-source)
-        1. [Install Yarn 2](#yarn2)
+        1. [Install Yarn 3](#yarn3)
         2. [Husky (Developers Only)](#husky)
         3. [Using a custom ArDrive-Core-JS (Optional)](#custom-ardrive-core-js)
         4. [Installing and Starting the CLI From Source](#install-from-src)
@@ -93,6 +93,7 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
     3. [Wallet Operations](#wallet-operations)
     4. [Working With Entities](#working-with-entities)
         1. [Dry Run](#dry-run)
+        2. [Uploading to Turbo (BETA)](#upload-to-turbo)
     5. [Working With Drives](#working-with-drives)
         1. [Understanding Drive Hierarchies](#understanding-drive-hierarchies)
             1. [Fetching Drive Info](#drive-info)
@@ -229,9 +230,9 @@ npm update -g ardrive-cli
 
 ## Build and Run from Source<a id="build-from-source"></a>
 
-### Install Yarn 2<a id="yarn2"></a>
+### Install Yarn 3<a id="yarn3"></a>
 
-Both the ArDrive CLI and ArDrive Core JS use Yarn 2 to manage dependencies and initiate workflows, so follow the [yarn installation instructions][yarn-install] in order to get the latest version. In most cases:
+Both the ArDrive CLI and ArDrive Core JS use Yarn 3 to manage dependencies and initiate workflows, so follow the [yarn installation instructions][yarn-install] in order to get the latest version. In most cases:
 
 ```shell
 # Brew (OSX):
@@ -392,6 +393,16 @@ ardrive <my-command> <other-options> --dry-run
 ```
 
 This can be very useful for gathering price estimations or to confirm that you've copy-pasted your entity IDs correctly before committing to an upload.
+
+### Uploading to Turbo (BETA) <a id="upload-to-turbo"></a>
+
+Users can optionally choose to send each ArFS entities created to [ArDrive Turbo][ardrive-turbo] using the `--turbo` flag. Instead of using AR from an Arweave wallet, you can use Turbo Credits or take advantage of free/discounted upload promotions.
+
+```shell
+ardrive <my-command> <other-options> --turbo
+```
+
+This flag will skip any balance check on the CLI side. Turbo will check a user's balance and accept/reject a data item at the time of upload. The `--turbo` flag by default will send your files to `upload.ardrive.io` to be bundled. To change the Turbo destination, users can use the `--turbo-url` flag.
 
 ## Working With Drives
 
@@ -1571,3 +1582,4 @@ ardrive <command> --help
 [viewblock]: https://viewblock.io/arweave/
 [tx_anchors]: https://docs.arweave.org/developers/server/http-api#field-definitions
 [gql-guide]: https://gql-guide.vercel.app/#owners
+[ardrive-turbo]: https://ardrive.io/turbo/

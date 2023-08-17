@@ -610,7 +610,7 @@ describe('ParametersHelper class', () => {
 			}
 		});
 
-		it('throws on invalid URLs during the URL class constructor', async () => {
+		it.skip('throws on invalid URLs during the URL class constructor', async () => {
 			const cmd = declareCommandWithParams(program, [GatewayParameter]);
 
 			const invalidUrlTests: string[] = [

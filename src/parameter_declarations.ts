@@ -35,11 +35,13 @@ export const UpsertParameter = 'upsert';
 export const AskParameter = 'ask';
 export const NoVerifyParameter = 'verify'; // commander maps --no-x style params to options.x and always includes in options
 export const ShouldBundleParameter = 'bundle'; // commander maps --no-x style params to options.x and always includes in options
+export const ShouldTurboParameter = 'turbo'; // commander maps --no-x style params to options.x and always includes in options
 export const LocalPathParameter = 'localPath';
 export const LocalPathsParameter = 'localPaths';
 export const LocalCSVParameter = 'localCsv';
 export const WithKeysParameter = 'withKeys';
 export const GatewayParameter = 'gateway';
+export const TurboUrlParameter = 'turboUrl';
 export const CustomContentTypeParameter = 'contentType';
 export const RemotePathParameter = 'remotePath';
 export const IPFSParameter = 'addIpfsTag';
@@ -63,6 +65,7 @@ export const AllParameters = [
 	AddressParameter,
 	AllParameter,
 	ArAmountParameter,
+	TurboUrlParameter,
 	BoostParameter,
 	ConfirmationsParameter,
 	CustomContentTypeParameter,
@@ -89,6 +92,7 @@ export const AllParameters = [
 	MetaDataGqlTagsParameter,
 	MetadataJsonParameter,
 	ShouldBundleParameter,
+	ShouldTurboParameter,
 	NoVerifyParameter,
 	ParentFolderIdParameter,
 	PrivateParameter,
@@ -409,6 +413,13 @@ Parameter.declare({
 });
 
 Parameter.declare({
+	name: ShouldTurboParameter,
+	aliases: ['--turbo'],
+	description: '(OPTIONAL) Send data items to turbo service. BETA FEATURE.',
+	type: 'boolean'
+});
+
+Parameter.declare({
 	name: LocalPathParameter,
 	aliases: ['--local-path'],
 	description: `the path on the local filesystem for the file that will be uploaded
@@ -483,6 +494,12 @@ Parameter.declare({
 	name: GatewayParameter,
 	aliases: ['-g', '--gateway'],
 	description: `(OPTIONAL) a 'protocol://host:port' formatted string specifying the connection info for the Arweave gateway server to use`
+});
+
+Parameter.declare({
+	name: TurboUrlParameter,
+	aliases: ['--turbo-url'],
+	description: `(OPTIONAL) a 'protocol://host:port' formatted string specifying the connection info for which turbo service to send data items to`
 });
 
 Parameter.declare({

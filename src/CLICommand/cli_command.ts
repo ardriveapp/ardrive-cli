@@ -62,7 +62,7 @@ function setCommanderCommand(commandDescriptor: CommandDescriptor, program: CliA
 				exitProgram(exitCode || 0);
 			});
 		} catch (e) {
-			console.error(`Error: ${e.message}`);
+			console.error(`Error: ${e instanceof Error ? e.message : `${e}`}`);
 			exitProgram(ERROR_EXIT_CODE);
 		}
 	});

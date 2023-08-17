@@ -18,7 +18,8 @@ import {
 	MetaDataFileParameter,
 	MetaDataGqlTagsParameter,
 	MetadataJsonParameter,
-	DataGqlTagsParameter
+	DataGqlTagsParameter,
+	TurboUrlParameter
 } from '../parameter_declarations';
 import { cliWalletDao } from '..';
 import passwordPrompt from 'prompts';
@@ -46,12 +47,14 @@ import {
 } from 'ardrive-core-js';
 import { JWKInterface } from 'arweave/node/lib/wallet';
 import { deriveIpfsCid } from '../utils/ipfs_utils';
+import { turboProdUrl } from 'ardrive-core-js/lib/utils/constants';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ParameterOptions = any;
 
 const DEFAULT_GATEWAY = 'https://arweave.net:443';
 const ARWEAVE_GATEWAY_ENV_VAR = 'ARWEAVE_GATEWAY';
+const TURBO_URL_ENV_VAR = 'TURBO_URL';
 
 interface GetDriveKeyParams {
 	driveId: DriveID;
@@ -428,6 +431,42 @@ export class ParametersHelper {
 		if (!userProvidedURL) {
 			// Return default CLI Arweave if no gateway can be derived from the user
 			return new URL(DEFAULT_GATEWAY);
+		}
+
+		if (userProvidedURL.hostname === '') {
+			// Ensure a valid host name was provided to be used in Arweave.init()
+			throw new TypeError(`Host name could not be determined from provided URL: ${userProvidedURL.href}`);
+		}
+		return userProvidedURL;
+	}
+
+	/**
+	 * Gathers a valid turbo URL from user provided turbo parameter,
+	 * an environment variable, or returns the default arweave turbo
+	 *
+	 * @throws on user provided turbos that are incompatible with URL class constructor
+	 * @throws when hostName cannot be derived from a user provided turbo
+	 */
+	public getTurbo(): URL {
+		const userProvidedURL = (() => {
+			// Use optional --turbo-url supplied parameter as first choice
+			const turboFromParam = this.getParameterValue(TurboUrlParameter);
+			if (turboFromParam) {
+				return new URL(turboFromParam);
+			}
+
+			// Then check for an ENV provided turbo
+			const envTurbo = process.env[TURBO_URL_ENV_VAR];
+			if (envTurbo) {
+				return new URL(envTurbo);
+			}
+
+			return undefined;
+		})();
+
+		if (!userProvidedURL) {
+			// Return default CLI turbo if no turbo url can be derived from the user
+			return new URL(turboProdUrl);
 		}
 
 		if (userProvidedURL.hostname === '') {
