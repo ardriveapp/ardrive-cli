@@ -21,8 +21,8 @@ describe('downloadFile function', () => {
 		} catch (err) {
 			error = err;
 		}
-		expect(error?.name).to.equal('Error');
-		expect(error?.message).to.equal(
+		expect((error as Error)?.name).to.equal('Error');
+		expect((error as Error)?.message).to.equal(
 			'Failed to download file from remote path https://arweave.net/pVoSqZgJUCiNw7oS6CtlVEV8gREQlpRbccrsMLkeIuQ: Request failed with status code 404'
 		);
 	});
