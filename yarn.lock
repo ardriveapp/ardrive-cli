@@ -248,6 +248,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/runtime@npm:^7.15.4":
+  version: 7.22.10
+  resolution: "@babel/runtime@npm:7.22.10"
+  dependencies:
+    regenerator-runtime: ^0.14.0
+  checksum: 524d41517e68953dbc73a4f3616b8475e5813f64e28ba89ff5fca2c044d535c2ea1a3f310df1e5bb06162e1f0b401b5c4af73fe6e2519ca2450d9d8c44cf268d
+  languageName: node
+  linkType: hard
+
 "@babel/template@npm:^7.15.4":
   version: 7.15.4
   resolution: "@babel/template@npm:7.15.4"
@@ -1793,7 +1802,7 @@ __metadata:
     "@types/source-map-support": ^0
     "@typescript-eslint/eslint-plugin": ^6.2.1
     "@typescript-eslint/parser": ^6.2.1
-    ardrive-core-js: 2.0.0-alpha-0
+    ardrive-core-js: 2.0.0
     arweave: 1.11.4
     axios: ^0.21.1
     bn.js: ^5.2.1
@@ -1821,15 +1830,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"ardrive-core-js@npm:2.0.0-alpha-0":
-  version: 2.0.0-alpha-0
-  resolution: "ardrive-core-js@npm:2.0.0-alpha-0"
+"ardrive-core-js@npm:2.0.0":
+  version: 2.0.0
+  resolution: "ardrive-core-js@npm:2.0.0"
   dependencies:
     "@alexsasharegan/simple-cache": ^3.3.3
     arbundles: ^0.6.19
     arweave: ^1.11.4
     arweave-mnemonic-keys: ^0.0.9
     axios: ^0.21.1
+    axios-retry: ^3.6.0
     base64-js: ^1.5.1
     bignumber.js: ^9.0.1
     bn.js: ^5.2.1
@@ -1841,7 +1851,7 @@ __metadata:
     smartweave: ^0.4.49
     utf8: ^3.0.0
     uuid: ^8.3.2
-  checksum: 7f922ef02246c992ccf1bbe0bd017b6a2ff8d6b4e1336e50dcd4698d369f2dd6c33d1408bc823f2167a4099877a1af3893f17fc075429539fe22096a6d26493a
+  checksum: 6d4e58e676e7cd2f6509b7f0b9ae922767facc3c48979ef458d990a44bfceb6a0cc4b2565d9ace2379d06434a30313c34df6396bb9647a7be876db8061cd142c
   languageName: node
   linkType: hard
 
@@ -2022,6 +2032,16 @@ __metadata:
   version: 1.10.1
   resolution: "aws4@npm:1.10.1"
   checksum: 290a22fc1168d32bbd924d8b6eef71510a2ab983f4d6edaaa211c696229bcc774574d0091943db62f7e8b2c497daf1895c95392866e5c5307c3435ab3fcaedf8
+  languageName: node
+  linkType: hard
+
+"axios-retry@npm:^3.6.0":
+  version: 3.6.0
+  resolution: "axios-retry@npm:3.6.0"
+  dependencies:
+    "@babel/runtime": ^7.15.4
+    is-retry-allowed: ^2.2.0
+  checksum: 9ed0879453170a55960dea21116e7f732f1e78acb72eb49d80b1620583814d94bda78200d0767bae82d37cc2ab80752f0aec49717ce4b141858059c0c6b9921c
   languageName: node
   linkType: hard
 
@@ -4602,6 +4622,13 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
+"is-retry-allowed@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "is-retry-allowed@npm:2.2.0"
+  checksum: 3d1103a9290b5d03626756a41054844633eac78bc5d3e3a95b13afeae94fa3cfbcf7f0b5520d83f75f48a25ce7b142fdbac4217dc4b0630f3ea55e866ec3a029
+  languageName: node
+  linkType: hard
+
 "is-shared-array-buffer@npm:^1.0.2":
   version: 1.0.2
   resolution: "is-shared-array-buffer@npm:1.0.2"
@@ -6501,6 +6528,13 @@ fsevents@~2.3.2:
   version: 0.13.9
   resolution: "regenerator-runtime@npm:0.13.9"
   checksum: 65ed455fe5afd799e2897baf691ca21c2772e1a969d19bb0c4695757c2d96249eb74ee3553ea34a91062b2a676beedf630b4c1551cc6299afb937be1426ec55e
+  languageName: node
+  linkType: hard
+
+"regenerator-runtime@npm:^0.14.0":
+  version: 0.14.0
+  resolution: "regenerator-runtime@npm:0.14.0"
+  checksum: 1c977ad82a82a4412e4f639d65d22be376d3ebdd30da2c003eeafdaaacd03fc00c2320f18120007ee700900979284fc78a9f00da7fb593f6e6eeebc673fba9a3
   languageName: node
   linkType: hard
 

@@ -41,7 +41,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/source-map-support", "npm:0.5.4"],\
             ["@typescript-eslint/eslint-plugin", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:6.2.1"],\
             ["@typescript-eslint/parser", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:6.2.1"],\
-            ["ardrive-core-js", "npm:2.0.0-alpha-0"],\
+            ["ardrive-core-js", "npm:2.0.0"],\
             ["arweave", "npm:1.11.4"],\
             ["axios", "npm:0.21.1"],\
             ["bn.js", "npm:5.2.1"],\
@@ -347,6 +347,14 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [\
             ["@babel/runtime", "npm:7.18.3"],\
             ["regenerator-runtime", "npm:0.13.9"]\
+          ],\
+          "linkType": "HARD"\
+        }],\
+        ["npm:7.22.10", {\
+          "packageLocation": "./.yarn/cache/@babel-runtime-npm-7.22.10-2771d0ecab-524d41517e.zip/node_modules/@babel/runtime/",\
+          "packageDependencies": [\
+            ["@babel/runtime", "npm:7.22.10"],\
+            ["regenerator-runtime", "npm:0.14.0"]\
           ],\
           "linkType": "HARD"\
         }]\
@@ -2191,7 +2199,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/source-map-support", "npm:0.5.4"],\
             ["@typescript-eslint/eslint-plugin", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:6.2.1"],\
             ["@typescript-eslint/parser", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:6.2.1"],\
-            ["ardrive-core-js", "npm:2.0.0-alpha-0"],\
+            ["ardrive-core-js", "npm:2.0.0"],\
             ["arweave", "npm:1.11.4"],\
             ["axios", "npm:0.21.1"],\
             ["bn.js", "npm:5.2.1"],\
@@ -2219,15 +2227,16 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]\
       ]],\
       ["ardrive-core-js", [\
-        ["npm:2.0.0-alpha-0", {\
-          "packageLocation": "./.yarn/cache/ardrive-core-js-npm-2.0.0-alpha-0-b90abfd5f0-7f922ef022.zip/node_modules/ardrive-core-js/",\
+        ["npm:2.0.0", {\
+          "packageLocation": "./.yarn/cache/ardrive-core-js-npm-2.0.0-ce42dc7f81-6d4e58e676.zip/node_modules/ardrive-core-js/",\
           "packageDependencies": [\
-            ["ardrive-core-js", "npm:2.0.0-alpha-0"],\
+            ["ardrive-core-js", "npm:2.0.0"],\
             ["@alexsasharegan/simple-cache", "npm:3.3.3"],\
             ["arbundles", "npm:0.6.19"],\
             ["arweave", "npm:1.11.4"],\
             ["arweave-mnemonic-keys", "npm:0.0.9"],\
             ["axios", "npm:0.21.1"],\
+            ["axios-retry", "npm:3.6.0"],\
             ["base64-js", "npm:1.5.1"],\
             ["bignumber.js", "npm:9.0.1"],\
             ["bn.js", "npm:5.2.1"],\
@@ -2487,6 +2496,17 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["axios", "npm:0.27.2"],\
             ["follow-redirects", "virtual:dbe3a48aea1dd5649e16abaf23d4ae05582d2149e16141955113766a0f84f681baf358c77ddccfc82eb23e4ccc66c6c912df62a9c01f2a83f1842bf86cc297b1#npm:1.15.1"],\
             ["form-data", "npm:4.0.0"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["axios-retry", [\
+        ["npm:3.6.0", {\
+          "packageLocation": "./.yarn/cache/axios-retry-npm-3.6.0-98bcf77508-9ed0879453.zip/node_modules/axios-retry/",\
+          "packageDependencies": [\
+            ["axios-retry", "npm:3.6.0"],\
+            ["@babel/runtime", "npm:7.22.10"],\
+            ["is-retry-allowed", "npm:2.2.0"]\
           ],\
           "linkType": "HARD"\
         }]\
@@ -5429,6 +5449,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD"\
         }]\
       ]],\
+      ["is-retry-allowed", [\
+        ["npm:2.2.0", {\
+          "packageLocation": "./.yarn/cache/is-retry-allowed-npm-2.2.0-b4b58fc581-3d1103a929.zip/node_modules/is-retry-allowed/",\
+          "packageDependencies": [\
+            ["is-retry-allowed", "npm:2.2.0"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
       ["is-shared-array-buffer", [\
         ["npm:1.0.2", {\
           "packageLocation": "./.yarn/cache/is-shared-array-buffer-npm-1.0.2-32e4181fcd-9508929cf1.zip/node_modules/is-shared-array-buffer/",\
@@ -7567,6 +7596,13 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/regenerator-runtime-npm-0.13.9-6d02340eec-65ed455fe5.zip/node_modules/regenerator-runtime/",\
           "packageDependencies": [\
             ["regenerator-runtime", "npm:0.13.9"]\
+          ],\
+          "linkType": "HARD"\
+        }],\
+        ["npm:0.14.0", {\
+          "packageLocation": "./.yarn/cache/regenerator-runtime-npm-0.14.0-e060897cf7-1c977ad82a.zip/node_modules/regenerator-runtime/",\
+          "packageDependencies": [\
+            ["regenerator-runtime", "npm:0.14.0"]\
           ],\
           "linkType": "HARD"\
         }]\

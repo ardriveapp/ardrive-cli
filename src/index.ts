@@ -59,6 +59,7 @@ export const cliArDriveFactory = ({
 	communityOracle,
 	priceEstimator,
 	shouldBundle = true,
+	turboSettings = undefined,
 	arFSTagSettings = new ArFSTagSettings({ appName, appVersion }),
 	uploadPlanner
 }: ArDriveSettings): ArDrive =>
@@ -75,7 +76,8 @@ export const cliArDriveFactory = ({
 		priceEstimator,
 		shouldBundle,
 		arFSTagSettings,
-		uploadPlanner
+		uploadPlanner,
+		turboSettings
 	});
 
 export const cliArDriveAnonymousFactory = ({ arweave = cliArweave }: ArDriveSettingsAnonymous): ArDriveAnonymous =>

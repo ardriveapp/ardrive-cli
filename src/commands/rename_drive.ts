@@ -5,7 +5,9 @@ import {
 	DriveIdParameter,
 	DrivePrivacyParameters,
 	DriveNameParameter,
-	GatewayParameter
+	GatewayParameter,
+	ShouldTurboParameter,
+	TurboUrlParameter
 } from '../parameter_declarations';
 import { cliArDriveFactory } from '..';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
@@ -21,6 +23,8 @@ new CLICommand({
 		BoostParameter,
 		DryRunParameter,
 		...DrivePrivacyParameters,
+		ShouldTurboParameter,
+		TurboUrlParameter,
 		GatewayParameter
 	],
 	action: new CLIAction(async function action(options) {
@@ -30,12 +34,15 @@ new CLICommand({
 		const dryRun = parameters.isDryRun();
 		const driveId = parameters.getRequiredParameterValue(DriveIdParameter, EID);
 		const newName = parameters.getRequiredParameterValue(DriveNameParameter);
+		const shouldUseTurbo = !!parameters.getParameterValue(ShouldTurboParameter);
+		const turboUrl = parameters.getTurbo();
 
 		const wallet: Wallet = await parameters.getRequiredWallet();
 		const ardrive = cliArDriveFactory({
 			wallet,
 			feeMultiple: parameters.getOptionalBoostSetting(),
 			dryRun,
+			turboSettings: shouldUseTurbo ? { turboUrl } : undefined,
 			arweave
 		});
 
