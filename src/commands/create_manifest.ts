@@ -12,7 +12,9 @@ import {
 	WalletFileParameter,
 	DestinationManifestNameParameter,
 	ConflictResolutionParams,
-	GatewayParameter
+	GatewayParameter,
+	ShouldTurboParameter,
+	TurboUrlParameter
 } from '../parameter_declarations';
 import { fileUploadConflictPrompts } from '../prompts';
 import { getArweaveFromURL } from '../utils/get_arweave_for_url';
@@ -28,19 +30,24 @@ new CLICommand({
 		SeedPhraseParameter,
 		...ConflictResolutionParams,
 		...TreeDepthParams,
-		GatewayParameter
+		GatewayParameter,
+		ShouldTurboParameter,
+		TurboUrlParameter
 	],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options, cliWalletDao);
 
 		const wallet = await parameters.getRequiredWallet();
 		const arweave = getArweaveFromURL(parameters.getGateway());
+		const useTurbo = !!parameters.getParameterValue(ShouldTurboParameter);
+		const turboUrl = parameters.getTurbo();
 
 		const arDrive = cliArDriveFactory({
 			wallet: wallet,
 			feeMultiple: parameters.getOptionalBoostSetting(),
 			dryRun: parameters.isDryRun(),
-			arweave
+			arweave,
+			turboSettings: useTurbo ? { turboUrl } : undefined
 		});
 
 		const folderId = parameters.getRequiredParameterValue(FolderIdParameter, EID);

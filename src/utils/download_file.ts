@@ -45,6 +45,8 @@ export async function downloadFile(
 		return { pathToFile, contentType };
 	} catch (error) {
 		writer.close();
-		throw new Error(`Failed to download file from remote path ${url}: ${error.message}`);
+		throw new Error(
+			`Failed to download file from remote path ${url}: ${error instanceof Error ? error.message : `${error}`}`
+		);
 	}
 }

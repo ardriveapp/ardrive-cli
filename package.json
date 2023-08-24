@@ -1,6 +1,6 @@
 {
 	"name": "ardrive-cli",
-	"version": "1.22.0",
+	"version": "2.0.0",
 	"description": "The ArDrive Command Line Interface (CLI is a Node.js application for terminal-based ArDrive workflows. It also offers utility operations for securely interacting with Arweave wallets and inspecting various Arweave blockchain conditions.",
 	"main": "./lib/index.js",
 	"bin": {
@@ -8,7 +8,7 @@
 	},
 	"types": "./lib/index.d.ts",
 	"dependencies": {
-		"ardrive-core-js": "1.18.0",
+		"ardrive-core-js": "2.0.0",
 		"arweave": "1.11.4",
 		"axios": "^0.21.1",
 		"bn.js": "^5.2.1",
@@ -18,6 +18,9 @@
 		"prompts": "^2.4.0",
 		"stripe": "^12.2.0"
 	},
+	"engines": {
+		"node": ">=18"
+	},
 	"devDependencies": {
 		"@istanbuljs/nyc-config-typescript": "^1.0.1",
 		"@types/bn.js": "^5",
@@ -25,20 +28,20 @@
 		"@types/jwk-to-pem": "^2.0.0",
 		"@types/lodash": "^4",
 		"@types/mocha": "^9.0.0",
-		"@types/node": "^18.16.1",
+		"@types/node": "^18.17.2",
 		"@types/node-fetch": "^2.6.1",
 		"@types/prompts": "^2.0.9",
 		"@types/sinon": "^10.0.2",
 		"@types/source-map-support": "^0",
-		"@typescript-eslint/eslint-plugin": "^4.18.0",
-		"@typescript-eslint/parser": "^4.18.0",
+		"@typescript-eslint/eslint-plugin": "^6.2.1",
+		"@typescript-eslint/parser": "^6.2.1",
 		"chai": "^4.3.4",
-		"eslint": "^7.23.0",
+		"eslint": "^8.46.0",
 		"eslint-config-prettier": "^8.1.0",
 		"eslint-plugin-prettier": "latest",
 		"husky": "^=6",
 		"lint-staged": "^11.0.0",
-		"mocha": "^9.1.1",
+		"mocha": "^10.2.0",
 		"nyc": "^15.1.0",
 		"prettier": "^2.2.1",
 		"rimraf": "^3.0.2",
@@ -46,7 +49,7 @@
 		"source-map-support": "^0.5.20",
 		"ts-node": "^10.2.1",
 		"ts-sinon": "^2.0.1",
-		"typescript": "^4.2.3"
+		"typescript": "^5.1.6"
 	},
 	"scripts": {
 		"clean": "rimraf [ lib .nyc_output coverage ]",

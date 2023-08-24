@@ -16,7 +16,9 @@ import {
 	CustomContentTypeParameter,
 	RemotePathParameter,
 	CustomMetaDataParameters,
-	IPFSParameter
+	IPFSParameter,
+	TurboUrlParameter,
+	ShouldTurboParameter
 } from '../parameter_declarations';
 import { fileAndFolderUploadConflictPrompts } from '../prompts';
 import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
@@ -183,16 +185,16 @@ new CLICommand({
 		ParentFolderIdParameter,
 		DestinationFileNameParameter,
 		BoostParameter,
-		DryRunParameter,
 		ShouldBundleParameter,
+		ShouldTurboParameter,
 		...ConflictResolutionParams,
 		...DrivePrivacyParameters,
 		CustomContentTypeParameter,
 		...CustomMetaDataParameters,
 		LocalFilePathParameter_DEPRECATED,
 		LocalFilesParameter_DEPRECATED,
-		BoostParameter,
 		GatewayParameter,
+		TurboUrlParameter,
 		RemotePathParameter,
 		IPFSParameter
 	],
@@ -226,15 +228,18 @@ new CLICommand({
 
 			const conflictResolution = parameters.getFileNameConflictResolution();
 			const shouldBundle = !!parameters.getParameterValue(ShouldBundleParameter);
+			const shouldUseTurbo = !!parameters.getParameterValue(ShouldTurboParameter);
 			const remoteFilePath = parameters.getParameterValue(RemotePathParameter);
 
 			const arweave = getArweaveFromURL(parameters.getGateway());
+			const turboUrl = parameters.getTurbo();
 
 			const arDrive = cliArDriveFactory({
 				wallet,
 				feeMultiple: parameters.getOptionalBoostSetting(),
 				dryRun: parameters.isDryRun(),
 				shouldBundle,
+				turboSettings: shouldUseTurbo ? { turboUrl } : undefined,
 				arweave
 			});
 
