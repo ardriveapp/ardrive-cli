@@ -40,7 +40,13 @@ new CLICommand({
 			feeMultiple: parameters.getOptionalBoostSetting(),
 			dryRun,
 			arweave,
-			turboSettings: useTurbo ? { turboUrl } : undefined
+			turboSettings: useTurbo
+				? {
+						turboUploadUrl: turboUrl,
+						turboPaymentUrl: new URL(turboUrl.toString().replace('upload', 'payment')),
+						isDryRun: parameters.isDryRun()
+				  }
+				: undefined
 		});
 
 		const parentFolderId = parameters.getRequiredParameterValue(ParentFolderIdParameter, EID);

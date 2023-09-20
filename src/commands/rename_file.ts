@@ -42,7 +42,9 @@ new CLICommand({
 			wallet: wallet,
 			feeMultiple: parameters.getOptionalBoostSetting(),
 			dryRun,
-			turboSettings: shouldUseTurbo ? { turboUrl } : undefined,
+			turboSettings: shouldUseTurbo
+				? { turboUploadUrl: turboUrl, turboPaymentUrl: turboUrl, isDryRun: parameters.isDryRun() }
+				: undefined,
 			arweave
 		});
 

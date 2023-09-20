@@ -47,7 +47,6 @@ import {
 } from 'ardrive-core-js';
 import { JWKInterface } from 'arweave/node/lib/wallet';
 import { deriveIpfsCid } from '../utils/ipfs_utils';
-import { turboProdUrl } from 'ardrive-core-js/lib/utils/constants';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ParameterOptions = any;
@@ -466,7 +465,7 @@ export class ParametersHelper {
 
 		if (!userProvidedURL) {
 			// Return default CLI turbo if no turbo url can be derived from the user
-			return new URL(turboProdUrl);
+			return new URL('https://upload.ardrive.dev');
 		}
 
 		if (userProvidedURL.hostname === '') {
