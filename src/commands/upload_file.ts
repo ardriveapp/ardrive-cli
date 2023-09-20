@@ -239,7 +239,9 @@ new CLICommand({
 				feeMultiple: parameters.getOptionalBoostSetting(),
 				dryRun: parameters.isDryRun(),
 				shouldBundle,
-				turboSettings: shouldUseTurbo ? { turboUrl } : undefined,
+				turboSettings: shouldUseTurbo
+					? { turboUploadUrl: turboUrl, turboPaymentUrl: turboUrl, isDryRun: parameters.isDryRun() }
+					: undefined,
 				arweave
 			});
 

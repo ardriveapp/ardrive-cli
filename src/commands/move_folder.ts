@@ -41,7 +41,13 @@ new CLICommand({
 		const ardrive = cliArDriveFactory({
 			wallet: wallet,
 			feeMultiple: parameters.getOptionalBoostSetting(),
-			turboSettings: shouldUseTurbo ? { turboUrl } : undefined,
+			turboSettings: shouldUseTurbo
+				? {
+						turboUploadUrl: turboUrl,
+						turboPaymentUrl: new URL(turboUrl.toString().replace('upload', 'payment')),
+						isDryRun: parameters.isDryRun()
+				  }
+				: undefined,
 			dryRun,
 			arweave
 		});

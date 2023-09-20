@@ -43,7 +43,13 @@ new CLICommand({
 			dryRun,
 			shouldBundle,
 			arweave,
-			turboSettings: useTurbo ? { turboUrl } : undefined
+			turboSettings: useTurbo
+				? {
+						turboUploadUrl: turboUrl,
+						turboPaymentUrl: new URL(turboUrl.toString().replace('upload', 'payment')),
+						isDryRun: dryRun
+				  }
+				: undefined
 		});
 
 		const createDriveResult = await (async function () {

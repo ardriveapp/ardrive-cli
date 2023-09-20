@@ -47,7 +47,13 @@ new CLICommand({
 			feeMultiple: parameters.getOptionalBoostSetting(),
 			dryRun: parameters.isDryRun(),
 			arweave,
-			turboSettings: useTurbo ? { turboUrl } : undefined
+			turboSettings: useTurbo
+				? {
+						turboUploadUrl: turboUrl,
+						turboPaymentUrl: new URL(turboUrl.toString().replace('upload', 'payment')),
+						isDryRun: parameters.isDryRun()
+				  }
+				: undefined
 		});
 
 		const folderId = parameters.getRequiredParameterValue(FolderIdParameter, EID);
