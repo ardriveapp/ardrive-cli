@@ -1802,7 +1802,7 @@ __metadata:
     "@types/source-map-support": ^0
     "@typescript-eslint/eslint-plugin": ^6.2.1
     "@typescript-eslint/parser": ^6.2.1
-    ardrive-core-js: 2.0.0
+    ardrive-core-js: 2.0.1
     arweave: 1.11.4
     axios: ^0.21.1
     bn.js: ^5.2.1
@@ -1830,20 +1830,20 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"ardrive-core-js@npm:2.0.0":
-  version: 2.0.0
-  resolution: "ardrive-core-js@npm:2.0.0"
+"ardrive-core-js@npm:2.0.1":
+  version: 2.0.1
+  resolution: "ardrive-core-js@npm:2.0.1"
   dependencies:
     "@alexsasharegan/simple-cache": ^3.3.3
     arbundles: ^0.6.19
     arweave: ^1.11.4
-    arweave-mnemonic-keys: ^0.0.9
     axios: ^0.21.1
     axios-retry: ^3.6.0
     base64-js: ^1.5.1
     bignumber.js: ^9.0.1
     bn.js: ^5.2.1
     futoin-hkdf: ^1.3.3
+    human-crypto-keys: "git+https://github.com/ardriveapp/js-human-crypto-keys.git#expose_lib"
     jwk-to-pem: ^2.0.4
     lodash: ^4.17.21
     mime-types: ^2.1.29
@@ -1851,7 +1851,7 @@ __metadata:
     smartweave: ^0.4.49
     utf8: ^3.0.0
     uuid: ^8.3.2
-  checksum: 6d4e58e676e7cd2f6509b7f0b9ae922767facc3c48979ef458d990a44bfceb6a0cc4b2565d9ace2379d06434a30313c34df6396bb9647a7be876db8061cd142c
+  checksum: efdfe76b9640edf4943354ea3cda43f0f0d5ab5a1d3f3a1f03517ad3a4e8a3c5f213a5dc191373647d111339f8e8dba8b3620cffe673f145c6a5e77124232770
   languageName: node
   linkType: hard
 
@@ -1909,16 +1909,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"arweave-mnemonic-keys@npm:^0.0.9":
-  version: 0.0.9
-  resolution: "arweave-mnemonic-keys@npm:0.0.9"
-  dependencies:
-    human-crypto-keys: ^0.1.4
-    libp2p-crypto: ^0.19.0
-  checksum: 9fda19e6778b2240538fd272e79afdcbc75848f98acf2943f4880f3e3fe12a419030949f6c51f17ff4baaa0c5fd2b6fbbb656f67a6b8892ee896f59aa0d38056
-  languageName: node
-  linkType: hard
-
 "arweave-stream-tx@npm:^1.1.0":
   version: 1.1.0
   resolution: "arweave-stream-tx@npm:1.1.0"
@@ -1958,7 +1948,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"asn1.js@npm:^5.0.1, asn1.js@npm:^5.3.0, asn1.js@npm:^5.4.1":
+"asn1.js@npm:^5.3.0, asn1.js@npm:^5.4.1":
   version: 5.4.1
   resolution: "asn1.js@npm:5.4.1"
   dependencies:
@@ -2150,7 +2140,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bindings@npm:^1.3.0, bindings@npm:^1.5.0":
+"bindings@npm:^1.3.0":
   version: 1.5.0
   resolution: "bindings@npm:1.5.0"
   dependencies:
@@ -2159,15 +2149,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bip39@npm:^3.0.2":
-  version: 3.0.4
-  resolution: "bip39@npm:3.0.4"
+"bip39@npm:=3.0.2":
+  version: 3.0.2
+  resolution: "bip39@npm:3.0.2"
   dependencies:
     "@types/node": 11.11.6
     create-hash: ^1.1.0
     pbkdf2: ^3.0.9
     randombytes: ^2.0.1
-  checksum: 79ce1600a03d1ba5053bdd4e6323f9463ec340764c7e52918b6c6b9dca81221940f2d9a65656447f108f9bc2c8d9ae8df319cca83bbd1dad63f53ef2768d9bae
+  checksum: 71798582b4d1cc7f20d11372413c4514f124d302e6b38e7f9126d4759fca3e9fbccb431429a6ab16130dd67193de3d781122fcd4bca0a653be654d4aa13490c5
   languageName: node
   linkType: hard
 
@@ -3420,13 +3410,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"events@npm:^3.3.0":
-  version: 3.3.0
-  resolution: "events@npm:3.3.0"
-  checksum: f6f487ad2198aa41d878fa31452f1a3c00958f46e9019286ff4787c84aac329332ab45c9cdc8c445928fc6d7ded294b9e005a7fce9426488518017831b272780
-  languageName: node
-  linkType: hard
-
 "execa@npm:^5.0.0":
   version: 5.0.0
   resolution: "execa@npm:5.0.0"
@@ -4216,17 +4199,17 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"human-crypto-keys@npm:^0.1.4":
+"human-crypto-keys@git+https://github.com/ardriveapp/js-human-crypto-keys.git#expose_lib":
   version: 0.1.4
-  resolution: "human-crypto-keys@npm:0.1.4"
+  resolution: "human-crypto-keys@https://github.com/ardriveapp/js-human-crypto-keys.git#commit=dcfde03a4d45fb390dc480950f6bf034a16b4cc9"
   dependencies:
-    bip39: ^3.0.2
+    bip39: =3.0.2
     crypto-key-composer: ^0.1.0
     hash.js: ^1.1.7
     hmac-drbg: ^1.0.1
     node-forge: ^0.8.2
     pify: ^4.0.1
-  checksum: bdfbdac9a87730241fc0410c7d2f12b6e398eea98d90490c13fd7f5f9075fac25d49c70a1dd4fe4d726df032e8dd66f64ac02da7bdaa6a9bf91d33b56a035228
+  checksum: 1b3cfe1723f8a5fce62c705a20248d8ca4c909d0ba3c6ae851535369e507d788112df5886a4f86c53544124f746cb0e7df7f18911642d670c89678e55d3f4a6f
   languageName: node
   linkType: hard
 
@@ -4734,16 +4717,6 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"iso-random-stream@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "iso-random-stream@npm:2.0.0"
-  dependencies:
-    events: ^3.3.0
-    readable-stream: ^3.4.0
-  checksum: 3e8d6ca953df5707046c8aaca9cf3a8df9d21932951b2bacf2022f9287bd274c24a5430ae2ab279e94bc56886f320eb0d038323000a04187b1e6e42721c496c3
-  languageName: node
-  linkType: hard
-
 "isobject@npm:^3.0.1":
   version: 3.0.1
   resolution: "isobject@npm:3.0.1"
@@ -5077,13 +5050,6 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"keypair@npm:^1.0.1":
-  version: 1.0.3
-  resolution: "keypair@npm:1.0.3"
-  checksum: c7723a75f72d287fa1552a053a07129eb72f42b300762ea97593127156cc6569a9c6234e1940f226f447477f56b0dc7a2a5eed60f1fa98843beceba47d952eec
-  languageName: node
-  linkType: hard
-
 "kind-of@npm:^6.0.2, kind-of@npm:^6.0.3":
   version: 6.0.3
   resolution: "kind-of@npm:6.0.3"
@@ -5105,25 +5071,6 @@ fsevents@~2.3.2:
     prelude-ls: ^1.2.1
     type-check: ~0.4.0
   checksum: 12c5021c859bd0f5248561bf139121f0358285ec545ebf48bb3d346820d5c61a4309535c7f387ed7d84361cf821e124ce346c6b7cef8ee09a67c1473b46d0fc4
-  languageName: node
-  linkType: hard
-
-"libp2p-crypto@npm:^0.19.0":
-  version: 0.19.7
-  resolution: "libp2p-crypto@npm:0.19.7"
-  dependencies:
-    err-code: ^3.0.1
-    is-typedarray: ^1.0.0
-    iso-random-stream: ^2.0.0
-    keypair: ^1.0.1
-    multiformats: ^9.4.5
-    node-forge: ^0.10.0
-    pem-jwk: ^2.0.0
-    protobufjs: ^6.11.2
-    secp256k1: ^4.0.0
-    uint8arrays: ^3.0.0
-    ursa-optional: ^0.10.1
-  checksum: d533395309cff7ebad3584e6ea3c34f35aa7eb0eb53a8e0914005bb8b0c7cbc5d4a3ee37ac3f941d642a9ced0bc5c7fdbae6458e2b2452d35726895df93761ea
   languageName: node
   linkType: hard
 
@@ -5599,7 +5546,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"multiformats@npm:^9.4.2, multiformats@npm:^9.4.5":
+"multiformats@npm:^9.4.2":
   version: 9.4.7
   resolution: "multiformats@npm:9.4.7"
   checksum: f8879f94f82e617a262fe917045d34110ef069068d889f9cefb02df3e05a04a0d08756cbba3bb287cd0a96e34d7bd322cbb081a94b1155e478d128715f11d522
@@ -5652,15 +5599,6 @@ fsevents@~2.3.2:
   version: 0.0.8
   resolution: "mute-stream@npm:0.0.8"
   checksum: ff48d251fc3f827e5b1206cda0ffdaec885e56057ee86a3155e1951bc940fd5f33531774b1cc8414d7668c10a8907f863f6561875ee6e8768931a62121a531a1
-  languageName: node
-  linkType: hard
-
-"nan@npm:^2.14.2":
-  version: 2.15.0
-  resolution: "nan@npm:2.15.0"
-  dependencies:
-    node-gyp: latest
-  checksum: 33e1bb4dfca447fe37d4bb5889be55de154828632c8d38646db67293a21afd61ed9909cdf1b886214a64707d935926c4e60e2b09de9edfc2ad58de31d6ce8f39
   languageName: node
   linkType: hard
 
@@ -5772,13 +5710,6 @@ fsevents@~2.3.2:
     encoding:
       optional: true
   checksum: 8d816ffd1ee22cab8301c7756ef04f3437f18dace86a1dae22cf81db8ef29c0bf6655f3215cb0cdb22b420b6fe141e64b26905e7f33f9377a7fa59135ea3e10b
-  languageName: node
-  linkType: hard
-
-"node-forge@npm:^0.10.0":
-  version: 0.10.0
-  resolution: "node-forge@npm:0.10.0"
-  checksum: 5aa6dc9922e424a20ef101d2f517418e2bc9cfc0255dd22e0701c0fad1568445f510ee67f6f3fcdf085812c4ca1b847b8ba45683b34776828e41f5c1794e42e1
   languageName: node
   linkType: hard
 
@@ -6208,17 +6139,6 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"pem-jwk@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "pem-jwk@npm:2.0.0"
-  dependencies:
-    asn1.js: ^5.0.1
-  bin:
-    pem-jwk: ./bin/pem-jwk.js
-  checksum: 63516b8ba44989bd68d1c7f8ee97ba1d965d0b63ef560ba784f1a19f88ee1f89b4bf7fcc9e5dc8f44dd0374acf874be0bf44c8cbcfe09dac11fd21137224b16d
-  languageName: node
-  linkType: hard
-
 "performance-now@npm:^2.1.0":
   version: 2.1.0
   resolution: "performance-now@npm:2.1.0"
@@ -6344,30 +6264,6 @@ fsevents@~2.3.2:
     pbjs: bin/pbjs
     pbts: bin/pbts
   checksum: 4a6ce1964167e4c45c53fd8a312d7646415c777dd31b4ba346719947b88e61654912326101f927da387d6b6473ab52a7ea4f54d6f15d63b31130ce28e2e15070
-  languageName: node
-  linkType: hard
-
-"protobufjs@npm:^6.11.2":
-  version: 6.11.2
-  resolution: "protobufjs@npm:6.11.2"
-  dependencies:
-    "@protobufjs/aspromise": ^1.1.2
-    "@protobufjs/base64": ^1.1.2
-    "@protobufjs/codegen": ^2.0.4
-    "@protobufjs/eventemitter": ^1.1.0
-    "@protobufjs/fetch": ^1.1.0
-    "@protobufjs/float": ^1.0.2
-    "@protobufjs/inquire": ^1.1.0
-    "@protobufjs/path": ^1.1.2
-    "@protobufjs/pool": ^1.1.0
-    "@protobufjs/utf8": ^1.1.0
-    "@types/long": ^4.0.1
-    "@types/node": ">=13.7.0"
-    long: ^4.0.0
-  bin:
-    pbjs: bin/pbjs
-    pbts: bin/pbts
-  checksum: 80e9d9610c3eb66f9eae4e44a1ae30381cedb721b7d5f635d781fe4c507e2c77bb7c879addcd1dda79733d3ae589d9e66fd18d42baf99b35df7382a0f9920795
   languageName: node
   linkType: hard
 
@@ -6789,7 +6685,7 @@ resolve@^1.10.0:
   languageName: node
   linkType: hard
 
-"secp256k1@npm:^4.0.0, secp256k1@npm:^4.0.2":
+"secp256k1@npm:^4.0.2":
   version: 4.0.2
   resolution: "secp256k1@npm:4.0.2"
   dependencies:
@@ -7813,17 +7709,6 @@ resolve@^1.10.0:
     querystringify: ^2.1.1
     requires-port: ^1.0.0
   checksum: fbdba6b1d83336aca2216bbdc38ba658d9cfb8fc7f665eb8b17852de638ff7d1a162c198a8e4ed66001ddbf6c9888d41e4798912c62b4fd777a31657989f7bdf
-  languageName: node
-  linkType: hard
-
-"ursa-optional@npm:^0.10.1":
-  version: 0.10.2
-  resolution: "ursa-optional@npm:0.10.2"
-  dependencies:
-    bindings: ^1.5.0
-    nan: ^2.14.2
-    node-gyp: latest
-  checksum: fd7b246352750fd5032e058ab14220e389bc08bd98d72e9d9f01ac443390435ac354735fb67739d57bb505bfdaeeb2359cd7b8c5d57abc9b82b16455d1be09a3
   languageName: node
   linkType: hard
 
