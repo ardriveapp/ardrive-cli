@@ -17,7 +17,7 @@ import {
 	DryRunParameter,
 	MetaDataFileParameter,
 	MetaDataGqlTagsParameter,
-	MetadataJsonParameter,
+	TokenTypeParameter,
 	DataGqlTagsParameter,
 	TurboUrlParameter
 } from '../parameter_declarations';
@@ -347,7 +347,7 @@ export class ParametersHelper {
 				Object.assign(customMetaData, { dataGqlTags });
 			}
 
-			const metaDataJson = this.getParameterValue<string>(MetadataJsonParameter);
+			const metaDataJson = this.getParameterValue<string>(TokenTypeParameter);
 
 			if (metaDataJson) {
 				Object.assign(customMetaData, { metaDataJson: this.parseMetaDataJson(metaDataJson) });

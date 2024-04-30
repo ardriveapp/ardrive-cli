@@ -49,6 +49,7 @@ export const DataGqlTagsParameter = 'dataGqlTags';
 export const MetaDataFileParameter = 'metadataFile';
 export const MetaDataGqlTagsParameter = 'metadataGqlTags';
 export const MetadataJsonParameter = 'metadataJson';
+export const TokenTypeParameter = 'token';
 
 // Aggregates for convenience
 export const CustomMetaDataParameters = [
@@ -494,6 +495,12 @@ Parameter.declare({
 	name: GatewayParameter,
 	aliases: ['-g', '--gateway'],
 	description: `(OPTIONAL) a 'protocol://host:port' formatted string specifying the connection info for the Arweave gateway server to use`
+});
+
+Parameter.declare({
+	name: TokenTypeParameter,
+	aliases: ['-t', '--token'],
+	description: `(OPTIONAL) token type for this command`
 });
 
 Parameter.declare({
