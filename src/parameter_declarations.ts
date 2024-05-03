@@ -203,8 +203,7 @@ Parameter.declare({
 	name: ArAmountParameter,
 	aliases: ['-a', '--ar-amount'],
 	description: `amount of AR to send to the --dest-address
-\t\t\t\t\t\t\t• does NOT include transaction mining base rewards`,
-	required: true
+\t\t\t\t\t\t\t• does NOT include transaction mining base rewards`
 });
 
 Parameter.declare({
@@ -238,8 +237,7 @@ Parameter.declare({
 Parameter.declare({
 	name: TransactionIdParameter,
 	aliases: ['-t', '--tx-id'],
-	description: 'The transaction id to check the status of in the mempool',
-	required: true
+	description: 'The transaction id to check the status of in the mempool'
 });
 
 Parameter.declare({

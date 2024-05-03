@@ -9,6 +9,7 @@ import {
 	DryRunParameter,
 	GatewayParameter,
 	TokenTypeParameter,
+	TransactionIdParameter,
 	WalletTypeParameters
 } from '../parameter_declarations';
 import { TurboFactory } from '@ardrive/turbo-sdk';
@@ -21,27 +22,37 @@ new CLICommand({
 		DryRunParameter,
 		TokenTypeParameter,
 		...WalletTypeParameters,
-		GatewayParameter
+		GatewayParameter,
+		TransactionIdParameter
 	],
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
-		const arAmount = parameters.getRequiredParameterValue(ArAmountParameter, AR.from);
 
 		const tokenType = parameters.getParameterValue(TokenTypeParameter);
-		console.log('tokenType', tokenType);
-		const ar = arAmount;
-		console.log('ar', ar);
+
+		const transactionId = parameters.getParameterValue(TransactionIdParameter);
+		if (transactionId) {
+			const turbo = TurboFactory.unauthenticated({
+				paymentServiceConfig: { token: tokenType as 'arweave' }
+			});
+
+			const res = await turbo.submitFundTransaction({
+				txId: transactionId
+			});
+			console.log('res', JSON.stringify(res, null, 2));
+			return SUCCESS_EXIT_CODE;
+		}
+
+		const arAmount = parameters.getRequiredParameterValue(ArAmountParameter, AR.from);
 		const jwkWallet = (await parameters.getRequiredWallet()) as JWKWallet;
 
-		// const signer = new HexSolanaSigner(bs58.encode(jwkWallet['jwk']));
 		const turbo = TurboFactory.authenticated({
-			token: tokenType as 'arweave',
-			privateKey: jwkWallet['jwk'],
-			gatewayUrl: 'https://api.devnet.solana.com',
-			paymentServiceConfig: { url: 'https://payment.ardrive.dev' }
+			token: 'ethereum',
+			privateKey: jwkWallet['jwk']
 		});
+		console.log("jwkWallet['jwk']", jwkWallet['jwk']);
 
-		const res = await turbo.topUpWithTokens({ tokenAmount: +ar.valueOf() * 1e9 });
+		const res = await turbo.topUpWithTokens({ tokenAmount: +arAmount.valueOf() * 1e18 });
 
 		// const res = await turbo.submitFundTransaction({
 		// 	txId: 'Rkx7pi5aE85suorJ4SSBftRPUC4Ve1dQ33Zm2MgDYpzT4nRg2jPTHnVGuR3NizsspoM99QqJUdDuwymMDxE8AC2'
