@@ -42,26 +42,22 @@ new CLICommand({
 			const rootFolderId = drive.rootFolderId;
 			const withKeys = await parameters.getParameterValue(WithKeysParameter, (value) => !!value);
 
+			// We have the drive id from deriving a key, we can derive the owner
+			const driveOwner = await arDrive.getOwnerForDriveId(driveId);
+
 			children = await arDrive.listPrivateFolder({
 				folderId: rootFolderId,
 				driveKey,
 				maxDepth,
 				includeRoot: true,
-				owner: await wallet.getAddress(),
+				owner: driveOwner,
 				withKeys
 			});
 		} else {
 			const arDrive = cliArDriveAnonymousFactory({ arweave });
-
-			// Use wallet for owner if available to improve GQL query performance
-			const owner = (await (await parameters.getOptionalWallet())?.getAddress()) ?? undefined;
-
-			const drive = await arDrive.getPublicDrive({
-				driveId,
-				owner
-			});
+			const drive = await arDrive.getPublicDrive({ driveId });
 			const rootFolderId = drive.rootFolderId;
-			children = await arDrive.listPublicFolder({ folderId: rootFolderId, maxDepth, includeRoot: true, owner });
+			children = await arDrive.listPublicFolder({ folderId: rootFolderId, maxDepth, includeRoot: true });
 		}
 
 		const sortedChildren = children.sort((a, b) => alphabeticalOrder(a.path, b.path)) as (
