@@ -4,7 +4,7 @@ import { ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import {
-	ArAmountParameter,
+	CryptoAmountParameter,
 	BoostParameter,
 	DryRunParameter,
 	GatewayParameter,
@@ -29,7 +29,7 @@ function isTokenType(tokenType: string): tokenType is TokenType {
 new CLICommand({
 	name: 'crypto-fund',
 	parameters: [
-		ArAmountParameter,
+		CryptoAmountParameter,
 		BoostParameter,
 		DryRunParameter,
 		TokenTypeParameter,
@@ -59,7 +59,7 @@ new CLICommand({
 			return SUCCESS_EXIT_CODE;
 		}
 
-		const arAmount = parameters.getRequiredParameterValue(ArAmountParameter, AR.from);
+		const cryptoAmount = parameters.getRequiredParameterValue(CryptoAmountParameter, AR.from);
 		const jwkWallet = (await parameters.getRequiredWallet()) as JWKWallet;
 
 		// TODO: These conversions could be done by convenience in the Turbo SDK
@@ -74,7 +74,9 @@ new CLICommand({
 			privateKey: tokenConversions[tokenType].wallet()
 		});
 
-		const res = await turbo.topUpWithTokens({ tokenAmount: tokenConversions[tokenType].token(arAmount.valueOf()) });
+		const res = await turbo.topUpWithTokens({
+			tokenAmount: tokenConversions[tokenType].token(cryptoAmount.valueOf())
+		});
 
 		console.log('res', JSON.stringify(res, null, 2));
 

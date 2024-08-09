@@ -11,6 +11,7 @@ export const DriveKeyParameter = 'driveKey';
 export const AddressParameter = 'address';
 export const DriveIdParameter = 'driveId';
 export const ArAmountParameter = 'arAmount';
+export const CryptoAmountParameter = 'cryptoAmount';
 export const RewardParameter = 'reward';
 export const LastTxParameter = 'lastTx';
 export const TxFilePathParameter = 'txFilePath';
@@ -66,6 +67,7 @@ export const AllParameters = [
 	AddressParameter,
 	AllParameter,
 	ArAmountParameter,
+	CryptoAmountParameter,
 	TurboUrlParameter,
 	BoostParameter,
 	ConfirmationsParameter,
@@ -203,6 +205,13 @@ Parameter.declare({
 	name: ArAmountParameter,
 	aliases: ['-a', '--ar-amount'],
 	description: `amount of AR to send to the --dest-address
+\t\t\t\t\t\t\t• does NOT include transaction mining base rewards`
+});
+
+Parameter.declare({
+	name: CryptoAmountParameter,
+	aliases: ['-a', '--crypto-amount'],
+	description: `amount of crypto tokens to send in the transaction
 \t\t\t\t\t\t\t• does NOT include transaction mining base rewards`
 });
 
