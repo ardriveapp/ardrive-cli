@@ -28,7 +28,7 @@ import {
 	DryRunParameter,
 	MetaDataFileParameter,
 	MetaDataGqlTagsParameter,
-	TokenTypeParameter,
+	MetadataJsonParameter,
 	IPFSParameter,
 	DataGqlTagsParameter
 } from '../parameter_declarations';
@@ -769,7 +769,7 @@ describe('ParametersHelper class', () => {
 		});
 
 		it('returns the expected custom metadata with the --metadata-json parameter', async () => {
-			const cmd = declareCommandWithParams(program, [TokenTypeParameter]);
+			const cmd = declareCommandWithParams(program, [MetadataJsonParameter]);
 
 			CLICommand.parse(program, [
 				...baseArgv,
