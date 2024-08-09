@@ -12,7 +12,19 @@ import {
 	TransactionIdParameter,
 	WalletTypeParameters
 } from '../parameter_declarations';
-import { TurboFactory } from '@ardrive/turbo-sdk';
+import {
+	TurboFactory,
+	ARToTokenAmount,
+	ETHToTokenAmount,
+	SOLToTokenAmount,
+	tokenTypes,
+	TokenType
+} from '@ardrive/turbo-sdk';
+import bs58 from 'bs58';
+
+function isTokenType(tokenType: string): tokenType is TokenType {
+	return tokenTypes.includes(tokenType as TokenType);
+}
 
 new CLICommand({
 	name: 'crypto-fund',
@@ -28,12 +40,16 @@ new CLICommand({
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
 
-		const tokenType = parameters.getParameterValue(TokenTypeParameter);
+		const tokenType = parameters.getParameterValue(TokenTypeParameter) ?? 'arweave';
+		if (!isTokenType(tokenType)) {
+			// TODO: Could be handled in param helper `getTokenType`
+			throw new Error(`Invalid token type: ${tokenType}`);
+		}
 
 		const transactionId = parameters.getParameterValue(TransactionIdParameter);
 		if (transactionId) {
 			const turbo = TurboFactory.unauthenticated({
-				paymentServiceConfig: { token: tokenType as 'arweave' }
+				paymentServiceConfig: { token: tokenType }
 			});
 
 			const res = await turbo.submitFundTransaction({
@@ -46,17 +62,20 @@ new CLICommand({
 		const arAmount = parameters.getRequiredParameterValue(ArAmountParameter, AR.from);
 		const jwkWallet = (await parameters.getRequiredWallet()) as JWKWallet;
 
+		// TODO: These conversions could be done by convenience in the Turbo SDK
+		const tokenConversions = {
+			arweave: { token: ARToTokenAmount, wallet: () => jwkWallet['jwk'] },
+			ethereum: { token: ETHToTokenAmount, wallet: () => jwkWallet['jwk'] },
+			solana: { token: SOLToTokenAmount, wallet: () => bs58.encode(jwkWallet['jwk']) }
+		};
+
 		const turbo = TurboFactory.authenticated({
-			token: 'ethereum',
-			privateKey: jwkWallet['jwk']
+			token: tokenType,
+			privateKey: tokenConversions[tokenType].wallet()
 		});
-		console.log("jwkWallet['jwk']", jwkWallet['jwk']);
 
-		const res = await turbo.topUpWithTokens({ tokenAmount: +arAmount.valueOf() * 1e18 });
+		const res = await turbo.topUpWithTokens({ tokenAmount: tokenConversions[tokenType].token(arAmount.valueOf()) });
 
-		// const res = await turbo.submitFundTransaction({
-		// 	txId: 'Rkx7pi5aE85suorJ4SSBftRPUC4Ve1dQ33Zm2MgDYpzT4nRg2jPTHnVGuR3NizsspoM99QqJUdDuwymMDxE8AC2'
-		// });
 		console.log('res', JSON.stringify(res, null, 2));
 
 		return SUCCESS_EXIT_CODE;
