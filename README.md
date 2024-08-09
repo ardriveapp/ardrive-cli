@@ -1572,7 +1572,7 @@ ardrive <command> --help
 [zipfs-vscode]: https://marketplace.visualstudio.com/items?itemName=arcanis.vscode-zipfs
 [eslint-vscode]: https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint
 [viewblock blockchain explorer]: https://viewblock.io/arweave/
-[ardrive-discord]: https://discord.gg/w4vvrezD
+[ardrive-discord]: https://discord.com/invite/ya4hf2H
 [arconnect]: https://arconnect.io/
 [kb-wallets]: https://ardrive.atlassian.net/l/c/FpK8FuoQ
 [arweave-manifests]: https://github.com/ArweaveTeam/arweave/wiki/Path-Manifests
