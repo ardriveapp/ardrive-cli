@@ -11,6 +11,7 @@ export const DriveKeyParameter = 'driveKey';
 export const AddressParameter = 'address';
 export const DriveIdParameter = 'driveId';
 export const ArAmountParameter = 'arAmount';
+export const CryptoAmountParameter = 'cryptoAmount';
 export const RewardParameter = 'reward';
 export const LastTxParameter = 'lastTx';
 export const TxFilePathParameter = 'txFilePath';
@@ -49,6 +50,7 @@ export const DataGqlTagsParameter = 'dataGqlTags';
 export const MetaDataFileParameter = 'metadataFile';
 export const MetaDataGqlTagsParameter = 'metadataGqlTags';
 export const MetadataJsonParameter = 'metadataJson';
+export const TokenTypeParameter = 'token';
 
 // Aggregates for convenience
 export const CustomMetaDataParameters = [
@@ -65,6 +67,7 @@ export const AllParameters = [
 	AddressParameter,
 	AllParameter,
 	ArAmountParameter,
+	CryptoAmountParameter,
 	TurboUrlParameter,
 	BoostParameter,
 	ConfirmationsParameter,
@@ -202,8 +205,14 @@ Parameter.declare({
 	name: ArAmountParameter,
 	aliases: ['-a', '--ar-amount'],
 	description: `amount of AR to send to the --dest-address
-\t\t\t\t\t\t\t• does NOT include transaction mining base rewards`,
-	required: true
+\t\t\t\t\t\t\t• does NOT include transaction mining base rewards`
+});
+
+Parameter.declare({
+	name: CryptoAmountParameter,
+	aliases: ['-a', '--crypto-amount'],
+	description: `amount of crypto tokens to send in the transaction
+\t\t\t\t\t\t\t• does NOT include transaction mining base rewards`
 });
 
 Parameter.declare({
@@ -237,8 +246,7 @@ Parameter.declare({
 Parameter.declare({
 	name: TransactionIdParameter,
 	aliases: ['-t', '--tx-id'],
-	description: 'The transaction id to check the status of in the mempool',
-	required: true
+	description: 'The transaction id to check the status of in the mempool'
 });
 
 Parameter.declare({
@@ -494,6 +502,12 @@ Parameter.declare({
 	name: GatewayParameter,
 	aliases: ['-g', '--gateway'],
 	description: `(OPTIONAL) a 'protocol://host:port' formatted string specifying the connection info for the Arweave gateway server to use`
+});
+
+Parameter.declare({
+	name: TokenTypeParameter,
+	aliases: ['-t', '--token'],
+	description: `(OPTIONAL) token type for this command`
 });
 
 Parameter.declare({
