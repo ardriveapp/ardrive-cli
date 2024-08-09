@@ -28,9 +28,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ardrive/turbo-sdk@npm:alpha":
-  version: 1.9.0-alpha.2
-  resolution: "@ardrive/turbo-sdk@npm:1.9.0-alpha.2"
+"@ardrive/turbo-sdk@npm:1.9.0":
+  version: 1.9.0
+  resolution: "@ardrive/turbo-sdk@npm:1.9.0"
   dependencies:
     "@irys/arweave": 0.0.3
     "@solana/web3.js": ^1.91.7
@@ -42,7 +42,7 @@ __metadata:
     ethers: ^6.12.0
     tweetnacl: ^1.0.3
     winston: ^3.10.0
-  checksum: 2d082958ec1c43211af3e8e5859f20b27465c6945371e24c769b5f56f543db88ab44b264b71859247d37efbd4be40a09a5902f60fabfe8a1d2f05a08ff78edd9
+  checksum: c7c8d44d9d6d930e0db10bd7bb6e4d3852dbe9b9b2cf15947c014572ac01a4c8d6de246dbb395a4910a033d4a10052356c04c286e52f7ebcc8b3749c24f544aa
   languageName: node
   linkType: hard
 
@@ -2333,7 +2333,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "ardrive-cli@workspace:."
   dependencies:
-    "@ardrive/turbo-sdk": alpha
+    "@ardrive/turbo-sdk": 1.9.0
     "@istanbuljs/nyc-config-typescript": ^1.0.1
     "@solana/web3.js": ^1.91.7
     "@types/bn.js": ^5

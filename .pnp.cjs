@@ -28,7 +28,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         [null, {\
           "packageLocation": "./",\
           "packageDependencies": [\
-            ["@ardrive/turbo-sdk", "npm:1.9.0-alpha.2"],\
+            ["@ardrive/turbo-sdk", "npm:1.9.0"],\
             ["@istanbuljs/nyc-config-typescript", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:1.0.1"],\
             ["@solana/web3.js", "npm:1.91.7"],\
             ["@types/bn.js", "npm:5.1.0"],\
@@ -100,10 +100,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]\
       ]],\
       ["@ardrive/turbo-sdk", [\
-        ["npm:1.9.0-alpha.2", {\
-          "packageLocation": "./.yarn/cache/@ardrive-turbo-sdk-npm-1.9.0-alpha.2-a1bafdffe8-2d082958ec.zip/node_modules/@ardrive/turbo-sdk/",\
+        ["npm:1.9.0", {\
+          "packageLocation": "./.yarn/cache/@ardrive-turbo-sdk-npm-1.9.0-f98afe01ce-c7c8d44d9d.zip/node_modules/@ardrive/turbo-sdk/",\
           "packageDependencies": [\
-            ["@ardrive/turbo-sdk", "npm:1.9.0-alpha.2"],\
+            ["@ardrive/turbo-sdk", "npm:1.9.0"],\
             ["@irys/arweave", "npm:0.0.3"],\
             ["@solana/web3.js", "npm:1.91.7"],\
             ["arbundles", "npm:0.9.9"],\
@@ -2707,7 +2707,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./",\
           "packageDependencies": [\
             ["ardrive-cli", "workspace:."],\
-            ["@ardrive/turbo-sdk", "npm:1.9.0-alpha.2"],\
+            ["@ardrive/turbo-sdk", "npm:1.9.0"],\
             ["@istanbuljs/nyc-config-typescript", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:1.0.1"],\
             ["@solana/web3.js", "npm:1.91.7"],\
             ["@types/bn.js", "npm:5.1.0"],\
