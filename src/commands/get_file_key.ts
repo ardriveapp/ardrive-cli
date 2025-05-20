@@ -3,9 +3,10 @@ import {
 	deriveFileKey,
 	DriveID,
 	EID,
-	EntityKey,
+	DriveKey,
 	GatewayAPI,
-	gatewayUrlForArweave
+	gatewayUrlForArweave,
+	DriveSignatureType
 } from 'ardrive-core-js';
 import { CLICommand, ParametersHelper } from '../CLICommand';
 import { CLIAction } from '../CLICommand/action';
@@ -18,6 +19,7 @@ import {
 	NoVerifyParameter
 } from '../parameter_declarations';
 import { getArweaveFromURL } from '../utils/get_arweave_for_url';
+import { cliArDriveFactory } from '..';
 
 new CLICommand({
 	name: 'get-file-key',
@@ -37,13 +39,19 @@ new CLICommand({
 		const driveKey = await (async () => {
 			const driveKeyParam = parameters.getParameterValue(DriveKeyParameter);
 			if (driveKeyParam) {
-				return new EntityKey(Buffer.from(driveKeyParam, 'base64'));
+				return new DriveKey(Buffer.from(driveKeyParam, 'base64'), DriveSignatureType.v1);
 			}
 
 			// Lean on getDriveKey with a specified driveID
 			// TODO: In the future, loosen driveID requirement and fetch from fileID
 			const driveId: DriveID = EID(parameters.getRequiredParameterValue(DriveIdParameter));
-			return await parameters.getDriveKey({ driveId });
+			const arweave = getArweaveFromURL(parameters.getGateway());
+			const wallet = await parameters.getRequiredWallet();
+			const arDrive = cliArDriveFactory({ wallet, arweave });
+
+			const driveSignatureInfo = await arDrive.getDriveSignatureInfo(driveId, await wallet.getAddress());
+			const driveKey = await parameters.getDriveKey({ driveId, driveSignatureInfo });
+			return driveKey;
 		})();
 
 		const fileKey = await deriveFileKey(`${fileId}`, driveKey);

@@ -30,8 +30,8 @@ import {
 	DriveKey,
 	wrapFileOrFolder,
 	EID,
-	EntityKey,
-	ArDriveUploadStats
+	ArDriveUploadStats,
+	DriveSignatureType
 } from 'ardrive-core-js';
 import { cliArDriveFactory } from '..';
 import * as fs from 'fs';
@@ -74,7 +74,7 @@ function getFilesFromCSV(parameters: ParametersHelper): UploadPathParameter[] | 
 		const parentFolderId = EID(
 			_parentFolderId ? _parentFolderId : parameters.getRequiredParameterValue(ParentFolderIdParameter)
 		);
-		const driveKey = _driveKey ? new EntityKey(Buffer.from(_driveKey)) : undefined;
+		const driveKey = _driveKey ? new DriveKey(Buffer.from(_driveKey), DriveSignatureType.v1) : undefined;
 
 		return {
 			parentFolderId,
@@ -253,16 +253,23 @@ new CLICommand({
 					driveKey,
 					drivePassword
 				} of filesToUpload) {
+					let driveKeyForStats = driveKey;
+					if (!driveKeyForStats) {
+						const driveSignatureInfo = await arDrive.getDriveSignatureInfo(
+							await arDrive.getDriveIdForFolderId(parentFolderId),
+							await wallet.getAddress()
+						);
+						driveKeyForStats = await parameters.getDriveKey({
+							driveId: await arDrive.getDriveIdForFolderId(parentFolderId),
+							driveSignatureInfo,
+							drivePassword,
+							useCache: true
+						});
+					}
+
 					uploadStats.push({
 						wrappedEntity,
-						driveKey:
-							driveKey ?? (await parameters.getIsPrivate())
-								? await parameters.getDriveKey({
-										driveId: await arDrive.getDriveIdForFolderId(parentFolderId),
-										drivePassword,
-										useCache: true
-								  })
-								: undefined,
+						driveKey: driveKeyForStats,
 						destFolderId: parentFolderId,
 						destName: destinationFileName
 					});

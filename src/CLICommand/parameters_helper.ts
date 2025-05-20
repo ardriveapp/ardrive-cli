@@ -40,10 +40,11 @@ import {
 	skipOnConflicts,
 	upsertOnConflicts,
 	askOnConflicts,
-	EntityKey,
 	CustomMetaData,
 	assertCustomMetaData,
-	CustomMetaDataJsonFields
+	CustomMetaDataJsonFields,
+	DriveSignatureInfo,
+	DriveSignatureType
 } from 'ardrive-core-js';
 import { JWKInterface } from 'arweave/node/lib/wallet';
 import { deriveIpfsCid } from '../utils/ipfs_utils';
@@ -58,6 +59,7 @@ const TURBO_URL_ENV_VAR = 'TURBO_URL';
 
 interface GetDriveKeyParams {
 	driveId: DriveID;
+	driveSignatureInfo: DriveSignatureInfo;
 	drivePassword?: string;
 	useCache?: boolean;
 }
@@ -148,12 +150,17 @@ export class ParametersHelper {
 
 		return new PrivateKeyData({
 			password,
-			driveKeys: driveKey ? [new EntityKey(Buffer.from(driveKey, 'base64'))] : undefined,
+			driveKeys: driveKey ? [new DriveKey(Buffer.from(driveKey, 'base64'), DriveSignatureType.v1)] : undefined,
 			wallet: (wallet as JWKWallet) ?? undefined
 		});
 	}
 
-	public async getDriveKey({ driveId, drivePassword, useCache = false }: GetDriveKeyParams): Promise<DriveKey> {
+	public async getDriveKey({
+		driveId,
+		drivePassword,
+		driveSignatureInfo,
+		useCache = false
+	}: GetDriveKeyParams): Promise<DriveKey> {
 		// Obtain drive key from one of:
 		// • --drive-key param
 		// • (--wallet-file or --seed-phrase) + (--unsafe-drive-password or --private password)
@@ -167,7 +174,7 @@ export class ParametersHelper {
 
 		const driveKey = this.getParameterValue(DriveKeyParameter);
 		if (driveKey) {
-			const paramDriveKey = new EntityKey(Buffer.from(driveKey, 'base64'));
+			const paramDriveKey = new DriveKey(Buffer.from(driveKey, 'base64'), driveSignatureInfo.driveSignatureType);
 			ParametersHelper.driveKeyCache[`${driveId}`] = paramDriveKey;
 			return paramDriveKey;
 		}
@@ -175,10 +182,13 @@ export class ParametersHelper {
 		drivePassword = drivePassword ?? (await this.getDrivePassword());
 		if (drivePassword) {
 			const wallet: JWKWallet = (await this.getRequiredWallet()) as JWKWallet;
+
 			const derivedDriveKey: DriveKey = await deriveDriveKey(
 				drivePassword,
 				`${driveId}`,
-				JSON.stringify(wallet.getPrivateKey())
+				JSON.stringify(wallet.getPrivateKey()),
+				driveSignatureInfo.driveSignatureType,
+				driveSignatureInfo.encryptedSignatureData
 			);
 			ParametersHelper.driveKeyCache[`${driveId}`] = derivedDriveKey;
 			return derivedDriveKey;

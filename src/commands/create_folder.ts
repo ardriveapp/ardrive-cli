@@ -49,7 +49,8 @@ new CLICommand({
 
 		const createFolderResult = await (async function () {
 			if (await parameters.getIsPrivate()) {
-				const driveKey = await parameters.getDriveKey({ driveId });
+				const driveSignatureInfo = await ardrive.getDriveSignatureInfo(driveId, await wallet.getAddress());
+				const driveKey = await parameters.getDriveKey({ driveId, driveSignatureInfo });
 				return ardrive.createPrivateFolder({
 					folderName,
 					driveId,

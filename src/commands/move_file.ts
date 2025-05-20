@@ -49,7 +49,8 @@ new CLICommand({
 		const createDriveResult = await (async function () {
 			if (await parameters.getIsPrivate()) {
 				const driveId = await ardrive.getDriveIdForFolderId(newParentFolderId);
-				const driveKey = await parameters.getDriveKey({ driveId });
+				const driveSignatureInfo = await ardrive.getDriveSignatureInfo(driveId, await wallet.getAddress());
+				const driveKey = await parameters.getDriveKey({ driveId, driveSignatureInfo });
 
 				return ardrive.movePrivateFile({ fileId, newParentFolderId, driveKey });
 			} else {

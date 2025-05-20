@@ -37,7 +37,9 @@ new CLICommand({
 		if (await parameters.getIsPrivate()) {
 			const wallet = await parameters.getRequiredWallet();
 			const arDrive = cliArDriveFactory({ wallet, arweave });
-			const driveKey = await parameters.getDriveKey({ driveId });
+			const driveSignatureInfo = await arDrive.getDriveSignatureInfo(driveId, await wallet.getAddress());
+			const driveKey = await parameters.getDriveKey({ driveId, driveSignatureInfo });
+
 			const drive = await arDrive.getPrivateDrive({ driveId, driveKey });
 			const rootFolderId = drive.rootFolderId;
 			const withKeys = await parameters.getParameterValue(WithKeysParameter, (value) => !!value);
