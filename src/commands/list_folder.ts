@@ -45,8 +45,11 @@ new CLICommand({
 			const arDrive = cliArDriveFactory({ wallet, arweave });
 
 			const driveId = await arDrive.getDriveIdForFolderId(folderId);
-			const driveSignatureInfo = await arDrive.getDriveSignatureInfo(driveId, await wallet.getAddress());
-			const driveKey = await parameters.getDriveKey({ driveId, driveSignatureInfo });
+			const driveKey = await parameters.getDriveKey({
+				driveId,
+				arDrive,
+				walletAddress: await wallet.getAddress()
+			});
 			const withKeys = await parameters.getParameterValue(WithKeysParameter, (value) => !!value);
 
 			// We have the drive id from deriving a key, we can derive the owner

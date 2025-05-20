@@ -255,14 +255,11 @@ new CLICommand({
 				} of filesToUpload) {
 					let driveKeyForStats = driveKey;
 					if (!driveKeyForStats) {
-						const driveSignatureInfo = await arDrive.getDriveSignatureInfo(
-							await arDrive.getDriveIdForFolderId(parentFolderId),
-							await wallet.getAddress()
-						);
 						driveKeyForStats = await parameters.getDriveKey({
 							driveId: await arDrive.getDriveIdForFolderId(parentFolderId),
-							driveSignatureInfo,
 							drivePassword,
+							arDrive: arDrive,
+							walletAddress: await wallet.getAddress(),
 							useCache: true
 						});
 					}

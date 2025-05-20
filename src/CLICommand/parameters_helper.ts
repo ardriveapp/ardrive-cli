@@ -1,3 +1,4 @@
+import { ArDrive } from 'ardrive-core-js';
 import { ParameterName } from './parameter';
 import * as fs from 'fs';
 import {
@@ -43,7 +44,6 @@ import {
 	CustomMetaData,
 	assertCustomMetaData,
 	CustomMetaDataJsonFields,
-	DriveSignatureInfo,
 	DriveSignatureType
 } from 'ardrive-core-js';
 import { JWKInterface } from 'arweave/node/lib/wallet';
@@ -59,7 +59,8 @@ const TURBO_URL_ENV_VAR = 'TURBO_URL';
 
 interface GetDriveKeyParams {
 	driveId: DriveID;
-	driveSignatureInfo: DriveSignatureInfo;
+	arDrive: ArDrive;
+	walletAddress: ArweaveAddress;
 	drivePassword?: string;
 	useCache?: boolean;
 }
@@ -158,7 +159,8 @@ export class ParametersHelper {
 	public async getDriveKey({
 		driveId,
 		drivePassword,
-		driveSignatureInfo,
+		arDrive: ardrive,
+		walletAddress,
 		useCache = false
 	}: GetDriveKeyParams): Promise<DriveKey> {
 		// Obtain drive key from one of:
@@ -171,6 +173,8 @@ export class ParametersHelper {
 				return cachedDriveKey;
 			}
 		}
+
+		const driveSignatureInfo = await ardrive.getDriveSignatureInfo(driveId, walletAddress);
 
 		const driveKey = this.getParameterValue(DriveKeyParameter);
 		if (driveKey) {

@@ -43,8 +43,11 @@ new CLICommand({
 				arweave
 			});
 
-			const driveSignatureInfo = await ardrive.getDriveSignatureInfo(driveId, await wallet.getAddress());
-			const driveKey = await parameters.getDriveKey({ driveId, driveSignatureInfo });
+			const driveKey = await parameters.getDriveKey({
+				driveId,
+				arDrive: ardrive,
+				walletAddress: await wallet.getAddress()
+			});
 			await ardrive.downloadPrivateDrive({
 				driveId,
 				driveKey,
