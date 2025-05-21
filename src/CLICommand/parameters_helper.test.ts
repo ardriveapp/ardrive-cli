@@ -517,7 +517,11 @@ describe('ParametersHelper class', () => {
 			return cmd.action.then((options) => {
 				const parameters = new ParametersHelper(options);
 				const driveKeyPromise = parameters
-					.getDriveKey({ driveId: EID('00000000-0000-0000-0000-000000000000') })
+					.getDriveKey({
+						driveId: EID('00000000-0000-0000-0000-000000000000'),
+						arDrive: (mockArDrive as unknown) as ArDrive,
+						owner: expectedArweaveAddress
+					})
 					.catch(() => null);
 				return driveKeyPromise.then((driveKey) => expect(driveKey).to.be.null);
 			});
