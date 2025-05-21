@@ -28,7 +28,7 @@ new CLICommand({
 				const driveKey = await parameters.getDriveKey({
 					driveId,
 					arDrive,
-					walletAddress: await wallet.getAddress()
+					owner: await wallet.getAddress()
 				});
 
 				// We have the drive id from deriving a key, we can derive the owner

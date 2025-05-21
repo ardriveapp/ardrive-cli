@@ -60,7 +60,7 @@ const TURBO_URL_ENV_VAR = 'TURBO_URL';
 interface GetDriveKeyParams {
 	driveId: DriveID;
 	arDrive: ArDrive;
-	walletAddress: ArweaveAddress;
+	owner: ArweaveAddress;
 	drivePassword?: string;
 	useCache?: boolean;
 }
@@ -160,7 +160,7 @@ export class ParametersHelper {
 		driveId,
 		drivePassword,
 		arDrive: ardrive,
-		walletAddress,
+		owner,
 		useCache = false
 	}: GetDriveKeyParams): Promise<DriveKey> {
 		// Obtain drive key from one of:
@@ -174,7 +174,7 @@ export class ParametersHelper {
 			}
 		}
 
-		const driveSignatureInfo = await ardrive.getDriveSignatureInfo(driveId, walletAddress);
+		const driveSignatureInfo = await ardrive.getDriveSignatureInfo({ driveId, owner });
 
 		const driveKey = this.getParameterValue(DriveKeyParameter);
 		if (driveKey) {

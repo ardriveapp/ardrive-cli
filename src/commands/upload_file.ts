@@ -259,7 +259,7 @@ new CLICommand({
 							driveId: await arDrive.getDriveIdForFolderId(parentFolderId),
 							drivePassword,
 							arDrive: arDrive,
-							walletAddress: await wallet.getAddress(),
+							owner: await wallet.getAddress(),
 							useCache: true
 						});
 					}
