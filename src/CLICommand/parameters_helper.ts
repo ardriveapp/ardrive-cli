@@ -187,13 +187,13 @@ export class ParametersHelper {
 		if (drivePassword) {
 			const wallet: JWKWallet = (await this.getRequiredWallet()) as JWKWallet;
 
-			const derivedDriveKey: DriveKey = await deriveDriveKey(
-				drivePassword,
-				`${driveId}`,
-				JSON.stringify(wallet.getPrivateKey()),
-				driveSignatureInfo.driveSignatureType,
-				driveSignatureInfo.encryptedSignatureData
-			);
+			const derivedDriveKey: DriveKey = await deriveDriveKey({
+				dataEncryptionKey: drivePassword,
+				driveId: `${driveId}`,
+				walletPrivateKey: JSON.stringify(wallet.getPrivateKey()),
+				driveSignatureType: driveSignatureInfo.driveSignatureType,
+				encryptedSignatureData: driveSignatureInfo.encryptedSignatureData
+			});
 			ParametersHelper.driveKeyCache[`${driveId}`] = derivedDriveKey;
 			return derivedDriveKey;
 		}
