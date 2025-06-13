@@ -3,7 +3,7 @@ import {
 	deriveFileKey,
 	DriveID,
 	EID,
-	DriveKey,
+	VersionedDriveKey,
 	GatewayAPI,
 	gatewayUrlForArweave,
 	DriveSignatureType
@@ -19,7 +19,7 @@ import {
 	NoVerifyParameter
 } from '../parameter_declarations';
 import { getArweaveFromURL } from '../utils/get_arweave_for_url';
-import { cliArDriveFactory } from '..';
+import { cliArDriveAnonymousFactory, cliArDriveFactory } from '..';
 
 new CLICommand({
 	name: 'get-file-key',
@@ -36,25 +36,29 @@ new CLICommand({
 		const fileId = EID(parameters.getRequiredParameterValue(FileIdParameter));
 
 		// Obviate the need for a drive ID when a drive key is specified
-		const driveKey = await (async () => {
+		const [driveKey, owner] = await (async () => {
 			const driveKeyParam = parameters.getParameterValue(DriveKeyParameter);
+			const arweave = getArweaveFromURL(parameters.getGateway());
+
 			if (driveKeyParam) {
-				return new DriveKey(Buffer.from(driveKeyParam, 'base64'), DriveSignatureType.v1);
+				const arDrive = cliArDriveAnonymousFactory({ arweave });
+				const owner = await arDrive.getOwnerForFileId(fileId);
+				return [new VersionedDriveKey(Buffer.from(driveKeyParam, 'base64'), DriveSignatureType.v1), owner];
 			}
 
 			// Lean on getDriveKey with a specified driveID
 			// TODO: In the future, loosen driveID requirement and fetch from fileID
 			const driveId: DriveID = EID(parameters.getRequiredParameterValue(DriveIdParameter));
-			const arweave = getArweaveFromURL(parameters.getGateway());
 			const wallet = await parameters.getRequiredWallet();
+			const owner = await wallet.getAddress();
 			const arDrive = cliArDriveFactory({ wallet, arweave });
 
 			const driveKey = await parameters.getDriveKey({
 				driveId,
 				arDrive,
-				owner: await wallet.getAddress()
+				owner
 			});
-			return driveKey;
+			return [driveKey, owner];
 		})();
 
 		const fileKey = await deriveFileKey(`${fileId}`, driveKey);
@@ -64,7 +68,7 @@ new CLICommand({
 				fileId,
 				new GatewayAPI({ gatewayUrl: gatewayUrlForArweave(arweave) }),
 				driveKey,
-				undefined,
+				owner,
 				fileKey
 			).build();
 			console.log(file.fileKey.toJSON());

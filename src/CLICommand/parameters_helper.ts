@@ -44,7 +44,8 @@ import {
 	CustomMetaData,
 	assertCustomMetaData,
 	CustomMetaDataJsonFields,
-	DriveSignatureType
+	DriveSignatureType,
+	VersionedDriveKey
 } from 'ardrive-core-js';
 import { JWKInterface } from 'arweave/node/lib/wallet';
 import { deriveIpfsCid } from '../utils/ipfs_utils';
@@ -151,7 +152,9 @@ export class ParametersHelper {
 
 		return new PrivateKeyData({
 			password,
-			driveKeys: driveKey ? [new DriveKey(Buffer.from(driveKey, 'base64'), DriveSignatureType.v1)] : undefined,
+			driveKeys: driveKey
+				? [new VersionedDriveKey(Buffer.from(driveKey, 'base64'), DriveSignatureType.v1)]
+				: undefined,
 			wallet: (wallet as JWKWallet) ?? undefined
 		});
 	}
@@ -178,7 +181,10 @@ export class ParametersHelper {
 
 		const driveKey = this.getParameterValue(DriveKeyParameter);
 		if (driveKey) {
-			const paramDriveKey = new DriveKey(Buffer.from(driveKey, 'base64'), driveSignatureInfo.driveSignatureType);
+			const paramDriveKey = new VersionedDriveKey(
+				Buffer.from(driveKey, 'base64'),
+				driveSignatureInfo.driveSignatureType
+			);
 			ParametersHelper.driveKeyCache[`${driveId}`] = paramDriveKey;
 			return paramDriveKey;
 		}
