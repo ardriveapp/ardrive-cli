@@ -49,7 +49,11 @@ new CLICommand({
 		const result = await (async function () {
 			if (await parameters.getIsPrivate()) {
 				const driveId = await ardrive.getDriveIdForFileId(fileId);
-				const driveKey = await parameters.getDriveKey({ driveId });
+				const driveKey = await parameters.getDriveKey({
+					driveId,
+					arDrive: ardrive,
+					owner: await wallet.getAddress()
+				});
 
 				return ardrive.renamePrivateFile({
 					fileId,

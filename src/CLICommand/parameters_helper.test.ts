@@ -35,11 +35,19 @@ import {
 import '../parameter_declarations';
 import { CLIAction } from './action';
 import { SUCCESS_EXIT_CODE } from './error_codes';
-import { ArweaveAddress, EID } from 'ardrive-core-js';
+import { ArweaveAddress, EID, DriveSignatureType, ArDrive } from 'ardrive-core-js';
+import sinon from 'sinon';
 
 const expectedArweaveAddress = new ArweaveAddress('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
 
 const dummyActionHandler = () => Promise.resolve(SUCCESS_EXIT_CODE);
+
+// Create a mock ArDrive instance
+const mockArDrive = {
+	getDriveSignatureInfo: sinon.stub().resolves({
+		driveSignatureType: DriveSignatureType.v1
+	})
+};
 
 /**
  * @name declareCommandWithParams
@@ -466,10 +474,14 @@ describe('ParametersHelper class', () => {
 				'--unsafe-drive-password',
 				'password'
 			]);
+
 			return cmd.action.then((options) => {
 				const parameters = new ParametersHelper(options);
+
 				const driveKeyPromise = parameters.getDriveKey({
-					driveId: EID('00000000-0000-0000-0000-000000000000')
+					driveId: EID('00000000-0000-0000-0000-000000000000'),
+					arDrive: (mockArDrive as unknown) as ArDrive,
+					owner: expectedArweaveAddress
 				});
 				return driveKeyPromise.then((driveKey) =>
 					expect(driveKey.toString()).to.equal('Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg')
@@ -488,7 +500,11 @@ describe('ParametersHelper class', () => {
 			return cmd.action.then((options) => {
 				const parameters = new ParametersHelper(options);
 				return parameters
-					.getDriveKey({ driveId: EID('00000000-0000-0000-0000-000000000000') })
+					.getDriveKey({
+						driveId: EID('00000000-0000-0000-0000-000000000000'),
+						arDrive: (mockArDrive as unknown) as ArDrive,
+						owner: expectedArweaveAddress
+					})
 					.then((driveKey) =>
 						expect(driveKey.toString()).to.equal('Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg')
 					);
@@ -501,7 +517,11 @@ describe('ParametersHelper class', () => {
 			return cmd.action.then((options) => {
 				const parameters = new ParametersHelper(options);
 				const driveKeyPromise = parameters
-					.getDriveKey({ driveId: EID('00000000-0000-0000-0000-000000000000') })
+					.getDriveKey({
+						driveId: EID('00000000-0000-0000-0000-000000000000'),
+						arDrive: (mockArDrive as unknown) as ArDrive,
+						owner: expectedArweaveAddress
+					})
 					.catch(() => null);
 				return driveKeyPromise.then((driveKey) => expect(driveKey).to.be.null);
 			});
