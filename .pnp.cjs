@@ -41,7 +41,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/source-map-support", "npm:0.5.4"],\
             ["@typescript-eslint/eslint-plugin", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:6.2.1"],\
             ["@typescript-eslint/parser", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:6.2.1"],\
-            ["ardrive-core-js", "npm:3.0.0"],\
+            ["ardrive-core-js", "npm:3.0.1"],\
             ["arweave", "npm:1.15.7"],\
             ["axios", "npm:0.21.1"],\
             ["bn.js", "npm:5.2.1"],\
@@ -1978,7 +1978,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/source-map-support", "npm:0.5.4"],\
             ["@typescript-eslint/eslint-plugin", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:6.2.1"],\
             ["@typescript-eslint/parser", "virtual:6f50bb9424c73c7612c66dab5cf8914d8ec79550c84d8ca5e4888e80022682c708b4b5a1c510d282a03285cc9bb19002b477ae70d15882aa995ea1d5d6bf24ab#npm:6.2.1"],\
-            ["ardrive-core-js", "npm:3.0.0"],\
+            ["ardrive-core-js", "npm:3.0.1"],\
             ["arweave", "npm:1.15.7"],\
             ["axios", "npm:0.21.1"],\
             ["bn.js", "npm:5.2.1"],\
@@ -2006,10 +2006,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]\
       ]],\
       ["ardrive-core-js", [\
-        ["npm:3.0.0", {\
-          "packageLocation": "./.yarn/cache/ardrive-core-js-npm-3.0.0-f0d371654c-3136293fce.zip/node_modules/ardrive-core-js/",\
+        ["npm:3.0.1", {\
+          "packageLocation": "./.yarn/cache/ardrive-core-js-npm-3.0.1-20455ae912-3f683cc228.zip/node_modules/ardrive-core-js/",\
           "packageDependencies": [\
-            ["ardrive-core-js", "npm:3.0.0"],\
+            ["ardrive-core-js", "npm:3.0.1"],\
             ["@alexsasharegan/simple-cache", "npm:3.3.3"],\
             ["@dha-team/arbundles", "npm:1.0.3"],\
             ["arweave", "npm:1.15.7"],\
