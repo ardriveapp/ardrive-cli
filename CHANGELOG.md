@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.1] - 2025-06-20
+
+### Changed
+
+- Updated ardrive-core-js dependency to version 3.0.1 to allow for empty App-Version tags
+
 ## [3.0.0] - 2025-06-16
 
 ### Added
