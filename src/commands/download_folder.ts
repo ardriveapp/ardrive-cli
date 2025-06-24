@@ -37,13 +37,17 @@ new CLICommand({
 
 		if (await parameters.getIsPrivate()) {
 			const wallet = await parameters.getRequiredWallet();
-			const ardrive = cliArDriveFactory({
+			const arDrive = cliArDriveFactory({
 				wallet,
 				arweave
 			});
-			const driveId = await ardrive.getDriveIdForFolderId(folderId);
-			const driveKey = await parameters.getDriveKey({ driveId: driveId });
-			await ardrive.downloadPrivateFolder({
+			const driveId = await arDrive.getDriveIdForFolderId(folderId);
+			const driveKey = await parameters.getDriveKey({
+				driveId,
+				arDrive: arDrive,
+				owner: await wallet.getAddress()
+			});
+			await arDrive.downloadPrivateFolder({
 				folderId,
 				driveKey,
 				destFolderPath,
@@ -52,7 +56,7 @@ new CLICommand({
 			});
 			outputPath = joinPath(
 				destFolderPath,
-				customFolderName ? customFolderName : (await ardrive.getPrivateFolder({ folderId, driveKey })).name
+				customFolderName ? customFolderName : (await arDrive.getPrivateFolder({ folderId, driveKey })).name
 			);
 		} else {
 			const ardrive = cliArDriveAnonymousFactory({ arweave });

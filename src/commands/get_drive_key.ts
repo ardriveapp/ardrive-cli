@@ -16,10 +16,12 @@ new CLICommand({
 	action: new CLIAction(async function action(options) {
 		const parameters = new ParametersHelper(options);
 		const driveId = EID(parameters.getRequiredParameterValue(DriveIdParameter));
-		const driveKey = await parameters.getDriveKey({ driveId });
+		const arweave = getArweaveFromURL(parameters.getGateway());
+		const wallet = await parameters.getRequiredWallet();
+		const arDrive = cliArDriveFactory({ wallet, arweave });
+
+		const driveKey = await parameters.getDriveKey({ driveId, arDrive, owner: await wallet.getAddress() });
 		if (options.verify) {
-			const arweave = getArweaveFromURL(parameters.getGateway());
-			const arDrive = cliArDriveFactory({ wallet: await parameters.getRequiredWallet(), arweave });
 			await arDrive.getPrivateDrive({ driveId, driveKey });
 		}
 		console.log(driveKey.toJSON());
