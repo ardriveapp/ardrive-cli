@@ -1,6 +1,6 @@
 {
 	"name": "ardrive-cli",
-	"version": "3.0.1",
+	"version": "3.0.2",
 	"description": "The ArDrive Command Line Interface (CLI is a Node.js application for terminal-based ArDrive workflows. It also offers utility operations for securely interacting with Arweave wallets and inspecting various Arweave blockchain conditions.",
 	"main": "./lib/index.js",
 	"bin": {
@@ -8,10 +8,9 @@
 	},
 	"types": "./lib/index.d.ts",
 	"dependencies": {
-		"ardrive-core-js": "3.0.1",
+		"ardrive-core-js": "3.0.2",
 		"arweave": "1.15.7",
 		"axios": "^0.21.1",
-		"bn.js": "^5.2.1",
 		"commander": "^8.2.0",
 		"ipfs-only-hash": "^4.0.0",
 		"lodash": "^4.17.21",
@@ -22,8 +21,7 @@
 	},
 	"devDependencies": {
 		"@istanbuljs/nyc-config-typescript": "^1.0.1",
-		"@types/bn.js": "^5",
-		"@types/chai": "^4.2.21",
+		"@types/chai": "^5.2.2",
 		"@types/jwk-to-pem": "^2.0.0",
 		"@types/lodash": "^4",
 		"@types/mocha": "^9.0.0",
@@ -51,7 +49,7 @@
 		"typescript": "^5.1.6"
 	},
 	"scripts": {
-		"clean": "rimraf [ lib .nyc_output node_modules coverage ]",
+		"clean": "rimraf [ lib .nyc_output coverage ]",
 		"format": "prettier --write \"src/**/*.ts\"",
 		"lint": "eslint . --ext .ts",
 		"lintfix": "eslint . --ext .ts --fix",
