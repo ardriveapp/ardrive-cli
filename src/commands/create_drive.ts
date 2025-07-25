@@ -12,7 +12,7 @@ import {
 import { cliArDriveFactory } from '..';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { CLIAction } from '../CLICommand/action';
-import { Wallet, JWKWallet, PrivateDriveKeyData } from 'ardrive-core-js';
+import { Wallet, PrivateDriveKeyData } from 'ardrive-core-js';
 import { getArweaveFromURL } from '../utils/get_arweave_for_url';
 
 new CLICommand({
@@ -49,9 +49,10 @@ new CLICommand({
 		const createDriveResult = await (async function () {
 			if (await parameters.getIsPrivate()) {
 				const drivePassword = await parameters.getDrivePassword(true);
-				const walletPrivateKey = (wallet as JWKWallet).getPrivateKey();
-				const newPrivateDriveData = await PrivateDriveKeyData.from(drivePassword, walletPrivateKey);
+				const newPrivateDriveData = await PrivateDriveKeyData.from(drivePassword, wallet);
+				console.log('newPrivateDriveData', newPrivateDriveData);
 				await ardrive.assertValidPassword(drivePassword);
+				console.log('drivePassword', drivePassword);
 				return ardrive.createPrivateDrive({ driveName, newPrivateDriveData });
 			} else {
 				return ardrive.createPublicDrive({ driveName });

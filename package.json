@@ -8,8 +8,8 @@
 	},
 	"types": "./lib/index.d.ts",
 	"dependencies": {
-		"ardrive-core-js": "3.0.2",
-		"arweave": "1.15.7",
+		"ardrive-core-js": "link:../ardrive-core-js",
+		"arweave": "2.0.0-ec.2",
 		"axios": "^0.21.1",
 		"commander": "^8.2.0",
 		"ipfs-only-hash": "^4.0.0",

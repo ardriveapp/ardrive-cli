@@ -1,4 +1,4 @@
-import { ArDrive } from 'ardrive-core-js';
+import { ArDrive, EthereumWallet } from 'ardrive-core-js';
 import { ParameterName } from './parameter';
 import * as fs from 'fs';
 import {
@@ -109,8 +109,15 @@ export class ParametersHelper {
 		if (walletFile) {
 			const walletFileData = fs.readFileSync(walletFile, { encoding: 'utf8', flag: 'r' });
 			const walletJSON = JSON.parse(walletFileData);
-			const walletJWK: JWKInterface = walletJSON as JWKInterface;
-			return new JWKWallet(walletJWK);
+
+			if (typeof walletJSON === 'object' && walletJSON !== null && 'kty' in walletJSON) {
+				// If the wallet file is a JWK, create a JWKWallet instance
+				const walletJWK: JWKInterface = walletJSON as JWKInterface;
+				return new JWKWallet(walletJWK);
+			} else if (typeof walletJSON === 'string' && walletJSON.startsWith('0x')) {
+				// If the wallet file is a string with 0x, assume it's an ethereum private key
+				return new EthereumWallet(walletJSON);
+			}
 		} else if (seedPhrase) {
 			return await this.walletDao.generateJWKWallet(new SeedPhrase(seedPhrase));
 		}
