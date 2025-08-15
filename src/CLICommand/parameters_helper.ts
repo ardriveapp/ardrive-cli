@@ -61,7 +61,7 @@ const TURBO_URL_ENV_VAR = 'TURBO_URL';
 interface GetDriveKeyParams {
 	driveId: DriveID;
 	arDrive: ArDrive;
-	owner: ArweaveAddress;
+	owner: ArweaveAddress | ArweaveAddress[];
 	drivePassword?: string;
 	useCache?: boolean;
 }
@@ -198,14 +198,15 @@ export class ParametersHelper {
 
 		drivePassword = drivePassword ?? (await this.getDrivePassword());
 		if (drivePassword) {
-			const wallet: JWKWallet = (await this.getRequiredWallet()) as JWKWallet;
+			const wallet = await this.getRequiredWallet();
 
 			const derivedDriveKey: DriveKey = await deriveDriveKey({
 				dataEncryptionKey: drivePassword,
 				driveId: `${driveId}`,
 				walletPrivateKey: JSON.stringify(wallet.getPrivateKey()),
 				driveSignatureType: driveSignatureInfo.driveSignatureType,
-				encryptedSignatureData: driveSignatureInfo.encryptedSignatureData
+				encryptedSignatureData: driveSignatureInfo.encryptedSignatureData,
+				wallet
 			});
 			ParametersHelper.driveKeyCache[`${driveId}`] = derivedDriveKey;
 			return derivedDriveKey;

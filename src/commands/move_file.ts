@@ -52,7 +52,7 @@ new CLICommand({
 				const driveKey = await parameters.getDriveKey({
 					driveId,
 					arDrive: ardrive,
-					owner: await wallet.getAddress()
+					owner: await wallet.getOwner()
 				});
 
 				return ardrive.movePrivateFile({ fileId, newParentFolderId, driveKey });

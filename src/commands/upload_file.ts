@@ -260,7 +260,7 @@ new CLICommand({
 									driveId: await arDrive.getDriveIdForFolderId(parentFolderId),
 									drivePassword,
 									arDrive: arDrive,
-									owner: await wallet.getAddress(),
+									owner: await wallet.getOwner(),
 									useCache: true
 							  })
 							: undefined;
