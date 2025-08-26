@@ -13,6 +13,7 @@ import './folder_info';
 import './generate_seedphrase';
 import './generate_wallet';
 import './get_address';
+import './get_addresses';
 import './get_balance';
 import './get_drive_key';
 import './get_file_key';

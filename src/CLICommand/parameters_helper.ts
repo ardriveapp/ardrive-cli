@@ -1,4 +1,4 @@
-import { ArDrive } from 'ardrive-core-js';
+import { ArDrive, EthereumWallet } from 'ardrive-core-js';
 import { ParameterName } from './parameter';
 import * as fs from 'fs';
 import {
@@ -45,7 +45,8 @@ import {
 	assertCustomMetaData,
 	CustomMetaDataJsonFields,
 	DriveSignatureType,
-	VersionedDriveKey
+	VersionedDriveKey,
+	WalletAddresses
 } from 'ardrive-core-js';
 import { JWKInterface } from 'arweave/node/lib/wallet';
 import { deriveIpfsCid } from '../utils/ipfs_utils';
@@ -61,7 +62,7 @@ const TURBO_URL_ENV_VAR = 'TURBO_URL';
 interface GetDriveKeyParams {
 	driveId: DriveID;
 	arDrive: ArDrive;
-	owner: ArweaveAddress;
+	owner: ArweaveAddress | WalletAddresses;
 	drivePassword?: string;
 	useCache?: boolean;
 }
@@ -109,8 +110,15 @@ export class ParametersHelper {
 		if (walletFile) {
 			const walletFileData = fs.readFileSync(walletFile, { encoding: 'utf8', flag: 'r' });
 			const walletJSON = JSON.parse(walletFileData);
-			const walletJWK: JWKInterface = walletJSON as JWKInterface;
-			return new JWKWallet(walletJWK);
+
+			if (typeof walletJSON === 'object' && walletJSON !== null && 'kty' in walletJSON) {
+				// If the wallet file is a JWK, create a JWKWallet instance
+				const walletJWK: JWKInterface = walletJSON as JWKInterface;
+				return new JWKWallet(walletJWK);
+			} else if (typeof walletJSON === 'string' && walletJSON.startsWith('0x')) {
+				// If the wallet file is a string with 0x, assume it's an ethereum private key
+				return new EthereumWallet(walletJSON);
+			}
 		} else if (seedPhrase) {
 			return await this.walletDao.generateJWKWallet(new SeedPhrase(seedPhrase));
 		}
@@ -128,6 +136,15 @@ export class ParametersHelper {
 		}
 
 		return this.getRequiredWallet().then((wallet) => wallet.getAddress());
+	}
+
+	public async getWalletAddresses(): Promise<WalletAddresses> {
+		const address = this.getParameterValue(AddressParameter);
+		if (address) {
+			return { networkAddress: ADDR(address), ans104Address: ADDR(address) };
+		}
+
+		return this.getRequiredWallet().then((wallet) => wallet.getAllAddresses());
 	}
 
 	public getOptionalBoostSetting(): FeeMultiple | undefined {
@@ -191,14 +208,15 @@ export class ParametersHelper {
 
 		drivePassword = drivePassword ?? (await this.getDrivePassword());
 		if (drivePassword) {
-			const wallet: JWKWallet = (await this.getRequiredWallet()) as JWKWallet;
+			const wallet = await this.getRequiredWallet();
 
 			const derivedDriveKey: DriveKey = await deriveDriveKey({
 				dataEncryptionKey: drivePassword,
 				driveId: `${driveId}`,
 				walletPrivateKey: JSON.stringify(wallet.getPrivateKey()),
 				driveSignatureType: driveSignatureInfo.driveSignatureType,
-				encryptedSignatureData: driveSignatureInfo.encryptedSignatureData
+				encryptedSignatureData: driveSignatureInfo.encryptedSignatureData,
+				wallet
 			});
 			ParametersHelper.driveKeyCache[`${driveId}`] = derivedDriveKey;
 			return derivedDriveKey;

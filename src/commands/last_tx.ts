@@ -17,7 +17,7 @@ new CLICommand({
 		const parameters = new ParametersHelper(options);
 		const gateway = parameters.getGateway();
 		const walletAddress = await parameters.getWalletAddress();
-		const lastTx = await lastTxForAddress(gateway, walletAddress);
+		const lastTx = await lastTxForAddress(gateway, Array.isArray(walletAddress) ? walletAddress[0] : walletAddress);
 		console.log(lastTx);
 		return SUCCESS_EXIT_CODE;
 	})

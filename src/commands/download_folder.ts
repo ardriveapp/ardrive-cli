@@ -45,7 +45,7 @@ new CLICommand({
 			const driveKey = await parameters.getDriveKey({
 				driveId,
 				arDrive: arDrive,
-				owner: await wallet.getAddress()
+				owner: await wallet.getAllAddresses()
 			});
 			await arDrive.downloadPrivateFolder({
 				folderId,
