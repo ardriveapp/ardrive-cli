@@ -14,10 +14,13 @@ new CLICommand({
 		const arweave = getArweaveFromURL(parameters.getGateway());
 		const ardrive = cliArDriveAnonymousFactory({ arweave });
 
-		const address = await parameters.getWalletAddress();
+		const addresses = await parameters.getWalletAddresses();
 		const privateKeyData = await parameters.getPrivateKeyData();
 
-		const drives: Partial<ArFSDriveEntity>[] = await ardrive.getAllDrivesForAddress({ address, privateKeyData });
+		const drives: Partial<ArFSDriveEntity>[] = await ardrive.getAllDrivesForAddress({
+			address: addresses,
+			privateKeyData
+		});
 
 		// Display data
 		console.log(JSON.stringify(drives, null, 4));

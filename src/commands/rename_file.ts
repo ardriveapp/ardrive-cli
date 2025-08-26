@@ -52,7 +52,7 @@ new CLICommand({
 				const driveKey = await parameters.getDriveKey({
 					driveId,
 					arDrive: ardrive,
-					owner: await wallet.getOwner()
+					owner: await wallet.getAllAddresses()
 				});
 
 				return ardrive.renamePrivateFile({

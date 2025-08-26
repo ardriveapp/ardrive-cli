@@ -50,7 +50,7 @@ new CLICommand({
 			// TODO: In the future, loosen driveID requirement and fetch from fileID
 			const driveId: DriveID = EID(parameters.getRequiredParameterValue(DriveIdParameter));
 			const wallet = await parameters.getRequiredWallet();
-			const owner = await wallet.getOwner();
+			const owner = await wallet.getAllAddresses();
 			const arDrive = cliArDriveFactory({ wallet, arweave });
 
 			const driveKey = await parameters.getDriveKey({
@@ -68,7 +68,7 @@ new CLICommand({
 				fileId,
 				new GatewayAPI({ gatewayUrl: gatewayUrlForArweave(arweave) }),
 				driveKey,
-				owner,
+				Object.values(owner),
 				fileKey
 			).build();
 			console.log(file.fileKey.toJSON());

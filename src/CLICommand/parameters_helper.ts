@@ -45,7 +45,8 @@ import {
 	assertCustomMetaData,
 	CustomMetaDataJsonFields,
 	DriveSignatureType,
-	VersionedDriveKey
+	VersionedDriveKey,
+	WalletAddresses
 } from 'ardrive-core-js';
 import { JWKInterface } from 'arweave/node/lib/wallet';
 import { deriveIpfsCid } from '../utils/ipfs_utils';
@@ -61,7 +62,7 @@ const TURBO_URL_ENV_VAR = 'TURBO_URL';
 interface GetDriveKeyParams {
 	driveId: DriveID;
 	arDrive: ArDrive;
-	owner: ArweaveAddress | ArweaveAddress[];
+	owner: ArweaveAddress | WalletAddresses;
 	drivePassword?: string;
 	useCache?: boolean;
 }
@@ -137,10 +138,10 @@ export class ParametersHelper {
 		return this.getRequiredWallet().then((wallet) => wallet.getAddress());
 	}
 
-	public async getWalletAddresses(): Promise<ArweaveAddress> {
+	public async getWalletAddresses(): Promise<WalletAddresses> {
 		const address = this.getParameterValue(AddressParameter);
 		if (address) {
-			return ADDR(address);
+			return { networkAddress: ADDR(address), ans104Address: ADDR(address) };
 		}
 
 		return this.getRequiredWallet().then((wallet) => wallet.getAllAddresses());

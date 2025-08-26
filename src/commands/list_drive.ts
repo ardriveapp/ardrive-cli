@@ -40,7 +40,7 @@ new CLICommand({
 			const driveKey = await parameters.getDriveKey({
 				driveId,
 				arDrive,
-				owner: await wallet.getOwner()
+				owner: await wallet.getAllAddresses()
 			});
 
 			const drive = await arDrive.getPrivateDrive({ driveId, driveKey });
