@@ -137,6 +137,15 @@ export class ParametersHelper {
 		return this.getRequiredWallet().then((wallet) => wallet.getAddress());
 	}
 
+	public async getWalletAddresses(): Promise<ArweaveAddress> {
+		const address = this.getParameterValue(AddressParameter);
+		if (address) {
+			return ADDR(address);
+		}
+
+		return this.getRequiredWallet().then((wallet) => wallet.getAllAddresses());
+	}
+
 	public getOptionalBoostSetting(): FeeMultiple | undefined {
 		const boost = this.getParameterValue(BoostParameter);
 		return boost ? new FeeMultiple(+boost) : undefined;
