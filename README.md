@@ -76,16 +76,16 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
 2. [Getting Started](#getting-started)
     1. [Prerequisites](#prerequisites)
         1. [Git](#git)
-        2. [NVM (Optional - Recommended)](#nvm)
+        2. [NVM (Optional - Recommended)](#nvm-optional---recommended)
     2. [Quick Start](#quick-start)
-        1. [Installing and Starting the CLI From NPM Package](#install-from-npm)
-        2. [Upgrading to the Latest CLI Version](#upgrading)
-    3. [Build and Run from Source](#build-from-source)
-        1. [Install Yarn 3](#yarn3)
-        2. [Husky (Developers Only)](#husky)
-        3. [Using a custom ArDrive-Core-JS (Optional)](#custom-ardrive-core-js)
-        4. [Installing and Starting the CLI From Source](#install-from-src)
-        5. [Recommended Visual Studio Code extensions (Developers Only)](#vs-extensions)
+        1. [Installing and Starting the CLI From NPM Package](#installing-and-starting-the-cli-from-npm-package)
+        2. [Upgrading to the Latest CLI Version](#upgrading-to-the-latest-version)
+    3. [Build and Run from Source](#build-and-run-from-source)
+        1. [Install Yarn 3](#install-yarn-3)
+        2. [Husky (Developers Only)](#husky-developers-only)
+        3. [Using a custom ArDrive-Core-JS (Optional)](#using-a-custom-ardrive-core-js-optional)
+        4. [Installing and Starting the CLI From Source](#installing-and-starting-the-cli-from-source)
+        5. [Recommended Visual Studio Code extensions (Developers Only)](#recommended-visual-studio-code-extensions-developers-only)
     4. [Limitations](#limitations)
 3. [Using the CLI](#using-the-cli)
     1. [CLI Help](#cli-help)
@@ -93,7 +93,7 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
     3. [Wallet Operations](#wallet-operations)
     4. [Working With Entities](#working-with-entities)
         1. [Dry Run](#dry-run)
-        2. [Uploading to Turbo (BETA)](#upload-to-turbo)
+        2. [Uploading to Turbo (BETA)](#uploading-to-turbo-beta)
     5. [Working With Drives](#working-with-drives)
         1. [Understanding Drive Hierarchies](#understanding-drive-hierarchies)
             1. [Fetching Drive Info](#drive-info)
@@ -101,12 +101,12 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
             1. [Derive a Drive Key](#derive-drive-key)
             2. [Derive a File Key](#derive-file-key)
         3. [Managing Drive Passwords](#managing-drive-passwords)
-            1. [Supplying Your Password: Environment Variable](#pw-environment-variable)
-            2. [Supplying Your Password: STDIN](#pw-stdin)
-            3. [Supplying Your Password: Prompt](#pw-prompt)
+            1. [Supplying Your Password: Environment Variable](#supplying-your-password-environment-variable)
+            2. [Supplying Your Password: STDIN](#supplying-your-password-stdin)
+            3. [Supplying Your Password: Prompt](#supplying-your-password-prompt)
         4. [Creating Drives](#creating-drives)
         5. [Listing Drives for an Address](#listing-drives-for-an-address)
-        6. [Listing Every Entity in a Drive](#list-drive)
+        6. [Listing Every Entity in a Drive](#listing-every-entity-in-a-drive)
         7. [List Drive Pipeline Examples](#list-drive-pipeline-examples)
             1. [Get Share Links for Files in the Drive](#get-share-links)
             2. [Get Total Size of Files in the Drive](#get-total-size)
@@ -114,39 +114,39 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
     6. [Working With Folders](#working-with-folders)
         1. [Creating Folders](#creating-folders)
         2. [Moving Folders](#moving-folders)
-        3. [Renaming Folders](#rename-folder)
+        3. [Renaming Folders](#renaming-folders)
         4. [Viewing Folder Metadata](#viewing-folder-metadata)
         5. [Listing Contents of a Folder](#listing-contents-of-a-folder)
     7. [Working With Files](#working-with-files)
         1. [Uploading a Single File](#uploading-a-single-file)
-        2. [Download a Single File (BETA)](#download-file)
-        3. [Rename a Single File](#rename-file)
-        4. [Uploading a Folder with Files](#bulk-upload)
+        2. [Download a Single File (BETA)](#download-a-single-file-beta)
+        3. [Rename a Single File](#rename-a-single-file)
+        4. [Uploading a Folder with Files](#uploading-a-folder-with-files-bulk-upload)
         5. [Progress Logging of Transaction Uploads](#progress-logging-of-transaction-uploads)
-        6. [Downloading a Folder with Files](#download-folder)
-        7. [Downloading a Drive](#download-drive)
-        8. [Uploading Multiple Files](#multi-file-upload)
-        9. [Name Conflict Resolution on Upload](#conflict-resolution)
-        10. [Understanding Bundled Transactions](#bundles)
-        11. [Uploading a Non-Bundled Transaction](#no-bundle)
+        6. [Downloading a Folder with Files](#downloading-a-folder-with-files)
+        7. [Downloading a Drive](#downloading-a-drive)
+        8. [Uploading Multiple Files](#uploading-multiple-files)
+        9. [Name Conflict Resolution on Upload](#name-conflict-resolution-on-upload)
+        10. [Understanding Bundled Transactions](#understanding-bundled-transactions)
+        11. [Uploading a Non-Bundled Transaction](#uploading-a-non-bundled-transaction-not-recommended)
         12. [Fetching the Metadata of a File Entity](#fetching-the-metadata-of-a-file-entity)
-        13. [Retrying a Failed File Data Transaction (Public Unbundled Files Only)](#retry-tx)
+        13. [Retrying a Failed File Data Transaction (Public Unbundled Files Only)](#retrying-a-failed-file-data-transaction-public-unbundled-files-only)
         14. [Moving Files](#moving-files)
         15. [Uploading Manifests](#uploading-manifests)
         16. [Hosting a Webpage with Manifest](#hosting-a-webpage-with-manifest)
-        17. [Uploading With a Custom Content Type](#custom-content-type)
-        18. [Uploading From a Remote URL](#remote-path)
-        19. [Uploading a Custom Manifest](#custom-manifest)
+        17. [Uploading With a Custom Content Type](#uploading-with-a-custom-content-type)
+        18. [Uploading From a Remote URL](#uploading-from-a-remote-url)
+        19. [Uploading a Custom Manifest](#uploading-a-custom-manifest)
         20. [Uploading Files with Custom MetaData](#uploading-files-with-custom-metadata)
         21. [Applying Unique Custom MetaData During Bulk Workflows](#applying-unique-custom-metadata-during-bulk-workflows)
     8. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
-        3. [Check for network congestion before uploading](#check-congestion)
-        4. [Front-run Congestion By Boosting Miner Rewards](#boost)
-        5. [Send AR Transactions From a Cold Wallet](#cold-tx)
+        3. [Check for network congestion before uploading](#check-for-network-congestion-before-uploading)
+        4. [Front-run Congestion By Boosting Miner Rewards](#front-run-congestion-by-boosting-miner-rewards)
+        5. [Send AR Transactions From a Cold Wallet](#send-ar-transactions-from-a-cold-wallet)
         6. [Using a Custom Arweave Gateway](#using-a-custom-arweave-gateway)
-        7. [Persistent Caching of ArFS Entity Metadata](#metadata-caching)
+        7. [Persistent Caching of ArFS Entity Metadata](#persistent-caching-of-arfs-entity-metadata)
 4. [All ArDrive CLI Commands](#all-ardrive-cli-commands)
 5. [Getting Help](#getting-help)
 
@@ -168,23 +168,21 @@ All transactions successfully executed by ArDrive can always be inspected in the
 
 This tool is intended for use by:
 
-<ul>
-<li>ArDrive power users with advanced workflows and resource efficiency in mind: bulk uploaders, those with larger storage demand, game developers, nft creators, storage/db admins, etc.</li>
-<li>Automation tools</li>
-<li>Services</li>
-<li>Terminal aficionados</li>
-<li>Extant and aspiring cypherpunks</li>
-</ul>
+- ArDrive power users with advanced workflows and resource efficiency in mind: bulk uploaders, those with larger storage demand, game developers, nft creators, storage/db admins, etc.
+- Automation tools
+- Services
+- Terminal aficionados
+- Extant and aspiring cypherpunks
 
 For deeper integrations with the [ArDrive] platform, consider using the [ArDrive Core][ardrive-core] (Node) library's configurable and intuitive class interfaces directly within your application.
 
 # Getting Started
 
-To simply install the latest version of the CLI to your local system and get started, follow the [Quick Start](#quick-start) instructions. To build and/or develop the CLI from source, follow the [Build and Run from Source](#build-from-source) instructions. In either case, be sure to satisfy the requirements in the [Prerequisites](#prerequisites) section.
+To simply install the latest version of the CLI to your local system and get started, follow the [Quick Start](#quick-start) instructions. To build and/or develop the CLI from source, follow the [Build and Run from Source](#build-and-run-from-source) instructions. In either case, be sure to satisfy the requirements in the [Prerequisites](#prerequisites) section.
 
 ## Prerequisites
 
-The following tools must be installed whether performing a [Quick Start](#quick-start) or [Building from Source](#build-from-source):
+The following tools must be installed whether performing a [Quick Start](#quick-start) or [Building from Source](#build-and-run-from-source):
 
 ### Git
 
@@ -192,7 +190,7 @@ Some of ArDrive's dependencies are transitively installed via Git. Install it, i
 
 [Download Git](https://git-scm.com/downloads)
 
-### NVM (Optional - Recommended)<a id="nvm"></a>
+### NVM (Optional - Recommended)
 
 This project uses the Node Version Manager (NVM) and an `.nvmrc` file to lock the recommended Node version used by the latest version of `ardrive-core-js`.
 
@@ -211,7 +209,7 @@ Follow these steps to get NVM up and running on your system:
 
 Once you've satisfied any necessary [prerequisites](#prerequisites), the fastest way to get up and running is to globally install the latest version of the ArDrive CLI to your local system via NPM:
 
-### Installing and Starting the CLI From NPM Package<a id="install-from-npm"></a>
+### Installing and Starting the CLI From NPM Package
 
 ```shell
 npm install -g ardrive-cli
@@ -220,7 +218,7 @@ npm install -g ardrive-cli
 ardrive
 ```
 
-### Upgrading to the Latest Version<a id="upgrading"></a>
+### Upgrading to the Latest Version
 
 If you globally installed the CLI via NPM, then upgrade to the latest version by simply performing:
 
@@ -228,9 +226,9 @@ If you globally installed the CLI via NPM, then upgrade to the latest version by
 npm update -g ardrive-cli
 ```
 
-## Build and Run from Source<a id="build-from-source"></a>
+## Build and Run from Source
 
-### Install Yarn 3<a id="yarn3"></a>
+### Install Yarn 3
 
 Both the ArDrive CLI and ArDrive Core JS use Yarn 3 to manage dependencies and initiate workflows, so follow the [yarn installation instructions][yarn-install] in order to get the latest version. In most cases:
 
@@ -242,7 +240,7 @@ brew install yarn
 npm install -g yarn
 ```
 
-### Husky (Developers Only)<a id="husky"></a>
+### Husky (Developers Only)
 
 We use husky 6.x to manage the git commit hooks that help to improve the quality of our commits. Please run:
 
@@ -252,7 +250,7 @@ yarn husky install
 
 to enable git hooks for your local checkout. Without doing so, you risk committing non-compliant code to the repository.
 
-### Using a custom ArDrive-Core-JS (Optional)<a id="custom-ardrive-core-js"></a>
+### Using a custom ArDrive-Core-JS (Optional)
 
 To test a with a custom version of the `ardrive-core-js` library on your local system, change the `"ardrive-core-js"` line in `package.json` to the root of your local `ardrive-core-js` repo:
 
@@ -261,7 +259,7 @@ To test a with a custom version of the `ardrive-core-js` library on your local s
 + "ardrive-core-js": "../ardrive-core-js/"
 ```
 
-### Installing and Starting the CLI From Source<a id="install-from-src"></a>
+### Installing and Starting the CLI From Source
 
 Now that your runtime and/or development environment is set up, to install the package simply run:
 
@@ -287,7 +285,7 @@ npm install i -g /path/to/package.tgz
 ardrive
 ```
 
-### Recommended Visual Studio Code extensions (Developers Only)<a id="vs-extensions"></a>
+### Recommended Visual Studio Code extensions (Developers Only)
 
 To ensure your environment is compatible, we also recommend the following VSCode extensions:
 
@@ -298,10 +296,14 @@ To ensure your environment is compatible, we also recommend the following VSCode
 
 ## Limitations
 
-**Number of files in a bulk upload:** Theoretically unlimited<br>
-**Max individual file size**: 2GB (Node.js limitation)<br>
-**Max file name length**: 255 bytes<br>
-**Max ANS-104 bundled transaction size:** 500 MiB per bundle. App will handle creating multiple bundles.<br>
+**Number of files in a bulk upload:** Theoretically unlimited
+
+**Max individual file size**: 2GB (Node.js limitation)
+
+**Max file name length**: 255 bytes
+
+**Max ANS-104 bundled transaction size:** 500 MiB per bundle. App will handle creating multiple bundles.
+
 **Max ANS-104 data item counts per bundled transaction:** 250 Files per bundle (500 Data Items).
 
 # Using the CLI
@@ -374,11 +376,9 @@ ardrive send-ar -w /path/to/wallet/file.json --dest-address "HTTn8F92tR32N8wuo-N
 
 The fundamental entity types specified by ArFS are:
 
-<ul>
-<li>Drives</li>
-<li>Folders</li>
-<li>Files</li>
-</ul>
+- Drives
+- Folders
+- Files
 
 Each instance of these entities have a Version 4 UUID entity ID that is commonly referred to by its entity type, i.e. drive ID, folder ID, and file ID.
 
@@ -394,7 +394,7 @@ ardrive <my-command> <other-options> --dry-run
 
 This can be very useful for gathering price estimations or to confirm that you've copy-pasted your entity IDs correctly before committing to an upload.
 
-### Uploading to Turbo (BETA) <a id="upload-to-turbo"></a>
+### Uploading to Turbo (BETA)
 
 Users can optionally choose to send each ArFS entities created to [ArDrive Turbo][ardrive-turbo] using the `--turbo` flag. Instead of using AR from an Arweave wallet, you can use Turbo Credits or take advantage of free/discounted upload promotions.
 
@@ -447,10 +447,8 @@ Private Drives achieve privacy via end-to-end encryption facilitated by hash-der
 
 The relationships among your data and their keys is as follows:
 
-<ul>
-<li>Drive Key = functionOf(Wallet Signature, Randomly Generated Drive ID, User-specified Drive Password)</li>
-<li>File Key = functionOf(Randomly Generated File ID, Drive Key)</li>
-</ul>
+- Drive Key = functionOf(Wallet Signature, Randomly Generated Drive ID, User-specified Drive Password)
+- File Key = functionOf(Randomly Generated File ID, Drive Key)
 
 When you create private entities, the returned JSON data from the ArDrive CLI will contain the keys needed to decrypt the encrypted representation of your entity that is now securely and permanently stored on the blockweave.
 
@@ -474,13 +472,11 @@ The ArDrive CLI's private drive and folder functions all require either a drive 
 
 Drive passwords are the most portable, and fundamental, encryption facet, so a few options are available during private drive operations for supplying them:
 
-<ul>
-<li>Environment Variable</li>
-<li>STDIN</li>
-<li>Secure Prompt</li>
-</ul>
+- Environment Variable
+- STDIN
+- Secure Prompt
 
-#### Supplying Your Password: Environment Variable<a id="pw-environment-variable"></a>
+#### Supplying Your Password: Environment Variable
 
 ```shell
 # Securely type your password into a read prompt, store it to TMP_ARDRIVE_PW, and export it for the shell session
@@ -489,7 +485,7 @@ export ARDRIVE_DRIVE_PW=$(TMP_ARDRIVE_PW)
 ardrive <some private command> -w /path/to/wallet.json -P
 ```
 
-#### Supplying Your Password: STDIN<a id="pw-stdin"></a>
+#### Supplying Your Password: STDIN
 
 ```shell
 # Pipe your drive password to the ArDrive CLI
@@ -499,7 +495,7 @@ cat /path/to/my/drive/password.txt | ardrive <some private command> -w /path/to/
 ardrive <some private command> -w /path/to/wallet.json -P < /path/to/my/drive/password.txt
 ```
 
-#### Supplying Your Password: Prompt<a id="pw-prompt"></a>
+#### Supplying Your Password: Prompt
 
 ```shell
 # When all other options fail, the CLI will prompt for your password (NOT COMPATIBLE WITH PIPES AND REDIRECTS!)
@@ -529,15 +525,13 @@ ardrive list-all-drives -w /path/to/my/wallet.json -P
 ardrive list-all-drives --address "HTTn8F92tR32N8wuo-NIDkjmqPknrbl10JWo5MZ9x2k"
 ```
 
-### Listing Every Entity in a Drive<a id="list-drive"></a>
+### Listing Every Entity in a Drive
 
 Useful notes on listing the contents of drives:
 
-<ul>
-<li>Listing a drive is effectively the same as listing its root folder.</li>
-<li>You can control the tree depth of the data returned.</li>
-<li>path, txPath, and entityIdPath properties on entities can provide useful handholds for other forms of data navigation</li>
-</li>
+- Listing a drive is effectively the same as listing its root folder.
+- You can control the tree depth of the data returned.
+- path, txPath, and entityIdPath properties on entities can provide useful handholds for other forms of data navigation
 
 ```shell
 # List everything in a private drive
@@ -631,7 +625,7 @@ Moving a folder is as simple as supplying a new parent folder ID. Note that nami
 ardrive move-folder --folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" --parent-folder-id "29850ab7-56d4-4e1f-a5be-cb86d5513921" -w /path/to/wallet.json
 ```
 
-### Renaming Folders<a id="rename-folder"></a>
+### Renaming Folders
 
 In order to rename a folder you must provide a name different from its current one, and it must not create naming conflicts with its sibling entities.
 
@@ -838,7 +832,7 @@ Transaction nA1stCdTkuf290k0qsqvmJ78isEC0bwgrAi3D8Cl1LU Upload Progress: 91%
 Transaction nA1stCdTkuf290k0qsqvmJ78isEC0bwgrAi3D8Cl1LU Upload Progress: 100%
 ```
 
-### Download a Single file (BETA)<a id="download-file"></a>
+### Download a Single file (BETA)
 
 By using the `download-file` command you can download a file on chain to a folder in your local storage specified by --local-path (or to your current working directory if not specified):
 
@@ -852,7 +846,7 @@ Specify a filename in the --local-path if you'd like to use a different name tha
 ardrive download-file -w /path/to/wallet.json --file-id "ff450770-a9cb-46a5-9234-89cbd9796610" --local-path /my_ardrive_downloads/my_pic.png
 ```
 
-### Rename a Single File<a id="rename-file"></a>
+### Rename a Single File
 
 To rename an on-chain file you can make use of the `rename-file` command. The required parameters are the file ID and the new name, as well as the owner wallet or seed phrase.
 
@@ -860,7 +854,7 @@ To rename an on-chain file you can make use of the `rename-file` command. The re
 ardrive rename-file --file-id "290a3f9a-37b2-4f0f-a899-6fac983833b3" --file-name "My custom file name.txt" --wallet-file "wallet.json"
 ```
 
-### Uploading a Folder with Files (Bulk Upload)<a id="bulk-upload"></a>
+### Uploading a Folder with Files (Bulk Upload)
 
 Users can perform a bulk upload by using the upload-file command on a target folder. The command will reconstruct the folder hierarchy on local disk as ArFS folders on the permaweb and upload each file into their corresponding folders:
 
@@ -868,7 +862,7 @@ Users can perform a bulk upload by using the upload-file command on a target fol
 ardrive upload-file --local-path /path/to/folder --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -w /path/to/wallet.json
 ```
 
-### Downloading a Folder with Files<a id="download-folder"></a>
+### Downloading a Folder with Files
 
 You can download a folder from ArDrive to your local machine with the `download-folder` command. In the following examples, assume that a folder with ID "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" exists in your drive and is named "MyArDriveFolder".
 
@@ -906,7 +900,7 @@ ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --local-path "
 ardrive download-folder -f "47f5bde9-61ba-49c7-b409-1aa4a9e250f6" --local-path "/non_existent_folder_1/non_existent_folder_2"
 ```
 
-### Downloading a Drive<a id="download-drive">
+### Downloading a Drive
 
 To download the whole drive you can use the `download-drive` command.
 
@@ -916,7 +910,7 @@ ardrive download-drive -d "c0c8ba1c-efc5-420d-a07c-a755dc67f6b2"
 
 This is equivalent to running the `download-folder` command against the root folder of the drive.
 
-### Uploading Multiple Files<a id="multi-file-upload"></a>
+### Uploading Multiple Files
 
 To upload an arbitrary number of files or folders, pass a space-separated list of paths to `--local-paths`:
 
@@ -928,7 +922,7 @@ ardrive upload-file -w wallet.json -F "6939b9e0-cc98-42cb-bae0-5888eca78885" --l
 ardrive upload-file -w wallet.json -F "6939b9e0-cc98-42cb-bae0-5888eca78885" --local-paths ./*.json
 ```
 
-### Name Conflict Resolution on Upload<a id="conflict-resolution"></a>
+### Name Conflict Resolution on Upload
 
 By default, the `upload-file` command will use the upsert behavior if existing entities are encountered in the destination folder tree that would cause naming conflicts.
 
@@ -976,7 +970,7 @@ Please select how to proceed:
     Skip this file upload
 ```
 
-### Understanding Bundled Transactions<a id="bundles"></a>
+### Understanding Bundled Transactions
 
 The ArDrive CLI currently uses two different methods for uploading transactions to the Arweave network: standard transactions and Direct to Network (D2N) bundled transactions. By default, the CLI will send a D2N bundled transaction for any action that would result in multiple transactions. This bundling functionality is currently used on the `upload-file` and `create-drive` commands.
 
@@ -987,7 +981,7 @@ D2N bundled transactions come with several benefits and implications:
 -   Un-bundling can take anywhere from a few minutes up to an hour. During that time, the files in the bundle will neither appear in list- commands nor be downloadable. Similarly, they will not appear in the web app after syncs until un-bundling is complete. **This can negatively affect the accuracy of upsert operations**, so it's best to wait before retrying bulk uploads.
 -   Bundling reliability on the gateway side degrades once bundles reach either 500 data items (or ~250 files) or 500 MiB, so the CLI will create and upload multiple bundles as necessary, or will send files that are simply too large for reliable bundling as unbundled txs.
 
-### Uploading a Non-Bundled Transaction (NOT RECOMMENDED)<a id="no-bundle"></a>
+### Uploading a Non-Bundled Transaction (NOT RECOMMENDED)
 
 While not recommended, the CLI does provide the option to forcibly send all transactions as standard transactions rather than attempting to bundle them together. To do this, simply add the `--no-bundle` flag to the `upload-file` or `create-drive` command:
 
@@ -1026,7 +1020,7 @@ Example output:
 }
 ```
 
-### Retrying a Failed File Data Transaction (Public Unbundled Files Only)<a id="retry-tx"></a>
+### Retrying a Failed File Data Transaction (Public Unbundled Files Only)
 
 Arweave data upload transactions are split into two phases: transaction posting and chunks uploading. Once the transaction post phase has been completed, you've effectively "paid" the network for storage of the data chunks that you'll send in the next stage.
 
@@ -1045,7 +1039,7 @@ ardrive retry-tx --tx-id { Data Transaction ID } --parent-folder-id { Destinatio
 
 **Note: Retry feature is currently only available for PUBLIC unbundled file transactions. It is also perfectly safe to mistakenly re-seed the chunks of a healthy transaction, the transaction will remain stable and the wallet balance will not be affected.**
 
-### Moving Files<a id="moving-files"></a>
+### Moving Files
 
 Files can be moved from one folder to another within the same drive. Moving a file is simply the process of uploading a new file metadata revision with an updated File ID <> Parent Folder ID relationship. The following command will move a file from its current location in a public drive to a new parent folder in that drive:
 
@@ -1171,7 +1165,7 @@ In the return output, the top link will be a link to the deployed web app:
 
 This is effectively hosting a web app with ArDrive. Check out the ArDrive Price Calculator React App hosted as an [ArDrive Manifest][example-manifest-webpage].
 
-### Uploading With a Custom Content Type<a id="custom-content-type"></a>
+### Uploading With a Custom Content Type
 
 Each file uploaded to the Arweave network receives a `"Content-Type"` GraphQL tag that contains the MIME type for the file. The gateway will use this content type to determine how to serve that file's data transaction at the `arweave.net/{data tx id}` endpoint.
 
@@ -1187,7 +1181,7 @@ It is currently possible to set this value to any given string, but the gateway 
 
 Note: In the case of multi-file uploads or recursive folder uploads, setting this `--content-type` flag will set the provided custom content type on EVERY file entity within a given upload.
 
-### Uploading From a Remote URL<a id="remote-path"></a>
+### Uploading From a Remote URL
 
 You can upload a file from an existing url using the `--remote-path` flag. This must be used in conjunction with `--dest-file-name`.
 
@@ -1197,7 +1191,7 @@ You can use a custom content type using the `--content-type` flag, but if this i
 ardrive upload-file --remote-path "https://url/to/file" --parent-folder-id "9af694f6-4cfc-4eee-88a8-1b02704760c0" -d "example.jpg" -w /path/to/wallet.json
 ```
 
-### Uploading a Custom Manifest<a id="custom-manifest"></a>
+### Uploading a Custom Manifest
 
 Using the custom content type feature, it is possible for users to upload their own custom manifests. The Arweave gateways use this special content type in order to identify an uploaded file as a manifest:
 
@@ -1377,7 +1371,7 @@ a) wait for congestion to dissipate before attempting your transactions.
 
 b) apply the fee boost multiplier to your transactions rewards with the --boost parameter during write operations in order to front-run some of the congestion.
 
-#### Check for network congestion before uploading<a id="check-congestion"></a>
+#### Check for network congestion before uploading
 
 ```shell
 # See all the transactions in the mempool
@@ -1387,14 +1381,14 @@ ardrive get-mempool
 ardrive get-mempool | jq 'length'
 ```
 
-#### Front-run Congestion By Boosting Miner Rewards<a id="boost"></a>
+#### Front-run Congestion By Boosting Miner Rewards
 
 ```shell
 # Increase the miner reward on your transactions by 50%
 ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0c58c11-430c-4383-8e54-4d864cc7e927" --local-path ./helloworld.txt --boost 1.5
 ```
 
-#### Send AR Transactions From a Cold Wallet<a id="cold-tx"></a>
+#### Send AR Transactions From a Cold Wallet
 
 The best cold wallet storage never exposes your seed phrase and/or private keys to the Internet or a compromised system interface. You can use the ArDrive CLI to facilitate cold storage and transfer of AR.
 
@@ -1402,10 +1396,8 @@ If you need a new cold AR wallet, generate one from an air-gapped machine capabl
 
 The workflow to send the AR out from your cold wallet requires you to generate a signed transaction with your cold wallet on your air-gapped machine via the ArDrive CLI, and then to transfer the signed transaction (e.g. by a file on a clean thumb drive) to an Internet-connected machine and send the transaction to the network via the ArDrive CLI. You'll need two inputs from the Internet-connected machine:
 
-<ul>
-<li>the last transaction sent OUT from the cold wallet (or an empty string if none has ever been sent out)</li>
-<li>the base fee for an Arweave transaction (i.e. a zero bye transaction). Note that this value could change if a sufficient amount of time passes between the time you fetch this value, create the transaction, and send the transaction.</li>
-</ul>
+- the last transaction sent OUT from the cold wallet (or an empty string if none has ever been sent out)
+- the base fee for an Arweave transaction (i.e. a zero bye transaction). Note that this value could change if a sufficient amount of time passes between the time you fetch this value, create the transaction, and send the transaction.
 
 To get the last transaction sent from your cold wallet, use the `last-tx` command and specify your wallet address e.g.:
 
@@ -1466,7 +1458,7 @@ ardrive list-drive -d { drive id from create drive }
 ardrive download-file -f { file id from upload file }
 ```
 
-### Persistent Caching of ArFS Entity Metadata<a id="metadata-caching"></a>
+### Persistent Caching of ArFS Entity Metadata
 
 To avoid redundant requests to the Arweave network for immutable ArFS entity metadata, a persistent file cache is created and maintained at:
 
