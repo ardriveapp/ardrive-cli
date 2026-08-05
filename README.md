@@ -139,6 +139,9 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         19. [Uploading a Custom Manifest](#uploading-a-custom-manifest)
         20. [Uploading Files with Custom MetaData](#uploading-files-with-custom-metadata)
         21. [Applying Unique Custom MetaData During Bulk Workflows](#applying-unique-custom-metadata-during-bulk-workflows)
+        22. [Pinning a File](#pinning-a-file)
+        23. [Creating a Snapshot](#creating-a-snapshot)
+        24. [Hiding and Unhiding a File or Folder](#hiding-and-unhiding-a-file-or-folder)
     8. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -1330,6 +1333,83 @@ ardrive upload-file -F f0c58c11-430c-4383-8e54-4d864cc7e927 --local-path "../upl
 done
 ```
 
+### Pinning a File
+
+Pinning lets you reference an **existing** Arweave data transaction as a new file entity in one of your PUBLIC drives, without re-uploading any data. This is useful for adopting data that already lives permanently on Arweave (e.g. a transaction uploaded outside of ArDrive, or one belonging to someone else) into your drive's folder structure, so it shows up alongside your other files with its own name, metadata, and location.
+
+Because a pinned file's metadata transaction only references the existing `--tx-id` (it doesn't touch the underlying data bytes), pinning a small file costs the same tiny metadata-only fee as any other file operation -- there is no data-upload cost, regardless of the size of the original file.
+
+Some important constraints:
+
+-   **Public drives only.** Pinning writes a plaintext ArFS metadata transaction that points at the referenced data. Private drives are not supported -- targeting a private `--parent-folder-id` fails with a clear error.
+-   **The referenced transaction is never re-uploaded or modified.** Only a new file metadata entity is created; `--tx-id` is reused as-is as the new file's data transaction.
+-   **Name conflicts throw by default.** If `--dest-file-name` already exists in the destination folder, the command fails unless `--skip` is provided, in which case the command exits successfully having made no changes.
+
+```shell
+ardrive pin-file --parent-folder-id "a2c8a0cb-0ca7-4dbb-8bf8-93f75f308e63" --tx-id "Y7GFF8r9y0MEU_oi1aZeD87vrmai97JdRQ2L0cbGJ68" --dest-file-name "hello_world.txt" -w "/path/to/wallet"
+```
+
+`--drive-id` is optional -- the destination drive is normally resolved automatically from `--parent-folder-id`. Supply it only if you want the command to assert that the folder belongs to the drive you expect (the command fails if it doesn't):
+
+```shell
+ardrive pin-file --parent-folder-id "a2c8a0cb-0ca7-4dbb-8bf8-93f75f308e63" --drive-id "bc9af866-6421-40f1-ac89-202bddb5c487" --tx-id "Y7GFF8r9y0MEU_oi1aZeD87vrmai97JdRQ2L0cbGJ68" --dest-file-name "hello_world.txt" -w "/path/to/wallet"
+```
+
+Like other write commands, `pin-file` supports `--dry-run`, `--boost`, `--turbo`/`--turbo-url`, and `--gateway`. See `ardrive pin-file --help` for the full flag list.
+
+### Creating a Snapshot
+
+A **snapshot** is a single Arweave transaction, tagged `Entity-Type: snapshot`, `Drive-Id`, `Block-Start`, and `Block-End`, whose body is a JSON index of every ArFS entity metadata transaction (drive, folder, and file revisions) mined for that drive across the block range it covers. It exists purely as a read-path optimization: a client that wants to list a drive's full entity history can read the snapshot's JSON body directly instead of paginating through and re-fetching every individual metadata transaction the drive has ever produced. `create-snapshot` builds this snapshot for you and posts it to Arweave.
+
+Some important things to know:
+
+-   **Costs to post, like any other data transaction.** For a drive with a long entity history the snapshot body can be large, so posting it is not free -- `create-snapshot` estimates the cost up front, asserts your wallet can cover it, and prints the cost before sending.
+-   **When to use it.** Snapshotting is most useful for drives with a large number of files/folders/revisions, where clients that support snapshot-accelerated listing would otherwise have to replay a long transaction history on every listing. It's a maintenance operation you run occasionally (e.g. periodically, or before publishing a drive expected to see heavy read traffic) -- not something every drive needs.
+-   **Public drives only (for now).** Private drive snapshots are not yet supported.
+-   **Idempotent-ish, not automatic.** Each run creates a NEW snapshot transaction covering the drive's entity history at that point in time; it does not update or replace a previous snapshot.
+
+```shell
+ardrive create-snapshot --drive-id "bc9af866-6421-40f1-ac89-202bddb5c487" -w "/path/to/wallet"
+```
+
+Use `--dry-run` to see the block range, entity count, byte size, and estimated cost without posting anything:
+
+```shell
+ardrive create-snapshot --drive-id "bc9af866-6421-40f1-ac89-202bddb5c487" -w "/path/to/wallet" --dry-run
+```
+
+Like other write commands, `create-snapshot` supports `--boost`, `--turbo`/`--turbo-url`, and `--gateway`. See `ardrive create-snapshot --help` for the full flag list.
+
+### Hiding and Unhiding a File or Folder
+
+The `hide-file`, `unhide-file`, `hide-folder`, and `unhide-folder` commands let you toggle whether a file or folder entity is flagged as hidden, without touching its data or metadata otherwise. Hiding writes a new metadata revision with an `isHidden` flag set to `true`; clients that respect this flag (e.g. the ArDrive web/desktop apps) omit the entity from their normal drive listings, while it remains fully present on-chain. Unhiding writes another revision flipping the flag back to `false`.
+
+Some important things to know:
+
+-   **Reversible.** Hiding never deletes or re-uploads data -- it's a metadata-only toggle, and `unhide-file`/`unhide-folder` fully restores visibility at any time.
+-   **Works on both public and private entities.** Pass `--drive-key` or (`--wallet-file`/`--seed-phrase` plus `--unsafe-drive-password`) to target a private file/folder; omit them to target a public one, exactly like `rename-file`/`rename-folder`.
+-   **Costs a small metadata fee.** Like a rename, hiding/unhiding writes a new metadata revision to Arweave, so it isn't free, but it's the same tiny metadata-only cost as any other rename/move operation -- no file data is re-uploaded.
+-   **Not recursive.** Hiding a folder flags only that folder's own metadata; it does not walk its contents and hide child files/folders individually.
+
+```shell
+# Hide a public file
+ardrive hide-file --file-id "290a3f9a-37b2-4f0f-a899-6fac983833b3" -w "/path/to/wallet.json"
+
+# Unhide it again
+ardrive unhide-file --file-id "290a3f9a-37b2-4f0f-a899-6fac983833b3" -w "/path/to/wallet.json"
+
+# Hide a private file (drive key derived from wallet + password)
+ardrive hide-file --file-id "290a3f9a-37b2-4f0f-a899-6fac983833b3" -w "/path/to/wallet.json" --unsafe-drive-password "p4ssw0rd"
+
+# Hide a public folder
+ardrive hide-folder --folder-id "568d5eba-dbf3-4a49-8129-1c58f7fd35bc" -w "/path/to/wallet.json"
+
+# Unhide a private folder using a raw drive key
+ardrive unhide-folder --folder-id "568d5eba-dbf3-4a49-8129-1c58f7fd35bc" -w "/path/to/wallet.json" --drive-key "base64EncodedDriveKey"
+```
+
+Like other write commands, `hide-file`/`unhide-file`/`hide-folder`/`unhide-folder` support `--dry-run`, `--boost`, `--turbo`/`--turbo-url`, and `--gateway`. See `ardrive hide-file --help` (and `unhide-file`/`hide-folder`/`unhide-folder --help`) for the full flag list.
+
 ## Other Utility Operations
 
 ### Monitoring Transactions
@@ -1498,6 +1578,12 @@ create-drive
 create-folder
 upload-file
 create-manifest
+pin-file
+create-snapshot
+hide-file
+unhide-file
+hide-folder
+unhide-folder
 
 move-file
 move-folder
