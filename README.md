@@ -139,6 +139,7 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         19. [Uploading a Custom Manifest](#uploading-a-custom-manifest)
         20. [Uploading Files with Custom MetaData](#uploading-files-with-custom-metadata)
         21. [Applying Unique Custom MetaData During Bulk Workflows](#applying-unique-custom-metadata-during-bulk-workflows)
+        22. [Pinning a File](#pinning-a-file)
     8. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -1330,6 +1331,30 @@ ardrive upload-file -F f0c58c11-430c-4383-8e54-4d864cc7e927 --local-path "../upl
 done
 ```
 
+### Pinning a File
+
+Pinning lets you reference an **existing** Arweave data transaction as a new file entity in one of your PUBLIC drives, without re-uploading any data. This is useful for adopting data that already lives permanently on Arweave (e.g. a transaction uploaded outside of ArDrive, or one belonging to someone else) into your drive's folder structure, so it shows up alongside your other files with its own name, metadata, and location.
+
+Because a pinned file's metadata transaction only references the existing `--data-tx-id` (it doesn't touch the underlying data bytes), pinning a small file costs the same tiny metadata-only fee as any other file operation -- there is no data-upload cost, regardless of the size of the original file.
+
+Some important constraints:
+
+-   **Public drives only.** Pinning writes a plaintext ArFS metadata transaction that points at the referenced data. Private drives are not supported -- targeting a private `--parent-folder-id` fails with a clear error.
+-   **The referenced transaction is never re-uploaded or modified.** Only a new file metadata entity is created; `--data-tx-id` is reused as-is as the new file's data transaction.
+-   **Name conflicts throw by default.** If `--dest-file-name` already exists in the destination folder, the command fails unless `--skip` is provided, in which case the command exits successfully having made no changes.
+
+```shell
+ardrive pin-file --parent-folder-id "a2c8a0cb-0ca7-4dbb-8bf8-93f75f308e63" --tx-id "Y7GFF8r9y0MEU_oi1aZeD87vrmai97JdRQ2L0cbGJ68" --dest-file-name "hello_world.txt" -w "/path/to/wallet"
+```
+
+`--drive-id` is optional -- the destination drive is normally resolved automatically from `--parent-folder-id`. Supply it only if you want the command to assert that the folder belongs to the drive you expect (the command fails if it doesn't):
+
+```shell
+ardrive pin-file --parent-folder-id "a2c8a0cb-0ca7-4dbb-8bf8-93f75f308e63" --drive-id "bc9af866-6421-40f1-ac89-202bddb5c487" --tx-id "Y7GFF8r9y0MEU_oi1aZeD87vrmai97JdRQ2L0cbGJ68" --dest-file-name "hello_world.txt" -w "/path/to/wallet"
+```
+
+Like other write commands, `pin-file` supports `--dry-run`, `--boost`, `--turbo`/`--turbo-url`, and `--gateway`. See `ardrive pin-file --help` for the full flag list.
+
 ## Other Utility Operations
 
 ### Monitoring Transactions
@@ -1498,6 +1523,7 @@ create-drive
 create-folder
 upload-file
 create-manifest
+pin-file
 
 move-file
 move-folder
