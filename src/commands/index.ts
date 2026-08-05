@@ -18,6 +18,8 @@ import './get_balance';
 import './get_drive_key';
 import './get_file_key';
 import './get_mempool';
+import './hide_file';
+import './hide_folder';
 import './last_tx';
 import './list_all_drives';
 import './list_drive';
@@ -32,6 +34,8 @@ import './retry_tx';
 import './send_ar';
 import './send_tx';
 import './tx_status';
+import './unhide_file';
+import './unhide_folder';
 import './upload_file';
 
 // Please keep this list in alphabetical order. Thank you <3

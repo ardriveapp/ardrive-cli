@@ -141,6 +141,7 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         21. [Applying Unique Custom MetaData During Bulk Workflows](#applying-unique-custom-metadata-during-bulk-workflows)
         22. [Pinning a File](#pinning-a-file)
         23. [Creating a Snapshot](#creating-a-snapshot)
+        24. [Hiding and Unhiding a File or Folder](#hiding-and-unhiding-a-file-or-folder)
     8. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -1379,6 +1380,36 @@ ardrive create-snapshot --drive-id "bc9af866-6421-40f1-ac89-202bddb5c487" -w "/p
 
 Like other write commands, `create-snapshot` supports `--boost`, `--turbo`/`--turbo-url`, and `--gateway`. See `ardrive create-snapshot --help` for the full flag list.
 
+### Hiding and Unhiding a File or Folder
+
+The `hide-file`, `unhide-file`, `hide-folder`, and `unhide-folder` commands let you toggle whether a file or folder entity is flagged as hidden, without touching its data or metadata otherwise. Hiding writes a new metadata revision with an `isHidden` flag set to `true`; clients that respect this flag (e.g. the ArDrive web/desktop apps) omit the entity from their normal drive listings, while it remains fully present on-chain. Unhiding writes another revision flipping the flag back to `false`.
+
+Some important things to know:
+
+-   **Reversible.** Hiding never deletes or re-uploads data -- it's a metadata-only toggle, and `unhide-file`/`unhide-folder` fully restores visibility at any time.
+-   **Works on both public and private entities.** Pass `--drive-key` or (`--wallet-file`/`--seed-phrase` plus `--unsafe-drive-password`) to target a private file/folder; omit them to target a public one, exactly like `rename-file`/`rename-folder`.
+-   **Costs a small metadata fee.** Like a rename, hiding/unhiding writes a new metadata revision to Arweave, so it isn't free, but it's the same tiny metadata-only cost as any other rename/move operation -- no file data is re-uploaded.
+-   **Not recursive.** Hiding a folder flags only that folder's own metadata; it does not walk its contents and hide child files/folders individually.
+
+```shell
+# Hide a public file
+ardrive hide-file --file-id "290a3f9a-37b2-4f0f-a899-6fac983833b3" -w "/path/to/wallet.json"
+
+# Unhide it again
+ardrive unhide-file --file-id "290a3f9a-37b2-4f0f-a899-6fac983833b3" -w "/path/to/wallet.json"
+
+# Hide a private file (drive key derived from wallet + password)
+ardrive hide-file --file-id "290a3f9a-37b2-4f0f-a899-6fac983833b3" -w "/path/to/wallet.json" --unsafe-drive-password "p4ssw0rd"
+
+# Hide a public folder
+ardrive hide-folder --folder-id "568d5eba-dbf3-4a49-8129-1c58f7fd35bc" -w "/path/to/wallet.json"
+
+# Unhide a private folder using a raw drive key
+ardrive unhide-folder --folder-id "568d5eba-dbf3-4a49-8129-1c58f7fd35bc" -w "/path/to/wallet.json" --drive-key "base64EncodedDriveKey"
+```
+
+Like other write commands, `hide-file`/`unhide-file`/`hide-folder`/`unhide-folder` support `--dry-run`, `--boost`, `--turbo`/`--turbo-url`, and `--gateway`. See `ardrive hide-file --help` (and `unhide-file`/`hide-folder`/`unhide-folder --help`) for the full flag list.
+
 ## Other Utility Operations
 
 ### Monitoring Transactions
@@ -1549,6 +1580,10 @@ upload-file
 create-manifest
 pin-file
 create-snapshot
+hide-file
+unhide-file
+hide-folder
+unhide-folder
 
 move-file
 move-folder
