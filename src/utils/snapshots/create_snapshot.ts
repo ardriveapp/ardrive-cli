@@ -78,9 +78,43 @@ export async function queryAllDriveEntityTxs({
 }
 
 /**
- * Builds the JSON-serializable {@link SnapshotData} body for a drive snapshot: the drive's full
- * entity metadata history (every drive/folder/file revision), paired with the block-height range
- * it spans.
+ * How many entity-metadata transactions to fetch from the gateway concurrently when building a
+ * snapshot body. A large drive can have thousands of entity revisions; fetching them all with an
+ * unbounded `Promise.all` opens one gateway request per revision at once, which can exhaust memory
+ * or sockets and trip gateway rate limits before the snapshot completes. A small fixed worker pool
+ * keeps snapshot creation bounded and gateway-friendly.
+ */
+export const SNAPSHOT_TX_FETCH_CONCURRENCY = 8;
+
+/**
+ * Fetches each edge's `jsonMetadata` with at most {@link SNAPSHOT_TX_FETCH_CONCURRENCY} requests in
+ * flight at once (a shared-cursor worker pool), preserving input order in the returned array.
+ */
+async function fetchTxSnapshotsBounded(
+	edges: GQLEdgeInterface[],
+	gatewayApi: GatewayAPI,
+	concurrency: number = SNAPSHOT_TX_FETCH_CONCURRENCY
+): Promise<TxSnapshot[]> {
+	const txSnapshots: TxSnapshot[] = new Array(edges.length);
+	let nextIndex = 0;
+
+	async function worker(): Promise<void> {
+		for (let i = nextIndex++; i < edges.length; i = nextIndex++) {
+			const { node } = edges[i];
+			const jsonMetadata = (await gatewayApi.getTxData(TxID(node.id))).toString();
+			txSnapshots[i] = { gqlNode: node, jsonMetadata };
+		}
+	}
+
+	const workerCount = Math.min(Math.max(concurrency, 1), edges.length);
+	await Promise.all(Array.from({ length: workerCount }, () => worker()));
+	return txSnapshots;
+}
+
+/**
+ * Builds the JSON-serializable {@link SnapshotData} body for a drive snapshot: the drive's mined
+ * entity metadata history (every mined drive/folder/file revision), paired with the block-height
+ * range it spans.
  *
  * The output shape (`{ txSnapshots: [{ gqlNode, jsonMetadata }, ...] }`) is dictated by core-js's
  * own `parseSnapshotData`/`SnapshotData` types -- this is what makes a snapshot written by this
@@ -99,24 +133,23 @@ export async function constructSnapshotData({
 		);
 	}
 
-	const txSnapshots: TxSnapshot[] = await Promise.all(
-		edges.map(
-			async ({ node }): Promise<TxSnapshot> => {
-				const jsonMetadata = (await gatewayApi.getTxData(TxID(node.id))).toString();
-				return { gqlNode: node, jsonMetadata };
-			}
-		)
-	);
+	// Only MINED revisions belong in a snapshot. The snapshot's Block-Start/Block-End tags describe a
+	// closed block range; an unmined (pending, no block height) revision would put body content into
+	// the snapshot that those tags cannot represent. Filter first, then use the SAME mined set for the
+	// body, the block bounds, AND the entity count so all three stay mutually consistent.
+	const minedEdges = edges.filter((edge) => typeof edge.node.block?.height === 'number');
 
-	const blockHeights = edges
-		.map((edge) => edge.node.block?.height)
-		.filter((height): height is number => typeof height === 'number');
-
-	if (blockHeights.length === 0) {
+	if (minedEdges.length === 0) {
 		throw new Error(
 			`None of the ${edges.length} entity transaction(s) found for drive '${driveId}' have been mined yet -- wait for them to confirm before creating a snapshot.`
 		);
 	}
+
+	const txSnapshots = await fetchTxSnapshotsBounded(minedEdges, gatewayApi);
+
+	const blockHeights = minedEdges
+		.map((edge) => edge.node.block?.height)
+		.filter((height): height is number => typeof height === 'number');
 
 	const data: SnapshotData = { txSnapshots };
 	const blockStart = Math.min(...blockHeights);

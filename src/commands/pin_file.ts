@@ -25,6 +25,7 @@ new CLICommand({
 		ParentFolderIdParameter,
 		{
 			name: TransactionIdParameter,
+			required: true,
 			description: `the transaction ID of the EXISTING Arweave data transaction to pin into your drive
 \t\t\t\t\t\t\t• The referenced data is reused as-is and is NOT re-uploaded (free)`
 		},

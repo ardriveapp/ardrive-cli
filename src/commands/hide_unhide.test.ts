@@ -102,8 +102,12 @@ describe('hide-file / unhide-file / hide-folder / unhide-folder commands', () =>
 					'gateway'
 				]);
 
-				// hide/unhide never take a "new name" -- unlike rename-file/rename-folder
-				expect(parameterNames).to.not.include.members(['fileName', 'folderName']);
+				// hide/unhide never take a "new name" -- unlike rename-file/rename-folder. Assert absence of
+				// EACH name param separately: `.not.include.members([a, b])` only asserts "not ALL of a and
+				// b", so it would still pass if one of them crept back in. Two single-member `.not.include`
+				// checks assert NEITHER is present.
+				expect(parameterNames).to.not.include('fileName');
+				expect(parameterNames).to.not.include('folderName');
 			});
 
 			it(`(public) calls ArDrive.${publicMethod} with just the ${idParamName} and prints the result, without touching drive-key resolution`, async () => {

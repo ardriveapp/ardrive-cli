@@ -1337,12 +1337,12 @@ done
 
 Pinning lets you reference an **existing** Arweave data transaction as a new file entity in one of your PUBLIC drives, without re-uploading any data. This is useful for adopting data that already lives permanently on Arweave (e.g. a transaction uploaded outside of ArDrive, or one belonging to someone else) into your drive's folder structure, so it shows up alongside your other files with its own name, metadata, and location.
 
-Because a pinned file's metadata transaction only references the existing `--data-tx-id` (it doesn't touch the underlying data bytes), pinning a small file costs the same tiny metadata-only fee as any other file operation -- there is no data-upload cost, regardless of the size of the original file.
+Because a pinned file's metadata transaction only references the existing `--tx-id` (it doesn't touch the underlying data bytes), pinning a small file costs the same tiny metadata-only fee as any other file operation -- there is no data-upload cost, regardless of the size of the original file.
 
 Some important constraints:
 
 -   **Public drives only.** Pinning writes a plaintext ArFS metadata transaction that points at the referenced data. Private drives are not supported -- targeting a private `--parent-folder-id` fails with a clear error.
--   **The referenced transaction is never re-uploaded or modified.** Only a new file metadata entity is created; `--data-tx-id` is reused as-is as the new file's data transaction.
+-   **The referenced transaction is never re-uploaded or modified.** Only a new file metadata entity is created; `--tx-id` is reused as-is as the new file's data transaction.
 -   **Name conflicts throw by default.** If `--dest-file-name` already exists in the destination folder, the command fails unless `--skip` is provided, in which case the command exits successfully having made no changes.
 
 ```shell
