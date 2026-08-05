@@ -140,6 +140,7 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         20. [Uploading Files with Custom MetaData](#uploading-files-with-custom-metadata)
         21. [Applying Unique Custom MetaData During Bulk Workflows](#applying-unique-custom-metadata-during-bulk-workflows)
         22. [Pinning a File](#pinning-a-file)
+        23. [Creating a Snapshot](#creating-a-snapshot)
     8. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -1355,6 +1356,29 @@ ardrive pin-file --parent-folder-id "a2c8a0cb-0ca7-4dbb-8bf8-93f75f308e63" --dri
 
 Like other write commands, `pin-file` supports `--dry-run`, `--boost`, `--turbo`/`--turbo-url`, and `--gateway`. See `ardrive pin-file --help` for the full flag list.
 
+### Creating a Snapshot
+
+A **snapshot** is a single Arweave transaction, tagged `Entity-Type: snapshot`, `Drive-Id`, `Block-Start`, and `Block-End`, whose body is a JSON index of every ArFS entity metadata transaction (drive, folder, and file revisions) mined for that drive across the block range it covers. It exists purely as a read-path optimization: a client that wants to list a drive's full entity history can read the snapshot's JSON body directly instead of paginating through and re-fetching every individual metadata transaction the drive has ever produced. `create-snapshot` builds this snapshot for you and posts it to Arweave.
+
+Some important things to know:
+
+-   **Costs to post, like any other data transaction.** For a drive with a long entity history the snapshot body can be large, so posting it is not free -- `create-snapshot` estimates the cost up front, asserts your wallet can cover it, and prints the cost before sending.
+-   **When to use it.** Snapshotting is most useful for drives with a large number of files/folders/revisions, where clients that support snapshot-accelerated listing would otherwise have to replay a long transaction history on every listing. It's a maintenance operation you run occasionally (e.g. periodically, or before publishing a drive expected to see heavy read traffic) -- not something every drive needs.
+-   **Public drives only (for now).** Private drive snapshots are not yet supported.
+-   **Idempotent-ish, not automatic.** Each run creates a NEW snapshot transaction covering the drive's entity history at that point in time; it does not update or replace a previous snapshot.
+
+```shell
+ardrive create-snapshot --drive-id "bc9af866-6421-40f1-ac89-202bddb5c487" -w "/path/to/wallet"
+```
+
+Use `--dry-run` to see the block range, entity count, byte size, and estimated cost without posting anything:
+
+```shell
+ardrive create-snapshot --drive-id "bc9af866-6421-40f1-ac89-202bddb5c487" -w "/path/to/wallet" --dry-run
+```
+
+Like other write commands, `create-snapshot` supports `--boost`, `--turbo`/`--turbo-url`, and `--gateway`. See `ardrive create-snapshot --help` for the full flag list.
+
 ## Other Utility Operations
 
 ### Monitoring Transactions
@@ -1524,6 +1548,7 @@ create-folder
 upload-file
 create-manifest
 pin-file
+create-snapshot
 
 move-file
 move-folder
