@@ -33,6 +33,7 @@ import './rename_folder';
 import './retry_tx';
 import './send_ar';
 import './send_tx';
+import './snapshot_info';
 import './tx_status';
 import './unhide_file';
 import './unhide_folder';

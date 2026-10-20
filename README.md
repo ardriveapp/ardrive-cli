@@ -141,7 +141,8 @@ ardrive upload-file --wallet-file /path/to/my/wallet.json --parent-folder-id "f0
         21. [Applying Unique Custom MetaData During Bulk Workflows](#applying-unique-custom-metadata-during-bulk-workflows)
         22. [Pinning a File](#pinning-a-file)
         23. [Creating a Snapshot](#creating-a-snapshot)
-        24. [Hiding and Unhiding a File or Folder](#hiding-and-unhiding-a-file-or-folder)
+        24. [Reading Drives From Snapshots](#reading-drives-from-snapshots)
+        25. [Hiding and Unhiding a File or Folder](#hiding-and-unhiding-a-file-or-folder)
     8. [Other Utility Operations](#other-utility-operations)
         1. [Monitoring Transactions](#monitoring-transactions)
         2. [Dealing With Network Congestion](#dealing-with-network-congestion)
@@ -1359,26 +1360,54 @@ Like other write commands, `pin-file` supports `--dry-run`, `--boost`, `--turbo`
 
 ### Creating a Snapshot
 
-A **snapshot** is a single Arweave transaction, tagged `Entity-Type: snapshot`, `Drive-Id`, `Block-Start`, and `Block-End`, whose body is a JSON index of every ArFS entity metadata transaction (drive, folder, and file revisions) mined for that drive across the block range it covers. It exists purely as a read-path optimization: a client that wants to list a drive's full entity history can read the snapshot's JSON body directly instead of paginating through and re-fetching every individual metadata transaction the drive has ever produced. `create-snapshot` builds this snapshot for you and posts it to Arweave.
+A **snapshot** is a drive's whole state, up to the current block, published as one Arweave transaction: an ArFS Drive State entity (`Entity-Type: drive-state`) holding a SQLite database of the drive's folders, files and their revisions. A client that finds one reads the drive in one download and then queries only the blocks after it, instead of replaying every transaction the drive has ever produced. `create-snapshot` builds it from the chain and posts it.
 
 Some important things to know:
 
--   **Costs to post, like any other data transaction.** For a drive with a long entity history the snapshot body can be large, so posting it is not free -- `create-snapshot` estimates the cost up front, asserts your wallet can cover it, and prints the cost before sending.
--   **When to use it.** Snapshotting is most useful for drives with a large number of files/folders/revisions, where clients that support snapshot-accelerated listing would otherwise have to replay a long transaction history on every listing. It's a maintenance operation you run occasionally (e.g. periodically, or before publishing a drive expected to see heavy read traffic) -- not something every drive needs.
--   **Public drives only (for now).** Private drive snapshots are not yet supported.
--   **Idempotent-ish, not automatic.** Each run creates a NEW snapshot transaction covering the drive's entity history at that point in time; it does not update or replace a previous snapshot.
+-   **You must own the drive.** Clients trust a snapshot only from the drive's owner.
+-   **Public and private drives.** A private drive's snapshot is encrypted with the drive key, so only someone with the drive key can read it. Pass `--private` or `--drive-key` as you would to list the drive.
+-   **Costs to post, like any other data transaction.** `create-snapshot` prints the size and, without `--turbo`, the estimated AR cost before sending, and checks your wallet can cover it.
+-   **It refuses rather than publish a drive state it cannot vouch for.** It stops if a recent change to the drive is still being confirmed, if any of the drive's metadata cannot be read, if the drive has no folders or files, or if the snapshot would be larger than the 100 MiB every reader accepts. Licence details are not included: readers read each file's licence from its `licenseTxId`.
+-   **Each run publishes a new snapshot.** Readers use the newest one. Publishing again after a drive has grown keeps reading it fast.
+-   **The format replaced the JSON snapshot.** Earlier versions of this command published `Entity-Type: snapshot` JSON bodies. Those stay readable by every client; this command no longer creates them.
 
 ```shell
 ardrive create-snapshot --drive-id "bc9af866-6421-40f1-ac89-202bddb5c487" -w "/path/to/wallet"
 ```
 
-Use `--dry-run` to see the block range, entity count, byte size, and estimated cost without posting anything:
+For a private drive:
+
+```shell
+ardrive create-snapshot --drive-id "bc9af866-6421-40f1-ac89-202bddb5c487" -w "/path/to/wallet" --private
+```
+
+Use `--dry-run` to build and sign the snapshot and see its block range, entity count and size without posting anything or needing the funds:
 
 ```shell
 ardrive create-snapshot --drive-id "bc9af866-6421-40f1-ac89-202bddb5c487" -w "/path/to/wallet" --dry-run
 ```
 
 Like other write commands, `create-snapshot` supports `--boost`, `--turbo`/`--turbo-url`, and `--gateway`. See `ardrive create-snapshot --help` for the full flag list.
+
+### Reading Drives From Snapshots
+
+`list-drive`, `list-folder`, `download-drive` and `download-folder` read a drive's newest snapshot first, then the older JSON snapshots and GraphQL for anything after it. A snapshot that cannot be used, for any reason, falls back to the slower path, so a drive always lists the same way. Each listing logs one line to stderr saying whether a snapshot was used and why not:
+
+```shell
+[drive-state] bc9af866-6421-40f1-ac89-202bddb5c487: read 1543 entities through block 2025061 (xk_N9vGYgTuLUgyWlVbdHCkl_js_Bo35M2miM6porK4) - outcome=used
+```
+
+Set `ARDRIVE_DISABLE_DRIVE_STATE=1` to skip snapshots for a run, and `ARDRIVE_DISABLE_SNAPSHOTS=1` to skip the older JSON snapshots too.
+
+The downloaded snapshot is cached under `~/.ardrive/caches/drive-state` (`ardrive-caches/drive-state` in your home folder on Windows), so the next listing of the same drive does not download it again. For a private drive, the cache holds the encrypted snapshot, never the decrypted one.
+
+To see whether a drive has a usable snapshot without listing it, use `snapshot-info`. It reads only and spends nothing:
+
+```shell
+ardrive snapshot-info --drive-id "bc9af866-6421-40f1-ac89-202bddb5c487"
+```
+
+The `outcome` is `used` when a snapshot was read, `none-found` when the drive has none, or the reason one was refused, such as `unknown-version` for a format this version does not read.
 
 ### Hiding and Unhiding a File or Folder
 
@@ -1600,6 +1629,7 @@ drive-info
 list-folder
 list-drive
 list-all-drives
+snapshot-info
 
 download-file
 download-folder

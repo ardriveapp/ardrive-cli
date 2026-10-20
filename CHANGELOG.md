@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+-   **Breaking:** `create-snapshot` publishes an ArFS Drive State entity (`Entity-Type: drive-state`): the drive's whole state as one SQLite database, which ArDrive clients read in one download. It no longer publishes JSON snapshots (`Entity-Type: snapshot`), which stay readable. Its JSON output names the result `txId` and adds `driveStateId`, `stateVersion`, `blockEnd`, `entityCount`, `plaintextBytes`, `sealedBytes`, `encrypted` and `transport`
+-   `create-snapshot` supports private drives, with `--private` or `--drive-key`, and refuses a drive the wallet does not own
+-   `create-snapshot --dry-run` no longer requires the wallet to hold the estimated cost
+-   `list-drive`, `list-folder`, `download-drive` and `download-folder` read a drive's snapshot first, through ardrive-core-js. `ARDRIVE_DISABLE_DRIVE_STATE=1` turns this off
+
+### Added
+
+-   `snapshot-info`: whether a drive has a usable snapshot, and why not
+
+### Updated
+
+-   Updated to ardrive-core-js@4.4.0
+
 ## [4.0.0] - 2026-02-26
 
 ### Updated
