@@ -1,5 +1,10 @@
 import { CLICommand, ParametersHelper } from '../CLICommand';
-import { DriveIdParameter, DrivePrivacyParameters, GatewayParameter } from '../parameter_declarations';
+import {
+	DriveIdParameter,
+	DriveKeyParameter,
+	DrivePrivacyParameters,
+	GatewayParameter
+} from '../parameter_declarations';
 import { cliArDriveAnonymousFactory, cliArDriveFactory, cliWalletDao } from '..';
 import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { CLIAction } from '../CLICommand/action';
@@ -21,7 +26,12 @@ new CLICommand({
 
 		let protection: DriveStateProtection;
 		let owner;
-		if (await parameters.getIsPrivate()) {
+		const driveKeyParameter = parameters.getParameterValue(DriveKeyParameter);
+		if (driveKeyParameter) {
+			// The key itself is all reading needs: no wallet, no password.
+			owner = await cliArDriveAnonymousFactory({ arweave }).getOwnerForDriveId(driveId);
+			protection = { kind: 'private', driveKey: Buffer.from(driveKeyParameter, 'base64') };
+		} else if (await parameters.getIsPrivate()) {
 			const wallet = await parameters.getRequiredWallet();
 			const arDrive = cliArDriveFactory({ wallet, arweave });
 			owner = await arDrive.getOwnerForDriveId(driveId);
@@ -34,7 +44,9 @@ new CLICommand({
 
 		const source = new DriveStateSource({
 			gatewayApi: new GatewayAPI({ gatewayUrl: gatewayUrlForArweave(arweave) }),
-			log: (line) => console.error(line)
+			log: (line) => console.error(line),
+			// As a listing does, so this reports the verdict a listing would reach.
+			currentHeight: async () => (await arweave.network.getInfo()).height
 		});
 		const result = await source.read({ driveId, owner, protection });
 

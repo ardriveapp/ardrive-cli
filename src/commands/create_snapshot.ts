@@ -96,6 +96,20 @@ new CLICommand({
 		const log = (line: string) => console.error(line);
 		const isPrivate = await parameters.getIsPrivate();
 
+		// Asked before building: without it, a private drive built as public reads as
+		// every entry being unreadable, which sends people looking for corruption.
+		const isPublicDrive = await arFsDao.isPublicDrive(driveId, owner);
+		if (isPrivate && isPublicDrive) {
+			throw new Error(
+				`Drive ${driveId} is public. Leave out --private, --unsafe-drive-password and --drive-key.`
+			);
+		}
+		if (!isPrivate && !isPublicDrive) {
+			throw new Error(
+				`Drive ${driveId} is private. Pass --private, --unsafe-drive-password or --drive-key to snapshot it.`
+			);
+		}
+
 		let built: BuiltDriveState;
 		try {
 			if (isPrivate) {
