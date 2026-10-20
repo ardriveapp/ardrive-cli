@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Updated
 
--   Updated to ardrive-core-js@4.4.0
+-   Updated to ardrive-core-js@4.5.0: snapshot reading is stricter and faster, and `create-snapshot` refuses to publish a snapshot every reader would refuse, or one with fewer entities than the drive's newest published snapshot (a gateway that has not indexed the whole drive)
 
 ## [4.0.0] - 2026-02-26
 
