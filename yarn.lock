@@ -2259,7 +2259,7 @@ __metadata:
     "@types/source-map-support": ^0
     "@typescript-eslint/eslint-plugin": ^6.2.1
     "@typescript-eslint/parser": ^6.2.1
-    ardrive-core-js: 4.3.0
+    ardrive-core-js: 4.4.0
     arweave: 1.15.7
     axios: ^0.21.1
     chai: ^4.3.4
@@ -2286,9 +2286,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"ardrive-core-js@npm:4.3.0":
-  version: 4.3.0
-  resolution: "ardrive-core-js@npm:4.3.0"
+"ardrive-core-js@npm:4.4.0":
+  version: 4.4.0
+  resolution: "ardrive-core-js@npm:4.4.0"
   dependencies:
     "@ardrive/ardrive-promise-cache": ^1.1.4
     "@ardrive/turbo-sdk": ^1.0.1
@@ -2301,6 +2301,7 @@ __metadata:
     base64-js: ^1.5.1
     bignumber.js: ^9.1.2
     bn.js: ^5.2.1
+    fflate: 0.8.3
     futoin-hkdf: ^1.5.3
     human-crypto-keys: "git+https://github.com/ardriveapp/js-human-crypto-keys.git#expose_lib"
     jwk-to-pem: ^2.0.5
@@ -2308,9 +2309,10 @@ __metadata:
     mime-types: ^2.1.35
     regression: ^2.0.1
     smartweave: ^0.4.49
+    sql.js: 1.14.2
     utf8: ^3.0.0
     uuid: ^9.0.1
-  checksum: 77d242524d0d5b60f209774672c9e346d0de7c639dd62262592642214302b0e32262a2f7ced385f8817fd72b365637e771f08e31848165733d9179c5dd2e6eac
+  checksum: 2173d7567f12af1a98cb144044a0b1c8570ca926f8c4fa6e1908d724af53cb43c61e46b4b7ef4e61c8ccbde3078dd2e94883a80098b16c08c9dc573809e7f23a
   languageName: node
   linkType: hard
 
@@ -4270,6 +4272,13 @@ __metadata:
     set-cookie-parser: ^2.4.8
     tough-cookie: ^4.0.0
   checksum: 01657ccdf6305c3bf9b2375a9aedd6930f803acc77583c02e96a0b3d84068cc9406d2ad4d061a8c4d9c106c021de51dd2aa505a0a05a4477a1a859052f2537a0
+  languageName: node
+  linkType: hard
+
+"fflate@npm:0.8.3":
+  version: 0.8.3
+  resolution: "fflate@npm:0.8.3"
+  checksum: a2a417e8fb5128b946cb397ab59a90e089057cba492f2c17a89c4af6ba8568b3da72ed36ef1efe901df7858a20964ce56e84d282e60498be1947fcc6133bc891
   languageName: node
   linkType: hard
 
@@ -7948,6 +7957,13 @@ resolve@^1.10.0:
   version: 1.0.3
   resolution: "sprintf-js@npm:1.0.3"
   checksum: 19d79aec211f09b99ec3099b5b2ae2f6e9cdefe50bc91ac4c69144b6d3928a640bb6ae5b3def70c2e85a2c3d9f5ec2719921e3a59d3ca3ef4b2fd1a4656a0df3
+  languageName: node
+  linkType: hard
+
+"sql.js@npm:1.14.2":
+  version: 1.14.2
+  resolution: "sql.js@npm:1.14.2"
+  checksum: 8dc9d8f583318d4a4226b4368844782398adf69cb2991d9907c74e5df94b85da55c76c40fa8d9c737aff8f03f0e2973b8d8876a378e40108d15a6edc93a3150d
   languageName: node
   linkType: hard
 
