@@ -2,6 +2,7 @@ import { CLICommand, ParametersHelper } from '../CLICommand';
 import {
 	BoostParameter,
 	DriveIdParameter,
+	DrivePrivacyParameters,
 	DryRunParameter,
 	GatewayParameter,
 	SeedPhraseParameter,
@@ -14,17 +15,14 @@ import { CLIAction } from '../CLICommand/action';
 import {
 	AR,
 	ArFSDAO,
-	ArFSPublicFileDataPrototype,
-	ArFSPublicFileDataTransactionData,
+	BuiltDriveState,
 	ByteCount,
+	DriveStateBuildRefused,
 	EID,
 	GatewayAPI,
 	GatewayOracle,
 	gatewayUrlForArweave,
 	RewardSettings,
-	SNAPSHOT_CONTENT_TYPE,
-	SNAPSHOT_ENTITY_TYPE,
-	SnapshotTagName,
 	Wallet,
 	WalletDAO
 } from 'ardrive-core-js';
@@ -33,19 +31,24 @@ import { ArFSTagSettings } from 'ardrive-core-js/lib/arfs/arfs_tag_settings';
 // directly from their source modules, mirroring the existing pattern in `src/index.ts`.
 import { ARDataPriceNetworkEstimator } from 'ardrive-core-js/lib/pricing/ar_data_price_network_estimator';
 import { Turbo } from 'ardrive-core-js/lib/arfs/turbo';
-import { CLI_APP_NAME, CLI_APP_VERSION } from '..';
+import { CLI_APP_NAME, CLI_APP_VERSION, cliArDriveFactory, cliWalletDao } from '..';
 import { getArweaveFromURL } from '../utils/get_arweave_for_url';
-import { constructSnapshotData, snapshotDataToBuffer } from '../utils/snapshots/create_snapshot';
 
+/**
+ * Publishes a drive's snapshot: an ArFS Drive State entity, one SQLite file of
+ * the drive's whole state up to the current block, sealed under the drive key
+ * for a private drive. Clients read it instead of replaying the drive's history.
+ */
 new CLICommand({
 	name: 'create-snapshot',
 	parameters: [
 		{
 			name: DriveIdParameter,
 			required: true,
-			description: `the ArFS entity ID of the PUBLIC drive to snapshot
-\t\t\t\t\t\t\t• Private drive snapshots are not yet supported`
+			description: `the ArFS entity ID of the drive to snapshot. You must own it
+\t\t\t\t\t\t\t• For a private drive, also pass --private or --drive-key`
 		},
+		...DrivePrivacyParameters,
 		BoostParameter,
 		DryRunParameter,
 		WalletFileParameter,
@@ -55,7 +58,7 @@ new CLICommand({
 		TurboUrlParameter
 	],
 	action: new CLIAction(async function action(options) {
-		const parameters = new ParametersHelper(options);
+		const parameters = new ParametersHelper(options, cliWalletDao);
 
 		const driveId = parameters.getRequiredParameterValue(DriveIdParameter, EID);
 		const dryRun = parameters.isDryRun();
@@ -66,37 +69,17 @@ new CLICommand({
 		const arweave = getArweaveFromURL(parameters.getGateway());
 		const wallet: Wallet = await parameters.getRequiredWallet();
 		const owner = await wallet.getAddress();
+		const arDrive = cliArDriveFactory({ wallet, arweave, dryRun });
 
-		// A single GatewayAPI instance is shared by the entity-history query AND the DAO used to
-		// post the resulting snapshot transaction, so both honor the same --gateway selection.
+		// Only the drive's owner can publish its state: readers trust nothing else.
+		const driveOwner = await arDrive.getOwnerForDriveId(driveId);
+		if (`${driveOwner}` !== `${owner}`) {
+			throw new Error(`Drive ${driveId} is owned by ${driveOwner}; only its owner can create a snapshot of it.`);
+		}
+
+		// A single GatewayAPI instance is shared by the drive's history queries AND the DAO that
+		// posts the result, so both honor the same --gateway selection.
 		const gatewayApi = new GatewayAPI({ gatewayUrl: gatewayUrlForArweave(arweave) });
-
-		// 1. Gather the drive's entity metadata history and build the snapshot body. The body shape
-		// (`{ txSnapshots: [...] }`) is dictated by core-js's own `parseSnapshotData`, so a snapshot
-		// written here round-trips through core-js's snapshot-accelerated listing path.
-		const { data, blockStart, blockEnd, entityCount } = await constructSnapshotData({
-			owner,
-			driveId,
-			gatewayApi
-		});
-		const snapshotBody = snapshotDataToBuffer(data);
-
-		console.error(
-			`Snapshotting ${entityCount} entity revision(s) of drive '${driveId}' spanning blocks ${blockStart}-${blockEnd} (${snapshotBody.byteLength} bytes)...`
-		);
-
-		// A snapshot is a standalone data transaction tagged Entity-Type/Drive-Id/Block-Start/Block-End
-		// (per ArFS), NOT a child file entity -- so it is built as a bare ArFSPublicFileDataPrototype
-		// (Content-Type + these custom tags only) rather than going through the normal file-upload path,
-		// which would additionally attach File-Id/Parent-Folder-Id/Name ArFS entity tags.
-		const objectData = new ArFSPublicFileDataTransactionData(snapshotBody);
-		const dataPrototype = new ArFSPublicFileDataPrototype(objectData, SNAPSHOT_CONTENT_TYPE, {
-			[SnapshotTagName.entityType]: SNAPSHOT_ENTITY_TYPE,
-			[SnapshotTagName.driveId]: `${driveId}`,
-			[SnapshotTagName.blockStart]: `${blockStart}`,
-			[SnapshotTagName.blockEnd]: `${blockEnd}`
-		});
-
 		const arFSTagSettings = new ArFSTagSettings({ appName: CLI_APP_NAME, appVersion: CLI_APP_VERSION });
 		const arFsDao = new ArFSDAO(
 			wallet,
@@ -109,13 +92,55 @@ new CLICommand({
 			gatewayApi
 		);
 
+		const producer = `${CLI_APP_NAME}/${CLI_APP_VERSION}`;
+		const log = (line: string) => console.error(line);
+		const isPrivate = await parameters.getIsPrivate();
+
+		let built: BuiltDriveState;
+		try {
+			if (isPrivate) {
+				const driveKey = await parameters.getDriveKey({ driveId, arDrive, owner });
+				// Proves the key before anything is built: a wrong key would otherwise read as
+				// every entity in the drive being unreadable.
+				await arDrive.getPrivateDrive({ driveId, driveKey, owner });
+				built = await arFsDao.buildPrivateDriveState({ driveId, driveKey, owner, producer, log });
+			} else {
+				built = await arFsDao.buildPublicDriveState({ driveId, owner, producer, log });
+			}
+		} catch (e) {
+			if (e instanceof DriveStateBuildRefused) {
+				throw new Error(`Cannot create a snapshot of drive ${driveId} (${e.reason}): ${e.detail}`);
+			}
+			throw e;
+		}
+
+		const sealedBytes = built.sealed.body.byteLength;
+		console.error(
+			`Snapshotting ${built.entityCount} entities of drive '${driveId}' through block ${built.blockEnd} ` +
+				`(${built.plaintextBytes} bytes, ${sealedBytes} sealed)...`
+		);
+		if (built.dropped.length > 0) {
+			console.error(
+				`Left out ${built.dropped.length} metadata transaction(s) missing a required field, as ArDrive does.`
+			);
+		}
+
+		const tag = (name: string) => built.tags.find((t) => t.name === name)?.value;
+		const summary = {
+			driveStateId: tag('Drive-State-Id'),
+			driveId: `${driveId}`,
+			stateVersion: tag('State-Version'),
+			blockStart: 0,
+			blockEnd: built.blockEnd,
+			entityCount: built.entityCount,
+			unconfirmedDataTxs: built.unconfirmedDataTxs,
+			plaintextBytes: built.plaintextBytes,
+			sealedBytes,
+			encrypted: isPrivate
+		};
+
 		if (useTurbo) {
-			// excludedTagNames: ['ArFS'] routes through the raw file-DATA tag assembly (Content-Type +
-			// our custom tags + App-Name/App-Version), skipping the ArFS entity-metadata tag set.
-			const dataItem = await arFsDao.prepareArFSDataItem({
-				objectMetaData: dataPrototype,
-				excludedTagNames: ['ArFS']
-			});
+			const dataItem = await arFsDao.prepareDriveStateDataItem(built);
 
 			let turboResult: Awaited<ReturnType<Turbo['sendDataItem']>> | undefined;
 			if (!dryRun) {
@@ -128,55 +153,50 @@ new CLICommand({
 
 			console.log(
 				JSON.stringify(
-					{
-						snapshotId: dataItem.id,
-						driveId: `${driveId}`,
-						blockStart,
-						blockEnd,
-						entityCount,
-						dataSize: snapshotBody.byteLength,
-						turbo: turboResult,
-						dryRun,
-						posted: !dryRun
-					},
+					{ ...summary, txId: dataItem.id, transport: 'turbo', turbo: turboResult, dryRun, posted: !dryRun },
 					null,
 					4
 				)
 			);
-
 			return SUCCESS_EXIT_CODE;
 		}
 
-		// AR (layer 1) path -- estimate cost, then require the wallet actually have the funds before
-		// signing/sending, mirroring the balance assertion every other costed command relies on.
+		// AR (layer 1): estimate the cost, then require the wallet to hold it before signing.
 		const priceEstimator = new ARDataPriceNetworkEstimator(new GatewayOracle(gatewayUrlForArweave(arweave)));
-		const baseReward = await priceEstimator.getBaseWinstonPriceForByteCount(new ByteCount(snapshotBody.byteLength));
+		const baseReward = await priceEstimator.getBaseWinstonPriceForByteCount(new ByteCount(sealedBytes));
 		const boostedReward = boost?.wouldBoostReward() ? boost.boostedWinstonReward(baseReward) : baseReward;
 
 		console.error(`Estimated cost: ${new AR(boostedReward).toString()} AR (${boostedReward.toString()} Winston)`);
 
-		const walletDAO = new WalletDAO(arweave, CLI_APP_NAME, CLI_APP_VERSION);
-		const hasBalance = await walletDAO.walletHasBalance(wallet, boostedReward);
-		if (!hasBalance) {
-			throw new Error(
-				`Insufficient wallet balance to post this snapshot. Estimated cost is ${new AR(
-					boostedReward
-				).toString()} AR, sent from wallet address '${owner}'.`
-			);
+		// A dry run spends nothing, so it does not need the funds.
+		if (!dryRun) {
+			const walletDAO = new WalletDAO(arweave, CLI_APP_NAME, CLI_APP_VERSION);
+			const hasBalance = await walletDAO.walletHasBalance(wallet, boostedReward);
+			if (!hasBalance) {
+				throw new Error(
+					`Insufficient wallet balance to post this snapshot. Estimated cost is ${new AR(
+						boostedReward
+					).toString()} AR, sent from wallet address '${owner}'.`
+				);
+			}
 		}
 
 		const rewardSettings: RewardSettings = boost
 			? { reward: baseReward, feeMultiple: boost }
 			: { reward: baseReward };
-		const transaction = await arFsDao.prepareArFSObjectTransaction({
-			objectMetaData: dataPrototype,
-			rewardSettings,
-			excludedTagNames: ['ArFS']
-		});
+		const transaction = await arFsDao.prepareDriveStateTransaction(built, rewardSettings);
 
 		if (!dryRun) {
 			console.error(`Posting snapshot transaction '${transaction.id}'...`);
-			await arFsDao.sendTransactionsAsChunks([transaction]);
+			try {
+				await arFsDao.sendTransactionsAsChunks([transaction]);
+			} catch (e) {
+				// The header may already be accepted and paid for; posting again would pay twice.
+				throw new Error(
+					`Posting snapshot transaction '${transaction.id}' failed: ${e instanceof Error ? e.message : e}. ` +
+						'Its header may already be paid for; check its status with `ardrive tx-status` before retrying.'
+				);
+			}
 		} else {
 			console.error(`DRY RUN: would post snapshot transaction '${transaction.id}'`);
 		}
@@ -184,12 +204,9 @@ new CLICommand({
 		console.log(
 			JSON.stringify(
 				{
-					snapshotId: transaction.id,
-					driveId: `${driveId}`,
-					blockStart,
-					blockEnd,
-					entityCount,
-					dataSize: snapshotBody.byteLength,
+					...summary,
+					txId: transaction.id,
+					transport: 'arweave',
 					reward: boostedReward.toString(),
 					dryRun,
 					posted: !dryRun

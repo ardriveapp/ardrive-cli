@@ -5,14 +5,13 @@ import { CLICommand, CommandDescriptor } from '../CLICommand/cli_command';
 import { ParametersHelper } from '../CLICommand/parameters_helper';
 import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import {
+	ADDR,
+	ArDrive,
 	ArFSDAO,
-	GatewayAPI,
-	GQLEdgeInterface,
+	DriveStateChain,
 	GQLNodeInterface,
 	JWKWallet,
-	parseSnapshotData,
-	SNAPSHOT_CONTENT_TYPE,
-	SnapshotTagName,
+	readDriveState,
 	WalletDAO,
 	Winston
 } from 'ardrive-core-js';
@@ -23,33 +22,14 @@ import { Turbo } from 'ardrive-core-js/lib/arfs/turbo';
 // singleton) as a side effect -- mirrors how the CLI itself discovers commands via `./commands`.
 import './create_snapshot';
 
-const VALID_DRIVE_ID = 'bc9af866-6421-40f1-ac89-202bddb5c487';
-const DRIVE_METADATA_TX_ID = 'a'.repeat(43);
-const FILE_METADATA_TX_ID = 'b'.repeat(43);
-const PRIOR_SNAPSHOT_TX_ID = 'c'.repeat(43);
+const DRIVE_ID = 'bc9af866-6421-40f1-ac89-202bddb5c487';
+const ROOT_FOLDER_ID = 'bc9af866-0000-40f1-ac89-202bddb5c487';
+const FILE_ID = 'bc9af866-1111-40f1-ac89-202bddb5c487';
 
-// A long-established, funds-free test fixture already used by this repo's other test suites
-// (see src/CLICommand/parameters_helper.test.ts) to exercise REAL wallet signing offline.
-// Using a real JWKWallet here (rather than a `{ getAddress: async () => ... }` stub, as pin-file's
-// tests use) is required because this command signs a real Arweave transaction / data item locally
-// -- exactly what we want to assert against (tags, round-trippable body), never a network post.
+// A long-established, funds-free test fixture already used by this repo's other test suites to
+// exercise REAL wallet signing offline: this command signs a real transaction or data item
+// locally, which is what these tests assert against. Nothing is ever posted.
 const testWallet = new JWKWallet(JSON.parse(fs.readFileSync('./test_wallet.json', { encoding: 'utf8' })));
-
-function makeNode(
-	overrides: Partial<GQLNodeInterface> & Pick<GQLNodeInterface, 'id' | 'tags' | 'block'>
-): GQLNodeInterface {
-	return {
-		anchor: '',
-		signature: '',
-		recipient: '',
-		owner: { address: 'fake-owner-address', key: '' },
-		fee: { winston: '0', ar: '0' },
-		quantity: { winston: '0', ar: '0' },
-		data: { size: 0, type: 'application/json' },
-		parent: { id: '' },
-		...overrides
-	};
-}
 
 function getCreateSnapshotDescriptor(): CommandDescriptor {
 	const descriptor = CLICommand.getAllCommandDescriptors().find((cmd) => cmd.name === 'create-snapshot');
@@ -60,82 +40,94 @@ function getCreateSnapshotDescriptor(): CommandDescriptor {
 }
 
 /**
- * Stubs the GQL query + tx-data-fetch legs of `constructSnapshotData` with a fixed, deterministic
- * drive history: one drive-metadata tx, one file-metadata tx, and a PRIOR snapshot tx (which must
- * be excluded from the new snapshot's body). Never touches the network.
+ * Stubs the chain the producer reads with a small public drive: the drive, its
+ * root folder and one file. With `withoutDrive`, the drive entity is missing.
  */
-function stubDriveHistory() {
-	const driveMetadata = { name: 'My Drive', rootFolderId: VALID_DRIVE_ID };
-	const fileMetadata = { name: 'hello.txt', size: 5, dataTxId: 'd'.repeat(43), dataContentType: 'text/plain' };
-
-	const driveNode = makeNode({
-		id: DRIVE_METADATA_TX_ID,
-		tags: [
-			{ name: 'Entity-Type', value: 'drive' },
-			{ name: SnapshotTagName.driveId, value: VALID_DRIVE_ID },
-			{ name: 'Content-Type', value: 'application/json' }
-		],
-		block: { id: 'block-a', timestamp: 1000, height: 100, previous: '' }
+function stubDriveHistory(owner: string, { withoutDrive = false } = {}) {
+	let n = 0;
+	const node = (type: string, unixTime: number, tags: Record<string, string>, json: Record<string, unknown>) => ({
+		node: ({
+			id: `${n++}`.padStart(43, 'h'),
+			owner: { address: owner },
+			block: { height: 100 + n },
+			tags: Object.entries({
+				ArFS: '0.15',
+				'Entity-Type': type,
+				'Drive-Id': DRIVE_ID,
+				'Unix-Time': `${unixTime}`,
+				...tags
+			}).map(([name, value]) => ({ name, value }))
+		} as unknown) as GQLNodeInterface,
+		json
 	});
-	const fileNode = makeNode({
-		id: FILE_METADATA_TX_ID,
-		tags: [
-			{ name: 'Entity-Type', value: 'file' },
-			{ name: SnapshotTagName.driveId, value: VALID_DRIVE_ID },
-			{ name: 'Content-Type', value: 'application/json' }
-		],
-		block: { id: 'block-b', timestamp: 2000, height: 150, previous: '' }
-	});
-	// A previous snapshot of the SAME drive -- carries the Drive-Id tag too (per REQUIRED_SNAPSHOT_TAG_NAMES),
-	// so it would be picked up by a naive owner+Drive-Id query. It must never be indexed into a new snapshot.
-	const priorSnapshotNode = makeNode({
-		id: PRIOR_SNAPSHOT_TX_ID,
-		tags: [
-			{ name: SnapshotTagName.entityType, value: 'snapshot' },
-			{ name: SnapshotTagName.driveId, value: VALID_DRIVE_ID },
-			{ name: SnapshotTagName.blockStart, value: '1' },
-			{ name: SnapshotTagName.blockEnd, value: '99' },
-			{ name: SnapshotTagName.contentType, value: SNAPSHOT_CONTENT_TYPE }
-		],
-		block: { id: 'block-0', timestamp: 500, height: 99, previous: '' }
-	});
-
-	const edges: GQLEdgeInterface[] = [
-		{ cursor: 'cursor-1', node: fileNode },
-		{ cursor: 'cursor-2', node: driveNode },
-		{ cursor: 'cursor-3', node: priorSnapshotNode }
+	const drive = node(
+		'drive',
+		1700000000,
+		{ 'Drive-Privacy': 'public' },
+		{ name: 'My Drive', rootFolderId: ROOT_FOLDER_ID }
+	);
+	const others = [
+		node('folder', 1700000001, { 'Folder-Id': ROOT_FOLDER_ID }, { name: 'My Drive' }),
+		node(
+			'file',
+			1700000002,
+			{ 'File-Id': FILE_ID, 'Parent-Folder-Id': ROOT_FOLDER_ID },
+			{ name: 'hello.txt', size: 5, dataTxId: 'd'.repeat(43), dataContentType: 'text/plain' }
+		)
 	];
-
-	const gqlRequestStub = sinon
-		.stub(GatewayAPI.prototype, 'gqlRequest')
-		.resolves({ pageInfo: { hasNextPage: false }, edges });
-
-	const metadataByTxId: Record<string, Buffer> = {
-		[DRIVE_METADATA_TX_ID]: Buffer.from(JSON.stringify(driveMetadata)),
-		[FILE_METADATA_TX_ID]: Buffer.from(JSON.stringify(fileMetadata))
+	const byId = new Map([drive, ...others].map((h) => [h.node.id, h.json]));
+	const chain: DriveStateChain = {
+		currentHeight: async () => 2_000_000,
+		driveNodes: async () => (withoutDrive ? [] : [drive.node]),
+		folderAndFileNodes: async () => others.map((h) => h.node),
+		metadata: async (nd) => byId.get(nd.id)!,
+		minedTxIds: async (ids) => new Set(ids)
 	};
-	const getTxDataStub = sinon.stub(GatewayAPI.prototype, 'getTxData').callsFake(async (txId) => {
-		const data = metadataByTxId[`${txId}`];
-		if (!data) {
-			throw new Error(`Test setup error: unexpected getTxData call for ${txId}`);
-		}
-		return data;
-	});
+	sinon
+		.stub((ArFSDAO.prototype as unknown) as { driveStateChain: () => DriveStateChain }, 'driveStateChain')
+		.returns(chain);
+}
 
-	return { gqlRequestStub, getTxDataStub, driveMetadata, fileMetadata };
+function printed(consoleLogStub: sinon.SinonStub): string {
+	return consoleLogStub
+		.getCalls()
+		.map((call) => call.args[0])
+		.join('\n');
+}
+
+function tagsOf(transaction: { tags: { get: (f: string, o: unknown) => string }[] }) {
+	return transaction.tags.map((tag) => ({
+		name: tag.get('name', { decode: true, string: true }),
+		value: tag.get('value', { decode: true, string: true })
+	}));
 }
 
 describe('create-snapshot command', () => {
+	let owner: string;
+
+	before(async () => {
+		owner = `${await testWallet.getAddress()}`;
+	});
+
+	beforeEach(() => {
+		sinon.stub(ParametersHelper.prototype, 'getRequiredWallet').resolves(testWallet);
+		sinon.stub(ArDrive.prototype, 'getOwnerForDriveId').callsFake(async () => ADDR(owner));
+	});
+
 	afterEach(() => {
 		sinon.restore();
 	});
 
 	it('is discoverable via the command registry with the expected params', () => {
-		const descriptor = getCreateSnapshotDescriptor();
-		const parameterNames = descriptor.parameters.map((param) => (typeof param === 'string' ? param : param.name));
+		const parameterNames = getCreateSnapshotDescriptor().parameters.map((param) =>
+			typeof param === 'string' ? param : param.name
+		);
 
 		expect(parameterNames).to.include.members([
 			'driveId',
+			'driveKey',
+			'private',
+			'unsafeDrivePassword',
 			'boost',
 			'dryRun',
 			'walletFile',
@@ -148,131 +140,117 @@ describe('create-snapshot command', () => {
 
 	describe('the AR (layer 1) path', () => {
 		beforeEach(() => {
-			sinon.stub(ParametersHelper.prototype, 'getRequiredWallet').resolves(testWallet);
 			sinon.stub(WalletDAO.prototype, 'walletHasBalance').resolves(true);
 			sinon
 				.stub(ARDataPriceNetworkEstimator.prototype, 'getBaseWinstonPriceForByteCount')
 				.resolves(new Winston('100'));
 		});
 
-		it('builds a snapshot body that round-trips through parseSnapshotData, tags the tx with the core-js snapshot constants, excludes prior snapshots, and posts it', async () => {
-			const { driveMetadata, fileMetadata } = stubDriveHistory();
-			const sendTransactionsAsChunksStub = sinon.stub(ArFSDAO.prototype, 'sendTransactionsAsChunks').resolves();
+		it('posts a drive state entity that a reader opens to the drive it was built from', async () => {
+			stubDriveHistory(owner);
+			const send = sinon.stub(ArFSDAO.prototype, 'sendTransactionsAsChunks').resolves();
 			const consoleLogStub = sinon.stub(console, 'log');
 
-			const descriptor = getCreateSnapshotDescriptor();
-			const exitCode = await descriptor.action.trigger({ driveId: VALID_DRIVE_ID });
+			const exitCode = await getCreateSnapshotDescriptor().action.trigger({ driveId: DRIVE_ID });
 
 			expect(exitCode).to.equal(SUCCESS_EXIT_CODE);
-			expect(sendTransactionsAsChunksStub.calledOnce).to.be.true;
+			expect(send.calledOnce).to.be.true;
+			const [[transaction]] = send.firstCall.args;
+			const tags = tagsOf(transaction as never);
+			const tag = (name: string) => tags.find((t) => t.name === name)?.value;
 
-			const [postedTransactions] = sendTransactionsAsChunksStub.firstCall.args;
-			expect(postedTransactions).to.have.lengthOf(1);
-			const transaction = postedTransactions[0];
+			expect(tag('Entity-Type')).to.equal('drive-state');
+			expect(tag('Drive-Id')).to.equal(DRIVE_ID);
+			expect(tag('ArFS')).to.equal('0.15');
+			expect(tag('App-Name')).to.equal('ArDrive-CLI');
+			expect(tag('Content-Type')).to.equal('application/octet-stream');
+			expect(tag('Block-End')).to.equal('2000000');
+			expect(tag('Entity-Count')).to.equal('3');
+			expect(tags.map((t) => t.name)).not.to.include('Content-Encoding');
+			expect(tags.map((t) => t.name)).not.to.include('Cipher');
 
-			// Tag correctness: exactly the ArFS snapshot tag set (core-js's own constants), decoded back
-			// from the real, locally-signed Arweave transaction.
-			const decodedTags = transaction.tags.map((tag: { get: (f: string, o: unknown) => string }) => ({
-				name: tag.get('name', { decode: true, string: true }),
-				value: tag.get('value', { decode: true, string: true })
-			}));
-			const tagValue = (name: string) => decodedTags.find((t: { name: string }) => t.name === name)?.value;
+			const contents = await readDriveState(
+				{
+					txId: transaction.id,
+					ownerAddress: owner,
+					tags: Object.fromEntries(tags.map((t) => [t.name, t.value]))
+				},
+				Buffer.from(transaction.data),
+				{ expectedOwnerAddress: owner, protection: { kind: 'public' } }
+			);
+			expect(contents.files.map((f) => f.name)).to.deep.equal(['hello.txt']);
+			expect(contents.producer).to.match(/^ArDrive-CLI\//);
 
-			expect(tagValue(SnapshotTagName.entityType)).to.equal('snapshot');
-			expect(tagValue(SnapshotTagName.driveId)).to.equal(VALID_DRIVE_ID);
-			expect(tagValue(SnapshotTagName.blockStart)).to.equal('100');
-			expect(tagValue(SnapshotTagName.blockEnd)).to.equal('150');
-			expect(tagValue(SnapshotTagName.contentType)).to.equal(SNAPSHOT_CONTENT_TYPE);
-
-			// Round-trip: the exact body this command posted must be readable by core-js's OWN parser.
-			const parsed = parseSnapshotData(Buffer.from(transaction.data));
-			expect(parsed.txSnapshots).to.have.lengthOf(2); // excludes the prior snapshot tx
-
-			const byId = (id: string) => parsed.txSnapshots.find((tx) => tx.gqlNode.id === id);
-			expect(byId(DRIVE_METADATA_TX_ID)?.jsonMetadata).to.equal(JSON.stringify(driveMetadata));
-			expect(byId(FILE_METADATA_TX_ID)?.jsonMetadata).to.equal(JSON.stringify(fileMetadata));
-			expect(byId(PRIOR_SNAPSHOT_TX_ID)).to.be.undefined;
-
-			// Printed result surfaces the same facts
-			const printedJson = consoleLogStub
-				.getCalls()
-				.map((call) => call.args[0])
-				.join('\n');
-			expect(printedJson).to.include('"entityCount": 2');
-			expect(printedJson).to.include('"posted": true');
-			expect(printedJson).to.include('"dryRun": false');
+			expect(printed(consoleLogStub)).to.include('"transport": "arweave"');
+			expect(printed(consoleLogStub)).to.include('"posted": true');
 		});
 
-		it('--dry-run signs the transaction locally but does NOT post it', async () => {
-			stubDriveHistory();
-			const sendTransactionsAsChunksStub = sinon.stub(ArFSDAO.prototype, 'sendTransactionsAsChunks').resolves();
+		it('--dry-run signs locally, needs no balance, and posts nothing', async () => {
+			stubDriveHistory(owner);
+			const send = sinon.stub(ArFSDAO.prototype, 'sendTransactionsAsChunks').resolves();
 			const consoleLogStub = sinon.stub(console, 'log');
 
-			const descriptor = getCreateSnapshotDescriptor();
-			const exitCode = await descriptor.action.trigger({ driveId: VALID_DRIVE_ID, dryRun: true });
+			const exitCode = await getCreateSnapshotDescriptor().action.trigger({ driveId: DRIVE_ID, dryRun: true });
 
 			expect(exitCode).to.equal(SUCCESS_EXIT_CODE);
-			expect(sendTransactionsAsChunksStub.called).to.be.false;
-
-			const printedJson = consoleLogStub
-				.getCalls()
-				.map((call) => call.args[0])
-				.join('\n');
-			expect(printedJson).to.include('"posted": false');
-			expect(printedJson).to.include('"dryRun": true');
-			expect(printedJson).to.match(/"snapshotId": "[\w-]{43}"/); // still resolves a real (unposted) tx id
+			expect(send.called).to.be.false;
+			expect((WalletDAO.prototype.walletHasBalance as sinon.SinonStub).called).to.be.false;
+			expect(printed(consoleLogStub)).to.include('"posted": false');
+			expect(printed(consoleLogStub)).to.match(/"txId": "[\w-]{43}"/);
 		});
 
-		it('refuses to post when the wallet balance cannot cover the estimated cost, without ever posting', async () => {
-			stubDriveHistory();
+		it('refuses to post when the wallet balance cannot cover the estimated cost', async () => {
+			stubDriveHistory(owner);
 			(WalletDAO.prototype.walletHasBalance as sinon.SinonStub).resolves(false);
-			const sendTransactionsAsChunksStub = sinon.stub(ArFSDAO.prototype, 'sendTransactionsAsChunks').resolves();
+			const send = sinon.stub(ArFSDAO.prototype, 'sendTransactionsAsChunks').resolves();
 			const consoleLogStub = sinon.stub(console, 'log');
 
-			const descriptor = getCreateSnapshotDescriptor();
-			const exitCode = await descriptor.action.trigger({ driveId: VALID_DRIVE_ID });
+			const exitCode = await getCreateSnapshotDescriptor().action.trigger({ driveId: DRIVE_ID });
 
 			expect(exitCode).to.equal(ERROR_EXIT_CODE);
-			expect(sendTransactionsAsChunksStub.called).to.be.false;
+			expect(send.called).to.be.false;
 			expect(consoleLogStub.calledWithMatch(sinon.match(/Insufficient wallet balance/))).to.be.true;
 		});
 
-		it('errors cleanly, without querying or posting, when --drive-id is not a valid entity ID', async () => {
-			const gqlRequestStub = sinon.stub(GatewayAPI.prototype, 'gqlRequest');
-			const sendTransactionsAsChunksStub = sinon.stub(ArFSDAO.prototype, 'sendTransactionsAsChunks').resolves();
+		it('refuses a drive the wallet does not own, before reading its history', async () => {
+			(ArDrive.prototype.getOwnerForDriveId as sinon.SinonStub).callsFake(async () => ADDR('s'.repeat(43)));
+			const build = sinon.stub(ArFSDAO.prototype, 'buildPublicDriveState');
 			const consoleLogStub = sinon.stub(console, 'log');
 
-			const descriptor = getCreateSnapshotDescriptor();
-			const exitCode = await descriptor.action.trigger({ driveId: 'not-a-drive-id' });
+			const exitCode = await getCreateSnapshotDescriptor().action.trigger({ driveId: DRIVE_ID });
 
 			expect(exitCode).to.equal(ERROR_EXIT_CODE);
-			expect(gqlRequestStub.called).to.be.false;
-			expect(sendTransactionsAsChunksStub.called).to.be.false;
-			expect(consoleLogStub.calledWithMatch(sinon.match(/Invalid entity ID/))).to.be.true;
+			expect(build.called).to.be.false;
+			expect(consoleLogStub.calledWithMatch(sinon.match(/only its owner can create a snapshot/))).to.be.true;
 		});
 
-		it('errors cleanly when the drive has no entity history to snapshot', async () => {
-			sinon.stub(GatewayAPI.prototype, 'gqlRequest').resolves({ pageInfo: { hasNextPage: false }, edges: [] });
-			const sendTransactionsAsChunksStub = sinon.stub(ArFSDAO.prototype, 'sendTransactionsAsChunks').resolves();
+		it('says why when the drive cannot be published as it stands', async () => {
+			stubDriveHistory(owner, { withoutDrive: true });
+			const send = sinon.stub(ArFSDAO.prototype, 'sendTransactionsAsChunks').resolves();
 			const consoleLogStub = sinon.stub(console, 'log');
 
-			const descriptor = getCreateSnapshotDescriptor();
-			const exitCode = await descriptor.action.trigger({ driveId: VALID_DRIVE_ID });
+			const exitCode = await getCreateSnapshotDescriptor().action.trigger({ driveId: DRIVE_ID });
 
 			expect(exitCode).to.equal(ERROR_EXIT_CODE);
-			expect(sendTransactionsAsChunksStub.called).to.be.false;
-			expect(consoleLogStub.calledWithMatch(sinon.match(/nothing to snapshot yet/))).to.be.true;
+			expect(send.called).to.be.false;
+			expect(consoleLogStub.calledWithMatch(sinon.match(/Cannot create a snapshot of drive .* \(no-drive\)/))).to
+				.be.true;
+		});
+
+		it('errors cleanly when --drive-id is not a valid entity ID', async () => {
+			const consoleLogStub = sinon.stub(console, 'log');
+
+			const exitCode = await getCreateSnapshotDescriptor().action.trigger({ driveId: 'not-a-drive-id' });
+
+			expect(exitCode).to.equal(ERROR_EXIT_CODE);
+			expect(consoleLogStub.calledWithMatch(sinon.match(/Invalid entity ID/))).to.be.true;
 		});
 	});
 
 	describe('the --turbo path', () => {
-		beforeEach(() => {
-			sinon.stub(ParametersHelper.prototype, 'getRequiredWallet').resolves(testWallet);
-		});
-
-		it('prepares a data item tagged with the core-js snapshot constants and posts it via Turbo', async () => {
-			stubDriveHistory();
-			const sendDataItemStub = sinon.stub(Turbo.prototype, 'sendDataItem').resolves({
+		it('sends a drive state data item to Turbo', async () => {
+			stubDriveHistory(owner);
+			const sendDataItem = sinon.stub(Turbo.prototype, 'sendDataItem').resolves({
 				id: 'turbo-response-id',
 				owner: 'owner',
 				dataCaches: [],
@@ -281,45 +259,31 @@ describe('create-snapshot command', () => {
 			});
 			const consoleLogStub = sinon.stub(console, 'log');
 
-			const descriptor = getCreateSnapshotDescriptor();
-			const exitCode = await descriptor.action.trigger({ driveId: VALID_DRIVE_ID, turbo: true });
+			const exitCode = await getCreateSnapshotDescriptor().action.trigger({ driveId: DRIVE_ID, turbo: true });
 
 			expect(exitCode).to.equal(SUCCESS_EXIT_CODE);
-			expect(sendDataItemStub.calledOnce).to.be.true;
-
-			const [postedDataItem] = sendDataItemStub.firstCall.args;
-			const tagValue = (name: string) =>
-				postedDataItem.tags.find((t: { name: string }) => t.name === name)?.value;
-
-			expect(tagValue(SnapshotTagName.entityType)).to.equal('snapshot');
-			expect(tagValue(SnapshotTagName.driveId)).to.equal(VALID_DRIVE_ID);
-			expect(tagValue(SnapshotTagName.blockStart)).to.equal('100');
-			expect(tagValue(SnapshotTagName.blockEnd)).to.equal('150');
-
-			const printedJson = consoleLogStub
-				.getCalls()
-				.map((call) => call.args[0])
-				.join('\n');
-			expect(printedJson).to.include('"posted": true');
+			expect(sendDataItem.calledOnce).to.be.true;
+			const [dataItem] = sendDataItem.firstCall.args;
+			const tag = (name: string) => dataItem.tags.find((t: { name: string }) => t.name === name)?.value;
+			expect(tag('Entity-Type')).to.equal('drive-state');
+			expect(tag('State-Version')).to.equal('0.2');
+			expect(printed(consoleLogStub)).to.include('"transport": "turbo"');
 		});
 
-		it('--dry-run does NOT post the data item to Turbo', async () => {
-			stubDriveHistory();
-			const sendDataItemStub = sinon.stub(Turbo.prototype, 'sendDataItem').resolves();
+		it('--dry-run sends nothing to Turbo', async () => {
+			stubDriveHistory(owner);
+			const sendDataItem = sinon.stub(Turbo.prototype, 'sendDataItem').resolves();
 			const consoleLogStub = sinon.stub(console, 'log');
 
-			const descriptor = getCreateSnapshotDescriptor();
-			const exitCode = await descriptor.action.trigger({ driveId: VALID_DRIVE_ID, turbo: true, dryRun: true });
+			const exitCode = await getCreateSnapshotDescriptor().action.trigger({
+				driveId: DRIVE_ID,
+				turbo: true,
+				dryRun: true
+			});
 
 			expect(exitCode).to.equal(SUCCESS_EXIT_CODE);
-			expect(sendDataItemStub.called).to.be.false;
-
-			const printedJson = consoleLogStub
-				.getCalls()
-				.map((call) => call.args[0])
-				.join('\n');
-			expect(printedJson).to.include('"posted": false');
-			expect(printedJson).to.include('"dryRun": true');
+			expect(sendDataItem.called).to.be.false;
+			expect(printed(consoleLogStub)).to.include('"dryRun": true');
 		});
 	});
 });
