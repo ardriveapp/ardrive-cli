@@ -112,6 +112,7 @@ describe('create-snapshot command', () => {
 	beforeEach(() => {
 		sinon.stub(ParametersHelper.prototype, 'getRequiredWallet').resolves(testWallet);
 		sinon.stub(ArDrive.prototype, 'getOwnerForDriveId').callsFake(async () => ADDR(owner));
+		sinon.stub(ArFSDAO.prototype, 'isPublicDrive').resolves(true);
 	});
 
 	afterEach(() => {
@@ -222,6 +223,34 @@ describe('create-snapshot command', () => {
 			expect(exitCode).to.equal(ERROR_EXIT_CODE);
 			expect(build.called).to.be.false;
 			expect(consoleLogStub.calledWithMatch(sinon.match(/only its owner can create a snapshot/))).to.be.true;
+		});
+
+		it('says a private drive needs --private, before reading its history', async () => {
+			(ArFSDAO.prototype.isPublicDrive as sinon.SinonStub).resolves(false);
+			const build = sinon.stub(ArFSDAO.prototype, 'buildPublicDriveState');
+			const consoleLogStub = sinon.stub(console, 'log');
+
+			const exitCode = await getCreateSnapshotDescriptor().action.trigger({ driveId: DRIVE_ID });
+
+			expect(exitCode).to.equal(ERROR_EXIT_CODE);
+			expect(build.called).to.be.false;
+			expect(consoleLogStub.calledWithMatch(sinon.match(/is private\. Pass --private/))).to.be.true;
+		});
+
+		it('says a public drive needs no drive key, before asking for one', async () => {
+			const build = sinon.stub(ArFSDAO.prototype, 'buildPrivateDriveState');
+			const driveKey = sinon.stub(ParametersHelper.prototype, 'getDriveKey');
+			const consoleLogStub = sinon.stub(console, 'log');
+
+			const exitCode = await getCreateSnapshotDescriptor().action.trigger({
+				driveId: DRIVE_ID,
+				driveKey: Buffer.alloc(32).toString('base64')
+			});
+
+			expect(exitCode).to.equal(ERROR_EXIT_CODE);
+			expect(build.called).to.be.false;
+			expect(driveKey.called).to.be.false;
+			expect(consoleLogStub.calledWithMatch(sinon.match(/is public\. Leave out --private/))).to.be.true;
 		});
 
 		it('says why when the drive cannot be published as it stands', async () => {
