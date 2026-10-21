@@ -1,0 +1,93 @@
+name: Publish to npm
+
+# Publishes ardrive-cli to npm.
+#   - PUBLISH: push a version tag `vX.Y.Z` (the only path that publishes; gated by the version check).
+#   - VALIDATE: run manually (workflow_dispatch) to build, test, pack and verify. Never publishes.
+#
+# Auth: npm Trusted Publishing (OIDC). No token or secret exists to steal. One-time
+# maintainer setup on npm: the ardrive-cli package -> Settings -> Trusted Publishers ->
+# add a GitHub Actions publisher for ardriveapp/ardrive-cli, workflow publish.yml.
+# Requires npm >= 11.5.1, Node >= 22.14.0 and `id-token: write`, all set below.
+#
+# The package ships only lib/ and has no `prepare` script, so `npm publish` alone
+# would ship whatever lib/ happened to be on disk. This workflow always builds from
+# the tagged commit, runs the tests, and checks the tarball before publishing.
+
+on:
+  push:
+    tags:
+      # vX.Y.Z (and prereleases like vX.Y.Z-rc.1). The "Verify tag matches
+      # package.json version" step is the real guard on which version publishes.
+      - "v*.*.*"
+  workflow_dispatch: {} # build, test, pack and verify only; never publishes
+
+permissions:
+  contents: read
+  id-token: write # npm trusted publishing and provenance
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Set here rather than read from .nvmrc: OIDC needs Node >= 22.14.0
+          # whatever .nvmrc says.
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+
+      # Trusted publishing (OIDC) needs npm >= 11.5.1. Node 24 bundles a newer one,
+      # so nothing is fetched from the registry here; fail closed if that changes.
+      - name: Check npm supports OIDC trusted publishing
+        run: |
+          node -e '
+            const [major, minor, patch] = process.argv[1].split(".").map(Number);
+            const ok = major > 11 || (major === 11 && (minor > 5 || (minor === 5 && patch >= 1)));
+            if (!ok) { console.error(`::error::npm is ${process.argv[1]}, OIDC needs >= 11.5.1`); process.exit(1); }
+            console.log(`npm ${process.argv[1]} supports OIDC`);
+          ' "$(npm --version)"
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build (lib/)
+        run: yarn build
+
+      - name: Test
+        run: yarn test
+
+      # Tag pushes must match package.json's version, or we'd publish the wrong number.
+      - name: Verify tag matches package.json version
+        if: github.event_name == 'push'
+        run: |
+          PKG_VERSION="v$(node -p "require('./package.json').version")"
+          if [ "$PKG_VERSION" != "${GITHUB_REF_NAME}" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} does not match package.json ($PKG_VERSION). Bump package.json or fix the tag."
+            exit 1
+          fi
+          echo "Version OK: ${GITHUB_REF_NAME}"
+
+      - name: Verify packaged contents
+        run: |
+          npm pack --dry-run --json > pack.json
+          node -e '
+            const files = require("./pack.json")[0].files.map(f => f.path);
+            const missing = ["lib/index.js", "package.json", "README.md"].filter(f => !files.includes(f));
+            if (missing.length) { console.error(`::error::missing from package: ${missing.join(", ")}`); process.exit(1); }
+            const tests = files.filter(f => /\.test\./.test(f));
+            if (tests.length) { console.error(`::error::test files in package: ${tests.slice(0, 5).join(", ")}`); process.exit(1); }
+            console.log(`Package OK: ${files.length} files`);
+          '
+
+      - name: Publish to npm (trusted publishing / OIDC)
+        # Only on a version-tag push, after the tag check above. workflow_dispatch never publishes.
+        # No NODE_AUTH_TOKEN: npm authenticates the job through OIDC against the Trusted
+        # Publisher configured for this repo and workflow, and adds provenance itself.
+        if: github.event_name == 'push'
+        run: npm publish --access public
+
+      - name: Dry-run summary
+        if: github.event_name == 'workflow_dispatch'
+        run: echo "Validation complete. Built, tested, packed and verified; workflow_dispatch never publishes. Push a vX.Y.Z tag to publish."
