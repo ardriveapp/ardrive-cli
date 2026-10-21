@@ -36,6 +36,7 @@ jobs:
           # Set here rather than read from .nvmrc: OIDC needs Node >= 22.14.0
           # whatever .nvmrc says.
           node-version: "24"
+          check-latest: true # the newest patch, not the runner's cached one
           registry-url: "https://registry.npmjs.org"
 
       # Trusted publishing (OIDC) needs npm >= 11.5.1. Node 24 bundles a newer one,
