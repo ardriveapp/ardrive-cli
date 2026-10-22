@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+-   **Requires Node.js 22.12 or later**, and is developed on Node 24 LTS (`.nvmrc`). Node 18 and 20 are end of life and receive no security fixes, and a fresh install on Node 18 fails with `ERR_REQUIRE_ESM` (current `uuid`, through `@ardrive/turbo-sdk`). A seed phrase gives the same wallet on Node 18, 22 and 24. CI tests 22 and 24
+
 ## [5.0.0] - 2026-10-21
 
 ### Changed

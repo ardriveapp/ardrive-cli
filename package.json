@@ -17,7 +17,7 @@
 		"prompts": "^2.4.0"
 	},
 	"engines": {
-		"node": ">=18"
+		"node": ">=22.12"
 	},
 	"devDependencies": {
 		"@istanbuljs/nyc-config-typescript": "^1.0.1",
