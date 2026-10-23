@@ -5,11 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [6.0.0] - 2026-10-23
 
 ### Changed
 
 -   **Requires Node.js 22.12 or later**, and is developed on Node 24 LTS (`.nvmrc`). Node 18 and 20 are end of life and receive no security fixes, and a fresh install on Node 18 fails with `ERR_REQUIRE_ESM` (current `uuid`, through `@ardrive/turbo-sdk`). A seed phrase gives the same wallet on Node 18, 22 and 24. CI tests 22 and 24
+-   Published from GitHub Actions through npm trusted publishing, with provenance
+
+### Fixed
+
+-   `create-manifest`, `list-folder` and the other listing commands no longer fail on a drive whose snapshot carries empty metadata for a file (`Unexpected end of JSON input`). The file's metadata is fetched from the gateway instead ([#384](https://github.com/ardriveapp/ardrive-cli/issues/384))
+
+### Updated
+
+-   Updated to ardrive-core-js@5.0.0. Seed phrase wallets no longer depend on a package installed from git, so the CLI installs as a project dependency on npm 11. Wallets made from a seed phrase are unchanged: core-js checks 11 known wallets before every release
 
 ## [5.0.0] - 2026-10-21
 
