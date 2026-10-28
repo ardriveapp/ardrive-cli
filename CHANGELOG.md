@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.1.0] - 2026-10-28
+
+### Updated
+
+-   Updated to ardrive-core-js@5.1.0. A file's data now carries a `Unix-Time` tag (seconds), as its metadata always has and as the ArDrive web app's uploads already do, so indexes of uploads can date file data without reading its metadata. Each file data transaction or data item is 21 bytes larger; the upload planner counts the tag, so planned sizes and Turbo's free-upload limit match what is signed
+
 ## [6.0.0] - 2026-10-23
 
 ### Changed
