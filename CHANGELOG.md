@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [6.1.1] - 2026-10-29
 
 ### Changed
 
@@ -13,7 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+-   When two edits to a file or folder land in the same block, `list-folder`, `file-info` and the other commands now show the later one (by `Unix-Time`), as the ArDrive web app does. Before, a file hidden, renamed or re-uploaded moments after an earlier edit could show the earlier edit. Listings also report each entity's real `blockHeight` instead of `0` ([#338](https://github.com/ardriveapp/ardrive-cli/issues/338))
 -   Installing no longer prints deprecation warnings for `cids`, `interface-ipld-format`, `ipld-dag-pb`, `multibase`, `multicodec` and `stable`. `--add-ipfs-tag` now computes its CID with the current `ipfs-unixfs-importer` instead of the unmaintained `ipfs-only-hash`, and produces the same CIDs as before ([#368](https://github.com/ardriveapp/ardrive-cli/issues/368))
+
+### Updated
+
+-   Updated to ardrive-core-js@5.1.1
 
 ## [6.1.0] - 2026-10-28
 
