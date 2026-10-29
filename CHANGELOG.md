@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+-   Installing no longer prints deprecation warnings for `cids`, `interface-ipld-format`, `ipld-dag-pb`, `multibase`, `multicodec` and `stable`. `--add-ipfs-tag` now computes its CID with the current `ipfs-unixfs-importer` instead of the unmaintained `ipfs-only-hash`, and produces the same CIDs as before ([#368](https://github.com/ardriveapp/ardrive-cli/issues/368))
+
 ## [6.1.0] - 2026-10-28
 
 ### Updated
