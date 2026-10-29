@@ -5,11 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [6.1.1] - 2026-10-29
+## [Unreleased]
 
 ### Changed
 
 -   `create-drive` no longer requires a new private drive's password to match the wallet's first private drive. Each private drive can have its own password, as the ArDrive desktop app does. `list-all-drives` with `-P` or `-p` still tries the one password on every drive and lists the drives it doesn't open as `ENCRYPTED`
+
+## [6.1.1] - 2026-10-29
 
 ### Fixed
 
