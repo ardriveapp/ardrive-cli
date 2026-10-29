@@ -150,6 +150,11 @@ export class ParametersHelper {
 			return Promise.resolve(undefined);
 		})();
 
+		// One password or drive key is tried on every drive, so drives it doesn't open list as
+		// ENCRYPTED. No drive ID is known here, so the key's signature type can't be looked up; the
+		// v1 label is never read. These keys only decrypt drive metadata (by key bytes alone), a
+		// listed drive takes its type from its Signature-Type tag, and PrivateKeyData never passes
+		// a key to a write. Keys for writes come from getDriveKey, which uses the drive's real type.
 		return new PrivateKeyData({
 			password,
 			driveKeys: driveKey

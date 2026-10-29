@@ -48,10 +48,11 @@ new CLICommand({
 
 		const createDriveResult = await (async function () {
 			if (await parameters.getIsPrivate()) {
+				// Each private drive has its own password, so a new drive's password is not checked
+				// against the wallet's other private drives. When --private prompts for it, it asks twice.
 				const drivePassword = await parameters.getDrivePassword(true);
 				const walletPrivateKey = (wallet as JWKWallet).getPrivateKey();
 				const newPrivateDriveData = await PrivateDriveKeyData.from(drivePassword, walletPrivateKey);
-				await ardrive.assertValidPassword(drivePassword);
 				return ardrive.createPrivateDrive({ driveName, newPrivateDriveData });
 			} else {
 				return ardrive.createPublicDrive({ driveName });

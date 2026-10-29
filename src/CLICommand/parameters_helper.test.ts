@@ -35,7 +35,7 @@ import {
 import '../parameter_declarations';
 import { CLIAction } from './action';
 import { SUCCESS_EXIT_CODE } from './error_codes';
-import { ArweaveAddress, EID, DriveSignatureType, ArDrive } from 'ardrive-core-js';
+import { ArweaveAddress, EID, DriveSignatureType, ArDrive, VersionedDriveKey } from 'ardrive-core-js';
 import sinon from 'sinon';
 
 const expectedArweaveAddress = new ArweaveAddress('P8aFJizMVBl7HeoRAz2i1dNYkG_KoN7oB9tZpIw6lo4');
@@ -508,6 +508,28 @@ describe('ParametersHelper class', () => {
 					.then((driveKey) =>
 						expect(driveKey.toString()).to.equal('Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg')
 					);
+			});
+		});
+
+		it('labels a --drive-key with the signature type of a v2 drive', () => {
+			const cmd = declareCommandWithParams(program, [DriveKeyParameter]);
+			CLICommand.parse(program, [
+				...baseArgv,
+				testCommandName,
+				'--drive-key',
+				'Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg'
+			]);
+			const v2ArDrive = {
+				getDriveSignatureInfo: sinon.stub().resolves({ driveSignatureType: DriveSignatureType.v2 })
+			};
+			return cmd.action.then(async (options) => {
+				const driveKey = await new ParametersHelper(options).getDriveKey({
+					driveId: EID('00000000-0000-0000-0000-000000000002'),
+					arDrive: (v2ArDrive as unknown) as ArDrive,
+					owner: expectedArweaveAddress
+				});
+				expect(driveKey.toString()).to.equal('Fqjb/eoHUHkoPwyTe52VUJkUkOtLg0eoWdV1u03DDzg');
+				expect((driveKey as VersionedDriveKey).driveSignatureType).to.equal(DriveSignatureType.v2);
 			});
 		});
 

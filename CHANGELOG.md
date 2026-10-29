@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+-   `create-drive` no longer requires a new private drive's password to match the wallet's first private drive. Each private drive can have its own password, as in the ArDrive web and desktop apps. `list-all-drives` with `-P` or `-p` still tries the one password on every drive and lists the drives it doesn't open as `ENCRYPTED`
+
 ### Fixed
 
 -   Installing no longer prints deprecation warnings for `cids`, `interface-ipld-format`, `ipld-dag-pb`, `multibase`, `multicodec` and `stable`. `--add-ipfs-tag` now computes its CID with the current `ipfs-unixfs-importer` instead of the unmaintained `ipfs-only-hash`, and produces the same CIDs as before ([#368](https://github.com/ardriveapp/ardrive-cli/issues/368))

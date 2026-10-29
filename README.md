@@ -474,6 +474,8 @@ ardrive get-file-key --file-id "bd2ce978-6ede-4b0d-8f79-2d7bc235a0e0" --drive-id
 
 The ArDrive CLI's private drive and folder functions all require either a drive password OR a drive key. Private file functions require either the drive password or the file key. **Keys and passwords are sensitive data, so manage the entry, display, storage, and transmission of them very carefully.**
 
+Each private drive has its own password. A new private drive can use any password, whatever your other drives use, so keep a record of which password opens which drive.
+
 Drive passwords are the most portable, and fundamental, encryption facet, so a few options are available during private drive operations for supplying them:
 
 - Environment Variable
@@ -517,9 +519,13 @@ ardrive create-drive --wallet-file /path/to/my/wallet.json --drive-name "My Publ
 ardrive create-drive --wallet-file /path/to/my/wallet.json --drive-name "Teenage Love Poetry" -P
 ```
 
+A new private drive's password doesn't have to match your other private drives. When `-P` prompts for the new password, it asks for it twice.
+
 ### Listing Drives for an Address
 
 You can list all the drives associated with any Arweave wallet address, though the details of private drives will be obfuscated from you unless you provide the necessary decryption data.
+
+The password or drive key you give is tried on every private drive. Drives it opens are listed in full; the others are listed with `name` and `rootFolderId` set to `ENCRYPTED`. To see a drive with a different password, list again with that password.
 
 ```shell
 # List all your own drives
