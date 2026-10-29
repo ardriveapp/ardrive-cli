@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
--   `create-drive` no longer requires a new private drive's password to match the wallet's first private drive. Each private drive can have its own password, as in the ArDrive web and desktop apps. `list-all-drives` with `-P` or `-p` still tries the one password on every drive and lists the drives it doesn't open as `ENCRYPTED`
+-   `create-drive` no longer requires a new private drive's password to match the wallet's first private drive. Each private drive can have its own password, as the ArDrive desktop app does. `list-all-drives` with `-P` or `-p` still tries the one password on every drive and lists the drives it doesn't open as `ENCRYPTED`
 
 ### Fixed
 

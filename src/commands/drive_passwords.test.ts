@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
 import * as fs from 'fs';
+import prompts from 'prompts';
 import {
 	ArDrive,
 	ArFSPrivateDriveMetaDataPrototype,
@@ -17,7 +18,7 @@ import {
 	VersionedDriveKey
 } from 'ardrive-core-js';
 import { CLICommand, CommandDescriptor } from '../CLICommand/cli_command';
-import { SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
+import { ERROR_EXIT_CODE, SUCCESS_EXIT_CODE } from '../CLICommand/error_codes';
 import { cliArDriveFactory } from '..';
 
 // Importing the real command modules registers them (with the actual commander program singleton)
@@ -25,6 +26,10 @@ import { cliArDriveFactory } from '..';
 import './create_drive';
 import './list_all_drives';
 import './rename_drive';
+
+// The module object itself: stubs on it reach the command's own `fs` import.
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const nodeFs: typeof fs = require('fs');
 
 // A funds-free fixture wallet already used by this repo's other suites. Nothing is posted: the
 // gateway is stubbed, and the write paths below are stubbed before they would sign or send.
@@ -199,6 +204,74 @@ describe('private drives with their own passwords', function () {
 			});
 			expect(`${driveKey}`).to.equal(`${expectedKey}`);
 			expect((driveKey as VersionedDriveKey).driveSignatureType).to.equal(DriveSignatureType.v2);
+		});
+
+		describe('with the interactive -P prompt', () => {
+			let savedEnvPassword: string | undefined;
+
+			beforeEach(() => {
+				// Nothing on STDIN and no ARDRIVE_DRIVE_PW, so -P falls through to the prompt.
+				savedEnvPassword = process.env['ARDRIVE_DRIVE_PW'];
+				delete process.env['ARDRIVE_DRIVE_PW'];
+				const readFileSync = sinon.stub(nodeFs, 'readFileSync');
+				readFileSync.callsFake(((path: unknown, ...rest: unknown[]) => {
+					if (path === process.stdin.fd) {
+						throw new Error('no STDIN in tests');
+					}
+					return (readFileSync.wrappedMethod as (...args: unknown[]) => unknown)(path, ...rest);
+				}) as never);
+			});
+
+			afterEach(() => {
+				if (savedEnvPassword !== undefined) {
+					process.env['ARDRIVE_DRIVE_PW'] = savedEnvPassword;
+				}
+				// Drop any answers a failing test left queued.
+				((prompts as unknown) as { _injected?: unknown[] })._injected = undefined;
+			});
+
+			it('asks for the new password twice and uses it when both entries match', async () => {
+				const createPrivateDrive = sinon
+					.stub(ArDrive.prototype, 'createPrivateDrive')
+					.resolves({ created: [], tips: [], fees: {} });
+				const consoleLogStub = sinon.stub(console, 'log');
+				prompts.inject([SECOND_PASSWORD, SECOND_PASSWORD]);
+
+				const exitCode = await getDescriptor('create-drive').action.trigger({
+					walletFile: WALLET_FILE,
+					driveName: 'Prompted Drive',
+					private: true
+				});
+
+				expect(exitCode, printed(consoleLogStub)).to.equal(SUCCESS_EXIT_CODE);
+				// Both answers were asked for: the confirmation prompt ran.
+				expect(((prompts as unknown) as { _injected?: unknown[] })._injected).to.be.empty;
+				const { newPrivateDriveData } = createPrivateDrive.firstCall.args[0];
+				const { driveId, driveKey } = newPrivateDriveData as PrivateDriveKeyData;
+				const expectedKey = await deriveDriveKey({
+					dataEncryptionKey: SECOND_PASSWORD,
+					driveId: `${driveId}`,
+					walletPrivateKey,
+					driveSignatureType: DriveSignatureType.v2
+				});
+				expect(`${driveKey}`).to.equal(`${expectedKey}`);
+			});
+
+			it('refuses to create the drive when the two entries differ', async () => {
+				const createPrivateDrive = sinon.stub(ArDrive.prototype, 'createPrivateDrive');
+				const consoleLogStub = sinon.stub(console, 'log');
+				prompts.inject([SECOND_PASSWORD, FIRST_PASSWORD]);
+
+				const exitCode = await getDescriptor('create-drive').action.trigger({
+					walletFile: WALLET_FILE,
+					driveName: 'Prompted Drive',
+					private: true
+				});
+
+				expect(exitCode).to.equal(ERROR_EXIT_CODE);
+				expect(printed(consoleLogStub)).to.include('Drive passwords do not match!');
+				expect(createPrivateDrive.called).to.be.false;
+			});
 		});
 	});
 
