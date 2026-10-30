@@ -135,6 +135,7 @@ Parameter.declare({
 	aliases: ['-p', '--unsafe-drive-password'],
 	description: `(OPTIONAL - NOT RECOMMENDED) the encryption password for the private drive
 \t\t\t\t\t\t\t• When provided, creates/accesses a private drive. Public drive otherwise.
+\t\t\t\t\t\t\t• Each private drive can have its own password. list-all-drives shows drives this password doesn't open as ENCRYPTED
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --private
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --drive-key`,
 	forbiddenConjunctionParameters: [DriveKeyParameter, PrivateParameter]
@@ -148,6 +149,7 @@ Parameter.declare({
 \t\t\t\t\t\t\t\t- STDIN
 \t\t\t\t\t\t\t\t- Environment variable ARDRIVE_DRIVE_PW
 \t\t\t\t\t\t\t\t- Interactive, secure prompt
+\t\t\t\t\t\t\t• Each private drive can have its own password. list-all-drives shows drives this password doesn't open as ENCRYPTED
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --unsafe-drive-password
 \t\t\t\t\t\t\t• Can NOT be used in conjunction with --drive-key`,
 	forbiddenConjunctionParameters: [DriveKeyParameter, UnsafeDrivePasswordParameter],
